@@ -1,4 +1,4 @@
-package com.marklogic.client.test;
+package com.marklogic.client.test.ssl;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
@@ -8,6 +8,7 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.RequireSSLExtension;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
@@ -22,27 +23,22 @@ import org.springframework.util.FileCopyUtils;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.Path;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(RequireSSLExtension.class)
 public class TwoWaySSLTest {
 
 	private final static String TEST_DOCUMENT_URI = "/optic/test/musician1.json";
+	private final static String KEYSTORE_PASSWORD = "password";
 
 	// Used for creating a temporary JKS (Java KeyStore) file.
 	@TempDir
@@ -51,6 +47,7 @@ public class TwoWaySSLTest {
 	private static DatabaseClient securityClient;
 	private static ManageClient manageClient;
 	private static File keyStoreFile;
+	private static File p12File;
 
 
 	@BeforeAll
@@ -76,6 +73,7 @@ public class TwoWaySSLTest {
 		createPkcs12File(tempDir);
 		createKeystoreFile(tempDir);
 		keyStoreFile = new File(tempDir.toFile(), "client.jks");
+		p12File = new File(tempDir.toFile(), "client.p12");
 	}
 
 	@AfterAll
@@ -92,16 +90,20 @@ public class TwoWaySSLTest {
 	 * SSLContext can connect to the app server.
 	 */
 	@Test
-	void digestAuthentication() throws Exception {
+	void digestAuthentication() {
 		if (Common.USE_REVERSE_PROXY_SERVER) {
 			return;
 		}
 
 		// This client uses our Java KeyStore file with a client certificate in it, so it should work.
 		DatabaseClient clientWithCert = Common.newClientBuilder()
+			.withKeyStorePath(keyStoreFile.getAbsolutePath())
+			.withKeyStorePassword(KEYSTORE_PASSWORD)
+			// Still need this as "common"/"strict" don't work for our temporary server certificate.
 			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
-			.withSSLContext(createSSLContextWithClientCertificate(keyStoreFile))
-			.withTrustManager(RequireSSLExtension.newTrustManager())
+			// This is a reasonable trust manager since it references the temporary server certificate as something
+			// that it accepts instead of accepting everything.
+			.withTrustManager(RequireSSLExtension.newSecureTrustManager())
 			.build();
 
 		verifyTestDocumentCanBeRead(clientWithCert);
@@ -110,7 +112,7 @@ public class TwoWaySSLTest {
 		DatabaseClient clientWithoutCert = Common.newClientBuilder()
 			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
 			.withSSLProtocol("TLSv1.2")
-			.withTrustManager(RequireSSLExtension.newTrustManager())
+			.withTrustManager(RequireSSLExtension.newSecureTrustManager())
 			.build();
 
 		// The type of SSL failure varies across Java versions, so not asserting on a particular error message.
@@ -126,26 +128,123 @@ public class TwoWaySSLTest {
 	}
 
 	@Test
-	void certificateAuthentication() throws Exception {
+	void invalidKeyStoreType() {
+		RuntimeException ex = assertThrows(RuntimeException.class, () -> Common.newClientBuilder()
+			.withKeyStoreType("Not a valid type!")
+			.withKeyStorePath("doesn't matter for this test")
+			.build());
+
+		assertEquals("Unable to get instance of key store with type: Not a valid type!", ex.getMessage());
+		assertTrue(ex.getCause() instanceof KeyStoreException);
+	}
+
+	@Test
+	void invalidKeyStorePath() {
+		RuntimeException ex = assertThrows(RuntimeException.class, () -> Common.newClientBuilder()
+			.withKeyStorePath("/no/keystore/here.txt").build());
+
+		assertEquals("Unable to read from key store at path: /no/keystore/here.txt", ex.getMessage());
+		assertTrue(ex.getCause() instanceof FileNotFoundException);
+	}
+
+	@Test
+	void invalidKeyStorePassword() {
+		RuntimeException ex = assertThrows(RuntimeException.class, () -> Common.newClientBuilder()
+			.withKeyStorePath(keyStoreFile.getAbsolutePath())
+			.withKeyStorePassword("wrong password!")
+			.build());
+
+		// Depending on the Java version, an exception with a null message may be returned. At least, that's happening
+		// on Jenkins.
+		if (ex.getMessage() != null) {
+			assertTrue(ex.getMessage().startsWith("Unable to read from key store at path:"),
+				"Unexpected message: " + ex.getMessage());
+			assertTrue(ex.getCause() instanceof IOException);
+		}
+	}
+
+	@Test
+	void invalidKeyStoreAlgorithm() {
+		RuntimeException ex = assertThrows(RuntimeException.class, () -> Common.newClientBuilder()
+			.withKeyStorePath(keyStoreFile.getAbsolutePath())
+			.withKeyStorePassword(KEYSTORE_PASSWORD)
+			.withKeyStoreAlgorithm("Not a valid algorithm!")
+			.build());
+
+		// Depending on the Java version, an exception with a null message may be returned. At least, that's happening
+		// on Jenkins.
+		if (ex.getMessage() != null) {
+			assertEquals("Unable to create key manager factory with algorithm: Not a valid algorithm!", ex.getMessage());
+			assertTrue(ex.getCause() instanceof NoSuchAlgorithmException);
+		}
+	}
+
+
+	/**
+	 * Verifies certificate authentication when a user provides their own SSLContext.
+	 */
+	@Test
+	void certificateAuthenticationWithSSLContext() throws Exception {
 		if (Common.USE_REVERSE_PROXY_SERVER) {
 			return;
 		}
 
+		setAuthenticationToCertificate();
 		try {
-			new ServerManager(manageClient)
-				.save(Common.newServerPayload().put("authentication", "certificate").toString());
-
 			SSLContext sslContext = createSSLContextWithClientCertificate(keyStoreFile);
 			DatabaseClient client = Common.newClientBuilder()
-				.withCertificateAuth(sslContext, RequireSSLExtension.newTrustManager())
+				.withCertificateAuth(sslContext, RequireSSLExtension.newSecureTrustManager())
 				.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
 				.build();
 
 			verifyTestDocumentCanBeRead(client);
 		} finally {
-			new ServerManager(manageClient)
-				.save(Common.newServerPayload().put("authentication", "digestbasic").toString());
+			setAuthenticationToDigestbasic();
 		}
+	}
+
+	/**
+	 * Verifies certificate authentication when a user provides a file and password, which must point to a PKC12
+	 * keystore.
+	 */
+	@Test
+	void certificateAuthenticationWithCertificateFileAndPassword() {
+		if (Common.USE_REVERSE_PROXY_SERVER) {
+			return;
+		}
+
+		setAuthenticationToCertificate();
+		try {
+			DatabaseClient client = Common.newClientBuilder()
+				.withCertificateAuth(p12File.getAbsolutePath(), KEYSTORE_PASSWORD)
+				.withTrustManager(RequireSSLExtension.newSecureTrustManager())
+				.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
+				.build();
+
+			verifyTestDocumentCanBeRead(client);
+		} finally {
+			setAuthenticationToDigestbasic();
+		}
+	}
+
+	@Test
+	void certificateAuthenticationWithNoSSLContextOrFileAndPassword() {
+		RuntimeException ex = assertThrows(RuntimeException.class, () -> Common.newClientBuilder()
+			.withCertificateAuth(null, RequireSSLExtension.newSecureTrustManager())
+			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
+			.build());
+
+		assertEquals("An SSLContext is required for certificate authentication.", ex.getMessage());
+	}
+
+	private void setAuthenticationToCertificate() {
+		new ServerManager(manageClient)
+			.save(Common.newServerPayload().put("authentication", "certificate").toString());
+	}
+
+	private void setAuthenticationToDigestbasic() {
+		new ServerManager(manageClient)
+			.save(Common.newServerPayload().put("authentication", "digestbasic").toString());
 	}
 
 	private void verifyTestDocumentCanBeRead(DatabaseClient client) {
@@ -156,13 +255,13 @@ public class TwoWaySSLTest {
 
 	private SSLContext createSSLContextWithClientCertificate(File keystoreFile) throws Exception {
 		KeyStore keyStore = KeyStore.getInstance("JKS");
-		keyStore.load(new FileInputStream(keystoreFile), "password".toCharArray());
+		keyStore.load(new FileInputStream(keystoreFile), KEYSTORE_PASSWORD.toCharArray());
 		KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-		keyManagerFactory.init(keyStore, "password".toCharArray());
+		keyManagerFactory.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
 		SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
 		sslContext.init(
 			keyManagerFactory.getKeyManagers(),
-			new X509TrustManager[]{RequireSSLExtension.newTrustManager()},
+			new X509TrustManager[]{RequireSSLExtension.newSecureTrustManager()},
 			null);
 		return sslContext;
 	}
@@ -315,7 +414,7 @@ public class TwoWaySSLTest {
 			"-in", "cert.pem", "-inkey", "client.key",
 			"-out", "client.p12",
 			"-name", "my-client",
-			"-passout", "pass:password");
+			"-passout", "pass:" + KEYSTORE_PASSWORD);
 
 		ExecutorService executorService = Executors.newSingleThreadExecutor();
 		Process process = builder.start();
@@ -329,12 +428,12 @@ public class TwoWaySSLTest {
 		ProcessBuilder builder = new ProcessBuilder();
 		builder.directory(tempDir.toFile());
 		builder.command("keytool", "-importkeystore",
-			"-deststorepass", "password",
-			"-destkeypass", "password",
+			"-deststorepass", KEYSTORE_PASSWORD,
+			"-destkeypass", KEYSTORE_PASSWORD,
 			"-destkeystore", "client.jks",
 			"-srckeystore", "client.p12",
 			"-srcstoretype", "PKCS12",
-			"-srcstorepass", "password",
+			"-srcstorepass", KEYSTORE_PASSWORD,
 			"-alias", "my-client");
 
 		Process process = builder.start();

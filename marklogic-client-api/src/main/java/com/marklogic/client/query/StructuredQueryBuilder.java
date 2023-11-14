@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -469,7 +469,11 @@ public class StructuredQueryBuilder {
    * A value of 1 means to exclude subdirectories.
    * @param uris    the identifiers for the criteria directories
    * @return    the StructuredQueryDefinition for the directory query
+   * @deprecated  since 6.4.0; a directory query in MarkLogic does not support custom depths; it is either limited
+   * to the given directory or it is "infinite". For that reason, prefer the {@code directory} method that accepts a
+   * boolean indicating whether the directory query is infinite.
    */
+  @Deprecated
   public StructuredQueryDefinition directory(int depth, String... uris) {
     return new DirectoryQuery(depth, uris);
   }

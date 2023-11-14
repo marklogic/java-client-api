@@ -1,5 +1,8 @@
 <template xmlns="http://marklogic.com/xdmp/tde">
     <context>/zipcode</context>
+    <collections>
+    	<collection>zipcode</collection>
+    </collections>
     <rows>
         <row>
             <schema-name>cookbook</schema-name>

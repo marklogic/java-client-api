@@ -1,9 +1,10 @@
-package com.marklogic.client.test;
+package com.marklogic.client.test.ssl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.RequireSSLExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,13 +13,16 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManager;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Verifies scenarios for "one-way SSL" - i.e. the MarkLogic app server is configured with a certificate template to
+ * require an SSL connection, but the client only needs to trust the server - the client does not present its own
+ * certificate. See TwoWaySSLTest for scenarios where the client presents its own certificate which the server must
+ * trust.
+ */
 @ExtendWith(RequireSSLExtension.class)
-class CheckSSLConnectionTest {
+class OneWaySSLTest {
 
 	/**
 	 * Simple check for ensuring that an SSL connection can be made when the app server requires SSL to be used. This
@@ -58,14 +62,14 @@ class CheckSSLConnectionTest {
 	 * with the certificate template created via RequireSSLExtension.
 	 */
 	@Test
-	void customTrustManager() {
+	void trustManagerThatOnlyTrustsTheCertificateFromTheCertificateTemplate() {
 		if (Common.USE_REVERSE_PROXY_SERVER) {
 			return;
 		}
 
 		DatabaseClient client = Common.newClientBuilder()
 			.withSSLProtocol("TLSv1.2")
-			.withTrustManager(RequireSSLExtension.newTrustManager())
+			.withTrustManager(RequireSSLExtension.newSecureTrustManager())
 			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
 			.build();
 

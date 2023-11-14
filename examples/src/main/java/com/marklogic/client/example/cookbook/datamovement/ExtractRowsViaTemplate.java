@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class ExtractRowsViaTemplate {
 
   public void run() throws ParseException, IOException {
     setup();
-    StructuredQueryDefinition query = new StructuredQueryBuilder().directory(1, "/employees/");
+    StructuredQueryDefinition query = new StructuredQueryBuilder().directory(false, "/employees/");
     QueryBatcher qb = moveMgr.newQueryBatcher(query)
       .onUrisReady(
         // This object will be closed by the QueryBatcher when stopJob is

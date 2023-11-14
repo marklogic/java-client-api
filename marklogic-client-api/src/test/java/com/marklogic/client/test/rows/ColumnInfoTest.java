@@ -25,7 +25,7 @@ public class ColumnInfoTest {
 
 	@BeforeEach
 	void beforeEach() {
-		rowManager = Common.newClient().newRowManager();
+		rowManager = Common.connect().newRowManager();
 	}
 
 	@Test

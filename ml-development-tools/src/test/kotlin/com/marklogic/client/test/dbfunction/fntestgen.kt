@@ -646,12 +646,12 @@ if (true) {
   val responseBodyTypes = listOf("none", "text", "document", "multipart")
   for (responseBodyNum in responseBodyTypes.indices) {
     val responseBodyType = responseBodyTypes[responseBodyNum]
-    val responseBody     = responseBodyType.capitalize()
+    val responseBody     = responseBodyType.replaceFirstChar {it.uppercase()}
 
     val requestBodyTypes = listOf("none", "urlencoded", "multipart")
     for (requestBodyNum in requestBodyTypes.indices) {
       val requestBodyType = requestBodyTypes[requestBodyNum]
-      val requestBody     = requestBodyType.capitalize()
+      val requestBody     = requestBodyType.replaceFirstChar {it.uppercase()}
       val modExtension    = modExtensions[(responseBodyNum + requestBodyNum) % modExtensions.size]
 
       val requestParams   =
@@ -697,7 +697,7 @@ if (true) {
         val testBaseEnd = "For$responseBody"
 
         val testBundle       = testBaseStart+testBaseEnd
-        val bundleTested     = testBundle.capitalize()+"Bundle"
+        val bundleTested     = testBundle.replaceFirstChar {it.uppercase()}+"Bundle"
         val bundleTester     = bundleTested+"Test"
         val bundleJSONPath   = "$jsonPath$testBundle/"
         val bundleFilename   = bundleJSONPath+"service.json"
@@ -775,7 +775,7 @@ if (true) {
                       "name"     to "param1",     "datatype" to atomicCurr,
                       "multiple" to testMultiple, "nullable" to testNullable
                       ))
-                    val testName     = testBaseStart+atomicCurr.capitalize()+testBaseEnd+testNum
+                    val testName     = testBaseStart+atomicCurr.replaceFirstChar {it.uppercase()}+testBaseEnd+testNum
                     val testdef      =
                       if (responseReturnValue === null) mapOf(
                         "functionName"   to testName, "params" to funcParams
@@ -939,7 +939,7 @@ if (true) {
                         "multiple" to testMultiple, "nullable" to testNullable
                     ))
                     val testMax     = 2
-                    val docTestName = testBaseStart+docCurr.capitalize()+testBaseEnd+(testNum * testMax)
+                    val docTestName = testBaseStart+docCurr.replaceFirstChar {it.uppercase()}+testBaseEnd+(testNum * testMax)
                     val docTestdef  =
                       if (responseReturnValue === null) mapOf(
                         "functionName" to docTestName, "params" to docFuncParams
@@ -955,7 +955,7 @@ if (true) {
                               mapOf("name" to "param3", "datatype" to atomic2)
                           )
 
-                      val testName = testBaseStart+docCurr.capitalize()+testBaseEnd+((testNum * testMax) + j - 1)
+                      val testName = testBaseStart+docCurr.replaceFirstChar {it.uppercase()}+testBaseEnd+((testNum * testMax) + j - 1)
                       val testdef1 = replaceFuncName(docTestdef, testName)
                       val testdef2 =
                           if (j < testMax) testdef1
@@ -1089,7 +1089,7 @@ if (true) {
                 val funcReturn   = mapOf(
                   "datatype" to atomicCurr, "nullable" to testNullable
                   )
-                val testName     = testBaseStart+testBaseEnd+atomicCurr.capitalize()+testNum
+                val testName     = testBaseStart+testBaseEnd+atomicCurr.replaceFirstChar {it.uppercase()}+testNum
                 val testdef      =
                   if (requestParams === null) mapOf(
                     "functionName" to testName, "return" to funcReturn
@@ -1211,7 +1211,7 @@ if (true) {
                   "datatype" to docCurr,
                   "multiple" to testMultiple, "nullable" to testNullable
                   )
-                val testName     = testBaseStart+testBaseEnd+docCurr.capitalize()+testNum
+                val testName     = testBaseStart+testBaseEnd+docCurr.replaceFirstChar {it.uppercase()}+testNum
                 val testdef      =
                   if (requestParams === null) mapOf(
                     "functionName" to testName, "return" to funcReturn
@@ -1305,7 +1305,7 @@ if (true) {
                     "datatype" to docCurr,
                     "multiple" to testMultiple, "nullable" to testNullable
                 )
-                val testName     = testBaseStart + testBaseEnd + docCurr.capitalize() + testNum
+                val testName     = testBaseStart + testBaseEnd + docCurr.replaceFirstChar {it.uppercase()} + testNum
                 val testdef      =
                   if (requestParams === null) mapOf(
                     "functionName" to testName, "return" to funcReturn
@@ -1421,7 +1421,7 @@ if (true) {
 if (true) {
   val atomicMappingConstructors     = getAtomicMappingConstructors()
   val atomicMappingBundle           = "mapAtomics"
-  val atomicMappingBundleTested     = atomicMappingBundle.capitalize()+"Bundle"
+  val atomicMappingBundleTested     = atomicMappingBundle.replaceFirstChar {it.uppercase()}+"Bundle"
   val atomicMappingBundleTester     = atomicMappingBundleTested+"Test"
   val atomicMappingBundleJSONPath   = "$jsonPath$atomicMappingBundle/"
   val atomicMappingBundleFilename   = atomicMappingBundleJSONPath+"service.json"
@@ -1438,12 +1438,12 @@ if (true) {
   val atomicMappingDatatypes = atomicMappingConstructors.keys.toTypedArray()
   for (datatypeNum in atomicMappingDatatypes.indices) {
     val datatype             = atomicMappingDatatypes[datatypeNum]
-    val testBaseStart        = atomicMappingBundle+datatype.capitalize()
+    val testBaseStart        = atomicMappingBundle+datatype.replaceFirstChar {it.uppercase()}
     val datatypeConstructors = atomicMappingConstructors[datatype] as Map<String,String>
     val modExtension         = modExtensions[datatypeNum % modExtensions.size]
     for (mappedType in datatypeConstructors.keys) {
-      // mappedType.capitalize().replace('.', '_')
-      val testMapped        = mappedType.split('.').joinToString("") { word -> word.capitalize() }
+      // mappedType.replaceFirstChar {it.uppercase()}.replace('.', '_')
+      val testMapped        = mappedType.split('.').joinToString("") { word -> word.replaceFirstChar {it.uppercase()} }
         val mappedConstructor = datatypeConstructors[mappedType] as String
       val typeConstructors  = mapOf(datatype to mappedConstructor)
       for (testNum in allTestTypes.indices) {
@@ -1511,7 +1511,7 @@ if (true) {
 if (true) {
   val documentMappingConstructors     = getDocumentMappingConstructors()
   val documentMappingBundle           = "mapDocuments"
-  val documentMappingBundleTested     = documentMappingBundle.capitalize()+"Bundle"
+  val documentMappingBundleTested     = documentMappingBundle.replaceFirstChar {it.uppercase()}+"Bundle"
   val documentMappingBundleTester     = documentMappingBundleTested+"Test"
   val documentMappingBundleJSONPath   = "$jsonPath$documentMappingBundle/"
   val documentMappingBundleFilename   = documentMappingBundleJSONPath+"service.json"
@@ -1528,11 +1528,11 @@ if (true) {
   val documentMappedDatatypes = documentMappingConstructors.keys.toTypedArray()
   for (datatypeNum in documentMappedDatatypes.indices) {
     val datatype             = documentMappedDatatypes[datatypeNum]
-    val testBaseStart        = documentMappingBundle+datatype.capitalize()
+    val testBaseStart        = documentMappingBundle+datatype.replaceFirstChar {it.uppercase()}
     val datatypeConstructors = documentMappingConstructors[datatype] as Map<String,String>
     val modExtension         = modExtensions[datatypeNum % modExtensions.size]
     for (mappedType in datatypeConstructors.keys) {
-      val testMapped        = mappedType.split('.').joinToString("") { word -> word.capitalize() }
+      val testMapped        = mappedType.split('.').joinToString("") { word -> word.replaceFirstChar {it.uppercase()} }
         val mappedConstructor = datatypeConstructors[mappedType] as String
       val typeConstructors  = mapOf(datatype to mappedConstructor)
       for (testNum in allTestTypes.indices) {
@@ -1662,8 +1662,8 @@ if (true) {
       )
   val moduleInitTestString = serializer.writeValueAsString(moduleInitTestdef)
   for (modExtension in modExtensions) {
-    val moduleInitBundle           = "moduleInit"+modExtension.capitalize()
-    val moduleInitBundleTested     = moduleInitBundle.capitalize()+"Bundle"
+    val moduleInitBundle           = "moduleInit"+modExtension.replaceFirstChar {it.uppercase()}
+    val moduleInitBundleTested     = moduleInitBundle.replaceFirstChar {it.uppercase()}+"Bundle"
     val moduleInitBundleTester     = moduleInitBundleTested+"Test"
     val moduleInitBundleJSONPath   = "$jsonPath$moduleInitBundle/"
     val moduleInitBundleFilename   = moduleInitBundleJSONPath+"service.json"

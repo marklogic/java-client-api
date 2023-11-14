@@ -40,7 +40,7 @@ public class QueryBatcherFailureTest {
 
         FailedRequestException ex = assertThrows(FailedRequestException.class, () ->
             client.newDataMovementManager().newQueryBatcher(
-                client.newQueryManager().newStructuredQueryBuilder().directory(0, "/invalid/path")
+                client.newQueryManager().newStructuredQueryBuilder().directory(false, "/invalid/path")
             ).onQueryFailure(failure -> failureMessages.add(failure.getMessage()))
         );
 

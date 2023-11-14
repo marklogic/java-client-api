@@ -49,7 +49,7 @@ public class MarkLogicCloudAuthenticationDebugger {
 		}
 
 		System.out.println(client.newQueryManager().search(
-			client.newQueryManager().newStructuredQueryBuilder().directory(0, "/")
+			client.newQueryManager().newStructuredQueryBuilder().directory(true, "/")
 			, new JacksonHandle()).get().toPrettyString());
 
 		System.out.println("Successfully finished cloud-based authentication test");

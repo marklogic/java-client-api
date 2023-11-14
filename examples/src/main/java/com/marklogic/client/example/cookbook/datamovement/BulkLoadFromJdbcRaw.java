@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -193,7 +193,7 @@ public class BulkLoadFromJdbcRaw {
 
   public void transform() throws IOException, SQLException {
     // search for all records in the /employees/ directory
-    StructuredQueryDefinition query = new StructuredQueryBuilder().directory(1, "/employees/");
+    StructuredQueryDefinition query = new StructuredQueryBuilder().directory(false, "/employees/");
 
     // the QueryBatcher efficiently paginates through matching batches from all
     // appropriate nodes in the cluster then applies the transform on each batch

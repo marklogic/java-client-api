@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -683,6 +683,15 @@ class GeoExprImpl implements GeoExpr {
       throw new IllegalArgumentException("precision parameter for geohashPrecisionDimensions() cannot be null");
     }
     return new XsExprImpl.DoubleSeqCallImpl("geo", "geohash-precision-dimensions", new Object[]{ precision });
+  }
+
+  
+  @Override
+  public ServerExpression geohashSubhashes(ServerExpression hash) {
+    if (hash == null) {
+      throw new IllegalArgumentException("hash parameter for geohashSubhashes() cannot be null");
+    }
+    return new XsExprImpl.StringSeqCallImpl("geo", "geohash-subhashes", new Object[]{ hash });
   }
 
   

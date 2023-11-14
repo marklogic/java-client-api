@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -603,7 +603,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function constructs document rows with rows provided by a parameter.
   * @param paramName  The paramName parameter specifies the placeholder parameter supplying the rows.
   * @param qualifier  Specifies a name for qualifying the column names.
-  * @param rowColTypes  Describes the columns with an array of JavaScript objects. It's a combinations of column, type and nullable. The 'column' is the column name, which is required. The 'type' is the optional type of the column, which can be an atomic type or the default of none. The 'nullable' is an optional boolean defaulting to false. If your rows contains only uri, doc, collections, metadata, permissions, quality and temporalCollection columns, you could simply use op.docColTypes instead.
+  * @param rowColTypes  Describes the columns with a sequence of maps. It's a combinations of column, type and nullable. The 'column' is the column name, which is required. The 'type' is the optional type of the column, which can be an atomic type or the default of none. The 'nullable' is an optional boolean defaulting to false. If your rows contains only uri, doc, collections, metadata, permissions, quality and temporalCollection columns, you could simply use op:doc-col-types instead.
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromParam(String paramName, String qualifier, PlanRowColTypesSeq rowColTypes);
@@ -611,32 +611,32 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function constructs document rows with rows provided by a parameter.
   * @param paramName  The paramName parameter specifies the placeholder parameter supplying the rows.
   * @param qualifier  Specifies a name for qualifying the column names.
-  * @param rowColTypes  Describes the columns with an array of JavaScript objects. It's a combinations of column, type and nullable. The 'column' is the column name, which is required. The 'type' is the optional type of the column, which can be an atomic type or the default of none. The 'nullable' is an optional boolean defaulting to false. If your rows contains only uri, doc, collections, metadata, permissions, quality and temporalCollection columns, you could simply use op.docColTypes instead.
+  * @param rowColTypes  Describes the columns with a sequence of maps. It's a combinations of column, type and nullable. The 'column' is the column name, which is required. The 'type' is the optional type of the column, which can be an atomic type or the default of none. The 'nullable' is an optional boolean defaulting to false. If your rows contains only uri, doc, collections, metadata, permissions, quality and temporalCollection columns, you could simply use op:doc-col-types instead.
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromParam(XsStringVal paramName, XsStringVal qualifier, PlanRowColTypesSeq rowColTypes);
   /**
   * This function constructs document rows from the docsDescriptors.
-  * @param docDescriptor  An array of document descriptors. Each document descriptor describes a document. A document descriptor contains a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection. This is a simpler form of op.fromParam.
+  * @param docDescriptor  A map of document descriptors. Each document descriptor describes a document. A document descriptor contains a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection. This is a simpler form of op:from-param.
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromDocDescriptors(PlanDocDescriptor... docDescriptor);
   /**
   * This function constructs document rows from the docsDescriptors.
-  * @param docDescriptor  An array of document descriptors. Each document descriptor describes a document. A document descriptor contains a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection. This is a simpler form of op.fromParam.
+  * @param docDescriptor  A map of document descriptors. Each document descriptor describes a document. A document descriptor contains a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection. This is a simpler form of op:from-param.
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor);
   /**
   * This function constructs document rows from the docsDescriptors.
-  * @param docDescriptor  An array of document descriptors. Each document descriptor describes a document. A document descriptor contains a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection. This is a simpler form of op.fromParam.
+  * @param docDescriptor  A map of document descriptors. Each document descriptor describes a document. A document descriptor contains a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection. This is a simpler form of op:from-param.
   * @param qualifier  Specifies a name for qualifying the column names.
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor, String qualifier);
   /**
   * This function constructs document rows from the docsDescriptors.
-  * @param docDescriptor  An array of document descriptors. Each document descriptor describes a document. A document descriptor contains a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection. This is a simpler form of op.fromParam.
+  * @param docDescriptor  A map of document descriptors. Each document descriptor describes a document. A document descriptor contains a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection. This is a simpler form of op:from-param.
   * @param qualifier  Specifies a name for qualifying the column names.
   * @return  a AccessPlan object
   */
@@ -1378,38 +1378,38 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanFunction resolveFunction(XsQNameVal functionName, XsStringVal modulePath);
   /**
-  * Constructs a document column identifier object for columns of uri, doc, collections, metadata, permissions, quality and temporalCollection. The document column identifier object can be passed to the prototype.joinDocCols or prototype.write.
+  * Constructs a document column identifier object for columns of uri, doc, collections, metadata, permissions, quality and temporalCollection. The document column identifier object can be passed to the op:join-doc-cols or op:write.
   * @return  a PlanDocColsIdentifier object
   */
   public abstract PlanDocColsIdentifier docCols();
   /**
-  * Constructs a document column identifier object for columns of uri, doc, collections, metadata, permissions, quality and temporalCollection. The document column identifier object can be passed to the prototype.joinDocCols or prototype.write.
+  * Constructs a document column identifier object for columns of uri, doc, collections, metadata, permissions, quality and temporalCollection. The document column identifier object can be passed to the op:join-doc-cols or op:write.
   * @param qualifier  Specifies a name for qualifying the column names.
   * @return  a PlanDocColsIdentifier object
   */
   public abstract PlanDocColsIdentifier docCols(String qualifier);
   /**
-  * Constructs a document column identifier object for columns of uri, doc, collections, metadata, permissions, quality and temporalCollection. The document column identifier object can be passed to the prototype.joinDocCols or prototype.write.
+  * Constructs a document column identifier object for columns of uri, doc, collections, metadata, permissions, quality and temporalCollection. The document column identifier object can be passed to the op:join-doc-cols or op:write.
   * @param qualifier  Specifies a name for qualifying the column names.
   * @return  a PlanDocColsIdentifier object
   */
   public abstract PlanDocColsIdentifier docCols(XsStringVal qualifier);
   /**
-  * Constructs a document column identifier object for columns of uri, doc, collections, metadata, permissions, quality and temporalCollection. The document column identifier object can be passed to the prototype.joinDocCols or prototype.write.
+  * Constructs a document column identifier object for columns of uri, doc, collections, metadata, permissions, quality and temporalCollection. The document column identifier object can be passed to the op:join-doc-cols or op:write.
   * @param qualifier  Specifies a name for qualifying the column names.
-  * @param names  An array of columns names, a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection.
+  * @param names  A sequence of columns names, a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection.
   * @return  a PlanDocColsIdentifier object
   */
   public abstract PlanDocColsIdentifier docCols(String qualifier, String names);
   /**
-  * Constructs a document column identifier object for columns of uri, doc, collections, metadata, permissions, quality and temporalCollection. The document column identifier object can be passed to the prototype.joinDocCols or prototype.write.
+  * Constructs a document column identifier object for columns of uri, doc, collections, metadata, permissions, quality and temporalCollection. The document column identifier object can be passed to the op:join-doc-cols or op:write.
   * @param qualifier  Specifies a name for qualifying the column names.
-  * @param names  An array of columns names, a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection.
+  * @param names  A sequence of columns names, a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection.
   * @return  a PlanDocColsIdentifier object
   */
   public abstract PlanDocColsIdentifier docCols(XsStringVal qualifier, XsStringSeqVal names);
   /**
-  * Provides the 3rd parameter for op.fromParam for row column types.
+  * Provides the 3rd parameter for op:from-param for row column types.
   * @return  a PlanRowColTypesSeq object sequence
   */
   public abstract PlanRowColTypesSeq docColTypes();
@@ -1588,6 +1588,22 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinDocUri(PlanColumn uriCol, PlanColumn fragmentIdCol);
 /**
+  * This method adds an uri column and a document column to rows based on an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). If the fragment id column is null in the row, the row is dropped from the rowset. 
+  * @param docCol  The document column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document as its value. See {@link PlanBuilder#col(XsStringVal)}
+  * @param uriCol  The uri column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document uri as its value. See {@link PlanBuilder#col(XsStringVal)}
+  * @param sourceCol  The document uri or fragment id value. This is either an op:fragment-id-col specifying a fragment id column or a document uri column as xs:string or as a column using op:col, op:view-col or op:schema-col. Joining on a fragment id is more efficient than joining on a uri column. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinDocAndUri(String docCol, String uriCol, String sourceCol);
+/**
+  * This method adds an uri column and a document column to rows based on an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). If the fragment id column is null in the row, the row is dropped from the rowset. 
+  * @param docCol  The document column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document as its value. See {@link PlanBuilder#col(XsStringVal)}
+  * @param uriCol  The uri column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document uri as its value. See {@link PlanBuilder#col(XsStringVal)}
+  * @param sourceCol  The document uri or fragment id value. This is either an op:fragment-id-col specifying a fragment id column or a document uri column as xs:string or as a column using op:col, op:view-col or op:schema-col. Joining on a fragment id is more efficient than joining on a uri column. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinDocAndUri(PlanColumn docCol, PlanColumn uriCol, PlanColumn sourceCol);
+/**
   * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets. 
   * @param right  The row set from the right view.
   * @return  a ModifyPlan object
@@ -1739,13 +1755,13 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public abstract ModifyPlan orderBy(PlanSortKeySeq keys);
 /**
   * This method prepares the specified plan for execution as an optional final step before execution.
-  * @param optimize  The optimization level, which can be 0, 1, or 2 (with 1 as the default).
+  * @param optimize  The optimization level, which can be 0, 1, or 2 (1 is mostly used).
   * @return  a PreparePlan object
   */
   public abstract PreparePlan prepare(int optimize);
 /**
   * This method prepares the specified plan for execution as an optional final step before execution.
-  * @param optimize  The optimization level, which can be 0, 1, or 2 (with 1 as the default).
+  * @param optimize  The optimization level, which can be 0, 1, or 2 (1 is mostly used).
   * @return  a PreparePlan object
   */
   public abstract PreparePlan prepare(XsIntVal optimize);
@@ -1797,33 +1813,31 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan write(PlanDocColsIdentifier docCols);
- /**
-  * This function populates the view with the uri, doc, collections, metadata, permissions, and/or quality document descriptor columns for database document values.
-  * @param cols  Supplies a document column identifier object to specify which document columns to join and their names. The names cannot conflict with existing column names.
-  * @param docIdCol  The document uri or fragment id value. This is either an op.fragmentIdCol object specifying a fragment id column or a document uri column.
+/**
+  * This function populates the view with the uri, doc, collections, metadata, permissions, and / or quality document descriptor columns for database document values.
+  * @param cols  The source column to join. This is either an op:fragment-id-col specifying a fragment id column or a op:col, op:view-col or op:schema-col that contains document uris. Joining on a fragment id is more efficient than joining on an uri column.
+  * @param docIdCol  the docIdCol  value. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a ModifyPlan object
   */
- public abstract ModifyPlan joinDocCols(PlanDocColsIdentifier cols, String docIdCol);
- /**
-  * This function populates the view with the uri, doc, collections, metadata, permissions, and/or quality document descriptor columns for database document values.
-  * @param cols  Supplies a document column identifier object to specify which document columns to join and their names. The names cannot conflict with existing column names.
-  * @param docIdCol  The document uri or fragment id value. This is either an op.fragmentIdCol object specifying a fragment id column or a document uri column.
+  public abstract ModifyPlan joinDocCols(PlanDocColsIdentifier cols, String docIdCol);
+/**
+  * This function populates the view with the uri, doc, collections, metadata, permissions, and / or quality document descriptor columns for database document values.
+  * @param cols  The source column to join. This is either an op:fragment-id-col specifying a fragment id column or a op:col, op:view-col or op:schema-col that contains document uris. Joining on a fragment id is more efficient than joining on an uri column.
+  * @param docIdCol  the docIdCol  value. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinDocCols(PlanDocColsIdentifier cols, PlanColumn docIdCol);
- /**
-  * Validates the document based on a supplied schema. This schema needs to be stored in the schema database.
-  * @param validateDocCol  Contains the document to validate.
-  * @param schemaDef  This is an object. The required 'kind' property of the schema object must be 'jsonSchema', 'schematron', or 'xmlSchema'. When 'kind' is 'jsonSchema' or 'schemtron' then a property 'schemaUri' is required.
-  *                   Property 'mode' takes 'strict', 'lax' or 'type' (refer to xdmp.validate).
+/**
+  * Validate the document based on a supplied schema. This schema needs to be stored in the schema database. Check appserver error log for validate errors.
+  * @param validateDocCol  The required 'kind' key of the schemaDef map must be 'jsonSchema', 'schematron', or 'xmlSchema'. When 'kind' is 'jsonSchema' or 'schemtron' then a key 'schemaUri' is required. Key 'mode' takes 'strict', 'lax' or 'type' (refer to xdmp:validate). See {@link PlanBuilder#col(XsStringVal)}
+  * @param schemaDef  the schemaDef  value.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan validateDoc(String validateDocCol, PlanSchemaDef schemaDef);
- /**
-  * Validates the document based on a supplied schema. This schema needs to be stored in the schema database.
-  * @param validateDocCol  Contains the document to validate.
-  * @param schemaDef  This is an object. The required 'kind' property of the schema object must be 'jsonSchema', 'schematron', or 'xmlSchema'. When 'kind' is 'jsonSchema' or 'schemtron' then a property 'schemaUri' is required.
-  *                   Property 'mode' takes 'strict', 'lax' or 'type' (refer to xdmp.validate).
+/**
+  * Validate the document based on a supplied schema. This schema needs to be stored in the schema database. Check appserver error log for validate errors.
+  * @param validateDocCol  The required 'kind' key of the schemaDef map must be 'jsonSchema', 'schematron', or 'xmlSchema'. When 'kind' is 'jsonSchema' or 'schemtron' then a key 'schemaUri' is required. Key 'mode' takes 'strict', 'lax' or 'type' (refer to xdmp:validate). See {@link PlanBuilder#col(XsStringVal)}
+  * @param schemaDef  the schemaDef  value.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan validateDoc(PlanColumn validateDocCol, PlanSchemaDef schemaDef);
