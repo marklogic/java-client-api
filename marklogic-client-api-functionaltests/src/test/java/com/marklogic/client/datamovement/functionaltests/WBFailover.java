@@ -742,25 +742,18 @@ public class WBFailover extends BasicJavaClientREST {
 	}
 
 	@Test
-	public void testWhiteBlackListNPE() throws Exception {
+	public void testWhiteBlackListNPE() {
 		Assumptions.assumeTrue(hostNames.length > 1);
 
-		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
-		try {
-			FilteredForestConfiguration forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig())
-					.withBlackList(null);
-			assertTrue(1 > 2);
-		} catch (Exception e) {
-			assertTrue(e instanceof java.lang.IllegalArgumentException);
-		}
+		assertThrows(IllegalArgumentException.class, () -> {
+			String[] hostNames = null;
+			new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(hostNames);
+		});
 
-		try {
-			FilteredForestConfiguration forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig())
-					.withWhiteList(null);
-			assertTrue(1 > 2);
-		} catch (Exception e) {
-			assertTrue(e instanceof java.lang.IllegalArgumentException);
-		}
+		assertThrows(IllegalArgumentException.class, () -> {
+			String[] hostNames = null;
+			new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(hostNames);
+		});
 	}
 
 	private void serverStartStop(String server, String command) throws Exception {
