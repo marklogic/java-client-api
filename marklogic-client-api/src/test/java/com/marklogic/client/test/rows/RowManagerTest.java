@@ -68,6 +68,8 @@ public class RowManagerTest {
   private static RowStructure[]       rowstructs     = null;
   private static RowSetPart[]         datatypeStyles = null;
 
+  private final static String VIEW_NAME = "musician_ml10";
+
   @SuppressWarnings("unchecked")
   @BeforeAll
   public static void beforeClass() throws IOException, InterruptedException {
@@ -452,7 +454,7 @@ public class RowManagerTest {
     PlanBuilder p = rowMgr.newPlanBuilder();
 
     PlanBuilder.ExportablePlan builtPlan =
-            p.fromView("opticUnitTest", "musician")
+            p.fromView("opticUnitTest", VIEW_NAME)
                     .where(
                             p.cts.andQuery(
                                     p.cts.jsonPropertyWordQuery("instrument", "trumpet"),
@@ -484,7 +486,7 @@ public class RowManagerTest {
     RowManager rowMgr = Common.client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     PlanBuilder.ExportablePlan builtPlan =
-            p.fromSql("select * from opticUnitTest.musician");
+            p.fromSql("select * from opticUnitTest.musician_ml10");
     int rowNum = 0;
     String exception = "";
     try {
@@ -503,7 +505,7 @@ public class RowManagerTest {
     RowManager rowMgr = Common.client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     PlanBuilder.ExportablePlan builtPlan =
-            p.fromSql("select * from opticUnitTest.musician where lastName = 'x'");
+            p.fromSql("select * from opticUnitTest.musician_ml10 where lastName = 'x'");
     int rowNum = 0;
     String exception = "";
     try {
@@ -564,7 +566,7 @@ public class RowManagerTest {
     PlanBuilder.ExportablePlan builtPlan =
             p.fromSearch(p.cts.jsonPropertyValueQuery("instrument", "trumpet"))
              .joinInner(
-                 p.fromView("opticUnitTest", "musician", "", viewDocId),
+                 p.fromView("opticUnitTest", VIEW_NAME, "", viewDocId),
                  p.on(p.fragmentIdCol("fragmentId"), viewDocId)
                  )
              .orderBy(p.col("lastName"));
@@ -623,7 +625,7 @@ public class RowManagerTest {
     PlanBuilder p = rowMgr.newPlanBuilder();
 
     PlanBuilder.ExportablePlan builtPlan =
-      p.fromView("opticUnitTest", "musician", "", p.fragmentIdCol("musicianDocId"))
+      p.fromView("opticUnitTest", VIEW_NAME, "", p.fragmentIdCol("musicianDocId"))
         .joinDoc(p.col("musicianDoc"), p.fragmentIdCol("musicianDocId"))
         .orderBy(p.col("lastName"))
         .select(
@@ -654,7 +656,7 @@ public class RowManagerTest {
     PlanBuilder p = rowMgr.newPlanBuilder();
 
     PlanBuilder.ExportablePlan builtPlan =
-      p.fromView("opticUnitTest", "musician", "", p.fragmentIdCol("musicianDocId"))
+      p.fromView("opticUnitTest", VIEW_NAME, "", p.fragmentIdCol("musicianDocId"))
         .joinDocUri(p.col("musicianDocUri"), p.fragmentIdCol("musicianDocId"))
         .orderBy(p.col("lastName"))
         .select(p.col("lastName"), p.col("firstName"), p.col("musicianDocUri"))
@@ -1286,7 +1288,7 @@ public class RowManagerTest {
     RowManager rowMgr = Common.client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     PlanBuilder.PreparePlan builtPlan =
-        p.fromView("opticUnitTest", "musician")
+        p.fromView("opticUnitTest", VIEW_NAME)
             .where(
                 p.cts.andQuery(
                     p.cts.jsonPropertyWordQuery("instrument", "trumpet"),
@@ -1296,10 +1298,10 @@ public class RowManagerTest {
             .orderBy(p.col("lastName"));
 
     String[] expectedColumnInfos = new String[]{
-        "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"lastName\", \"type\":\"string\"",
-        "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"firstName\", \"type\":\"string\"",
-        "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"dob\", \"type\":\"date\"",
-        "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"rowid\", \"type\":\"rowid\""
+        "{\"schema\":\"opticUnitTest\", \"view\":\"musician_ml10\", \"column\":\"lastName\", \"type\":\"string\"",
+        "{\"schema\":\"opticUnitTest\", \"view\":\"musician_ml10\", \"column\":\"firstName\", \"type\":\"string\"",
+        "{\"schema\":\"opticUnitTest\", \"view\":\"musician_ml10\", \"column\":\"dob\", \"type\":\"date\"",
+        "{\"schema\":\"opticUnitTest\", \"view\":\"musician_ml10\", \"column\":\"rowid\", \"type\":\"rowid\""
     };
 
     String stringHandleResult = rowMgr.columnInfo(builtPlan, new StringHandle()).get();
@@ -1317,7 +1319,7 @@ public class RowManagerTest {
     PlanBuilder p = rowMgr.newPlanBuilder();
 
     PlanBuilder.PreparePlan builtPlan =
-          p.fromView("opticUnitTest", "musician")
+          p.fromView("opticUnitTest", VIEW_NAME)
            .where(
               p.cts.andQuery(
                  p.cts.jsonPropertyWordQuery("instrument", "trumpet"),
@@ -1363,7 +1365,7 @@ public class RowManagerTest {
   @Test
   public void testRawSQL() throws IOException {
     String plan = "SELECT *\n" +
-            "FROM opticUnitTest.musician AS ''\n" +
+            "FROM opticUnitTest.musician_ml10 AS ''\n" +
             "WHERE lastName IN ('Armstrong', 'Davis')" +
             "ORDER BY lastName;\n";
 
@@ -1404,7 +1406,7 @@ public class RowManagerTest {
   @Test
   public void testRawQueryDSL() throws IOException {
     String plan =
-            "op.fromView('opticUnitTest', 'musician')\n" +
+            "op.fromView('opticUnitTest', 'musician_ml10')\n" +
             "  .where(cts.andQuery([\n"+
             "       cts.jsonPropertyWordQuery('instrument', 'trumpet'),\n"+
             "       cts.jsonPropertyWordQuery('lastName', ['Armstrong', 'Davis'])\n"+
@@ -1447,7 +1449,7 @@ public class RowManagerTest {
     PlanSampleByOptions options = p.sampleByOptions().withLimit(2);
 
     PlanBuilder.ExportablePlan builtPlan =
-            p.fromView("opticUnitTest", "musician")
+            p.fromView("opticUnitTest", VIEW_NAME)
                     .sampleBy(options);
 
     RowSet<RowRecord> rows = rowMgr.resultRows(builtPlan);
@@ -1461,7 +1463,7 @@ public class RowManagerTest {
     PlanBuilder p = rowMgr.newPlanBuilder();
 
     PlanBuilder.ExportablePlan builtPlan =
-            p.fromView("opticUnitTest", "musician")
+            p.fromView("opticUnitTest", VIEW_NAME)
                     .sampleBy();
 
     RowSet<RowRecord> rows = rowMgr.resultRows(builtPlan);

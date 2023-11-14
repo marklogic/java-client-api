@@ -86,7 +86,7 @@ public class ExportTest extends AbstractOpticUpdateTest {
     @Test
     public void fromSql() {
         verifyExportedPlanReturnsSameRowCount(
-                op.fromSql("select * from opticUnitTest.musician")
+                op.fromSql("select * from opticUnitTest.musician_ml10")
         );
     }
 
@@ -103,7 +103,7 @@ public class ExportTest extends AbstractOpticUpdateTest {
     @Test
     public void fromView() {
         verifyExportedPlanReturnsSameRowCount(
-                op.fromView("opticUnitTest", "musician"), null
+                op.fromView("opticUnitTest", "musician_ml10"), null
         );
     }
 
