@@ -2401,13 +2401,12 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		});
 		qb.onQueryFailure(throwable -> throwable.printStackTrace());
 
-		try {
-			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(null);
-			fail("hostnames shouldn't be null");
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+			String[] hostNames = null;
+			new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(hostNames);
+		});
+		assertEquals("hostNames must not be null", ex.getMessage());
 
-		} catch (IllegalArgumentException e) {
-			assertEquals("hostNames must not be null", e.getMessage());
-		}
 		try {
 			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList("asdf");
 			qb.withBatchSize(50).withForestConfig(forestConfig);
@@ -2440,13 +2439,12 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
-		try {
-			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(null);
-			fail("hostnames shouldn't be null");
 
-		} catch (IllegalArgumentException e) {
-			assertEquals("hostNames must not be null", e.getMessage());
-		}
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+			String[] hostNames = null;
+			new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(hostNames);
+		});
+		assertEquals("hostNames must not be null", ex.getMessage());
 
 		try {
 			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList("asdf");
@@ -2479,7 +2477,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	}
 
 	@Test
-	public void testQBBlackList() throws Exception {
+	public void testQBBlackList() {
 		Assumptions.assumeTrue(!isLBHost());
 		Assumptions.assumeTrue(hostNames.length > 1);
 		System.out.println("In testQBBlackList method");
@@ -2517,13 +2515,11 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		});
 		qb.onQueryFailure(throwable -> throwable.printStackTrace());
 
-		try {
-			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(null);
-			fail("hostnames shouldn't be null");
-
-		} catch (IllegalArgumentException e) {
-			assertEquals("hostNames must not be null", e.getMessage());
-		}
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+			String[] hostNames = null;
+			new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(hostNames);
+		});
+		assertEquals("hostNames must not be null", ex.getMessage());
 
 		try {
 			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(hostNames)
@@ -2545,7 +2541,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	}
 
 	@Test
-	public void testWBBlackList() throws Exception {
+	public void testWBBlackList() {
 		Assumptions.assumeTrue(!isLBHost());
 		Assumptions.assumeTrue(hostNames.length > 1);
 		System.out.println("In testWBBlackList method");
@@ -2558,13 +2554,12 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
-		try {
-			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(null);
-			fail("hostnames shouldn't be null");
 
-		} catch (IllegalArgumentException e) {
-			assertEquals("hostNames must not be null", e.getMessage());
-		}
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+			String[] hostNames = null;
+			new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(hostNames);
+		});
+		assertEquals("hostNames must not be null", ex.getMessage());
 
 		forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList("asdf");
 		ihb2.withBatchSize(50).withForestConfig(forestConfig);
