@@ -1627,7 +1627,7 @@ public class OkHttpServices implements RESTServices {
     }
   }
   private void addCategoryParam(RequestParameters params, Metadata category) {
-      addCategoryParam(params, category.name().toLowerCase());
+      addCategoryParam(params, category.toString().toLowerCase());
   }
   private void addCategoryParam(RequestParameters params, String category) {
     params.add("category", category);
