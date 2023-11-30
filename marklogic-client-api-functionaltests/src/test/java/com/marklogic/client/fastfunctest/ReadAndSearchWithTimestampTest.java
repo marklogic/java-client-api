@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Added in 6.4.1; the 5 methods had been commented out with a comment indicating that the server APIs
+ * Added in 6.4.1; the 3 methods being tested had been commented out with a comment indicating that the server APIs
  * were not fully fleshed out, but those APIs - specifically, how the REST API receives a server timestamp - have long
  * been present in the REST API.
  */
