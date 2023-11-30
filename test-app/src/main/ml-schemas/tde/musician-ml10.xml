@@ -1,0 +1,27 @@
+<template xmlns="http://marklogic.com/xdmp/tde">
+	<context>/musician</context>
+	<description>Used for tests that don't need point/polygon columns and can still run on MarkLogic 10.</description>
+	<rows>
+		<row>
+			<schema-name>opticUnitTest</schema-name>
+			<view-name>musician_ml10</view-name>
+			<columns>
+				<column>
+					<name>lastName</name>
+					<scalar-type>string</scalar-type>
+					<val>lastName</val>
+				</column>
+				<column>
+					<name>firstName</name>
+					<scalar-type>string</scalar-type>
+					<val>firstName</val>
+				</column>
+				<column>
+					<name>dob</name>
+					<scalar-type>date</scalar-type>
+					<val>dob</val>
+				</column>
+			</columns>
+		</row>
+	</rows>
+</template>

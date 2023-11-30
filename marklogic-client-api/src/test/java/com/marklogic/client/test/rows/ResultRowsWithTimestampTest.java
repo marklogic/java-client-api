@@ -32,7 +32,7 @@ public class ResultRowsWithTimestampTest extends AbstractOpticUpdateTest {
 
 	@Test
 	void testResultRowsWithPointInTimeQueryTimestamp() {
-		final RawQueryDSLPlan plan = rowManager.newRawQueryDSLPlan(new StringHandle("op.fromView('opticUnitTest', 'musician')"));
+		final RawQueryDSLPlan plan = rowManager.newRawQueryDSLPlan(new StringHandle("op.fromView('opticUnitTest', 'musician_ml10')"));
 
 		JacksonHandle result = new JacksonHandle();
 		JsonNode doc = rowManager.resultDoc(plan, result).get();

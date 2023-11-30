@@ -257,7 +257,7 @@ public class RowRecordTest {
   @Test
   public void aliasTest() throws IOException {
     PlanBuilder.ModifyPlan plan =
-      p.fromView("opticUnitTest", "musician")
+      p.fromView("opticUnitTest", "musician_ml10")
         .orderBy(p.col("lastName"))
         .limit(1);
 
@@ -267,7 +267,7 @@ public class RowRecordTest {
 
     RowRecord row = rowItr.next();
 
-    for (String colName: new String[]{"opticUnitTest.musician.lastName", "musician.lastName", "lastName"}) {
+    for (String colName: new String[]{"opticUnitTest.musician_ml10.lastName", "musician_ml10.lastName", "lastName"}) {
       RowRecord.ColumnKind expectedKind = RowRecord.ColumnKind.ATOMIC_VALUE;
       RowRecord.ColumnKind actualKind   = row.getKind(colName);
       assertEquals(expectedKind, actualKind);
