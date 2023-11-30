@@ -20,6 +20,10 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.SearchHandle;
@@ -32,9 +36,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -42,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class StringSearchTest {
   @SuppressWarnings("unused")
-  private static final Logger logger = (Logger) LoggerFactory.getLogger(StringSearchTest.class);
+  private static final Logger logger = LoggerFactory.getLogger(StringSearchTest.class);
 
   @BeforeAll
   public static void beforeClass() {
@@ -55,8 +57,26 @@ public class StringSearchTest {
   }
 
   @Test
+  void returnDocumentsWithMetadataValues() {
+	  XMLDocumentManager mgr = Common.client.newXMLDocumentManager();
+	  mgr.write("/metadata/test.xml",
+		  new DocumentMetadataHandle().withMetadataValue("hello", "world"),
+		  new StringHandle("<test>metadataabc</test>"));
+
+	  mgr.setMetadataCategories(DocumentManager.Metadata.METADATAVALUES);
+
+	  DocumentPage page = mgr.search(Common.client.newQueryManager().newStructuredQueryBuilder().term("metadataabc"), 1);
+	  assertTrue(page.hasNext());
+
+	  DocumentRecord record = page.next();
+	  assertEquals("/metadata/test.xml", record.getUri());
+	  DocumentMetadataHandle.DocumentMetadataValues values = record.getMetadata(new DocumentMetadataHandle()).getMetadataValues();
+	  assertEquals("world", values.get("hello"));
+  }
+
+  @Test
   public void testStringSearch()
-    throws IOException, ParserConfigurationException, SAXException, FailedRequestException, ForbiddenUserException,
+    throws FailedRequestException, ForbiddenUserException,
     ResourceNotFoundException, ResourceNotResendableException
   {
     String optionsName = writeOptions();
