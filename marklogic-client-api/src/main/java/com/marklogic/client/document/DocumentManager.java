@@ -463,10 +463,9 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    *   server via getServerTimestamp() on any handle.
    * @param uris the database uris identifying documents to retrieve
    * @return the DocumentPage of matching documents and metadata
+   * @since 6.4.1
    */
-  /* Hide the following for now because the API isn't yet fully fleshed-out
     DocumentPage read(long serverTimestamp, String... uris);
-   */
 
   /**
    * Reads from the database a list of documents matching the provided uris.  Allows
@@ -492,10 +491,9 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param transform the transform to be run on the server on each document (must already be installed)
    * @param uris the database uris identifying documents to retrieve
    * @return the DocumentPage of matching documents and metadata
+   * @since 6.4.1
    */
-  /* Hide the following for now because the API isn't yet fully fleshed-out
     DocumentPage read(long serverTimestamp, ServerTransform transform, String... uris);
-   */
 
   /**
    * Reads from the database a list of documents matching the provided uris.  Allows
@@ -515,47 +513,12 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * has been called to request metadata).  To find out how many of your uris matched,
    * call the {@link DocumentPage#size() DocumentPage.size()} method.
    *
-   * @param serverTimestamp the point in time at which to read these
-   *   documents.  The value must be a merge timestamp obtained from the
-   *   server via getServerTimestamp() on any handle.
-   * @param transaction the transaction in which this read is participating
-   * @param uris the database uris identifying documents to retrieve
-   * @return the DocumentPage of matching documents and metadata
-   */
-  /* Hide the following for now because the API isn't yet fully fleshed-out
-    DocumentPage read(long serverTimestamp, Transaction transaction, String... uris);
-   */
-
-  /**
-   * Reads from the database a list of documents matching the provided uris.  Allows
-   * iteration across matching documents and metadata (only if setMetadataCategories
-   * has been called to request metadata).  To find out how many of your uris matched,
-   * call the {@link DocumentPage#size() DocumentPage.size()} method.
-   *
    * @param transform the transform to be run on the server on each document (must already be installed)
    * @param transaction the transaction in which this read is participating
    * @param uris the database uris identifying documents to retrieve
    * @return the DocumentPage of matching documents and metadata
    */
   DocumentPage read(ServerTransform transform, Transaction transaction, String... uris);
-
-  /**
-   * Reads from the database a list of documents matching the provided uris.  Allows
-   * iteration across matching documents and metadata (only if setMetadataCategories
-   * has been called to request metadata).  To find out how many of your uris matched,
-   * call the {@link DocumentPage#size() DocumentPage.size()} method.
-   *
-   * @param serverTimestamp the point in time at which to read these
-   *   documents.  The value must be a merge timestamp obtained from the
-   *   server via getServerTimestamp() on any handle.
-   * @param transform the transform to be run on the server on each document (must already be installed)
-   * @param transaction the transaction in which this read is participating
-   * @param uris the database uris identifying documents to retrieve
-   * @return the DocumentPage of matching documents and metadata
-   */
-  /* Hide the following for now because the API isn't yet fully fleshed-out
-    DocumentPage read(long serverTimestamp, ServerTransform transform, Transaction transaction, String... uris);
-   */
 
   /**
    * Reads from the database the metadata for a list of documents matching the
@@ -619,10 +582,9 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    *   documents.  The value must be a merge timestamp obtained from the
    *   server via getServerTimestamp() on any handle.
    * @return the DocumentPage of matching documents and metadata
+   * @since 6.4.1
    */
-  /* Hide the following for now because the API isn't yet fully fleshed-out
     DocumentPage search(SearchQueryDefinition querydef, long start, long serverTimestamp);
-   */
 
   /**
    * Just like {@link QueryManager#search(SearchQueryDefinition, SearchReadHandle, long, Transaction) QueryManager.search}
