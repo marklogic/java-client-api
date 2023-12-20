@@ -481,24 +481,30 @@ public class RowManagerTest {
     assertEquals( 2, rowNum);
   }
 
-  @Test
-  public void testSQL() {
-    RowManager rowMgr = Common.client.newRowManager();
-    PlanBuilder p = rowMgr.newPlanBuilder();
-    PlanBuilder.ExportablePlan builtPlan =
-            p.fromSql("select * from opticUnitTest.musician_ml10");
-    int rowNum = 0;
-    String exception = "";
-    try {
-      for (RowRecord row: rowMgr.resultRows(builtPlan)) {
-        rowNum++;
-      }
-    } catch (Exception e) {
-      exception = e.toString();
-    }
-    assertEquals(4, rowNum);
-    assertEquals("", exception);
-  }
+	@Test
+	void testSQL() {
+		final String query = "select * from opticUnitTest.musician_ml10";
+		RowManager mgr = Common.client.newRowManager();
+
+		RowSet<RowRecord> rows = mgr.resultRows(mgr.newPlanBuilder().fromSql(query));
+		assertEquals(4, rows.stream().count());
+
+		JsonNode doc = mgr.resultDoc(mgr.newPlanBuilder().fromSql(query), new JacksonHandle()).get();
+		assertEquals(3, doc.get("columns").size());
+		assertEquals(4, doc.get("rows").size());
+	}
+
+	@Test
+	void sqlNoRows() {
+		final String query = "select * from opticUnitTest.musician_ml10 where lastName = 'NOT_FOUND'";
+		RowManager mgr = Common.client.newRowManager();
+
+		RowSet<RowRecord> rows = mgr.resultRows(mgr.newPlanBuilder().fromSql(query));
+		assertEquals(0, rows.stream().count());
+
+		JsonNode doc = mgr.resultDoc(mgr.newPlanBuilder().fromSql(query), new JacksonHandle()).get();
+		assertNull(doc);
+	}
 
   @Test
   public void testSQL0Result() {
