@@ -3,27 +3,14 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Known Vulnerabilities](https://snyk.io/test/github/marklogic/java-client-api/badge.svg)](https://snyk.io/test/github/marklogic/java-client-api)
 
-# The MarkLogic Java Client API
+# The MarkLogic Java Client
 
-The API makes it easy to write, read, delete, and find documents
-in a [MarkLogic](http://developer.marklogic.com/) database.
+The MarkLogic Java Client makes it easy to write, read, delete, and find documents
+in a [MarkLogic](http://developer.marklogic.com/) database. The client requires connecting to a 
+[MarkLogic REST API app server](https://docs.marklogic.com/guide/rest-dev) and is ideal for applications wishing to 
+build upon the MarkLogic REST API. 
 
-For example:
-
-    // write a text, binary, XML, or JSON document from any source with ACID guarantees
-    documentManager.write(uri, new FileHandle()
-      .with(new File("file1234.json"))
-      .withFormat(JSON));
-
-    // read and directly parse to your preferred type, even your own POJOs!
-    JsonNode jsonDocContents = documentManager.readAs(uri, JsonNode.class);
-
-    // get matches super-fast using full-featured search
-    JsonNode results = queryManager.search(
-      new StructuredQueryBuilder().term("quick", "brown", "fox"),
-      new JacksonHandle()).get();
-
-The Java API supports the following core features of the MarkLogic database:
+The client supports the following core features of the MarkLogic database:
 
 *  Write and read binary, JSON, text, and XML documents.
 *  Query data structure trees, marked-up text, and all the hybrids in between those extremes.
@@ -35,32 +22,37 @@ The Java API supports the following core features of the MarkLogic database:
 *  Call Data Services by means of a Java interface on the client for data functionality 
 implemented by an endpoint on the server.
 
-The Java API can be used in applications running on Java 8, 11, and 17. If you are using Java 11 or higher and intend
+The client can be used in applications running on Java 8, 11, and 17. If you are using Java 11 or higher and intend
 to use [JAXB](https://docs.oracle.com/javase/tutorial/jaxb/intro/), please see the section below for ensuring that the
 necessary dependencies are available in your application's classpath.
 
 ## QuickStart
 
-To use the API in your [Maven](https://maven.apache.org/) project, include the following in your pom.xml file:
+To use the client in your [Maven](https://maven.apache.org/) project, include the following in your `pom.xml` file:
 
     <dependency>
         <groupId>com.marklogic</groupId>
         <artifactId>marklogic-client-api</artifactId>
-        <version>6.2.2</version>
+        <version>6.4.1</version>
     </dependency>
 
-To use the API in your [Gradle](https://gradle.org/) project, include the following in your build.gradle file:
+To use the client in your [Gradle](https://gradle.org/) project, include the following in your `build.gradle` file:
 
     dependencies {
-        implementation "com.marklogic:marklogic-client-api:6.2.2"
+        implementation "com.marklogic:marklogic-client-api:6.4.1"
     }
 
 Next, read [The Java API in Five Minutes](http://developer.marklogic.com/try/java/index) to get started.
 
-### Including JAXB support 
+Full documentation is available at:
+
+* [Java Application Developer's Guide](http://docs.marklogic.com/guide/java)
+* [JavaDoc](http://docs.marklogic.com/javadoc/client/index.html)
+
+## Including JAXB support 
 
 If you are using Java 11 or higher (including Java 17) and you wish to use [JAXB](https://docs.oracle.com/javase/tutorial/jaxb/intro/)
-with the Java Client, you'll need to include JAXB API and implementation dependencies as those are no 
+with the client, you'll need to include JAXB API and implementation dependencies as those are no 
 longer included in Java 11 and higher.
 
 For Maven, include the following in your pom.xml file:
@@ -111,39 +103,16 @@ JAXB 3.0 or JAXB 4.0 - for example:
         implementation "com.sun.xml.bind:jaxb-impl:4.0.1"
     }
 
-The Java Client will soon be updated to use the newer `jakarta.xml.bind` interfaces. Until then, the above approach
+The client will soon be updated to use the newer `jakarta.xml.bind` interfaces. Until then, the above approach
 or one similar to it will allow for both the old and new JAXB interfaces and implementations to exist together in the
 same classpath.
 
-### Learning More
-
-The following resources document the Java API:
-
-* [Java Application Developer's Guide](http://docs.marklogic.com/guide/java)
-* [JavaDoc](http://docs.marklogic.com/javadoc/client/index.html)
-
-### Installing
-
-To use the Java API, either add Maven or Gradle dependency as explained above or download the jar and its dependencies:
-
-http://developer.marklogic.com/products/java
-
-Of course, you'll also need to install the database -- which you can do for free with
-the developer license:
-
-https://developer.marklogic.com/free-developer
-
-To obtain verified downloads signed with MarkLogic's PGP key, use maven tools or directly download
-the .jar and .asc files from
-[maven central](https://repo1.maven.org/maven2/com/marklogic/marklogic-client-api/).  MarkLogic's
-pgp key ID is 48D4B86E and it is available from pgp.mit.edu by installing gnupg and running the command:
-
-    $ gpg --keyserver pgp.mit.edu --recv-key 48D4B86E
-
-Files can be verified with the command:
-
-    $ gpg marklogic-client-api-5.3.0.jar.asc
-
-
 ## Support
-The MarkLogic Java Client API is maintained by [MarkLogic](https://www.marklogic.com/) Engineering and is made available under the [Apache 2.0 license](https://github.com/marklogic/java-client-api/blob/master/LICENSE). It is designed for use in production applications with MarkLogic Server. Everyone is encouraged to file bug reports, feature requests, and pull requests through [GitHub](https://github.com/marklogic/java-client-api/issues). This input is critical and will be carefully considered. However, we can’t promise a specific resolution or timeframe for any request. In addition, MarkLogic provides technical support for [release tags](https://github.com/marklogic/java-client-api/releases) of the Java Client API to licensed customers under the terms outlined in the [MarkLogic Technical Support Handbook](http://www.marklogic.com/files/Mark_Logic_Support_Handbook.pdf). Customers with an active maintenance contract can sign up for MarkLogic Technical Support on our [support portal](https://help.marklogic.com/).
+
+The MarkLogic Java Client is maintained by [MarkLogic](https://www.marklogic.com/) Engineering and is made available under 
+the [Apache 2.0 license](https://github.com/marklogic/java-client-api/blob/master/LICENSE). It is designed for use in production applications with MarkLogic Server. 
+Everyone is encouraged to file bug reports, feature requests, and pull requests through [GitHub](https://github.com/marklogic/java-client-api/issues). 
+This input is critical and will be carefully considered. However, we can’t promise a specific resolution or timeframe 
+for any request. In addition, MarkLogic provides technical support for [release tags](https://github.com/marklogic/java-client-api/releases) of the Java Client to 
+licensed customers under the terms outlined in the [MarkLogic Technical Support Handbook](http://www.marklogic.com/files/Mark_Logic_Support_Handbook.pdf). Customers with an 
+active maintenance contract can sign up for MarkLogic Technical Support on our [support portal](https://help.marklogic.com/).
