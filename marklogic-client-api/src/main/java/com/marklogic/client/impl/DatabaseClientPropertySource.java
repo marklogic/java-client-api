@@ -23,6 +23,7 @@ import com.marklogic.client.extra.okhttpclient.RemoveAcceptEncodingConfigurator;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import java.security.KeyManagementException;
+import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -317,7 +318,27 @@ public class DatabaseClientPropertySource {
 				throw new IllegalArgumentException("Trust manager must be an instanceof " + X509TrustManager.class.getName());
 			}
 		}
+
+		String path = getNullableStringValue("ssl.truststore.path");
+		if (path != null && path.trim().length() > 0) {
+			return buildTrustManagerFromTrustStorePath(path);
+		}
+
 		return null;
+	}
+
+	/**
+	 * Added in 6.5.0 to support configuring a trust manager via properties.
+	 *
+	 * @param path
+	 * @return
+	 */
+	private X509TrustManager buildTrustManagerFromTrustStorePath(String path) {
+		final String password = getNullableStringValue("ssl.truststore.password");
+		final String type = getNullableStringValue("ssl.truststore.type", "JKS");
+		final String algorithm = getNullableStringValue("ssl.truststore.algorithm", "SunX509");
+		KeyStore trustStore = SSLUtil.getKeyStore(path, password != null ? password.toCharArray() : null, type);
+		return (X509TrustManager) SSLUtil.getTrustManagers(algorithm, trustStore)[0];
 	}
 
 	private SSLContext getSSLContext() {

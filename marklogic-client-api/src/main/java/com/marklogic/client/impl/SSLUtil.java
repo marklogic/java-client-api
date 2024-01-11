@@ -60,7 +60,7 @@ public abstract class SSLUtil {
 	 * @param trustManagerAlgorithm e.g. "SunX509".
 	 * @param optionalKeyStore      if not null, used to initialize the TrustManagerFactory constructed based on the
 	 *                              given algorithm.
-	 * @return
+	 * @return an array of at least length 1 where the first instance is an {@code X509TrustManager}
 	 */
 	public static TrustManager[] getTrustManagers(String trustManagerAlgorithm, KeyStore optionalKeyStore) {
 		TrustManagerFactory trustManagerFactory;

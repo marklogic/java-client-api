@@ -301,6 +301,49 @@ public class DatabaseClientBuilder {
 		props.put(PREFIX + "ssl.keystore.algorithm", algorithm);
 		return this;
 	}
+
+	/**
+	 * Supports constructing an {@code X509TrustManager} based on the given file path, which should point to a Java
+	 * key store or trust store.
+	 *
+	 * @param path
+	 * @return
+	 * @since 6.5.0
+	 */
+	public DatabaseClientBuilder withTrustStorePath(String path) {
+		props.put(PREFIX + "ssl.truststore.path", path);
+		return this;
+	}
+
+	/**
+	 * @param password optional password for a trust store
+	 * @return
+	 * @since 6.5.0
+	 */
+	public DatabaseClientBuilder withTrustStorePassword(String password) {
+		props.put(PREFIX + "ssl.truststore.password", password);
+		return this;
+	}
+
+	/**
+	 * @param type e.g. "JKS"
+	 * @return
+	 * @since 6.5.0
+	 */
+	public DatabaseClientBuilder withTrustStoreType(String type) {
+		props.put(PREFIX + "ssl.truststore.type", type);
+		return this;
+	}
+
+	/**
+	 * @param algorithm e.g. "SunX509"
+	 * @return
+	 * @since 6.5.0
+	 */
+	public DatabaseClientBuilder withTrustStoreAlgorithm(String algorithm) {
+		props.put(PREFIX + "ssl.truststore.algorithm", algorithm);
+		return this;
+	}
 }
 
 

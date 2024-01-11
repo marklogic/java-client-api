@@ -12,6 +12,7 @@ import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.RequireSSLExtension;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
+import com.marklogic.mgmt.resource.security.CertificateTemplateManager;
 import com.marklogic.rest.util.Fragment;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -74,6 +75,7 @@ public class TwoWaySSLTest {
 		createKeystoreFile(tempDir);
 		keyStoreFile = new File(tempDir.toFile(), "client.jks");
 		p12File = new File(tempDir.toFile(), "client.p12");
+		addServerCertificateToKeyStore(tempDir);
 	}
 
 	@AfterAll
@@ -99,11 +101,15 @@ public class TwoWaySSLTest {
 		DatabaseClient clientWithCert = Common.newClientBuilder()
 			.withKeyStorePath(keyStoreFile.getAbsolutePath())
 			.withKeyStorePassword(KEYSTORE_PASSWORD)
+
 			// Still need this as "common"/"strict" don't work for our temporary server certificate.
 			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
-			// This is a reasonable trust manager since it references the temporary server certificate as something
-			// that it accepts instead of accepting everything.
-			.withTrustManager(RequireSSLExtension.newSecureTrustManager())
+
+			// Starting in 6.5.0, we can use a real trust manager as the server certificate is in the keystore.
+			.withTrustStorePath(keyStoreFile.getAbsolutePath())
+			.withTrustStorePassword(KEYSTORE_PASSWORD)
+			.withTrustStoreType("JKS")
+			.withTrustStoreAlgorithm("SunX509")
 			.build();
 
 		verifyTestDocumentCanBeRead(clientWithCert);
@@ -416,11 +422,7 @@ public class TwoWaySSLTest {
 			"-name", "my-client",
 			"-passout", "pass:" + KEYSTORE_PASSWORD);
 
-		ExecutorService executorService = Executors.newSingleThreadExecutor();
-		Process process = builder.start();
-		executorService.submit(new StreamGobbler(process.getInputStream(), System.out::println));
-		executorService.submit(new StreamGobbler(process.getErrorStream(), System.err::println));
-		int exitCode = process.waitFor();
+		int exitCode = runProcess(builder);
 		assertEquals(0, exitCode, "Unable to create pkcs12 file using openssl");
 	}
 
@@ -436,12 +438,43 @@ public class TwoWaySSLTest {
 			"-srcstorepass", KEYSTORE_PASSWORD,
 			"-alias", "my-client");
 
+		int exitCode = runProcess(builder);
+		assertEquals(0, exitCode, "Unable to create keystore using keytool");
+	}
+
+	/**
+	 * Retrieves the server certificate associated with the certificate template for this test and stores it in the
+	 * key store so that the key store can also act as a trust store.
+	 *
+	 * @param tempDir
+	 * @throws Exception
+	 */
+	private static void addServerCertificateToKeyStore(Path tempDir) throws Exception {
+		Fragment xml = new CertificateTemplateManager(Common.newManageClient()).getCertificatesForTemplate("java-unittest-template");
+		String serverCertificate = xml.getElementValue("/msec:certificate-list/msec:certificate/msec:pem");
+
+		File certificateFile = new File(tempDir.toFile(), "server.cert");
+		FileCopyUtils.copy(serverCertificate.getBytes(), certificateFile);
+
+		ProcessBuilder builder = new ProcessBuilder();
+		builder.directory(tempDir.toFile());
+		builder.command("keytool", "-importcert",
+			"-keystore", keyStoreFile.getAbsolutePath(),
+			"-storepass", KEYSTORE_PASSWORD,
+			"-file", certificateFile.getAbsolutePath(),
+			"-noprompt",
+			"-alias", "java-unittest-template-certificate");
+
+		int exitCode = runProcess(builder);
+		assertEquals(0, exitCode, "Unable to add server public certificate to keystore.");
+	}
+
+	private static int runProcess(ProcessBuilder builder) throws Exception {
 		Process process = builder.start();
 		ExecutorService executorService = Executors.newSingleThreadExecutor();
 		executorService.submit(new StreamGobbler(process.getInputStream(), System.out::println));
 		executorService.submit(new StreamGobbler(process.getErrorStream(), System.err::println));
-		int exitCode = process.waitFor();
-		assertEquals(0, exitCode, "Unable to create keystore using keytool");
+		return process.waitFor();
 	}
 
 	/**
