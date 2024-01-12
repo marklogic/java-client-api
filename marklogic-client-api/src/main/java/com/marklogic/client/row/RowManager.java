@@ -87,6 +87,18 @@ public interface RowManager {
      */
     void setTraceLabel(String label);
 
+	/**
+	 * As of MarkLogic 11.2, the "v1/rows/update" endpoint must be used in order to submit an Optic plan that performs
+	 * an update. This method must be called with a value of {@code true} in order for that endpoint to be used instead
+	 * of "v1/rows". You may later call this method with a value of {@code false} in order to submit a plan that does
+	 * not perform an update.
+	 *
+	 * @param update set to {@code true} if submitting a plan that performs an update
+	 * @return the instance of this class
+	 * @since 6.5.0
+	 */
+	RowManager withUpdate(boolean update);
+
     /**
      * @return the label that will be used for all log messages associated with the "optic" trace event
      */
