@@ -1303,6 +1303,10 @@ public class DatabaseClientFactory {
 	 *     <li>marklogic.client.ssl.keystore.password = must be a String; optional password for a key store; since 6.4.0.</li>
 	 *     <li>marklogic.client.ssl.keystore.type = must be a String; optional type for a key store, defaults to "JKS"; since 6.4.0.</li>
 	 *     <li>marklogic.client.ssl.keystore.algorithm = must be a String; optional algorithm for a key store, defaults to "SunX509"; since 6.4.0.</li>
+	 *     <li>marklogic.client.ssl.truststore.path = must be a String; specifies a file path for a trust store for SSL and/or certificate authentication; since 6.5.0.</li>
+	 *     <li>marklogic.client.ssl.truststore.password = must be a String; optional password for a trust store; since 6.5.0.</li>
+	 *     <li>marklogic.client.ssl.truststore.type = must be a String; optional type for a trust store, defaults to "JKS"; since 6.5.0.</li>
+	 *     <li>marklogic.client.ssl.truststore.algorithm = must be a String; optional algorithm for a trust store, defaults to "SunX509"; since 6.5.0.</li>
 	 * </ol>
 	 *
 	 * @param propertySource
