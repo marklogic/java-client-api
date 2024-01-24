@@ -47,7 +47,7 @@ public abstract class AbstractOpticUpdateTest {
                 .evalAs(String.class);
 
         Common.client = Common.newClientBuilder().withUsername("writer-no-default-permissions").build();
-        rowManager = Common.client.newRowManager().withUpdate(true);
+        rowManager = Common.client.newRowManager();
         op = rowManager.newPlanBuilder();
     }
 

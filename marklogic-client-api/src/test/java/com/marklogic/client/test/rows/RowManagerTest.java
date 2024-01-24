@@ -552,14 +552,14 @@ public class RowManagerTest {
 			"occurred due to a bad request by the user, since the query was valid in the sense that it could be " +
 			"executed");
 
-	  // For 11-nightly, changed these to be less precise as the server error message is free to change between minor
-	  // releases, thus making any equality assertions very fragile.
-	  assertTrue(ex.getServerMessage().contains("SQL-TABLENOTFOUND"),
-		  "The server error message is expected to be the value of the 'ml-error-message' trailer");
-	  assertTrue(
-		  ex.getMessage().contains("SQL-TABLENOTFOUND"),
-		  "The exception message is expected to be a formatted message containing the values of the 'ml-error-code' and " +
-			  "'ml-error-message' trailers");
+    assertEquals("SQL-TABLENOTFOUND", ex.getServerMessage(),
+		"The server error message is expected to be the value of the 'ml-error-message' trailer");
+
+    assertEquals(
+        "Local message: failed to apply resource at rows: SQL-TABLENOTFOUND, Internal Server Error. Server Message: SQL-TABLENOTFOUND",
+        ex.getMessage(),
+		"The exception message is expected to be a formatted message containing the values of the 'ml-error-code' and " +
+			"'ml-error-message' trailers");
   }
 
   @Test
@@ -1247,9 +1247,8 @@ public class RowManagerTest {
 
     recordRowSet.close();
   }
-
   @Test
-  public void testMapper() {
+  public void testMapper() throws IOException, XPathExpressionException {
     RowManager rowMgr = Common.client.newRowManager();
 
     PlanBuilder p = rowMgr.newPlanBuilder();
@@ -1261,11 +1260,13 @@ public class RowManagerTest {
         .limit(3)
         .map(p.resolveFunction(p.xs.QName("secondsMapper"), "/etc/optic/test/processors.sjs"));
 
+    int rowNum = 0;
     for (RowRecord row: rowMgr.resultRows(builtPlan)) {
       assertNotNull(row.getInt("rowNum"));
       assertNotNull(row.getString("city"));
       int seconds = row.getInt("seconds");
       assertTrue(0 <= seconds && seconds < 60);
+      rowNum++;
     }
 
     builtPlan =
@@ -1278,11 +1279,13 @@ public class RowManagerTest {
           p.xs.string("/etc/optic/test/processors.xqy")
         ));
 
+    rowNum = 0;
     for (RowRecord row: rowMgr.resultRows(builtPlan)) {
       assertNotNull(row.getInt("rowNum"));
       assertNotNull(row.getString("city"));
       int seconds = row.getInt("seconds");
       assertTrue(0 <= seconds && seconds < 60);
+      rowNum++;
     }
   }
 
@@ -1316,7 +1319,7 @@ public class RowManagerTest {
   }
 
   @Test
-  public void testGenerateView() {
+  public void testGenerateView() throws IOException {
     RowManager rowMgr = Common.client.newRowManager();
 
     PlanBuilder p = rowMgr.newPlanBuilder();
