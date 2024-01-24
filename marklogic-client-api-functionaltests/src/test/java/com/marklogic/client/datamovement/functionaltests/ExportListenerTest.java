@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.marklogic.client.fastfunctest.datamovement;
+package com.marklogic.client.datamovement.functionaltests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,6 +41,9 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 
+/**
+ * This is a "fast" test but it's also brittle, with testOnBatchFailure failing intermittently.
+ */
 public class ExportListenerTest extends AbstractFunctionalTest {
 
   private static DataMovementManager dmManager = null;
