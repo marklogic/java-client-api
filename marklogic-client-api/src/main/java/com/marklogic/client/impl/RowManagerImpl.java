@@ -33,8 +33,11 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
+import com.marklogic.client.MarkLogicBindingException;
+import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
@@ -59,7 +62,6 @@ public class RowManagerImpl
   private RowStructure rowStructureStyle = null;
   private Integer optimize;
   private String traceLabel;
-  private boolean update;
 
   public RowManagerImpl(RESTServices services) {
     super();
@@ -122,13 +124,7 @@ public class RowManagerImpl
     this.optimize = value;
   }
 
-	@Override
-	public RowManager withUpdate(boolean update) {
-		this.update = update;
-		return this;
-	}
-
-	@Override
+  @Override
   public RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle) {
     return new RawPlanDefinitionImpl(handle);
   }
@@ -180,11 +176,7 @@ public class RowManagerImpl
         .withColumnTypes(getDatatypeStyle())
         .withOutput(getRowStructureStyle())
         .getRequestParameters();
-    return services.postResource(requestLogger, determinePath(), transaction, params, astHandle, resultsHandle);
-  }
-
-  private String determinePath() {
-	  return this.update ? "rows/update" : "rows";
+    return services.postResource(requestLogger, "rows", transaction, params, astHandle, resultsHandle);
   }
 
   @Override
@@ -299,9 +291,8 @@ public class RowManagerImpl
     RequestParameters params = new RequestParameters();
     params.add("output", "explain");
 
-    return services.postResource(requestLogger, determinePath(), null, params, astHandle, resultsHandle);
+    return services.postResource(requestLogger, "rows", null, params, astHandle, resultsHandle);
   }
-
   @Override
   public <T> T explainAs(Plan plan, Class<T> as) {
     ContentHandle<T> handle = handleFor(as);
@@ -418,23 +409,11 @@ public class RowManagerImpl
   private RESTServiceResultIterator submitPlan(PlanBuilderBaseImpl.RequestPlan requestPlan, RequestParameters params, Transaction transaction) {
     AbstractWriteHandle astHandle = requestPlan.getHandle();
     List<ContentParam> contentParams = requestPlan.getContentParams();
-	final String path = determinePath();
-	try {
-		if (contentParams != null && !contentParams.isEmpty()) {
-			contentParams.add(new ContentParam(new PlanBuilderBaseImpl.PlanParamBase("query"), astHandle, null));
-			return services.postMultipartForm(requestLogger, path, transaction, params, contentParams);
-		}
-		return services.postIteratedResource(requestLogger, path, transaction, params, astHandle);
-	} catch (FailedRequestException ex) {
-		String message = ex.getMessage();
-		if (message != null && message.contains("RESTAPI-UPDATEFROMQUERY")) {
-			String betterMessage = "The Optic plan is attempting an update but was sent to the wrong REST API endpoint. " +
-				"You must invoke `withUpdate(true)` on the instance of com.marklogic.client.row.RowManager that you " +
-				"are using to submit the plan";
-			throw new FailedRequestException(betterMessage, ex.getFailedRequest());
-		}
-		throw ex;
-	}
+    if (contentParams != null && !contentParams.isEmpty()) {
+      contentParams.add(new ContentParam(new PlanBuilderBaseImpl.PlanParamBase("query"), astHandle, null));
+      return services.postMultipartForm(requestLogger, "rows", transaction, params, contentParams);
+    }
+    return services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
   }
 
   private PlanBuilderBaseImpl.RequestPlan checkPlan(Plan plan) {
