@@ -33,8 +33,11 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
+import com.marklogic.client.MarkLogicBindingException;
+import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
@@ -419,22 +422,11 @@ public class RowManagerImpl
     AbstractWriteHandle astHandle = requestPlan.getHandle();
     List<ContentParam> contentParams = requestPlan.getContentParams();
 	final String path = determinePath();
-	try {
-		if (contentParams != null && !contentParams.isEmpty()) {
-			contentParams.add(new ContentParam(new PlanBuilderBaseImpl.PlanParamBase("query"), astHandle, null));
-			return services.postMultipartForm(requestLogger, path, transaction, params, contentParams);
-		}
-		return services.postIteratedResource(requestLogger, path, transaction, params, astHandle);
-	} catch (FailedRequestException ex) {
-		String message = ex.getMessage();
-		if (message != null && message.contains("RESTAPI-UPDATEFROMQUERY")) {
-			String betterMessage = "The Optic plan is attempting an update but was sent to the wrong REST API endpoint. " +
-				"You must invoke `withUpdate(true)` on the instance of com.marklogic.client.row.RowManager that you " +
-				"are using to submit the plan";
-			throw new FailedRequestException(betterMessage, ex.getFailedRequest());
-		}
-		throw ex;
-	}
+    if (contentParams != null && !contentParams.isEmpty()) {
+      contentParams.add(new ContentParam(new PlanBuilderBaseImpl.PlanParamBase("query"), astHandle, null));
+      return services.postMultipartForm(requestLogger, path, transaction, params, contentParams);
+    }
+    return services.postIteratedResource(requestLogger, path, transaction, params, astHandle);
   }
 
   private PlanBuilderBaseImpl.RequestPlan checkPlan(Plan plan) {
