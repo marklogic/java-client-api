@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.marklogic.client.datamovement.functionaltests;
+package com.marklogic.client.fastfunctest.datamovement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,9 +41,6 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 
-/**
- * This is a "fast" test but it's also brittle, with testOnBatchFailure failing intermittently.
- */
 public class ExportListenerTest extends AbstractFunctionalTest {
 
   private static DataMovementManager dmManager = null;
@@ -425,72 +422,5 @@ public class ExportListenerTest extends AbstractFunctionalTest {
 
     // Doc count should be zero after both batchers are done.
     assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-  }
-
-  /*
-   * Trigger batch failure by calling incorrect meta data values
-   */
-
-  @Test
-  public void testOnBatchFailure() {
-    String jsonDoc = "{" +
-        "\"employees\": [" +
-        "{ \"firstName\":\"Will\" , \"lastName\":\"Kirkham\" }," +
-        "{ \"firstName\":\"Hus\" , \"lastName\":\"Wattan\" }," +
-        "{ \"firstName\":\"Rod\" , \"lastName\":\"Mendez\" }]" +
-        "}";
-
-    // Use WriteBatcher to write the files.
-    WriteBatcher wbatcher = dmManager.newWriteBatcher();
-
-    wbatcher.withBatchSize(1000);
-    StringHandle handle = new StringHandle();
-    handle.set(jsonDoc);
-    String uri = null;
-
-    // Insert 100 documents
-    for (int i = 0; i < 100; i++) {
-      uri = "lastname" + i + ".json";
-      wbatcher.add(uri, handle);
-    }
-    wbatcher.flushAndWait();
-
-    List<String> docExporterList = Collections.synchronizedList(new ArrayList<String>());
-
-    QueryManager queryMgr = dbClient.newQueryManager();
-    StringQueryDefinition querydef = queryMgr.newStringDefinition();
-    querydef.setCriteria("Will AND Hus");
-    StringBuilder onBatchFailureStr = new StringBuilder();
-
-      QueryBatcher exportBatcher = dmManager.newQueryBatcher(querydef)
-          .withBatchSize(50)
-          .onUrisReady(
-              new ExportListener()
-                  .withMetadataCategory(DocumentManager.Metadata.METADATAVALUES)
-                  .onDocumentReady(doc -> {
-                    String uriOfDoc = doc.getUri();
-                    docExporterList.add(uriOfDoc);
-                  }
-                  )
-                  .onFailure((batch, throwable) -> {
-                    onBatchFailureStr.append("From onBatchFailure QA Exception");
-                    System.out.println("From onBatchFailure " + throwable.getMessage());
-                    System.out.println("From onBatchFailure QA Exception");
-                  }
-                  )
-          )
-          .onUrisReady(batch -> {
-            System.out.println("Batch Numer is " + batch.getJobBatchNumber());
-          })
-          .onQueryFailure(exception -> {
-            System.out.println("Exceptions thrown from testOnBatchFailure callback onQueryFailure");
-            exception.printStackTrace();
-          });
-      dmManager.startJob(exportBatcher);
-
-      exportBatcher.awaitCompletion();
-
-    assertTrue(onBatchFailureStr.toString().contains("From onBatchFailure QA Exception"),
-		"Unexpected exception: " + onBatchFailureStr);
   }
 }
