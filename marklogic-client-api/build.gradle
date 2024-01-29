@@ -16,29 +16,27 @@ dependencies {
 		implementation 'org.glassfish.jaxb:jaxb-core:2.3.0.1'
 	}
 
-	// Forcing usage of 3.4.0 instead of 3.2.0 to address vulnerability - https://security.snyk.io/vuln/SNYK-JAVA-COMSQUAREUPOKIO-5820002
-	implementation 'com.squareup.okio:okio:3.4.0'
-	implementation 'com.squareup.okhttp3:okhttp:4.11.0'
-	implementation 'com.squareup.okhttp3:logging-interceptor:4.11.0'
+	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+	implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
 	implementation 'io.github.rburgst:okhttp-digest:2.7'
 
 	implementation 'com.sun.mail:javax.mail:1.6.2'
 	implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
 	implementation 'org.slf4j:slf4j-api:1.7.36'
-	implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
-	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.15.2'
-	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
-	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.15.2'
+	implementation 'com.fasterxml.jackson.core:jackson-core:2.15.3'
+	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.15.3'
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.3'
+	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.15.3'
 
 	// Only used by extras (which some examples then depend on)
 	// Forcing codec version to avoid vulnerability with older version in httpclient
-	compileOnly 'commons-codec:commons-codec:1.15'
+	compileOnly 'commons-codec:commons-codec:1.16.0'
 	compileOnly 'org.apache.httpcomponents:httpclient:4.5.14'
 	compileOnly 'org.jdom:jdom2:2.0.6.1'
 	compileOnly 'org.dom4j:dom4j:2.1.4'
 	compileOnly 'com.google.code.gson:gson:2.10.1'
 
-	testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
 	// Forcing junit version to avoid vulnerability with older version in xmlunit
 	testImplementation 'junit:junit:4.13.2'
 	testImplementation 'org.xmlunit:xmlunit-legacy:2.9.1'
@@ -46,19 +44,18 @@ dependencies {
 
 	// Allows talking to the Manage API. It depends on the Java Client itself, which will usually be a slightly older
 	// version, but that should not have any impact on the tests.
-	testImplementation "com.marklogic:ml-app-deployer:4.5.2"
+	testImplementation "com.marklogic:ml-app-deployer:4.6.1"
 
 	// Starting with mockito 5.x, Java 11 is required, so sticking with 4.x as we have to support Java 8.
 	testImplementation "org.mockito:mockito-core:4.11.0"
 	testImplementation "org.mockito:mockito-inline:4.11.0"
-	testImplementation 'com.squareup.okio:okio:3.4.0'
-	testImplementation "com.squareup.okhttp3:mockwebserver:4.11.0"
+	testImplementation "com.squareup.okhttp3:mockwebserver:4.12.0"
 
-	testImplementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2'
-	testImplementation 'ch.qos.logback:logback-classic:1.3.5'
+	testImplementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.3'
+	testImplementation 'ch.qos.logback:logback-classic:1.3.14'
 // schema validation issue with testImplementation 'xerces:xercesImpl:2.12.0'
 	testImplementation 'org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115'
-	testImplementation 'org.apache.commons:commons-lang3:3.12.0'
+	testImplementation 'org.apache.commons:commons-lang3:3.14.0'
 	testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
 	testImplementation 'com.opencsv:opencsv:4.6'
 	testImplementation 'org.geonames:geonames:1.0'

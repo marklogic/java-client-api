@@ -43,10 +43,7 @@ import org.w3c.dom.NodeList;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -203,6 +200,24 @@ public class RowBatcherTest {
     public void testJsonDocs1Thread() throws Exception {
         runDocsTest(jsonBatcher(1));
     }
+
+	@Test
+	void noRowsReturned() {
+		RowBatcher<JsonNode> rowBatcher = jsonBatcher(1);
+		RowManager rowMgr = rowBatcher.getRowManager();
+		RawQueryDSLPlan plan = rowMgr.newRawQueryDSLPlan(
+			new StringHandle("op.fromView('rowBatcherUnitTest', 'code').where(op.eq(op.col('field1'), 12345))"));
+
+		List<JsonNode> results = new ArrayList<>();
+		rowBatcher.withBatchView(plan).onSuccess(batch -> results.add(batch.getRowsDoc()));
+		moveMgr.startJob(rowBatcher);
+		rowBatcher.awaitCompletion();
+		moveMgr.stopJob(rowBatcher);
+
+		assertEquals(0, results.size(), "Expecting no results as the Optic query shouldn't match any rows; " +
+			"also expecting no error to occur.");
+	}
+
     @Test
     public void testJsonDocs3Threads() throws Exception {
         runDocsTest(jsonBatcher(3));

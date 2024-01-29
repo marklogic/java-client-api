@@ -12,6 +12,7 @@ import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.RequireSSLExtension;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
+import com.marklogic.mgmt.resource.security.CertificateTemplateManager;
 import com.marklogic.rest.util.Fragment;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,6 +48,7 @@ public class TwoWaySSLTest {
 	private static DatabaseClient securityClient;
 	private static ManageClient manageClient;
 	private static File keyStoreFile;
+	private static File trustStoreFile;
 	private static File p12File;
 
 
@@ -72,8 +74,10 @@ public class TwoWaySSLTest {
 		writeClientCertificateFilesToTempDir(clientCertificate, tempDir);
 		createPkcs12File(tempDir);
 		createKeystoreFile(tempDir);
-		keyStoreFile = new File(tempDir.toFile(), "client.jks");
+		keyStoreFile = new File(tempDir.toFile(), "keyStore.jks");
+		trustStoreFile = new File(tempDir.toFile(), "trustStore.jks");
 		p12File = new File(tempDir.toFile(), "client.p12");
+		addServerCertificateToTrustStore(tempDir);
 	}
 
 	@AfterAll
@@ -88,6 +92,12 @@ public class TwoWaySSLTest {
 	/**
 	 * After two-way SSL is configured on the java-unittest app server, verify that a DatabaseClient using a proper
 	 * SSLContext can connect to the app server.
+	 *
+	 * This test can be used for manual testing of two-way SSL - e.g. for ml-gradle - by doing the following:
+	 * - Add a breakpoint at the start of the test.
+	 * - Run the test in a debugger.
+	 * - When the breakpoint is hit, look for the location of the files in stdout.
+	 * - Copy those files to a more accessible location and use them for accessing the 8012 app server.
 	 */
 	@Test
 	void digestAuthentication() {
@@ -99,11 +109,15 @@ public class TwoWaySSLTest {
 		DatabaseClient clientWithCert = Common.newClientBuilder()
 			.withKeyStorePath(keyStoreFile.getAbsolutePath())
 			.withKeyStorePassword(KEYSTORE_PASSWORD)
+
 			// Still need this as "common"/"strict" don't work for our temporary server certificate.
 			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
-			// This is a reasonable trust manager since it references the temporary server certificate as something
-			// that it accepts instead of accepting everything.
-			.withTrustManager(RequireSSLExtension.newSecureTrustManager())
+
+			// Starting in 6.5.0, we can use a real trust manager as the server certificate is in the keystore.
+			.withTrustStorePath(trustStoreFile.getAbsolutePath())
+			.withTrustStorePassword(KEYSTORE_PASSWORD)
+			.withTrustStoreType("JKS")
+			.withTrustStoreAlgorithm("SunX509")
 			.build();
 
 		verifyTestDocumentCanBeRead(clientWithCert);
@@ -416,11 +430,7 @@ public class TwoWaySSLTest {
 			"-name", "my-client",
 			"-passout", "pass:" + KEYSTORE_PASSWORD);
 
-		ExecutorService executorService = Executors.newSingleThreadExecutor();
-		Process process = builder.start();
-		executorService.submit(new StreamGobbler(process.getInputStream(), System.out::println));
-		executorService.submit(new StreamGobbler(process.getErrorStream(), System.err::println));
-		int exitCode = process.waitFor();
+		int exitCode = runProcess(builder);
 		assertEquals(0, exitCode, "Unable to create pkcs12 file using openssl");
 	}
 
@@ -430,18 +440,49 @@ public class TwoWaySSLTest {
 		builder.command("keytool", "-importkeystore",
 			"-deststorepass", KEYSTORE_PASSWORD,
 			"-destkeypass", KEYSTORE_PASSWORD,
-			"-destkeystore", "client.jks",
+			"-destkeystore", "keyStore.jks",
 			"-srckeystore", "client.p12",
 			"-srcstoretype", "PKCS12",
 			"-srcstorepass", KEYSTORE_PASSWORD,
 			"-alias", "my-client");
 
+		int exitCode = runProcess(builder);
+		assertEquals(0, exitCode, "Unable to create keystore using keytool");
+	}
+
+	/**
+	 * Retrieves the server certificate associated with the certificate template for this test and stores it in the
+	 * key store so that the key store can also act as a trust store.
+	 *
+	 * @param tempDir
+	 * @throws Exception
+	 */
+	private static void addServerCertificateToTrustStore(Path tempDir) throws Exception {
+		Fragment xml = new CertificateTemplateManager(Common.newManageClient()).getCertificatesForTemplate("java-unittest-template");
+		String serverCertificate = xml.getElementValue("/msec:certificate-list/msec:certificate/msec:pem");
+
+		File certificateFile = new File(tempDir.toFile(), "server.cert");
+		FileCopyUtils.copy(serverCertificate.getBytes(), certificateFile);
+
+		ProcessBuilder builder = new ProcessBuilder();
+		builder.directory(tempDir.toFile());
+		builder.command("keytool", "-importcert",
+			"-keystore", trustStoreFile.getAbsolutePath(),
+			"-storepass", KEYSTORE_PASSWORD,
+			"-file", certificateFile.getAbsolutePath(),
+			"-noprompt",
+			"-alias", "java-unittest-template-certificate");
+
+		int exitCode = runProcess(builder);
+		assertEquals(0, exitCode, "Unable to add server public certificate to keystore.");
+	}
+
+	private static int runProcess(ProcessBuilder builder) throws Exception {
 		Process process = builder.start();
 		ExecutorService executorService = Executors.newSingleThreadExecutor();
 		executorService.submit(new StreamGobbler(process.getInputStream(), System.out::println));
 		executorService.submit(new StreamGobbler(process.getErrorStream(), System.err::println));
-		int exitCode = process.waitFor();
-		assertEquals(0, exitCode, "Unable to create keystore using keytool");
+		return process.waitFor();
 	}
 
 	/**

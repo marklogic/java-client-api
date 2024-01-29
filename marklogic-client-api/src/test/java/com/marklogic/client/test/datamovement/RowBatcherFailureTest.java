@@ -27,7 +27,7 @@ public class RowBatcherFailureTest {
 		RowManager rowManager = client.newRowManager();
 		PlanBuilder op = rowManager.newPlanBuilder();
 		PlanBuilder.ModifyPlan plan = op
-			.fromView("opticUnitTest", "musician")
+			.fromView("opticUnitTest", "musician_ml10")
 			.where(op.eq(op.col("dob"), op.xs.string("this is not a valid date")));
 
 		List<JsonNode> returnedRows = new ArrayList<>();
