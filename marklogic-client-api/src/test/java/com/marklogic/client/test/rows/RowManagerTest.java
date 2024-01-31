@@ -509,20 +509,10 @@ public class RowManagerTest {
   @Test
   public void testSQL0Result() {
     RowManager rowMgr = Common.client.newRowManager();
-    PlanBuilder p = rowMgr.newPlanBuilder();
-    PlanBuilder.ExportablePlan builtPlan =
-            p.fromSql("select * from opticUnitTest.musician_ml10 where lastName = 'x'");
-    int rowNum = 0;
-    String exception = "";
-    try {
-      for (RowRecord row: rowMgr.resultRows(builtPlan)) {
-        rowNum++;
-      }
-    } catch (Exception e) {
-      exception = e.toString();
-    }
-    assertEquals(0, rowNum);
-    assertEquals("", exception);
+    PlanBuilder.ExportablePlan builtPlan = rowMgr.newPlanBuilder()
+		.fromSql("select * from opticUnitTest.musician_ml10 where lastName = 'x'");
+	RowSet<RowRecord> rowSet = rowMgr.resultRows(builtPlan);
+	assertEquals(0, rowSet.stream().count());
   }
 
   @Test

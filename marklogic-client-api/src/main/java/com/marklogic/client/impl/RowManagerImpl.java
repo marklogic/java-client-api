@@ -215,9 +215,7 @@ public class RowManagerImpl
   @Override
   public void execute(Plan plan, Transaction transaction) {
     PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
-    RequestParameters params = newRowsParamsBuilder(requestPlan)
-		.withOutput("execute")
-		.getRequestParameters();
+    RequestParameters params = newRowsParamsBuilder(requestPlan).getRequestParameters();
     RESTServiceResultIterator iter = submitPlan(requestPlan, params, transaction);
     if (iter != null) {
       iter.close();
