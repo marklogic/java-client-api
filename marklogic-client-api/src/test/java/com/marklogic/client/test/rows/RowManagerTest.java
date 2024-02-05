@@ -506,14 +506,18 @@ public class RowManagerTest {
 		assertNull(doc);
 	}
 
-  @Test
-  public void testSQL0Result() {
-    RowManager rowMgr = Common.client.newRowManager();
-    PlanBuilder.ExportablePlan builtPlan = rowMgr.newPlanBuilder()
-		.fromSql("select * from opticUnitTest.musician_ml10 where lastName = 'x'");
-	RowSet<RowRecord> rowSet = rowMgr.resultRows(builtPlan);
-	assertEquals(0, rowSet.stream().count());
-  }
+	@Test
+	public void testSQLNoResults() {
+		RowManager rowManager = Common.client.newRowManager();
+
+		RowSet<RowRecord> rowSet = rowManager.resultRows(rowManager.newPlanBuilder()
+			.fromSql("select * from opticUnitTest.musician_ml10 where lastName = 'Armstrong'"));
+		assertEquals(1, rowSet.stream().count());
+
+		rowSet = rowManager.resultRows(rowManager.newPlanBuilder()
+			.fromSql("select * from opticUnitTest.musician_ml10 where lastName = 'x'"));
+		assertEquals(0, rowSet.stream().count());
+	}
 
   @Test
   @ExtendWith(RequiresML11.class)
