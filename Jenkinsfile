@@ -226,7 +226,7 @@ pipeline{
         }
       }
       steps {
-        runAllTests('Latest', '10.0', false)
+        runAllTests('Release', '10.0-10.2', false)
         junit '**/build/**/TEST*.xml'
       }
     }
