@@ -62,6 +62,7 @@ public class RowManagerImpl
   private RowStructure rowStructureStyle = null;
   private Integer optimize;
   private String traceLabel;
+  private boolean update;
 
   public RowManagerImpl(RESTServices services) {
     super();
@@ -124,7 +125,13 @@ public class RowManagerImpl
     this.optimize = value;
   }
 
-  @Override
+	@Override
+	public RowManager withUpdate(boolean update) {
+		this.update = update;
+		return this;
+	}
+
+	@Override
   public RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle) {
     return new RawPlanDefinitionImpl(handle);
   }
@@ -176,7 +183,11 @@ public class RowManagerImpl
         .withColumnTypes(getDatatypeStyle())
         .withOutput(getRowStructureStyle())
         .getRequestParameters();
-    return services.postResource(requestLogger, "rows", transaction, params, astHandle, resultsHandle);
+    return services.postResource(requestLogger, determinePath(), transaction, params, astHandle, resultsHandle);
+  }
+
+  private String determinePath() {
+	  return this.update ? "rows/update" : "rows";
   }
 
   @Override
@@ -291,8 +302,9 @@ public class RowManagerImpl
     RequestParameters params = new RequestParameters();
     params.add("output", "explain");
 
-    return services.postResource(requestLogger, "rows", null, params, astHandle, resultsHandle);
+    return services.postResource(requestLogger, determinePath(), null, params, astHandle, resultsHandle);
   }
+
   @Override
   public <T> T explainAs(Plan plan, Class<T> as) {
     ContentHandle<T> handle = handleFor(as);
@@ -409,11 +421,12 @@ public class RowManagerImpl
   private RESTServiceResultIterator submitPlan(PlanBuilderBaseImpl.RequestPlan requestPlan, RequestParameters params, Transaction transaction) {
     AbstractWriteHandle astHandle = requestPlan.getHandle();
     List<ContentParam> contentParams = requestPlan.getContentParams();
+	final String path = determinePath();
     if (contentParams != null && !contentParams.isEmpty()) {
       contentParams.add(new ContentParam(new PlanBuilderBaseImpl.PlanParamBase("query"), astHandle, null));
-      return services.postMultipartForm(requestLogger, "rows", transaction, params, contentParams);
+      return services.postMultipartForm(requestLogger, path, transaction, params, contentParams);
     }
-    return services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
+    return services.postIteratedResource(requestLogger, path, transaction, params, astHandle);
   }
 
   private PlanBuilderBaseImpl.RequestPlan checkPlan(Plan plan) {
