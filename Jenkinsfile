@@ -152,7 +152,7 @@ pipeline{
         }
       }
       steps {
-        copyRPM 'Release','11.1.0'
+        copyRPM 'Latest','11'
         setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
         copyConvertersRPM 'Release','11.1.0'
         setUpMLConverters '$WORKSPACE/xdmp/src/Mark*Converters*.rpm'
@@ -192,7 +192,7 @@ pipeline{
         '''
       }
     }
-    stage('regressions-11-Release') {
+    stage('regressions-11') {
       when {
         allOf {
           branch 'develop'
@@ -200,12 +200,12 @@ pipeline{
         }
       }
       steps {
-        runAllTests('Release', '11.1.0', false)
+        runAllTests('Latest', '11', false)
         junit '**/build/**/TEST*.xml'
       }
     }
 
-    stage('regressions-11-Release-reverseProxy') {
+    stage('regressions-11-reverseProxy') {
     	when {
 				allOf {
 					branch 'develop'
@@ -213,7 +213,7 @@ pipeline{
 				}
 			}
 			steps {
-				runAllTests('Release', '11.1.0', true)
+				runAllTests('Latest', '11', true)
 				junit '**/build/**/TEST*.xml'
 			}
     }
