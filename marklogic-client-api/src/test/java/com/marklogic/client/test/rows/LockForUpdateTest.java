@@ -69,12 +69,18 @@ public class LockForUpdateTest extends AbstractOpticUpdateTest {
 	@Test
 	void wrongEndpoint() {
 		rowManager.withUpdate(false);
-		assertThrows(
+		FailedRequestException ex = assertThrows(
 			FailedRequestException.class,
 			() -> rowManager.execute(op.fromDocUris("/optic/test/musician1.json").lockForUpdate()),
 			"Hoping to update this assertion to verify that the server message tells the user to hit v1/rows/update " +
 				"instead; right now, it's mentioning using declareUpdate() which isn't applicable to a REST API user."
 		);
+
+		assertTrue(ex.getMessage().contains(
+				"The Optic plan is attempting an update but was sent to the wrong REST API endpoint. " +
+					"You must invoke `withUpdate(true)` on the instance of com.marklogic.client.row.RowManager " +
+					"that you are using to submit the plan."),
+			"Unexpected message: " + ex.getMessage());
 	}
 
 	@Test
