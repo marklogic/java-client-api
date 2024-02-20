@@ -28,13 +28,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 import javax.naming.InvalidNameException;
@@ -63,7 +57,8 @@ import com.marklogic.client.io.marker.ContentHandleFactory;
  */
 public class DatabaseClientFactory {
 
-  static private List<ClientConfigurator<?>> clientConfigurators = new ArrayList<>();
+  static private List<ClientConfigurator<?>> clientConfigurators = Collections.synchronizedList(new ArrayList<>());
+
   static private HandleFactoryRegistry handleRegistry =
     HandleFactoryRegistryImpl.newDefault();
 
