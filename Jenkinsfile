@@ -230,5 +230,29 @@ pipeline{
         junit '**/build/**/TEST*.xml'
       }
     }
+    stage('regressions-10.0') {
+    	when {
+      	allOf {
+        	branch 'develop'
+          	expression {return params.regressions}
+        }
+      }
+      steps {
+     		runAllTests('Latest', '10.0', false)
+        junit '**/build/**/TEST*.xml'
+      }
+    }
+    stage('regressions-11.1.0') {
+    	when {
+      	allOf {
+        	branch 'develop'
+          	expression {return params.regressions}
+        }
+      }
+      steps {
+     		runAllTests('Release', '11.1.0', false)
+        junit '**/build/**/TEST*.xml'
+      }
+    }
   }
 }
