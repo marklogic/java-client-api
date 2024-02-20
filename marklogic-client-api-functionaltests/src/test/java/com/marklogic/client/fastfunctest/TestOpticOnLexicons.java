@@ -1132,136 +1132,87 @@ public class TestOpticOnLexicons extends AbstractFunctionalTest {
     assertEquals( "40.72", third.path("nodes").path("value").asText());
   }
 
-  /*
-   * Test Restricted xpath with predicate
-   * SJS TEST 35
-   *
-   * Temporarily simplifying the plan in this test (it seems unnecessarily complex for what the assertions are trying
-   * to do) while figuring out why it fails on ML 10 but not ML 11.
-   */
-  @Test
-  public void testRestrictedXPathPredicate()
-  {
-    System.out.println("In testRestrictedXPathPredicate method");
+	/*
+	 * Test Restricted xpath with predicate
+	 * SJS TEST 35
+	 */
+	@Test
+	public void testRestrictedXPathPredicate() {
+		RowManager rowMgr = client.newRowManager();
+		PlanBuilder p = rowMgr.newPlanBuilder();
 
-    // Create a new Plan.
-    RowManager rowMgr = client.newRowManager();
-    PlanBuilder p = rowMgr.newPlanBuilder();
+		Map<String, CtsReferenceExpr> index1 = new HashMap<String, CtsReferenceExpr>();
+		index1.put("uri1", p.cts.uriReference());
+		index1.put("city", p.cts.jsonPropertyReference("city"));
 
-    Map<String, CtsReferenceExpr> index1 = new HashMap<String, CtsReferenceExpr>();
-    index1.put("uri1", p.cts.uriReference());
-    index1.put("city", p.cts.jsonPropertyReference("city"));
-//    index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
-//    index1.put("date", p.cts.jsonPropertyReference("date"));
-//    index1.put("distance", p.cts.jsonPropertyReference("distance"));
-//    index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
+		Map<String, CtsReferenceExpr> index2 = new HashMap<String, CtsReferenceExpr>();
+		index2.put("uri2", p.cts.uriReference());
+		index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
 
-    Map<String, CtsReferenceExpr> index2 = new HashMap<String, CtsReferenceExpr>();
-    index2.put("uri2", p.cts.uriReference());
-    index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
-//    index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
+		PlanColumn cityCol = p.col("city");
+		ModifyPlan plan = p.fromLexicons(index1, "myCity")
+			.joinInner(
+				p.fromLexicons(index2, "myTeam"),
+				p.on(p.viewCol("myCity", "city"), p.viewCol("myTeam", "cityName"))
+			)
+			.joinDoc(p.col("doc"), p.col("uri1"))
+			.select(cityCol,
+				p.as(
+					p.col("nodes"),
+					p.xpath(p.col("doc"), p.xs.string("/description[fn:matches(., 'disc*')]"))
+				)
+			)
+			.where(p.isDefined(p.col("nodes")));
 
-    // plan1
-    ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
-    ModifyPlan plan2 = p.fromLexicons(index2, "myTeam");
-
-    PlanColumn uriCol1 = p.col("uri1");
-    PlanColumn cityCol = p.col("city");
-    PlanColumn popCol = p.col("popularity");
-    PlanColumn dateCol = p.col("date");
-    PlanColumn distCol = p.col("distance");
-    PlanColumn pointCol = p.col("point");
-    PlanColumn uriCol2 = p.col("uri2");
-
-    PlanColumn cityNameCol = p.col("cityName");
-    PlanColumn cityTeamCol = p.col("cityTeam");
-
-    ModifyPlan finalPlan = plan1
-        .joinInner(plan2,
-            p.on(p.viewCol("myCity", "city"), p.viewCol("myTeam", "cityName"))
-        )
-        .joinDoc(p.col("doc"), p.col("uri1"))
-        .select(
-            cityCol,
-              // TODO This doesn't work with ML 10 any longer
-              //p.as("nodes", p.xpath("doc", "/description[fn:matches(., 'disc*')]")),
-              p.as(
-                  p.col("nodes"),
-                  p.xpath(p.col("doc"), p.xs.string("/description[fn:matches(., 'disc*')]"))
-              )
-          )
-        .where(p.isDefined(p.col("nodes")));
-
-    System.out.println(finalPlan.exportAs(ObjectNode.class).toPrettyString());
-    JsonNode rows = rowMgr.resultDoc(finalPlan, new JacksonHandle()).get().path("rows");
-    // Should have 1 node returned.
-    assertEquals( 1, rows.size());
-    JsonNode first = rows.path(0);
-    assertEquals( "london", first.path("myCity.city").path("value").asText());
-    assertEquals( "Two recent discoveries indicate probable very early settlements near the Thames", first.path("nodes").path("value").asText());
-  }
+		System.out.println("PLAN: " + plan.exportAs(ObjectNode.class).toPrettyString());
+		JsonNode rows = rowMgr.resultDoc(plan, new JacksonHandle()).get().path("rows");
+		assertEquals(1, rows.size(), "Expected only the London row since it's the only one with 'discoveries' in its description: " + rows.toPrettyString());
+		JsonNode first = rows.path(0);
+		assertEquals("london", first.path("myCity.city").path("value").asText());
+		assertEquals("Two recent discoveries indicate probable very early settlements near the Thames", first.path("nodes").path("value").asText());
+	}
 
   /*
    * Test Restricted xpath with predicate math:pow
    * SJS TEST 40
    */
   @Test
-  public void testRestrictedXPathPredicateMath()
-  {
-    System.out.println("In testRestrictedXPathPredicateMath method");
+  public void testRestrictedXPathPredicateMath() {
+	  RowManager rowMgr = client.newRowManager();
+	  PlanBuilder p = rowMgr.newPlanBuilder();
 
-    // Create a new Plan.
-    RowManager rowMgr = client.newRowManager();
-    PlanBuilder p = rowMgr.newPlanBuilder();
+	  Map<String, CtsReferenceExpr> index1 = new HashMap<>();
+	  index1.put("uri1", p.cts.uriReference());
+	  index1.put("city", p.cts.jsonPropertyReference("city"));
+	  index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
 
-    Map<String, CtsReferenceExpr> index1 = new HashMap<String, CtsReferenceExpr>();
-    index1.put("uri1", p.cts.uriReference());
-    index1.put("city", p.cts.jsonPropertyReference("city"));
-    index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
-    index1.put("date", p.cts.jsonPropertyReference("date"));
-    index1.put("distance", p.cts.jsonPropertyReference("distance"));
-    index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
+	  Map<String, CtsReferenceExpr> index2 = new HashMap<>();
+	  index2.put("uri2", p.cts.uriReference());
+	  index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
+	  index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
 
-    Map<String, CtsReferenceExpr> index2 = new HashMap<String, CtsReferenceExpr>();
-    index2.put("uri2", p.cts.uriReference());
-    index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
-    index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
+	  ModifyPlan plan = p.fromLexicons(index1, "myCity").joinInner(
+			  p.fromLexicons(index2, "myTeam"),
+			  p.on(p.viewCol("myCity", "city"), p.viewCol("myTeam", "cityName")),
+			  p.ne(p.col("popularity"), p.xs.intVal(3))
+		  )
+		  .joinDoc(p.col("doc"), p.col("uri1"))
+		  .select(
+			  p.col("uri1"), p.col("city"), p.col("popularity"),
+			  p.as(p.col("nodes"), p.xpath(p.col("doc"), p.xs.string("popularity[math:pow(., 2) eq 4]")))
+		  )
+		  .where(p.isDefined(p.col("nodes")));
 
-    // plan1
-    ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
-    ModifyPlan plan2 = p.fromLexicons(index2, "myTeam");
+	  JacksonHandle jacksonHandle = new JacksonHandle();
+	  jacksonHandle.setMimetype("application/json");
 
-    PlanColumn uriCol1 = p.col("uri1");
-    PlanColumn cityCol = p.col("city");
-    PlanColumn popCol = p.col("popularity");
-    PlanColumn dateCol = p.col("date");
-    PlanColumn distCol = p.col("distance");
-    PlanColumn pointCol = p.col("point");
-    PlanColumn uriCol2 = p.col("uri2");
+	  System.out.println("PLAN: " + plan.exportAs(ObjectNode.class).toPrettyString());
 
-    PlanColumn cityNameCol = p.col("cityName");
-    PlanColumn cityTeamCol = p.col("cityTeam");
-
-    ModifyPlan UnnamedNodes = plan1.joinInner(plan2,
-              p.on(p.viewCol("myCity", "city"), p.viewCol("myTeam", "cityName")),
-              p.ne(p.col("popularity"), p.xs.intVal(3)))
-            .joinDoc(p.col("doc"), p.col("uri1"))
-            .select(
-                uriCol1, cityCol, popCol, dateCol, distCol, pointCol,
-                p.as(p.col("nodes"), p.xpath(p.col("doc"), p.xs.string("popularity[math:pow(., 2) eq 4]"))),
-                uriCol2, cityNameCol, cityTeamCol
-            )
-            .where(p.isDefined(p.col("nodes")));
-
-    JacksonHandle jacksonHandle = new JacksonHandle();
-    jacksonHandle.setMimetype("application/json");
-
-    rowMgr.resultDoc(UnnamedNodes, jacksonHandle);
-    JsonNode jsonResults = jacksonHandle.get();
-    JsonNode jsonBindingsNodes = jsonResults.path("rows");
-    assertEquals(1, jsonBindingsNodes.size(), "Expected 1 node: " + jsonBindingsNodes.toPrettyString());
-    JsonNode first = jsonBindingsNodes.path(0);
-    assertEquals( "new jersey", first.path("myCity.city").path("value").asText());
+	  rowMgr.resultDoc(plan, jacksonHandle);
+	  JsonNode rows = jacksonHandle.get().path("rows");
+	  assertEquals(1, rows.size(), "Expected only the New Jersey row, which has a popularity of 2: " + rows.toPrettyString());
+	  JsonNode first = rows.path(0);
+	  assertEquals("new jersey", first.path("myCity.city").path("value").asText());
   }
 
 }

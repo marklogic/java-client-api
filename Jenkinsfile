@@ -154,7 +154,7 @@ pipeline{
       steps {
         copyRPM 'Latest','11'
         setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
-        copyConvertersRPM 'Release','11.1.0'
+        copyConvertersRPM 'Latest','11'
         setUpMLConverters '$WORKSPACE/xdmp/src/Mark*Converters*.rpm'
         sh label:'deploy test app', script: '''#!/bin/bash
           export JAVA_HOME=$JAVA_HOME_DIR
