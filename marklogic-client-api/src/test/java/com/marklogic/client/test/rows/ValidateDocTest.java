@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.test.rows;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.WriteBatcher;
@@ -181,12 +182,13 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
 			"  <result>pass</result> \n" +
 			"</user>").withFormat(Format.XML));
 
-		PlanBuilder.Plan plan = op.fromParam("myDocs", "", op.docColTypes())
+		PlanBuilder.ModifyPlan plan = op.fromParam("myDocs", "", op.docColTypes())
 			.validateDoc(op.col("doc"), op.schemaDefinition("schematron").withSchemaUri("/validateDoc/schematron.sch"))
-			.write()
-			.bindParam("myDocs", writeSet);
+			.write();
 
-		List<RowRecord> rows = resultRows(plan);
+		System.out.println("PLAN: " + plan.exportAs(ObjectNode.class).toPrettyString());
+
+		List<RowRecord> rows = resultRows(plan.bindParam("myDocs", writeSet));
 		assertEquals(1, rows.size());
 		DocumentManager docMgr = Common.client.newDocumentManager();
 		assertNotNull(docMgr.exists("/acme/doc3.xml"));
