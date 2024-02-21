@@ -136,6 +136,11 @@ public class ReverseProxyServer extends LoggingObject {
 		mapping.put("/data-hub/final", new URI(String.format("http://%s:8011", markLogicHost)));
 		mapping.put("/data-hub/jobs", new URI(String.format("http://%s:8013", markLogicHost)));
 
+		// Generic mappings for the Node Client test-app
+		mapping.put("/mlxprs/manage", new URI(String.format("http://%s:8059", markLogicHost)));
+		mapping.put("/mlxprs/rest", new URI(String.format("http://%s:8055", markLogicHost)));
+		mapping.put("/mlxprs/test", new URI(String.format("http://%s:8054", markLogicHost)));
+
 		// Emulate MarkLogic Cloud "/token" requests by mapping to the handler defined below that can respond to
 		// these requests in a suitable fashion for manual testing.
 		mapping.put("/token", new URI(String.format("http://%s:8022", serverHost)));
