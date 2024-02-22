@@ -8,6 +8,7 @@ import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.RequiresML11;
 import com.marklogic.client.type.CtsReferenceExpr;
 import com.marklogic.client.type.PlanTripleOption;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -22,6 +23,13 @@ import java.util.Map;
  * fromLiterals is not tested here because RowManagerTest already verifies export/import for it.
  */
 public class ExportTest extends AbstractOpticUpdateTest {
+
+	@BeforeEach
+	void beforeEach() {
+		// We don't need update for any of these tests; this ensures the tests still pass on MarkLogic 10
+		// and < 11.2.0.
+		rowManager.withUpdate(false);
+	}
 
     @Test
 	@ExtendWith(RequiresML11.class)
