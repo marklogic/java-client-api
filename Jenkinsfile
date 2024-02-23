@@ -12,6 +12,7 @@ def getJava(){
 
 def runAllTests(String type, String version, Boolean useReverseProxy){
             copyRPM type, version
+            sh 'sudo /usr/local/sbin/mladmin removeforest /space/Forests'
             setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
             copyConvertersRPM type,version
             setUpMLConverters '$WORKSPACE/xdmp/src/Mark*Converters*.rpm'
@@ -153,6 +154,7 @@ pipeline{
       }
       steps {
         copyRPM 'Latest','11'
+        sh 'sudo /usr/local/sbin/mladmin removeforest /space/Forests'
         setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
         copyConvertersRPM 'Latest','11'
         setUpMLConverters '$WORKSPACE/xdmp/src/Mark*Converters*.rpm'
