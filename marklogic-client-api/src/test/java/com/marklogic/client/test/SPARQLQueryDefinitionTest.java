@@ -20,9 +20,11 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.semantics.*;
+import com.marklogic.client.test.junit5.RequiresML11;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -118,7 +120,14 @@ public class SPARQLQueryDefinitionTest {
     return bindings;
   }
 
-  @Test
+	/**
+	 * This is oddly failing on Jenkins - but not locally - with an error of:
+	 *
+	 * com.marklogic.client.FailedRequestException: Local message: failed to apply resource at /graphs/sparql: Internal Server Error.
+	 * Server Message: XDMP-CORRUPT: <http://marklogic.com/SPARQLQDefTest/r1> <http://marklogic.com/SPARQLQDefTest/p3> ?o . --
+	 * read /space/Forests/java-unittest-2/000004b1/TripleValueData: File corrupt, bad RDFValue::decodeSimpleV2, tag=32 .
+	 */
+	@Test
   public void testBindings() {
     String ask = "ASK FROM <http://marklogic.com/SPARQLQDefTest/g1> " +
       "WHERE { <http://marklogic.com/SPARQLQDefTest/r1> <http://marklogic.com/SPARQLQDefTest/p3> ?o }";

@@ -193,69 +193,70 @@ pipeline{
       }
     }
 
-	stage('regressions-10.0-10.2') {
-	  when {
-		allOf {
-		  branch 'develop'
-		  expression {return params.regressions}
+		stage('regressions-11.1.0') {
+			when {
+				allOf {
+					branch 'develop'
+					expression {return params.regressions}
+				}
+			}
+			steps {
+			runAllTests('Release', '11.1.0', false)
+				junit '**/build/**/TEST*.xml'
+			}
 		}
-	  }
-	  steps {
-		runAllTests('Release', '10.0-10.2', false)
-		junit '**/build/**/TEST*.xml'
-	  }
-	}
 
-	stage('regressions-10.0') {
-	  when {
-		allOf {
-		  branch 'develop'
-		  expression {return params.regressions}
+		stage('regressions-11') {
+			when {
+				allOf {
+					branch 'develop'
+					expression {return params.regressions}
+				}
+			}
+			steps {
+				runAllTests('Latest', '11', false)
+				junit '**/build/**/TEST*.xml'
+			}
 		}
-	  }
-	  steps {
-	  	runAllTests('Latest', '10.0', false)
-		junit '**/build/**/TEST*.xml'
-	  }
-	}
 
-    stage('regressions-11.1.0') {
-      when {
-      	allOf {
-          branch 'develop'
-          expression {return params.regressions}
-        }
-      }
-      steps {
-     	runAllTests('Release', '11.1.0', false)
-        junit '**/build/**/TEST*.xml'
-      }
-    }
-
-    stage('regressions-11') {
-      when {
-        allOf {
-          branch 'develop'
-          expression {return params.regressions}
-        }
-      }
-      steps {
-        runAllTests('Latest', '11', false)
-        junit '**/build/**/TEST*.xml'
-      }
-    }
-
-    stage('regressions-11-reverseProxy') {
-      when {
-    	allOf {
-    	  branch 'develop'
-    	  expression {return params.regressions}
+		stage('regressions-11-reverseProxy') {
+			when {
+				allOf {
+					branch 'develop'
+					expression {return params.regressions}
+				}
+			}
+			steps {
+				runAllTests('Latest', '11', true)
+				junit '**/build/**/TEST*.xml'
+			}
 		}
-	  }
-	  steps {
-	    runAllTests('Latest', '11', true)
-	    junit '**/build/**/TEST*.xml'
-      }
-    }
+
+		stage('regressions-10.0') {
+			when {
+				allOf {
+					branch 'develop'
+					expression {return params.regressions}
+				}
+			}
+			steps {
+				runAllTests('Latest', '10.0', false)
+				junit '**/build/**/TEST*.xml'
+			}
+		}
+
+		stage('regressions-10.0-10.2') {
+			when {
+				allOf {
+					branch 'develop'
+					expression {return params.regressions}
+				}
+			}
+			steps {
+				runAllTests('Release', '10.0-10.2', false)
+				junit '**/build/**/TEST*.xml'
+			}
+		}
+
   }
 }
