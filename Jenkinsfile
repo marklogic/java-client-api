@@ -195,18 +195,19 @@ pipeline{
       }
     }
 
-		stage('regressions-11.1.0') {
-			when {
-				allOf {
-					branch 'develop'
-					expression {return params.regressions}
-				}
-			}
-			steps {
-			runAllTests('Release', '11.1.0', false)
-				junit '**/build/**/TEST*.xml'
-			}
-		}
+// Can't run these as all the Optic Update tests fail now (as expected) on 11.1.0.
+// 		stage('regressions-11.1.0') {
+// 			when {
+// 				allOf {
+// 					branch 'develop'
+// 					expression {return params.regressions}
+// 				}
+// 			}
+// 			steps {
+// 			runAllTests('Release', '11.1.0', false)
+// 				junit '**/build/**/TEST*.xml'
+// 			}
+// 		}
 
 		stage('regressions-11') {
 			when {
