@@ -67,6 +67,7 @@ public class GraphQLTest extends AbstractOpticUpdateTest {
 	}
 
 	private void verifyResponse(JsonNode response) {
+		assertTrue(response.has("data"), "Unexpected response: " + response.toPrettyString());
 		JsonNode data = response.get("data");
 		JsonNode musicians = data.get("opticUnitTest_musician");
 		assertEquals(4, musicians.size());
