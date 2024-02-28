@@ -529,6 +529,24 @@ public class DatabaseClientFactory {
 		}
 	}
 
+	/**
+	 * @since 6.6.0
+	 */
+	public static class OAuthContext extends AuthContext {
+		private String token;
+
+		/**
+		 * @param token the OAuth token to include in the Authorization header in each request sent to MarkLogic.
+		 */
+		public OAuthContext(String token) {
+			this.token = token;
+		}
+
+		public String getToken() {
+			return token;
+		}
+	}
+
   public static class BasicAuthContext extends AuthContext {
     String user;
     String password;
@@ -1287,6 +1305,7 @@ public class DatabaseClientFactory {
 	 *     minutes for which an access token lasts; supported since 6.3.0.</li>
 	 *     <li>marklogic.client.kerberos.principal = must be a String; required for Kerberos authentication</li>
 	 *     <li>marklogic.client.saml.token = must be a String; required for SAML authentication</li>
+	 *     <li>marklogic.client.oauth.token = must be a String; required for OAuth authentication; supported since 6.6.0.</li>
 	 *     <li>marklogic.client.sslContext = must be an instance of {@code javax.net.ssl.SSLContext}</li>
 	 *     <li>marklogic.client.sslProtocol = must be a String; if "default', then uses the JVM default SSL
 	 *     context; else, the value is passed to the {@code getInstance} method in {@code javax.net.ssl.SSLContext}</li>

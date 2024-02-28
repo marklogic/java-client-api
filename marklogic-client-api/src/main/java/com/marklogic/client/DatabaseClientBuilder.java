@@ -44,6 +44,7 @@ public class DatabaseClientBuilder {
 	public final static String AUTH_TYPE_KERBEROS = "kerberos";
 	public final static String AUTH_TYPE_CERTIFICATE = "certificate";
 	public final static String AUTH_TYPE_SAML = "saml";
+	public final static String AUTH_TYPE_OAUTH = "oauth";
 
 	private final Map<String, Object> props;
 
@@ -187,6 +188,25 @@ public class DatabaseClientBuilder {
 	public DatabaseClientBuilder withSAMLAuth(String token) {
 		return withAuthType(AUTH_TYPE_SAML)
 			.withSAMLToken(token);
+	}
+
+	/**
+	 * @param token
+	 * @return
+	 * @since 6.6.0
+	 */
+	public DatabaseClientBuilder withOAuth(String token) {
+		return withAuthType(AUTH_TYPE_OAUTH).withOAuthToken(token);
+	}
+
+	/**
+	 * @param token
+	 * @return
+	 * @since 6.6.0
+	 */
+	public DatabaseClientBuilder withOAuthToken(String token) {
+		props.put(PREFIX + "oauth.token", token);
+		return this;
 	}
 
 	public DatabaseClientBuilder withConnectionType(DatabaseClient.ConnectionType type) {

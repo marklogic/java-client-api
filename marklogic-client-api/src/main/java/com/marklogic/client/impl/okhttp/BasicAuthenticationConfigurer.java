@@ -25,7 +25,7 @@ import okhttp3.Response;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-public class BasicAuthenticationConfigurer implements AuthenticationConfigurer<DatabaseClientFactory.BasicAuthContext> {
+class BasicAuthenticationConfigurer implements AuthenticationConfigurer<DatabaseClientFactory.BasicAuthContext> {
 
 	@Override
 	public void configureAuthentication(OkHttpClient.Builder clientBuilder, DatabaseClientFactory.BasicAuthContext securityContext) {

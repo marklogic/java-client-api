@@ -175,6 +175,8 @@ public class DatabaseClientPropertySource {
 				return newCertificateAuthContext(sslInputs);
 			case DatabaseClientBuilder.AUTH_TYPE_SAML:
 				return newSAMLAuthContext();
+			case DatabaseClientBuilder.AUTH_TYPE_OAUTH:
+				return newOAuthContext();
 			default:
 				throw new IllegalArgumentException("Unrecognized auth type: " + type);
 		}
@@ -251,6 +253,10 @@ public class DatabaseClientPropertySource {
 
 	private DatabaseClientFactory.SecurityContext newSAMLAuthContext() {
 		return new DatabaseClientFactory.SAMLAuthContext(getRequiredStringValue("saml.token"));
+	}
+
+	private DatabaseClientFactory.SecurityContext newOAuthContext() {
+		return new DatabaseClientFactory.OAuthContext(getRequiredStringValue("oauth.token"));
 	}
 
 	private DatabaseClientFactory.SSLHostnameVerifier determineHostnameVerifier() {

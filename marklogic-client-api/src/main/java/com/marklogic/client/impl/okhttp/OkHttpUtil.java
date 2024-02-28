@@ -68,6 +68,8 @@ public abstract class OkHttpUtil {
 			configureSAMLAuth((DatabaseClientFactory.SAMLAuthContext) securityContext, clientBuilder);
 		} else if (securityContext instanceof DatabaseClientFactory.MarkLogicCloudAuthContext) {
 			authenticationConfigurer = new MarkLogicCloudAuthenticationConfigurer(host);
+		} else if (securityContext instanceof DatabaseClientFactory.OAuthContext) {
+			authenticationConfigurer = new OAuthAuthenticationConfigurer();
 		} else {
 			throw new IllegalArgumentException("Unsupported security context: " + securityContext.getClass());
 		}

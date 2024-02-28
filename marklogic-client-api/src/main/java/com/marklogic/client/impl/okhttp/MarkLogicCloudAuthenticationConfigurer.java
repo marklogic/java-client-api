@@ -30,11 +30,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer<MarkLogicCloudAuthContext> {
+class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer<MarkLogicCloudAuthContext> {
 
 	private String host;
 
-	public MarkLogicCloudAuthenticationConfigurer(String host) {
+	MarkLogicCloudAuthenticationConfigurer(String host) {
 		this.host = host;
 	}
 
