@@ -26,7 +26,7 @@ import okhttp3.OkHttpClient;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DigestAuthenticationConfigurer implements AuthenticationConfigurer<DatabaseClientFactory.DigestAuthContext> {
+class DigestAuthenticationConfigurer implements AuthenticationConfigurer<DatabaseClientFactory.DigestAuthContext> {
 
 	@Override
 	public void configureAuthentication(OkHttpClient.Builder clientBuilder, DatabaseClientFactory.DigestAuthContext securityContext) {

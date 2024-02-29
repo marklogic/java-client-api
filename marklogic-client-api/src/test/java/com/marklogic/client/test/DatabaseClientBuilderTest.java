@@ -205,6 +205,16 @@ public class DatabaseClientBuilderTest {
 	}
 
 	@Test
+	void oauth() {
+		bean = Common.newClientBuilder()
+			.withOAuth("abc123")
+			.buildBean();
+
+		DatabaseClientFactory.OAuthContext context = (DatabaseClientFactory.OAuthContext) bean.getSecurityContext();
+		assertEquals("abc123", context.getToken());
+	}
+
+	@Test
 	void defaultSslContext() throws Exception {
 		bean = Common.newClientBuilder()
 			.withSSLContext(SSLContext.getDefault())
