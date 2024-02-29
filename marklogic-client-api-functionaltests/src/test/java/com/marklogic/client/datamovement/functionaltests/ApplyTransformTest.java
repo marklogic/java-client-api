@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.marklogic.client.fastfunctest.datamovement;
+package com.marklogic.client.datamovement.functionaltests;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,6 +44,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * This is a "fast" test but stopTransformJobTest is fragile and we don't want it impacting PR builds.
+ */
 public class ApplyTransformTest extends AbstractFunctionalTest {
 
 	private static DataMovementManager dmManager = null;
