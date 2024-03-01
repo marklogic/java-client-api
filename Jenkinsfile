@@ -235,6 +235,19 @@ pipeline{
 			}
 		}
 
+		stage('regressions-12') {
+			when {
+				allOf {
+					branch 'develop'
+					expression {return params.regressions}
+				}
+			}
+			steps {
+				runAllTests('Latest', '12', false)
+				junit '**/build/**/TEST*.xml'
+			}
+		}
+    
 		stage('regressions-10.0') {
 			when {
 				allOf {
