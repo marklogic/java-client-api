@@ -8,12 +8,15 @@ import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RawQueryDSLPlan;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.MarkLogicVersion;
 import com.marklogic.client.test.junit5.RequiresML11;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.core.io.ClassPathResource;
+
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -22,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ColumnInfoTest {
 
 	private RowManager rowManager;
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	@BeforeEach
 	void beforeEach() {
@@ -29,14 +33,14 @@ public class ColumnInfoTest {
 	}
 
 	@Test
-	void allTypesWithDSLPlan() {
+	void allTypesWithDSLPlan() throws Exception {
 		String query = "op.fromView('javaClient', 'allTypes')";
 		RawQueryDSLPlan plan = rowManager.newRawQueryDSLPlan(new StringHandle(query));
 		verifyColumnInfo(plan);
 	}
 
 	@Test
-	void allTypesWithSerializedPlan() {
+	void allTypesWithSerializedPlan() throws Exception {
 		String serializedQuery = "{\n" +
 			"  \"$optic\": {\n" +
 			"    \"ns\": \"op\",\n" +
@@ -64,7 +68,7 @@ public class ColumnInfoTest {
 	 *
 	 * @param plan
 	 */
-	private void verifyColumnInfo(PlanBuilder.Plan plan) {
+	private void verifyColumnInfo(PlanBuilder.Plan plan) throws Exception {
 		StringHandle output = Common.client.newRowManager().columnInfo(plan, new StringHandle());
 
 		assertTrue(output.getServerTimestamp() > 0, "The server timestamp should be present so that a client, such as " +
@@ -74,13 +78,17 @@ public class ColumnInfoTest {
 		assertEquals(36, columnInfos.length, "There are 35 column definitions in the allTypes TDE, and then a 36th " +
 			"column info is added for the rowid column.");
 
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			JsonNode actualColumnInfo = mapper.readTree("[" + String.join(",", columnInfos) + "]");
-			JsonNode expectedColumnInfo = mapper.readTree(new ClassPathResource("allTypes-columnInfo.json").getInputStream());
-			JSONAssert.assertEquals(expectedColumnInfo.toString(), actualColumnInfo.toString(), true);
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		}
+		JsonNode actualColumnInfo = objectMapper.readTree("[" + String.join(",", columnInfos) + "]");
+		JsonNode expectedColumnInfo = getExpectedColumnInfo();
+		JSONAssert.assertEquals(expectedColumnInfo.toString(), actualColumnInfo.toString(), true);
+	}
+
+	private JsonNode getExpectedColumnInfo() throws IOException {
+		MarkLogicVersion version = Common.getMarkLogicVersion();
+		String file = version.getMajor() <= 11 ?
+			"columnInfo/allTypes-marklogic-11.json" :
+			"columnInfo/allTypes-marklogic-12.json";
+
+		return objectMapper.readTree(new ClassPathResource(file).getInputStream());
 	}
 }

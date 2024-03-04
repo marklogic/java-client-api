@@ -18,12 +18,15 @@ package com.marklogic.client.test;
 
 import com.marklogic.client.io.Format;
 import com.marklogic.client.test.junit5.RequiresML11;
+import com.marklogic.client.test.junit5.RequiresML11OrLower;
 import com.marklogic.client.type.ServerExpression;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 // IMPORTANT: Do not edit. This file is generated.
 // Exception - some of these tests cannot pass on ML <= 10. Those have been modified to not run unless ML is >= 11.
+// Other tests have been disabled to not run on ML >= 12. Getting those tests to pass would require running the Optic
+// code generator workspace on src/main/java, which would then prevent many of the tests from passing on ML <= 11.
 public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
@@ -326,6 +329,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
         executeTester("testFnFormatTime2", p.fn.formatTime(p.col("1"), p.col("2")), false, null, null, null, "10:09:08:00", new ServerExpression[]{ p.xs.time("10:09:08Z"), p.xs.string("[H01]:[m01]:[s01]:[f01]") });
     }
 
+	@ExtendWith(RequiresML11OrLower.class)
     @Test
     public void testFnHead1Exec() {
         executeTester("testFnHead1", p.fn.head(p.col("1")), false, null, null, null, "a", new ServerExpression[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("c")) });
@@ -471,6 +475,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
         executeTester("testFnNumber1", p.fn.number(p.col("1")), false, null, null, null, "1.1", new ServerExpression[]{ p.xs.string("1.1") });
     }
 
+	@ExtendWith(RequiresML11OrLower.class)
     @Test
     public void testFnPrefixFromQName1Exec() {
         executeTester("testFnPrefixFromQName1", p.fn.prefixFromQName(p.col("1")), false, null, null, Format.JSON, null, new ServerExpression[]{ p.xs.QName("abc") });
@@ -1825,6 +1830,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
         executeTester("testXsNCName1", p.xs.NCName(p.col("1")), false, null, null, null, "a-b-c", new ServerExpression[]{ p.xs.string("a-b-c") });
     }
 
+	@ExtendWith(RequiresML11OrLower.class)
     @Test
     public void testXsNegativeInteger1Exec() {
         executeTester("testXsNegativeInteger1", p.xs.negativeInteger(p.col("1")), false, null, null, null, "-1", new ServerExpression[]{ p.xs.doubleVal(-1) });
@@ -1835,11 +1841,13 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
         executeTester("testXsNMTOKEN1", p.xs.NMTOKEN(p.col("1")), false, null, null, null, "a:b:c", new ServerExpression[]{ p.xs.string("a:b:c") });
     }
 
+	@ExtendWith(RequiresML11OrLower.class)
     @Test
     public void testXsNonNegativeInteger1Exec() {
         executeTester("testXsNonNegativeInteger1", p.xs.nonNegativeInteger(p.col("1")), false, null, null, null, "0", new ServerExpression[]{ p.xs.string("0") });
     }
 
+	@ExtendWith(RequiresML11OrLower.class)
     @Test
     public void testXsNonPositiveInteger1Exec() {
         executeTester("testXsNonPositiveInteger1", p.xs.nonPositiveInteger(p.col("1")), false, null, null, null, "0", new ServerExpression[]{ p.xs.string("0") });
@@ -1855,6 +1863,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
         executeTester("testXsNumeric1", p.xs.numeric(p.col("1")), false, null, null, null, "1.2", new ServerExpression[]{ p.xs.doubleVal(1.2) });
     }
 
+	@ExtendWith(RequiresML11OrLower.class)
     @Test
     public void testXsPositiveInteger1Exec() {
         executeTester("testXsPositiveInteger1", p.xs.positiveInteger(p.col("1")), false, null, null, null, "1", new ServerExpression[]{ p.xs.doubleVal(1) });
