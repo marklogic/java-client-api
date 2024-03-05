@@ -1,0 +1,292 @@
+[
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "intValue",
+		"type": "int",
+		"hidden": false,
+		"nullable": false
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "unsignedIntValue",
+		"type": "unsignedInt",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "longValue",
+		"type": "long",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "unsignedLongValue",
+		"type": "unsignedLong",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "floatValue",
+		"type": "float",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "doubleValue",
+		"type": "double",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "decimalValue",
+		"type": "decimal",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "dateTimeValue",
+		"type": "dateTime",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "timeValue",
+		"type": "time",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "dateValue",
+		"type": "date",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "gYearMonthValue",
+		"type": "gYearMonth",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "gYearValue",
+		"type": "gYear",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "gMonthValue",
+		"type": "gMonth",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "gDayValue",
+		"type": "gDay",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "yearMonthDurationValue",
+		"type": "yearMonthDuration",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "dayTimeDurationValue",
+		"type": "dayTimeDuration",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "stringValue",
+		"type": "string",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "anyURIValue",
+		"type": "anyUri",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "pointValue",
+		"type": "point",
+		"hidden": false,
+		"nullable": true,
+		"coordinate-system": "wgs84"
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "longLatPointValue",
+		"type": "point",
+		"hidden": false,
+		"nullable": true,
+		"coordinate-system": "wgs84"
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "booleanValue",
+		"type": "boolean",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "base64BinaryValue",
+		"type": "base64Binary",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "hexBinaryValue",
+		"type": "hexBinary",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "byteValue",
+		"type": "byte",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "durationValue",
+		"type": "duration",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "gMonthDayValue",
+		"type": "gMonthDay",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "integerValue",
+		"type": "integer",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "negativeIntegerValue",
+		"type": "negativeInteger",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "nonNegativeIntegerValue",
+		"type": "nonNegativeInteger",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "nonPositiveIntegerValue",
+		"type": "nonPositiveInteger",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "positiveIntegerValue",
+		"type": "positiveInteger",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "shortValue",
+		"type": "short",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "unsignedByteValue",
+		"type": "unsignedByte",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "unsignedShortValue",
+		"type": "unsignedShort",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "IRIValue",
+		"type": "iri",
+		"hidden": false,
+		"nullable": true
+	},
+	{
+		"schema": "javaClient",
+		"view": "allTypes",
+		"column": "rowid",
+		"type": "rowid",
+		"hidden": true,
+		"nullable": false
+	}
+]
