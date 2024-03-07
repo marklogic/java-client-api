@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(RequiresML11.class)
-@Disabled("Temporarily disabled until 11-nightly is fixed; see ML-12566")
 public class GraphQLTest extends AbstractOpticUpdateTest {
 
 	private final static String QUERY = "query myQuery { opticUnitTest_musician {firstName lastName}}";
