@@ -525,7 +525,7 @@ public class RowManagerTest {
   @ExtendWith(RequiresML11.class)
   public void testErrorWhileStreamingRows() {
     final String validQueryThatEventuallyThrowsAnError = "select case " +
-        "when lastName = 'Davis' then fn_error(fn_qname('', 'SQL-TABLENOTFOUND'), 'Internal Server Error') end, " +
+        "when lastName = 'Byron' then fn_error(fn_qname('', 'SQL-TABLENOTFOUND'), 'Internal Server Error') end, " +
         "opticUnitTest.musician.* from (select * from opticUnitTest.musician order by lastName)";
 
     RowManager rowManager = Common.client.newRowManager();
@@ -534,7 +534,7 @@ public class RowManagerTest {
     FailedRequestException ex = assertThrows(FailedRequestException.class, () -> rowManager.resultRows(plan),
 		"The SQL query is designed to not immediately fail - it will immediately return a 200 status code to the " +
 			"Java Client because the query itself can be executed - but will fail later as it streams rows; " +
-			"specifically, it will fail on the fourth row, which is the 'Davis' row. " +
+			"specifically, it will fail on the second row, which is the 'Byron' row. " +
 			"If chunking is configured correctly for the /v1/rows requests - i.e. if the " +
 			"'TE' header is present - then ML should return trailers in the HTTP response named 'ml-error-code' and " +
 			"'ml-error-message'. Those are intended to indicate that while a 200 was returned, an error occurred later " +
