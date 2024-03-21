@@ -452,7 +452,8 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     ModifyPlan team_planSum = p.fromTriples(team_planSumSeq);
 
     ModifyPlan outputSum = player_planSum.joinInner(team_planSum)
-        .groupBy(null, p.sum(p.col("SumAll"), playerEffCol));
+        .groupBy(null, p.sum(p.col("SumAll"), playerEffCol))
+		.orderBy(p.desc(p.col("SumAll")));
     jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
 

@@ -1206,8 +1206,6 @@ public class TestOpticOnLexicons extends AbstractFunctionalTest {
 	  JacksonHandle jacksonHandle = new JacksonHandle();
 	  jacksonHandle.setMimetype("application/json");
 
-	  System.out.println("PLAN: " + plan.exportAs(ObjectNode.class).toPrettyString());
-
 	  rowMgr.resultDoc(plan, jacksonHandle);
 	  JsonNode rows = jacksonHandle.get().path("rows");
 	  assertEquals(1, rows.size(), "Expected only the New Jersey row, which has a popularity of 2: " + rows.toPrettyString());

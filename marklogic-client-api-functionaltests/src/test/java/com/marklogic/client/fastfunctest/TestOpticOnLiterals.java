@@ -625,7 +625,8 @@ public class TestOpticOnLiterals extends AbstractFunctionalTest {
             p.col("val"),
             p.col("uri"),
             p.as("nodes", p.xpath("doc", "/doc/distance/@direction")))
-        .where(p.isDefined(p.col("nodes")));
+        .where(p.isDefined(p.col("nodes")))
+		.orderBy(p.asc("id"));
 
     System.out.println(output17.exportAs(JsonNode.class).toPrettyString());
 
@@ -653,7 +654,8 @@ public class TestOpticOnLiterals extends AbstractFunctionalTest {
             p.col("val"),
             p.col("uri"),
             p.as("nodes", p.xpath("doc", "/doc/location/latLonPair/(lat|long)/text()")))
-        .where(p.isDefined(p.col("nodes")));
+        .where(p.isDefined(p.col("nodes")))
+		.orderBy(p.asc("id"));
 
     JacksonHandle jacksonHandle18 = new JacksonHandle();
     jacksonHandle18.setMimetype("application/json");
@@ -712,7 +714,8 @@ public class TestOpticOnLiterals extends AbstractFunctionalTest {
             p.col("val"),
             p.col("uri"),
             p.as("nodes", p.xpath("doc", "/doc/city")))
-        .where(p.isDefined(p.col("nodes")));
+        .where(p.isDefined(p.col("nodes")))
+		.orderBy(p.asc("id"));
     JacksonHandle jacksonHandle15 = new JacksonHandle();
     jacksonHandle15.setMimetype("application/json");
     rowMgr.resultDoc(output15, jacksonHandle15);

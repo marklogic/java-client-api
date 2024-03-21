@@ -310,7 +310,8 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
     ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", p.fragmentIdCol("fragId2"));
 
     ModifyPlan output = plan1.joinInner(plan2)
-        .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")));
+        .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
+		.orderBy(p.asc(p.col("date")));
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -356,7 +357,8 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
 
     ModifyPlan output = plan1.where(p.cts.jsonPropertyWordQuery("city", "*k", "wildcarded", "case-sensitive"))
         .joinInner(plan2)
-        .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")));
+        .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
+		.orderBy(p.asc(p.col("date")));
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
