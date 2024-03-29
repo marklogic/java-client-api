@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 MarkLogic Corporation
+ * Copyright (c) 2024 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -226,6 +226,188 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
   public abstract ServerExpression subtract(ServerExpression left, ServerExpression right);
+  /**
+  * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
+  * @param action  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan onError(String action);
+  /**
+  * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
+  * @param action  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan onError(XsStringVal action);
+  /**
+  * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
+  * @param action  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param errorColumn  Valid options are: "fail" - stop procesisng and "continue" - add an error to the error column and continue processing. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan onError(String action, String errorColumn);
+  /**
+  * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
+  * @param action  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param errorColumn  Valid options are: "fail" - stop procesisng and "continue" - add an error to the error column and continue processing. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan onError(XsStringVal action, PlanExprCol errorColumn);
+  /**
+  * Builds a patch operation including a sequence of inserts, replaces, replace-inserts and deletes.
+  * @param docColumn  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation. See {@link PlanBuilder#col(XsStringVal)}
+  * @param patchDef  The document column which need to be patched.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan patch(String docColumn, PlanPatchBuilderPlan patchDef);
+  /**
+  * Builds a patch operation including a sequence of inserts, replaces, replace-inserts and deletes.
+  * @param docColumn  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation. See {@link PlanBuilder#col(XsStringVal)}
+  * @param patchDef  The document column which need to be patched.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan patch(PlanExprCol docColumn, PlanPatchBuilderPlan patchDef);
+  /**
+  * Create a patch builder which can be used to chain patch operations.
+  * @param contextPath  The context path to patch.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan patchBuilder(String contextPath);
+  /**
+  * Create a patch builder which can be used to chain patch operations.
+  * @param contextPath  The context path to patch.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan patchBuilder(XsStringVal contextPath);
+  /**
+  * Create a patch builder which can be used to chain patch operations.
+  * @param contextPath  The context path to patch.
+  * @param namespaces  Namespaces prefix (key) and uri (value).
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan patchBuilder(String contextPath, Map<String,String>[] namespaces);
+  /**
+  * Create a patch builder which can be used to chain patch operations.
+  * @param contextPath  The context path to patch.
+  * @param namespaces  Namespaces prefix (key) and uri (value).
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan patchBuilder(XsStringVal contextPath, Map<String,String>[] namespaces);
+  /**
+  * Insert a new node after another node.
+  * @param path  The Patch Builder Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param node  The path to insert the node after.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan insertAfter(String path, Node node);
+  /**
+  * Insert a new node after another node.
+  * @param path  The Patch Builder Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param node  The path to insert the node after.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan insertAfter(XsStringVal path, Node node);
+  /**
+  * Insert a new node before another node.
+  * @param path  The Patch Builder Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param node  The path to insert the node before.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan insertBefore(String path, Node node);
+  /**
+  * Insert a new node before another node.
+  * @param path  The Patch Builder Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param node  The path to insert the node before.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan insertBefore(XsStringVal path, Node node);
+  /**
+  * Insert a node as child.
+  * @param path  The Patch Builder Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param node  The path to insert the child.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan insertChild(String path, Node node);
+  /**
+  * Insert a node as child.
+  * @param path  The Patch Builder Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param node  The path to insert the child.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan insertChild(XsStringVal path, Node node);
+  /**
+  * This method is specific for JSON and inserts a key/value pair to an object.
+  * @param path  The Patch Builder Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param key  The path which returns an JSON Object.
+  * @param node  The key to insert.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan insertNamedChild(String path, String key, Node node);
+  /**
+  * This method is specific for JSON and inserts a key/value pair to an object.
+  * @param path  The Patch Builder Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param key  The path which returns an JSON Object.
+  * @param node  The key to insert.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan insertNamedChild(XsStringVal path, XsStringVal key, Node node);
+  /**
+  * This method deletes a document from the database. If the document does not exist, this method does not throw an error. Delete a node.
+  * @param path  If this column is not specified then it assumes a column 'uri' is present. This can be a string of the uri column name or an op:col. Use op:view-col or op:schema-col if you need to identify columns in the two views that have the same column name. This can also be a map object specify the uri column name.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan remove(String path);
+  /**
+  * This method deletes a document from the database. If the document does not exist, this method does not throw an error. Delete a node.
+  * @param path  If this column is not specified then it assumes a column 'uri' is present. This can be a string of the uri column name or an op:col. Use op:view-col or op:schema-col if you need to identify columns in the two views that have the same column name. This can also be a map object specify the uri column name.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan remove(XsStringVal path);
+  /**
+  * Replace a node with another node.
+  * @param path  The Patch Builder Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param node  The path to replace.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan replace(String path, Node node);
+  /**
+  * Replace a node with another node.
+  * @param path  The Patch Builder Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param node  The path to replace.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan replace(XsStringVal path, Node node);
+  /**
+  * Replace a child if it exist, or insert if it does not exist.
+  * @param parentPath  The Patch Builder Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param pathToReplace  The parent path to insert/replace.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan replaceInsertChild(String parentPath, String pathToReplace);
+  /**
+  * Replace a child if it exist, or insert if it does not exist.
+  * @param parentPath  The Patch Builder Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param pathToReplace  The parent path to insert/replace.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan replaceInsertChild(XsStringVal parentPath, XsStringVal pathToReplace);
+  /**
+  * Replace a child if it exist, or insert if it does not exist.
+  * @param parentPath  The Patch Builder Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param pathToReplace  The parent path to insert/replace.
+  * @param node  The path to insert/replace which is relative to parent-path.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan replaceInsertChild(String parentPath, String pathToReplace, Node node);
+  /**
+  * Replace a child if it exist, or insert if it does not exist.
+  * @param parentPath  The Patch Builder Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param pathToReplace  The parent path to insert/replace.
+  * @param node  The path to insert/replace which is relative to parent-path.
+  * @return  a PlanPatchBuilderPlan object
+  */
+  public abstract PlanPatchBuilderPlan replaceInsertChild(XsStringVal parentPath, XsStringVal pathToReplace, Node node);
+  public abstract PlanPatchBuilderPlan replaceValue(String path, Item value);
+  public abstract PlanPatchBuilderPlan replaceValue(XsStringVal path, Item value);
   /**
   * This function creates a placeholder for a literal value in an expression or as the offset or max for a limit. The op:result function throws in an error if the binding parameter does not specify a literal value for the parameter.
   * <p>
@@ -1587,22 +1769,6 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinDocUri(PlanColumn uriCol, PlanColumn fragmentIdCol);
-/**
-  * This method adds an uri column and a document column to rows based on an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). If the fragment id column is null in the row, the row is dropped from the rowset. 
-  * @param docCol  The document column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document as its value. See {@link PlanBuilder#col(XsStringVal)}
-  * @param uriCol  The uri column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document uri as its value. See {@link PlanBuilder#col(XsStringVal)}
-  * @param sourceCol  The document uri or fragment id value. This is either an op:fragment-id-col specifying a fragment id column or a document uri column as xs:string or as a column using op:col, op:view-col or op:schema-col. Joining on a fragment id is more efficient than joining on a uri column. See {@link PlanBuilder#col(XsStringVal)}
-  * @return  a ModifyPlan object
-  */
-  public abstract ModifyPlan joinDocAndUri(String docCol, String uriCol, String sourceCol);
-/**
-  * This method adds an uri column and a document column to rows based on an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). If the fragment id column is null in the row, the row is dropped from the rowset. 
-  * @param docCol  The document column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document as its value. See {@link PlanBuilder#col(XsStringVal)}
-  * @param uriCol  The uri column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document uri as its value. See {@link PlanBuilder#col(XsStringVal)}
-  * @param sourceCol  The document uri or fragment id value. This is either an op:fragment-id-col specifying a fragment id column or a document uri column as xs:string or as a column using op:col, op:view-col or op:schema-col. Joining on a fragment id is more efficient than joining on a uri column. See {@link PlanBuilder#col(XsStringVal)}
-  * @return  a ModifyPlan object
-  */
-  public abstract ModifyPlan joinDocAndUri(PlanColumn docCol, PlanColumn uriCol, PlanColumn sourceCol);
 /**
   * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets. 
   * @param right  The row set from the right view.
