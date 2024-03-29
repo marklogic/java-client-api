@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 MarkLogic Corporation
+ * Copyright (c) 2024 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -614,6 +614,81 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
+  public PlanPatchBuilderPlan insertAfter(String path, Node node) {
+    return insertAfter((path == null) ? (XsStringVal) null : xs.string(path), node);
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan insertAfter(XsStringVal path, Node node) {
+    if (path == null) {
+      throw new IllegalArgumentException("path parameter for insertAfter() cannot be null");
+    }
+    if (node == null) {
+      throw new IllegalArgumentException("node parameter for insertAfter() cannot be null");
+    }
+    return new PatchBuilderPlanCallImpl("op", "insert-after", new Object[]{ path, node });
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan insertBefore(String path, Node node) {
+    return insertBefore((path == null) ? (XsStringVal) null : xs.string(path), node);
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan insertBefore(XsStringVal path, Node node) {
+    if (path == null) {
+      throw new IllegalArgumentException("path parameter for insertBefore() cannot be null");
+    }
+    if (node == null) {
+      throw new IllegalArgumentException("node parameter for insertBefore() cannot be null");
+    }
+    return new PatchBuilderPlanCallImpl("op", "insert-before", new Object[]{ path, node });
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan insertChild(String path, Node node) {
+    return insertChild((path == null) ? (XsStringVal) null : xs.string(path), node);
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan insertChild(XsStringVal path, Node node) {
+    if (path == null) {
+      throw new IllegalArgumentException("path parameter for insertChild() cannot be null");
+    }
+    if (node == null) {
+      throw new IllegalArgumentException("node parameter for insertChild() cannot be null");
+    }
+    return new PatchBuilderPlanCallImpl("op", "insert-child", new Object[]{ path, node });
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan insertNamedChild(String path, String key, Node node) {
+    return insertNamedChild((path == null) ? (XsStringVal) null : xs.string(path), (key == null) ? (XsStringVal) null : xs.string(key), node);
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan insertNamedChild(XsStringVal path, XsStringVal key, Node node) {
+    if (path == null) {
+      throw new IllegalArgumentException("path parameter for insertNamedChild() cannot be null");
+    }
+    if (key == null) {
+      throw new IllegalArgumentException("key parameter for insertNamedChild() cannot be null");
+    }
+    if (node == null) {
+      throw new IllegalArgumentException("node parameter for insertNamedChild() cannot be null");
+    }
+    return new PatchBuilderPlanCallImpl("op", "insert-named-child", new Object[]{ path, key, node });
+  }
+
+  
+  @Override
   public ServerExpression isDefined(ServerExpression operand) {
     if (operand == null) {
       throw new IllegalArgumentException("operand parameter for isDefined() cannot be null");
@@ -857,11 +932,74 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
+  public ModifyPlan onError(String action) {
+    return onError((action == null) ? (XsStringVal) null : xs.string(action));
+  }
+
+  
+  @Override
+  public ModifyPlan onError(XsStringVal action) {
+    if (action == null) {
+      throw new IllegalArgumentException("action parameter for onError() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "on-error", new Object[]{ action });
+  }
+
+  
+  @Override
+  public ModifyPlan onError(String action, String errorColumn) {
+    return onError((action == null) ? (XsStringVal) null : xs.string(action), (errorColumn == null) ? (PlanExprCol) null : exprCol(errorColumn));
+  }
+
+  
+  @Override
+  public ModifyPlan onError(XsStringVal action, PlanExprCol errorColumn) {
+    if (action == null) {
+      throw new IllegalArgumentException("action parameter for onError() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "on-error", new Object[]{ action, errorColumn });
+  }
+
+  
+  @Override
   public ServerExpression or(ServerExpression... left) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for or() cannot be null");
     }
     return new XsExprImpl.BooleanCallImpl("op", "or", left);
+  }
+
+  
+  @Override
+  public ModifyPlan patch(String docColumn, PlanPatchBuilderPlan patchDef) {
+    return patch((docColumn == null) ? (PlanExprCol) null : exprCol(docColumn), patchDef);
+  }
+
+  
+  @Override
+  public ModifyPlan patch(PlanExprCol docColumn, PlanPatchBuilderPlan patchDef) {
+    if (docColumn == null) {
+      throw new IllegalArgumentException("docColumn parameter for patch() cannot be null");
+    }
+    if (patchDef == null) {
+      throw new IllegalArgumentException("patchDef parameter for patch() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "patch", new Object[]{ docColumn, patchDef });
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan patchBuilder(String contextPath) {
+    return patchBuilder((contextPath == null) ? (XsStringVal) null : xs.string(contextPath));
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan patchBuilder(XsStringVal contextPath) {
+    if (contextPath == null) {
+      throw new IllegalArgumentException("contextPath parameter for patchBuilder() cannot be null");
+    }
+    return new PatchBuilderPlanCallImpl("op", "patch-builder", new Object[]{ contextPath });
   }
 
   
@@ -910,6 +1048,96 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
       throw new IllegalArgumentException("value parameter for prop() cannot be null");
     }
     return new JsonPropertyCallImpl("op", "prop", new Object[]{ key, value });
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan remove(String path) {
+    return remove((path == null) ? (XsStringVal) null : xs.string(path));
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan remove(XsStringVal path) {
+    if (path == null) {
+      throw new IllegalArgumentException("path parameter for remove() cannot be null");
+    }
+    return new PatchBuilderPlanCallImpl("op", "remove", new Object[]{ path });
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan replace(String path, Node node) {
+    return replace((path == null) ? (XsStringVal) null : xs.string(path), node);
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan replace(XsStringVal path, Node node) {
+    if (path == null) {
+      throw new IllegalArgumentException("path parameter for replace() cannot be null");
+    }
+    if (node == null) {
+      throw new IllegalArgumentException("node parameter for replace() cannot be null");
+    }
+    return new PatchBuilderPlanCallImpl("op", "replace", new Object[]{ path, node });
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan replaceInsertChild(String parentPath, String pathToReplace) {
+    return replaceInsertChild((parentPath == null) ? (XsStringVal) null : xs.string(parentPath), (pathToReplace == null) ? (XsStringVal) null : xs.string(pathToReplace));
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan replaceInsertChild(XsStringVal parentPath, XsStringVal pathToReplace) {
+    if (parentPath == null) {
+      throw new IllegalArgumentException("parentPath parameter for replaceInsertChild() cannot be null");
+    }
+    if (pathToReplace == null) {
+      throw new IllegalArgumentException("pathToReplace parameter for replaceInsertChild() cannot be null");
+    }
+    return new PatchBuilderPlanCallImpl("op", "replace-insert-child", new Object[]{ parentPath, pathToReplace });
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan replaceInsertChild(String parentPath, String pathToReplace, Node node) {
+    return replaceInsertChild((parentPath == null) ? (XsStringVal) null : xs.string(parentPath), (pathToReplace == null) ? (XsStringVal) null : xs.string(pathToReplace), node);
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan replaceInsertChild(XsStringVal parentPath, XsStringVal pathToReplace, Node node) {
+    if (parentPath == null) {
+      throw new IllegalArgumentException("parentPath parameter for replaceInsertChild() cannot be null");
+    }
+    if (pathToReplace == null) {
+      throw new IllegalArgumentException("pathToReplace parameter for replaceInsertChild() cannot be null");
+    }
+    if (node == null) {
+      throw new IllegalArgumentException("node parameter for replaceInsertChild() cannot be null");
+    }
+    return new PatchBuilderPlanCallImpl("op", "replace-insert-child", new Object[]{ parentPath, pathToReplace, node });
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan replaceValue(String path, Item value) {
+    return replaceValue((path == null) ? (XsStringVal) null : xs.string(path), value);
+  }
+
+  
+  @Override
+  public PlanPatchBuilderPlan replaceValue(XsStringVal path, Item value) {
+    if (path == null) {
+      throw new IllegalArgumentException("path parameter for replaceValue() cannot be null");
+    }
+    if (value == null) {
+      throw new IllegalArgumentException("value parameter for replaceValue() cannot be null");
+    }
+    return new PatchBuilderPlanCallImpl("op", "replace-value", new Object[]{ path, value });
   }
 
   
@@ -1602,6 +1830,27 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
   }
 
   
+  static class PatchBuilderPlanSeqListImpl extends PlanSeqListImpl implements PlanPatchBuilderPlanSeq {
+    PatchBuilderPlanSeqListImpl(Object[] items) {
+      super(items);
+    }
+  }
+
+  
+  static class PatchBuilderPlanSeqCallImpl extends PlanCallImpl implements PlanPatchBuilderPlanSeq {
+    PatchBuilderPlanSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
+  static class PatchBuilderPlanCallImpl extends PlanCallImpl implements PlanPatchBuilderPlan {
+    PatchBuilderPlanCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
   static class RowColTypesSeqListImpl extends PlanSeqListImpl implements PlanRowColTypesSeq {
     RowColTypesSeqListImpl(Object[] items) {
       super(items);
@@ -1927,27 +2176,6 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
       throw new IllegalArgumentException("sourceCol parameter for joinDoc() cannot be null");
     }
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "join-doc", new Object[]{ docCol, sourceCol });
-  }
-
-    
-  @Override
-  public ModifyPlan joinDocAndUri(String docCol, String uriCol, String sourceCol) {
-    return joinDocAndUri((docCol == null) ? (PlanColumn) null : col(docCol), (uriCol == null) ? (PlanColumn) null : col(uriCol), (sourceCol == null) ? (PlanColumn) null : col(sourceCol));
-  }
-
-    
-  @Override
-  public ModifyPlan joinDocAndUri(PlanColumn docCol, PlanColumn uriCol, PlanColumn sourceCol) {
-    if (docCol == null) {
-      throw new IllegalArgumentException("docCol parameter for joinDocAndUri() cannot be null");
-    }
-    if (uriCol == null) {
-      throw new IllegalArgumentException("uriCol parameter for joinDocAndUri() cannot be null");
-    }
-    if (sourceCol == null) {
-      throw new IllegalArgumentException("sourceCol parameter for joinDocAndUri() cannot be null");
-    }
-    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "join-doc-and-uri", new Object[]{ docCol, uriCol, sourceCol });
   }
 
     

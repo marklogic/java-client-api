@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 MarkLogic Corporation
+ * Copyright (c) 2024 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 
 package com.marklogic.client.test;
+
+import org.junit.Test;
 
 import com.marklogic.client.io.Format;
 import com.marklogic.client.test.junit5.RequiresML11;
@@ -211,17 +213,17 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnCurrentDate0Exec() {
-        executeTester("testFnCurrentDate0", p.fn.currentDate(), true, "xs:date", null, null, "2023-10-24Z", new ServerExpression[]{  });
+        executeTester("testFnCurrentDate0", p.fn.currentDate(), true, "xs:date", null, null, "2024-03-29Z", new ServerExpression[]{  });
     }
 
     @Test
     public void testFnCurrentDateTime0Exec() {
-        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), true, "xs:dateTime", null, null, "2023-10-24T15:21:06.255777Z", new ServerExpression[]{  });
+        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), true, "xs:dateTime", null, null, "2024-03-29T15:55:38.802425Z", new ServerExpression[]{  });
     }
 
     @Test
     public void testFnCurrentTime0Exec() {
-        executeTester("testFnCurrentTime0", p.fn.currentTime(), true, "xs:time", null, null, "15:21:06Z", new ServerExpression[]{  });
+        executeTester("testFnCurrentTime0", p.fn.currentTime(), true, "xs:time", null, null, "15:55:38Z", new ServerExpression[]{  });
     }
 
     @Test
@@ -734,7 +736,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     @Test
 	@ExtendWith(RequiresML11.class)
     public void testGeoGeohashDecode1Exec() {
-		executeTester("testGeoGeohashDecode1", p.geo.geohashDecode(p.col("1")), false, "cts:box", null, null, "[-90, -180, 90, 180]", new ServerExpression[]{p.xs.string("abc")});
+        executeTester("testGeoGeohashDecode1", p.geo.geohashDecode(p.col("1")), false, "cts:box", null, null, "[-90, -180, 90, 180]", new ServerExpression[]{ p.xs.string("abc") });
     }
 
     @Test
@@ -1011,7 +1013,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemBnode0Exec() {
-        executeTester("testSemBnode0", p.sem.bnode(), true, "sem:blank", null, null, "_:bnode801272998575329659", new ServerExpression[]{  });
+        executeTester("testSemBnode0", p.sem.bnode(), true, "sem:blank", null, null, "_:bnode17537304856629809111", new ServerExpression[]{  });
     }
 
     @Test
@@ -1091,7 +1093,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemRandom0Exec() {
-        executeTester("testSemRandom0", p.sem.random(), true, null, null, null, "0.996817928554708", new ServerExpression[]{  });
+        executeTester("testSemRandom0", p.sem.random(), true, null, null, null, "0.298222040655036", new ServerExpression[]{  });
     }
 
     @Test
@@ -1116,12 +1118,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemUuid0Exec() {
-        executeTester("testSemUuid0", p.sem.uuid(), true, "sem:iri", null, null, "urn:uuid:c04549cf-e759-4190-bb96-8a0efaa4fcff", new ServerExpression[]{  });
+        executeTester("testSemUuid0", p.sem.uuid(), true, "sem:iri", null, null, "urn:uuid:60ab3fd4-1510-4549-b288-a9425510a6e0", new ServerExpression[]{  });
     }
 
     @Test
     public void testSemUuidString0Exec() {
-        executeTester("testSemUuidString0", p.sem.uuidString(), true, null, null, null, "32351923-7f22-4a3f-9e92-884151190ee8", new ServerExpression[]{  });
+        executeTester("testSemUuidString0", p.sem.uuidString(), true, null, null, null, "34fcd935-f4c3-49cd-940e-c5b1077ed0f2", new ServerExpression[]{  });
     }
 
     @Test
@@ -1256,7 +1258,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSqlRand1Exec() {
-        executeTester("testSqlRand1", p.sql.rand(p.col("1")), true, "xs:unsignedLong", null, null, "1308547733197903283", new ServerExpression[]{ p.xs.unsignedLong(1) });
+        executeTester("testSqlRand1", p.sql.rand(p.col("1")), true, "xs:unsignedLong", null, null, "16821889242025875046", new ServerExpression[]{ p.xs.unsignedLong(1) });
     }
 
     @Test
@@ -1361,7 +1363,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpCrypt21Exec() {
-        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), true, null, null, null, "$256$Byph9.Mc3xqzhgeH.IAJh/$256$nAr3j1jWo/Wf2yN7", new ServerExpression[]{ p.xs.string("abc") });
+        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), true, null, null, null, "$256$o48F43fy9v7BGQI9gmP2l/$256$3saYwHyLNg4jkPLJ", new ServerExpression[]{ p.xs.string("abc") });
     }
 
     @Test
@@ -1591,7 +1593,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpRandom0Exec() {
-        executeTester("testXdmpRandom0", p.xdmp.random(), true, "xs:unsignedLong", null, null, "7692759001122562087", new ServerExpression[]{  });
+        executeTester("testXdmpRandom0", p.xdmp.random(), true, "xs:unsignedLong", null, null, "6870814397274692798", new ServerExpression[]{  });
     }
 
     @Test
@@ -1672,7 +1674,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     @Test
 	@ExtendWith(RequiresML11.class)
     public void testXdmpUnquote1Exec() {
-		executeTester("testXdmpUnquote1", p.xdmp.unquote(p.col("1")), false, null, "array", Format.JSON, "[123]", new ServerExpression[]{p.xs.string("[123]")});
+        executeTester("testXdmpUnquote1", p.xdmp.unquote(p.col("1")), false, null, "array", Format.JSON, "[123]", new ServerExpression[]{ p.xs.string("[123]") });
     }
 
     @Test
