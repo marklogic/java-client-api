@@ -18,6 +18,7 @@ package com.marklogic.client.test.rows;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.document.DocumentManager;
@@ -531,16 +532,17 @@ public class RowManagerTest {
     RowManager rowManager = Common.client.newRowManager();
     PlanBuilder.ModifyPlan plan = rowManager.newPlanBuilder().fromSql(validQueryThatEventuallyThrowsAnError);
 
-    FailedRequestException ex = assertThrows(FailedRequestException.class, () -> rowManager.resultRows(plan),
-		"The SQL query is designed to not immediately fail - it will immediately return a 200 status code to the " +
-			"Java Client because the query itself can be executed - but will fail later as it streams rows; " +
-			"specifically, it will fail on the second row, which is the 'Byron' row. " +
-			"If chunking is configured correctly for the /v1/rows requests - i.e. if the " +
-			"'TE' header is present - then ML should return trailers in the HTTP response named 'ml-error-code' and " +
-			"'ml-error-message'. Those are intended to indicate that while a 200 was returned, an error occurred later " +
-			"while streaming data back. The Java Client is then expected to detect those trailers and throw a " +
-			"FailedRequestException. If the Java Client does not do that, then no exception will be thrown and this " +
-			"assertion will fail.");
+	if (Common.getMarkLogicVersion().getMajor() >= 12) {
+		FailedRequestException ex = assertThrows(FailedRequestException.class, () -> rowManager.resultRows(plan),
+			"The SQL query is designed to not immediately fail - it will immediately return a 200 status code to the " +
+				"Java Client because the query itself can be executed - but will fail later as it streams rows; " +
+				"specifically, it will fail on the second row, which is the 'Byron' row. " +
+				"If chunking is configured correctly for the /v1/rows requests - i.e. if the " +
+				"'TE' header is present - then ML should return trailers in the HTTP response named 'ml-error-code' and " +
+				"'ml-error-message'. Those are intended to indicate that while a 200 was returned, an error occurred later " +
+				"while streaming data back. The Java Client is then expected to detect those trailers and throw a " +
+				"FailedRequestException. If the Java Client does not do that, then no exception will be thrown and this " +
+				"assertion will fail.");
 
     assertEquals(500, ex.getServerStatusCode(),
 		"A 500 is expected, even though ML immediately returned a 200 before it started streaming any data " +
@@ -556,6 +558,13 @@ public class RowManagerTest {
 		  ex.getMessage().contains("SQL-TABLENOTFOUND"),
 		  "The exception message is expected to be a formatted message containing the values of the 'ml-error-code' and " +
 			  "'ml-error-message' trailers");
+
+	} else {
+		// For unknown reasons in MarkLogic 11, the invalid query immediately causes an IO error, while on MarkLogic 12,
+		// the expected exception is thrown.
+		MarkLogicIOException ex = assertThrows(MarkLogicIOException.class, () -> rowManager.resultRows(plan));
+		assertTrue(ex.getMessage().contains("unexpected end of stream"), "Unexpected error: " + ex.getMessage());
+	}
   }
 
   @Test
