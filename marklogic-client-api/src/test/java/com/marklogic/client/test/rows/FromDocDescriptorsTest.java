@@ -3,16 +3,23 @@ package com.marklogic.client.test.rows;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
+import com.marklogic.client.extra.gson.GSONHandle;
+import com.marklogic.client.impl.BaseTypeImpl;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
+import com.marklogic.client.impl.PlanBuilderSubImpl;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.JSONReadHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.RequiresML11;
+import com.marklogic.client.type.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -29,6 +36,34 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
 
     private final static String USER_WITH_DEFAULT_COLLECTIONS_AND_PERMISSIONS = "writer-default-collections-and-permissions";
+
+	@Test
+	public void junk() {
+		Common.client = Common.newClientBuilder().withUsername(USER_WITH_DEFAULT_COLLECTIONS_AND_PERMISSIONS).build();
+		PlanBuilderSubImpl planBuilder = new PlanBuilderSubImpl();
+		final String firstUri = "/acme/doc1.json";
+
+		DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet().add(firstUri, new StringHandle("{\"A\":\"a\", \"B\":\"b\"}").withFormat(Format.JSON));
+		PlanDocDescriptorSeq docDescriptor = planBuilder.docDescriptors(writeSet);
+		PlanBuilder.AccessPlan plan = planBuilder.fromDocDescriptors(docDescriptor);
+		// This works
+		Common.client.newRowManager().withUpdate(true).execute(plan.write());
+
+		PlanPatchBuilderPlan patchBuilder = planBuilder.patchBuilder("/");
+		ModifyPlan patchPlan = planBuilder.patch("/doc", patchBuilder);
+		JSONReadHandle handle = new GSONHandle();
+		handle = patchPlan.exportAs(StringHandle.class);
+		System.err.println("Plan Export: ");
+		// This fails
+		// Invalid arguments: cannot resolve operator for import: op patch
+		Common.client.newRowManager().withUpdate(true).execute(patchPlan.write());
+
+		// This fails
+		// Invalid arguments: cannot resolve function for import: op.remove
+		PlanPatchBuilderPlan remove = planBuilder.remove("/A");
+		ModifyPlan patchPlanB = planBuilder.patch("/doc", remove);
+		Common.client.newRowManager().withUpdate(true).execute(patchPlanB.write());
+	}
 
     /**
      * Verify that default collections and permissions are honored when inserting docs, where one doc should use
