@@ -227,32 +227,6 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression subtract(ServerExpression left, ServerExpression right);
   /**
-  * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
-  * @param action  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
-  * @return  a ModifyPlan object
-  */
-  public abstract ModifyPlan onError(String action);
-  /**
-  * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
-  * @param action  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
-  * @return  a ModifyPlan object
-  */
-  public abstract ModifyPlan onError(XsStringVal action);
-  /**
-  * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
-  * @param action  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
-  * @param errorColumn  Valid options are: "fail" - stop procesisng and "continue" - add an error to the error column and continue processing. See {@link PlanBuilder#col(XsStringVal)}
-  * @return  a ModifyPlan object
-  */
-  public abstract ModifyPlan onError(String action, String errorColumn);
-  /**
-  * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
-  * @param action  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
-  * @param errorColumn  Valid options are: "fail" - stop procesisng and "continue" - add an error to the error column and continue processing. See {@link PlanBuilder#col(XsStringVal)}
-  * @return  a ModifyPlan object
-  */
-  public abstract ModifyPlan onError(XsStringVal action, PlanExprCol errorColumn);
-  /**
   * Create a patch builder which can be used to chain patch operations.
   * @param contextPath  The context path to patch.
   * @return  a PatchBuilder object
@@ -1805,6 +1779,32 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan orderBy(PlanSortKeySeq keys);
+/**
+  * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
+  * @param action  Valid options are: "fail" - stop procesisng and "continue" - add an error to the error column and continue processing.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan onError(String action);
+/**
+  * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
+  * @param action  Valid options are: "fail" - stop procesisng and "continue" - add an error to the error column and continue processing.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan onError(XsStringVal action);
+/**
+  * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
+  * @param action  Valid options are: "fail" - stop procesisng and "continue" - add an error to the error column and continue processing.
+  * @param errorColumn  An optional error column which is not used in the plan. If this parameter is not passed in 'sys.errors' is used. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan onError(String action, String errorColumn);
+/**
+  * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
+  * @param action  Valid options are: "fail" - stop procesisng and "continue" - add an error to the error column and continue processing.
+  * @param errorColumn  An optional error column which is not used in the plan. If this parameter is not passed in 'sys.errors' is used. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan onError(XsStringVal action, PlanExprCol errorColumn);
 /**
   * Builds a patch operation including a sequence of inserts, replaces, replace-inserts and deletes.
   * @param docColumn  The document column which need to be patched. See {@link PlanBuilder#col(XsStringVal)}

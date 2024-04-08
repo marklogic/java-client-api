@@ -857,36 +857,6 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public ModifyPlan onError(String action) {
-    return onError((action == null) ? (XsStringVal) null : xs.string(action));
-  }
-
-  
-  @Override
-  public ModifyPlan onError(XsStringVal action) {
-    if (action == null) {
-      throw new IllegalArgumentException("action parameter for onError() cannot be null");
-    }
-    return new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "on-error", new Object[]{ action });
-  }
-
-  
-  @Override
-  public ModifyPlan onError(String action, String errorColumn) {
-    return onError((action == null) ? (XsStringVal) null : xs.string(action), (errorColumn == null) ? (PlanExprCol) null : exprCol(errorColumn));
-  }
-
-  
-  @Override
-  public ModifyPlan onError(XsStringVal action, PlanExprCol errorColumn) {
-    if (action == null) {
-      throw new IllegalArgumentException("action parameter for onError() cannot be null");
-    }
-    return new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "on-error", new Object[]{ action, errorColumn });
-  }
-
-  
-  @Override
   public ServerExpression or(ServerExpression... left) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for or() cannot be null");
@@ -2167,6 +2137,36 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
       throw new IllegalArgumentException("right parameter for notExistsJoin() cannot be null");
     }
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "not-exists-join", new Object[]{ right, keys, condition });
+  }
+
+    
+  @Override
+  public ModifyPlan onError(String action) {
+    return onError((action == null) ? (XsStringVal) null : xs.string(action));
+  }
+
+    
+  @Override
+  public ModifyPlan onError(XsStringVal action) {
+    if (action == null) {
+      throw new IllegalArgumentException("action parameter for onError() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "on-error", new Object[]{ action });
+  }
+
+    
+  @Override
+  public ModifyPlan onError(String action, String errorColumn) {
+    return onError((action == null) ? (XsStringVal) null : xs.string(action), (errorColumn == null) ? (PlanExprCol) null : exprCol(errorColumn));
+  }
+
+    
+  @Override
+  public ModifyPlan onError(XsStringVal action, PlanExprCol errorColumn) {
+    if (action == null) {
+      throw new IllegalArgumentException("action parameter for onError() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "on-error", new Object[]{ action, errorColumn });
   }
 
     

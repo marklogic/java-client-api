@@ -8,8 +8,10 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML11;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * These tests are not intended to be great examples of how to use patch operations, but
  * rather to provide some test coverage.
  */
+@ExtendWith(RequiresML11.class)
 public class OpticPatchTest extends AbstractOpticUpdateTest {
 
 	private static final String JSON_URI = "/a.json";
@@ -129,7 +132,7 @@ public class OpticPatchTest extends AbstractOpticUpdateTest {
 			)).get(0).getContent("doc", new StringHandle()).get();
 
 		System.out.println(content);
-		assertTrue(content.contains("<parent xmlns=\"org:example\"><child>1</child>new text</parent>"),
+		assertTrue(content.contains("<parent xmlns=\"org:example\">new text</parent>"),
 			"Unexpected content: " + content);
 	}
 
