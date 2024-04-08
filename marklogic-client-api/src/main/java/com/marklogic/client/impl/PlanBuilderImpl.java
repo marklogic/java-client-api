@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 MarkLogic Corporation
+ * Copyright (c) 2024 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -853,6 +853,36 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
       throw new IllegalArgumentException("right parameter for on() cannot be null");
     }
     return new JoinKeyCallImpl("op", "on", new Object[]{ left, right });
+  }
+
+  
+  @Override
+  public ModifyPlan onError(String action) {
+    return onError((action == null) ? (XsStringVal) null : xs.string(action));
+  }
+
+  
+  @Override
+  public ModifyPlan onError(XsStringVal action) {
+    if (action == null) {
+      throw new IllegalArgumentException("action parameter for onError() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "on-error", new Object[]{ action });
+  }
+
+  
+  @Override
+  public ModifyPlan onError(String action, String errorColumn) {
+    return onError((action == null) ? (XsStringVal) null : xs.string(action), (errorColumn == null) ? (PlanExprCol) null : exprCol(errorColumn));
+  }
+
+  
+  @Override
+  public ModifyPlan onError(XsStringVal action, PlanExprCol errorColumn) {
+    if (action == null) {
+      throw new IllegalArgumentException("action parameter for onError() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "on-error", new Object[]{ action, errorColumn });
   }
 
   

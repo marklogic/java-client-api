@@ -34,7 +34,27 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     super();
   }
 
-  @Override
+	@Override
+	public PatchBuilder patchBuilder(String contextPath) {
+		return new PatchBuilderImpl(new XsValueImpl.StringValImpl(contextPath));
+	}
+
+	@Override
+	public PatchBuilder patchBuilder(XsStringVal contextPath) {
+		return new PatchBuilderImpl(contextPath);
+	}
+
+	@Override
+	public PatchBuilder patchBuilder(String contextPath, Map<String, String> namespaces) {
+		return new PatchBuilderImpl(new XsValueImpl.StringValImpl(contextPath), namespaces);
+	}
+
+	@Override
+	public PatchBuilder patchBuilder(XsStringVal contextPath, Map<String, String> namespaces) {
+		return new PatchBuilderImpl(contextPath, namespaces);
+	}
+
+	@Override
   public PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query) {
     return fromSearchDocs(query, null);
   }
@@ -282,7 +302,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     return new PlanRowColTypesImpl(column, type, nullable);
   }
 
-  
+
   @Override
   public TransformDef transformDef(String path) {
     return new TransformDefImpl(path);
@@ -972,7 +992,17 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
       super(prior, fnPrefix, fnName, fnArgs);
     }
 
-    @Override
+	  @Override
+	  public ModifyPlan patch(String docColumn, PatchBuilder patchDef) {
+		  return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "patch", new Object[]{ this.col(docColumn), patchDef });
+	  }
+
+	  @Override
+	  public ModifyPlan patch(PlanExprCol docColumn, PatchBuilder patchDef) {
+		  return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "patch", new Object[]{ docColumn, patchDef });
+	  }
+
+	  @Override
     public PlanBuilder.ModifyPlan groupByUnion(PlanGroupSeq keys) {
       return groupByUnion(keys, null);
     }
@@ -1022,7 +1052,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     public ModifyPlan limit(PlanParamExpr length) {
       return new ModifyPlanSubImpl(this, "op", "limit", new Object[]{ length });
     }
-    
+
     @Override
     public ModifyPlan lockForUpdate() {
       return new ModifyPlanSubImpl(this, "op", "lockForUpdate", new Object[]{});
@@ -1345,4 +1375,5 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
       return sem.iri(prefix+suffix);
     }
   }
+
 }
