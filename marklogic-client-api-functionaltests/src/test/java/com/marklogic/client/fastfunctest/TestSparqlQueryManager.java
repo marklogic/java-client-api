@@ -467,6 +467,10 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
   @Test
   public void testPaginationInTransaction()
   {
+	  if (markLogicVersion.getMajor() >= 12) {
+		  // Disabled until MLE-12708 is fixed.
+		  return;
+	  }
     System.out.println("In SPARQL Query Manager Test testPaginationInTransaction method");
     Transaction t = writeclient.openTransaction();
     try {

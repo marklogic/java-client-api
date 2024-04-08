@@ -43,13 +43,14 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
     protected static DatabaseClient client;
     protected static DatabaseClient schemasClient;
     protected static DatabaseClient adminModulesClient;
+	protected static MarkLogicVersion markLogicVersion;
 
     protected static boolean isML11OrHigher;
     private static String originalHttpPort;
 	private static String originalRestServerName;
 
     @BeforeAll
-    public static void initializeClients() throws Exception {
+    public static void initializeClients() {
         loadGradleProperties();
 
         // Until all the tests can use the same ml-gradle-deployed app server, we need to have separate ports - one
@@ -59,9 +60,9 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
 		originalRestServerName = restServerName;
 		restServerName = "java-functest";
 
-        MarkLogicVersion version = MarkLogicVersion.getMarkLogicVersion(connectAsAdmin());
-        System.out.println("ML version: " + version.getVersionString());
-        isML11OrHigher = version.getMajor() >= 11;
+		markLogicVersion = MarkLogicVersion.getMarkLogicVersion(connectAsAdmin());
+        System.out.println("ML version: " + markLogicVersion.getVersionString());
+        isML11OrHigher = markLogicVersion.getMajor() >= 11;
 
 		client = newDatabaseClientBuilder().build();
 		schemasClient = newDatabaseClientBuilder().withDatabase("java-functest-schemas").build();
@@ -90,7 +91,7 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
 
 	/**
 	 * Convenience method for easily writing some JSON docs where the content of the docs doesn't matter.
-	 * 
+	 *
 	 * @param count
 	 * @param collections
 	 * @return

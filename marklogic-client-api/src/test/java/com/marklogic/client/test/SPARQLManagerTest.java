@@ -373,7 +373,11 @@ public class SPARQLManagerTest {
   }
 
   @Test
-  public void testPagination() throws Exception {
+  public void testPagination() {
+	  if (Common.getMarkLogicVersion().getMajor() >= 12) {
+		  // Disabled until MLE-12708 is fixed.
+		  return;
+	  }
     SPARQLQueryDefinition qdef1 = smgr.newQueryDefinition(
       "SELECT ?s ?p ?o FROM <" + graphUri + "> { ?s ?p ?o }");
     qdef1.setIncludeDefaultRulesets(false);

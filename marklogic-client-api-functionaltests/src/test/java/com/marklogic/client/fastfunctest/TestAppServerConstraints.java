@@ -17,7 +17,6 @@
 package com.marklogic.client.fastfunctest;
 
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.SearchHandle;
@@ -29,8 +28,7 @@ import com.marklogic.client.query.StructuredQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.*;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -42,13 +40,13 @@ import java.security.NoSuchAlgorithmException;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathNotExists;
-
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestAppServerConstraints extends AbstractFunctionalTest {
 
     @BeforeAll
-    public static void setUp() throws Exception {
+    public static void beforeAll() throws Exception {
         System.out.println("In setup");
         client = getDatabaseClient("rest-admin", "x", getConnType());
     }
@@ -425,41 +423,34 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
         assertXpathEvaluatesTo("karl_kara 12,-5 12,-5 12 -5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
     }
 
-    @Test
-    public void testNegativePointInvalidValue() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
-            TransformerException
-    {
-        System.out.println("Running testNegativePointInvalidValue");
+	@Test
+	public void testNegativePointInvalidValue() throws Exception {
+		String queryOptionName = "geoConstraintOpt.xml";
+		loadGeoData();
 
-        String queryOptionName = "geoConstraintOpt.xml";
+		setQueryOption(client, queryOptionName);
+		QueryManager queryMgr = client.newQueryManager();
 
-        // write docs
-        loadGeoData();
+		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+		querydef.setCriteria("geo-attr-pair:\"12,A\"");
 
-        setQueryOption(client, queryOptionName);
-        QueryManager queryMgr = client.newQueryManager();
+		DOMHandle resultsHandle = new DOMHandle();
 
-        // create query def
-        StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-        querydef.setCriteria("geo-attr-pair:\"12,A\"");
+		String result = "";
+		try {
+			queryMgr.search(querydef, resultsHandle);
+			Document resultDoc = resultsHandle.get();
+			result = convertXMLDocumentToString(resultDoc).toString();
+		} catch (Exception e) {
+			result = e.getMessage();
+		}
 
-        // create handle
-        DOMHandle resultsHandle = new DOMHandle();
+		String expectedResult = markLogicVersion.getMajor() <= 11 ?
+			"<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>" :
+			"arg2 is not of type xs:double";
 
-        String result = "";
-
-        try {
-            queryMgr.search(querydef, resultsHandle);
-            Document resultDoc = resultsHandle.get();
-            result = convertXMLDocumentToString(resultDoc).toString();
-            System.out.println("Result : " + result);
-        } catch (Exception e) {
-            e.toString();
-        }
-
-        assertTrue(
-                result.contains("<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>"));
-    }
+		assertTrue(result.contains(expectedResult), "Unexpected result: " + result);
+	}
 
     @Test
     public void testCirclePositiveLatNegativeLang() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
@@ -614,41 +605,36 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
         assertXpathEvaluatesTo("karl_kara -12,-5 -12,-5 -12 -5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
     }
 
-    @Test
-    public void testNegativePointInvalidValue_ChildConstraint() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
-            TransformerException
-    {
-        System.out.println("Running testNegativePointInvalidValue_ChildConstraint");
+	@Test
+	public void testNegativePointInvalidValue_ChildConstraint() throws Exception {
+		String queryOptionName = "geoConstraintOpt.xml";
+		loadGeoData();
 
-        String queryOptionName = "geoConstraintOpt.xml";
+		setQueryOption(client, queryOptionName);
+		QueryManager queryMgr = client.newQueryManager();
 
-        // write docs
-        loadGeoData();
+		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+		querydef.setCriteria("geo-elem-child:\"12,A\"");
 
-        setQueryOption(client, queryOptionName);
-        QueryManager queryMgr = client.newQueryManager();
+		DOMHandle resultsHandle = new DOMHandle();
+		String result = "";
+		try {
+			queryMgr.search(querydef, resultsHandle);
+			Document resultDoc = resultsHandle.get();
+			result = convertXMLDocumentToString(resultDoc).toString();
+		} catch (Exception ex) {
+			result = ex.getMessage();
+		}
 
-        // create query def
-        StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-        querydef.setCriteria("geo-elem-child:\"12,A\"");
+		String expectedResult = markLogicVersion.getMajor() <= 11 ?
+			"<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>" :
+			"arg2 is not of type xs:double";
 
-        // create handle
-        DOMHandle resultsHandle = new DOMHandle();
-
-        String result = "";
-        try {
-            queryMgr.search(querydef, resultsHandle);
-            Document resultDoc = resultsHandle.get();
-            result = convertXMLDocumentToString(resultDoc).toString();
-            System.out.println("Result : " + result);
-
-        } catch (Exception e) {
-            e.toString();
-        }
-
-        assertTrue(
-                result.contains("<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>"));
-    }
+		assertTrue(
+			result.contains(expectedResult),
+			"Unexpected result: " + result
+		);
+	}
 
     @Test
     public void testCircleNegativeLangLat() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
@@ -810,43 +796,36 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
         assertXpathEvaluatesTo("geo-elem:\"-12,-5\"", "string(//*[local-name()='qtext'])", resultDoc);
     }
 
-    @Test
-    public void testNegativePointInvalidValue_GeoElementConstraint() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
-            TransformerException
-    {
-        System.out.println("Running testNegativePointInvalidValue_GeoElementConstraint");
+	@Test
+	public void testNegativePointInvalidValue_GeoElementConstraint() throws Exception {
+		String queryOptionName = "geoConstraintOpt.xml";
 
-        String queryOptionName = "geoConstraintOpt.xml";
+		for (int i = 1; i <= 7; i++) {
+			writeDocumentUsingInputStreamHandle(client, "geo-constraint" + i + ".xml", "/geo-constraint/", "XML");
+		}
 
-        // write docs
-        for (int i = 1; i <= 7; i++) {
-            writeDocumentUsingInputStreamHandle(client, "geo-constraint" + i + ".xml", "/geo-constraint/", "XML");
-        }
+		setQueryOption(client, queryOptionName);
+		QueryManager queryMgr = client.newQueryManager();
 
-        setQueryOption(client, queryOptionName);
-        QueryManager queryMgr = client.newQueryManager();
+		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+		querydef.setCriteria("geo-elem:\"12,A\"");
 
-        // create query def
-        StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-        querydef.setCriteria("geo-elem:\"12,A\"");
+		DOMHandle resultsHandle = new DOMHandle();
+		String result = "";
+		try {
+			queryMgr.search(querydef, resultsHandle);
+			Document resultDoc = resultsHandle.get();
+			result = convertXMLDocumentToString(resultDoc).toString();
+		} catch (Exception e) {
+			result = e.getMessage();
+		}
 
-        // create handle
-        DOMHandle resultsHandle = new DOMHandle();
+		String expectedResult = markLogicVersion.getMajor() <= 11 ?
+			"<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>" :
+			"arg2 is not of type xs:double";
 
-        String result = "";
-
-        try {
-            queryMgr.search(querydef, resultsHandle);
-            Document resultDoc = resultsHandle.get();
-            result = convertXMLDocumentToString(resultDoc).toString();
-            System.out.println("Result : " + result);
-        } catch (Exception e) {
-            e.toString();
-        }
-
-        assertTrue(
-                result.contains("<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>"));
-    }
+		assertTrue(result.contains(expectedResult), "Unexpected result: " + result);
+	}
 
     @Test
     public void testCirclePositiveLangLat() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
@@ -1011,37 +990,33 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
     }
 
     @Test
-    public void testNegativePointInvalidValue_GeoElemPairConstraint() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
-            TransformerException
+    public void testNegativePointInvalidValue_GeoElemPairConstraint() throws Exception
     {
-        System.out.println("Running testNegativePointInvalidValue_GeoElemPairConstraint");
-
         String queryOptionName = "geoConstraintOpt.xml";
 
-        // write docs
         loadGeoData();
 
         setQueryOption(client, queryOptionName);
         QueryManager queryMgr = client.newQueryManager();
 
-        // create query def
         StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
         querydef.setCriteria("geo-elem-pair:\"-12,A\"");
 
-        // create handle
         DOMHandle resultsHandle = new DOMHandle();
         String result = "";
         try {
             queryMgr.search(querydef, resultsHandle);
             Document resultDoc = resultsHandle.get();
             result = convertXMLDocumentToString(resultDoc).toString();
-            System.out.println("Result : " + result);
         } catch (Exception e) {
-            e.toString();
+			result = e.getMessage();
         }
 
-        assertTrue(
-                result.contains("<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '-12,A'.]</search:warning>"));
+		String expectedResult = markLogicVersion.getMajor() <= 11 ?
+			"<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '-12,A'.]</search:warning>" :
+			"arg2 is not of type xs:double";
+
+        assertTrue(result.contains(expectedResult), "Unexpected result: " + result);
     }
 
     @Test
