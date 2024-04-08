@@ -15,7 +15,10 @@ public class RequiresMLElevenDotOne implements ExecutionCondition {
 		if (markLogicVersion == null) {
 			markLogicVersion = Common.getMarkLogicVersion();
 		}
-		return markLogicVersion.getMajor() >= 11 && markLogicVersion.getMinor() >= 1?
+		boolean supported =
+			(markLogicVersion.getMajor() == 11 && markLogicVersion.getMinor() >= 1) ||
+			markLogicVersion.getMajor() >= 12;
+		return supported ?
 			ConditionEvaluationResult.enabled("MarkLogic is version 11.1 or higher") :
 			ConditionEvaluationResult.disabled("MarkLogic is version 11.0.x or lower");
 	}

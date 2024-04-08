@@ -72,7 +72,7 @@ public class NewOpticMethodsInElevenDotOneTest extends AbstractOpticUpdateTest {
 	@Disabled("See DBQ-643")
 	void documentFormatQuery() {
 		List<RowRecord> rows = resultRows(op
-			.fromDocUris(op.cts.documentRootQuery("text"))
+			.fromDocUris(op.cts.documentFormatQuery("text"))
 		);
 
 		assertEquals(1, rows.size());
