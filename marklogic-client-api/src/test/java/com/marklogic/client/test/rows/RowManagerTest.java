@@ -525,6 +525,11 @@ public class RowManagerTest {
   @Test
   @ExtendWith(RequiresML11.class)
   public void testErrorWhileStreamingRows() {
+	  if (Common.USE_REVERSE_PROXY_SERVER) {
+		  // Different kind of error is thrown when using reverse proxy.
+		  return;
+	  }
+
     final String validQueryThatEventuallyThrowsAnError = "select case " +
         "when lastName = 'Byron' then fn_error(fn_qname('', 'SQL-TABLENOTFOUND'), 'Internal Server Error') end, " +
         "opticUnitTest.musician.* from (select * from opticUnitTest.musician order by lastName)";
