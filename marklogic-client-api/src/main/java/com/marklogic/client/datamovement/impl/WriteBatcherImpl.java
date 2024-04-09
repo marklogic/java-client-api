@@ -862,8 +862,8 @@ public class WriteBatcherImpl
     // During failover, in order to re-submit the tasks which are meant
     // for a failed host, we drain the thread pool and re-submit all the tasks appropriately.
     // We would need awaitCompletion() to wait until these resubmitted tasks are also finished.
-    // Hence we need to remove the old tasks from queuedAndExecutingTasks and any active 
-    // snapshots which contains them and replace it with new tasks which are submitted. 
+    // Hence we need to remove the old tasks from queuedAndExecutingTasks and any active
+    // snapshots which contains them and replace it with new tasks which are submitted.
     public void replaceTask(Runnable oldTask, Runnable newTask) {
       boolean removedFromASnapshot = false;
       if(queuedAndExecutingTasks.remove(oldTask)) {
@@ -887,7 +887,7 @@ public class WriteBatcherImpl
       // get asynchronously queued after this point
       ConcurrentLinkedQueue<Runnable> snapshotQueuedAndExecutingTasks = snapshotQueuedAndExecutingTasks();
       try {
-        long duration = unit.convert(timeout, TimeUnit.MILLISECONDS);
+        long duration = TimeUnit.MILLISECONDS.convert(timeout, unit);
         // we can iterate even when the underlying set is being modified
         // since we're using ConcurrentHashMap
         Runnable task = null;
