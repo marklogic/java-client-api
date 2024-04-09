@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.test.rows;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.datamovement.DataMovementManager;
@@ -25,6 +26,7 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
@@ -83,6 +85,9 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
 		expectedUris.forEach(uri -> assertTrue(persistedUris.contains(uri), "persistedUris does not contain " + uri));
 	}
 
+	/**
+	 * Shoehorning some test coverage of onError for the 11.2 server release into this test.
+	 */
 	@Test
 	public void testXmlSchemaWithStrictMode() {
 		String[][] triples = new String[][]{
@@ -94,11 +99,11 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
 
 		String triplesXML =
 			"<sem:triples xmlns:sem=\"http://marklogic.com/semantics\">\n" +
-				String.join("\n", (String[]) Arrays
+				String.join("\n", Arrays
 					.stream(triples)
 					.map(triple ->
 						"<sem:triple>" +
-							"<sem:subject>" + triple[0] + "</sem:subject>" +
+							"<sem:subjectt>" + triple[0] + "</sem:subjectt>" +
 							"<sem:predicate>" + triple[1] + "</sem:predicate>" +
 							"<sem:object>" + triple[2] + "</sem:object>" +
 							"</sem:triple>"
@@ -112,21 +117,30 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
 		}
 		docMgr.write(writeSet);
 
-		PlanBuilder.Plan plan = op
+		PlanBuilder.ModifyPlan plan = op
 			.fromDocUris(op.cts.directoryQuery("/acme/"))
 			.joinDoc(op.col("doc"), op.col("uri"))
-			.validateDoc(op.col("doc"),
-				op.schemaDefinition("xmlSchema").withMode("strict")
-			);
-		Iterator<RowRecord> rows = rowManager.resultRows(plan).iterator();
-		Set<String> uris = new HashSet<>();
-		while (rows.hasNext()) {
-			uris.add(rows.next().getString("uri"));
-		}
-		assertTrue(uris.size() == 4);
-		for (int i = 0; i < 4; i++) {
-			assertTrue(uris.contains("/acme/" + i + ".xml"), "uris does not contain /acme/" + i + ".xml");
-		}
+			.validateDoc(op.col("doc"), op.schemaDefinition("xmlSchema").withMode("strict"));
+
+		// Verify that "continue" results in errors being returned.
+		final String defaultErrorsColumn = "sys.errors";
+		resultRows(plan.onError("continue")).forEach(row -> {
+			JsonNode errors = row.getContent(defaultErrorsColumn, new JacksonHandle()).get();
+			assertEquals("Validation error", errors.get("message").asText());
+			assertTrue(errors.has("data"));
+			String errorMessage = errors.get("data").get(0).asText();
+			assertTrue(errorMessage.contains("Found sem:subjectt but expected"), "Unexpected error: "  + errorMessage);
+		});
+
+		// And verify a custom error column works.
+		resultRows(plan.onError("continue", "myErrors")).forEach(row -> {
+			JsonNode errors = row.getContent("myErrors", new JacksonHandle()).get();
+			assertEquals("Validation error", errors.get("message").asText());
+		});
+
+		// "fail" should throw an error.
+		FailedRequestException ex = assertThrows(FailedRequestException.class, () -> resultRows(plan.onError("fail")));
+		assertTrue(ex.getMessage().contains("Found sem:subjectt but expected"), "Unexpected error: " + ex.getMessage());
 	}
 
 	@Test
