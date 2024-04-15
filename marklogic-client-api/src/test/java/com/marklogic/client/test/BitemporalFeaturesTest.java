@@ -16,11 +16,8 @@
 package com.marklogic.client.test;
 
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
-import com.marklogic.client.document.DocumentMetadataPatchBuilder;
-import com.marklogic.client.document.DocumentPatchBuilder;
+import com.marklogic.client.document.*;
 import com.marklogic.client.document.DocumentPatchBuilder.Position;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
@@ -51,8 +48,10 @@ public class BitemporalFeaturesTest {
   static String temporalDocument4 = "temporal-document4";
   static String temporalDocument5 = "temporal-document5";
 
-  static XMLDocumentManager docMgr;
-  static QueryManager queryMgr;
+  static XMLDocumentManager xmlDocumentManager;
+  static GenericDocumentManager genericDocumentManager;
+  static QueryManager queryManager;
+
   static String uniqueBulkTerm = "temporalBulkDocTerm";
   static String uniqueTerm1 = "temporalDocTerm1";
   static String uniqueTerm2 = "temporalDocTerm2";
@@ -64,8 +63,9 @@ public class BitemporalFeaturesTest {
   @BeforeAll
   public static void beforeClass() {
     Common.connectRestAdmin();
-    docMgr = Common.restAdminClient.newXMLDocumentManager();
-    queryMgr = Common.restAdminClient.newQueryManager();
+    xmlDocumentManager = Common.restAdminClient.newXMLDocumentManager();
+	genericDocumentManager = Common.restAdminClient.newDocumentManager();
+    queryManager = Common.restAdminClient.newQueryManager();
   }
 
   @AfterAll
@@ -97,11 +97,11 @@ public class BitemporalFeaturesTest {
       "<valid-end>2014-08-19T00:00:01Z</valid-end>" +
       "</test>";
     StringHandle handle1 = new StringHandle(doc1).withFormat(Format.XML);
-    docMgr.write(docId1, temporalDocument1, null, handle1, null, null, temporalCollection);
+    xmlDocumentManager.write(docId1, temporalDocument1, null, handle1, null, null, temporalCollection);
     StringHandle handle2 = new StringHandle(doc2).withFormat(Format.XML);
-    docMgr.write(docId2, temporalDocument2, null, handle2, null, null, temporalCollection);
+    xmlDocumentManager.write(docId2, temporalDocument2, null, handle2, null, null, temporalCollection);
     StringHandle handle3 = new StringHandle(doc3).withFormat(Format.XML);
-    docMgr.write(docId3, temporalDocument1, null, handle3, null, null, temporalCollection);
+    xmlDocumentManager.write(docId3, temporalDocument1, null, handle3, null, null, temporalCollection);
     QueryManager queryMgr = Common.restAdminClient.newQueryManager();
     queryMgr.setPageLength(1000);
     QueryDefinition query = queryMgr.newStringDefinition();
@@ -142,13 +142,12 @@ public class BitemporalFeaturesTest {
       "<valid-start>2014-08-19T00:00:05Z</valid-start>" +
       "<valid-end>2014-08-19T00:00:06Z</valid-end>" +
       "</test>";
-    DocumentWriteSet writeSet = docMgr.newWriteSet();
+    DocumentWriteSet writeSet = genericDocumentManager.newWriteSet();
     writeSet.add(prefix + "_A.xml", new StringHandle(doc1).withFormat(Format.XML), temporalDocument1);
     writeSet.add(prefix + "_B.xml", new StringHandle(doc2).withFormat(Format.XML), temporalDocument2);
     writeSet.add(prefix + "_C.xml", new StringHandle(doc3).withFormat(Format.XML), temporalDocument3);
     writeSet.add(prefix + "_D.xml", new StringHandle(doc4).withFormat(Format.XML), temporalDocument4);
-    docMgr.write(writeSet, null, null, temporalCollection);
-    writeSet = docMgr.newWriteSet();
+	  genericDocumentManager.write(writeSet, null, null, temporalCollection);
     QueryManager queryMgr = Common.restAdminClient.newQueryManager();
     queryMgr.setPageLength(1000);
     QueryDefinition query = queryMgr.newStringDefinition();
@@ -175,34 +174,34 @@ public class BitemporalFeaturesTest {
       "</test>";
 
     StringHandle handle1 = new StringHandle(doc1).withFormat(Format.XML);
-    docMgr.write(temporalDocument5, null, handle1, null, null, temporalCollection);
+    xmlDocumentManager.write(temporalDocument5, null, handle1, null, null, temporalCollection);
 
-    DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
+    DocumentPatchBuilder patchBldr = xmlDocumentManager.newPatchBuilder();
     patchBldr.insertFragment("/test/song", Position.AFTER, "<song>Kryptonite</song>");
     DocumentPatchHandle patchHandle = patchBldr.build();
-    docMgr.patch(temporalDocument5, temporalCollection, patchHandle);
-    String content = docMgr.read(temporalDocument5, new StringHandle().withFormat(Format.XML)).get();
+	  genericDocumentManager.patch(temporalDocument5, temporalCollection, patchHandle);
+    String content = xmlDocumentManager.read(temporalDocument5, new StringHandle().withFormat(Format.XML)).get();
     assertXpathEvaluatesTo("2","count(/*[local-name()='test']/*[local-name()='song'])",content);
 
-    DocumentMetadataPatchBuilder metadatapatchBldr = docMgr.newPatchBuilder(Format.XML);
+    DocumentMetadataPatchBuilder metadatapatchBldr = genericDocumentManager.newPatchBuilder(Format.XML);
     DocumentPatchHandle metadatapatchHandle = metadatapatchBldr
       .addMetadataValue("key1", "value1").build();
-    docMgr.patch(temporalDocument5, temporalCollection, metadatapatchHandle);
-    String metadata = docMgr.readMetadata(temporalDocument5, new StringHandle().withFormat(Format.XML)).get();
+	  genericDocumentManager.patch(temporalDocument5, temporalCollection, metadatapatchHandle);
+    String metadata = genericDocumentManager.readMetadata(temporalDocument5, new StringHandle().withFormat(Format.XML)).get();
     assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'])",metadata);
 
-    patchBldr = docMgr.newPatchBuilder();
+    patchBldr = xmlDocumentManager.newPatchBuilder();
     patchBldr.insertFragment("/test", Position.LAST_CHILD, "<song>Here I am</song>");
     patchHandle = patchBldr.build();
-    docMgr.patch("temporal-document5v1", temporalDocument5, temporalCollection, temporalDocument5, patchHandle);
-    content = docMgr.read("temporal-document5v1", new StringHandle().withFormat(Format.XML)).get();
+	  genericDocumentManager.patch("temporal-document5v1", temporalDocument5, temporalCollection, temporalDocument5, patchHandle);
+    content = xmlDocumentManager.read("temporal-document5v1", new StringHandle().withFormat(Format.XML)).get();
     assertXpathEvaluatesTo("3","count(/*[local-name()='test']/*[local-name()='song'])",content);
 
-    patchBldr = docMgr.newPatchBuilder();
+    patchBldr = xmlDocumentManager.newPatchBuilder();
     patchBldr.insertFragment("/test", Position.LAST_CHILD, "<song>Please forgive me</song>");
     patchHandle = patchBldr.build();
-    docMgr.patch("temporal-document5v2", temporalDocument5, temporalCollection, "temporal-document5v1", patchHandle);
-    content = docMgr.read("temporal-document5v2", new StringHandle().withFormat(Format.XML)).get();
+	  genericDocumentManager.patch("temporal-document5v2", temporalDocument5, temporalCollection, "temporal-document5v1", patchHandle);
+    content = xmlDocumentManager.read("temporal-document5v2", new StringHandle().withFormat(Format.XML)).get();
     assertXpathEvaluatesTo("4","count(/*[local-name()='test']/*[local-name()='song'])",content);
   }
 
@@ -226,14 +225,14 @@ public class BitemporalFeaturesTest {
       "<valid-end>2014-08-19T00:00:02Z</valid-end>" +
       "</test>";
     StringHandle handle1 = new StringHandle(doc1).withFormat(Format.XML);
-    docMgr.write(protectDocID, logicalID, null, handle1, null, null, temporalCollection);
+    xmlDocumentManager.write(protectDocID, logicalID, null, handle1, null, null, temporalCollection);
     StringHandle handle2 = new StringHandle(doc2).withFormat(Format.XML);
-    docMgr.write(protectDocIDv2, logicalID, null, handle2, null, null, temporalCollection);
-    docMgr.protect(logicalID, temporalCollection, ProtectionLevel.NOWIPE, DatatypeFactory.newInstance().newDuration("PT1S"));
+    xmlDocumentManager.write(protectDocIDv2, logicalID, null, handle2, null, null, temporalCollection);
+	  genericDocumentManager.protect(logicalID, temporalCollection, ProtectionLevel.NOWIPE, DatatypeFactory.newInstance().newDuration("PT1S"));
 
     Common.waitFor(1500);
 
-    docMgr.wipe(logicalID, temporalCollection);
+	  genericDocumentManager.wipe(logicalID, temporalCollection);
     QueryManager queryMgr = Common.restAdminClient.newQueryManager();
     queryMgr.setPageLength(1000);
     QueryDefinition query = queryMgr.newStringDefinition();
@@ -246,14 +245,14 @@ public class BitemporalFeaturesTest {
   static public void cleanUp() throws DatatypeConfigurationException {
     String temporalDoc = "temporal-document";
     for (int i = 1; i < 6; i++) {
-      docMgr.protect(temporalDoc + i, temporalCollection, ProtectionLevel.NOWIPE,
+		genericDocumentManager.protect(temporalDoc + i, temporalCollection, ProtectionLevel.NOWIPE,
         DatatypeFactory.newInstance().newDuration("PT1S"));
     }
 
     Common.waitFor(1500);
 
     for (int i = 1; i < 6; i++) {
-      docMgr.wipe(temporalDoc + i, temporalCollection);
+		genericDocumentManager.wipe(temporalDoc + i, temporalCollection);
     }
   }
 }
