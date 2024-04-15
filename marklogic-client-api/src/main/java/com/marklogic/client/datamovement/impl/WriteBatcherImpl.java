@@ -185,8 +185,10 @@ public class WriteBatcherImpl
 
       initialized = true;
 
-      logger.info("threadCount={}", getThreadCount());
-      logger.info("batchSize={}", getBatchSize());
+	  if (logger.isDebugEnabled()) {
+		  logger.debug("threadCount={}", getThreadCount());
+		  logger.debug("batchSize={}", getBatchSize());
+	  }
       super.setJobStartTime();
       super.getStarted().set(true);
     }
@@ -397,7 +399,9 @@ public class WriteBatcherImpl
     List<DocumentWriteOperation> docs = new ArrayList<>();
     batchCounter.set(0);
     queue.drainTo(docs);
-    logger.info("flushing {} queued docs", docs.size());
+	if (logger.isTraceEnabled()) {
+		logger.trace("flushing {} queued docs", docs.size());
+	}
     Iterator<DocumentWriteOperation> iter = docs.iterator();
     for ( int i=0; iter.hasNext(); i++ ) {
       if ( isStopped() == true ) {
