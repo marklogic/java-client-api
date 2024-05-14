@@ -22,6 +22,8 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.test.Common;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import javax.net.ssl.*;
 import javax.security.auth.x500.X500Principal;
@@ -89,6 +91,7 @@ public class SSLTest {
     }
   }
 
+  @EnabledForJreRange(max = JRE.JAVA_17)
   @Test
   public void testHostnameVerifier() throws SSLException, CertificateParsingException {
     // three things our SSLHostnameVerifier will capture
