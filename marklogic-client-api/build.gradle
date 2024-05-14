@@ -2,7 +2,6 @@
 
 plugins {
     id 'maven-publish'
-    id 'distribution'
 }
 
 group = 'com.marklogic'
@@ -81,7 +80,7 @@ jar {
     )
 }
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     exclude ('property', '*.xsd', '*.xjb')
     from sourceSets.main.allSource
 }
@@ -109,9 +108,9 @@ javadoc {
     }
 }
 
-task javadocJar (type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
+task javadocJar(type: Jar, dependsOn: javadoc) {
+	archiveClassifier = 'javadoc'
+	from javadoc.destinationDir
 }
 
 Node pomCustomizations = new NodeBuilder(). project {
@@ -176,47 +175,6 @@ publishing {
                 }
             }
             url publishUrl
-        }
-    }
-}
-
-distZip {
-    archiveFileName = "$project.name-$rootProject.version-with-dependencies.zip"
-    dependsOn javadoc
-}
-
-distributions {
-    main {
-        contents {
-            from("..") {
-                include("NOTICE.TXT")
-            }
-            from("src/main/resources") {
-                include ("Readme.txt")
-                include ("LICENSE.txt")
-            }
-            into ("example") {
-                from ("../examples/src/main/resources") {
-                    include ("data/**")
-                    include ("scripts/**")
-                    include ("Example.properties")
-                }
-                from ("../examples/src/main/resources/example") {
-                    include ("README.txt")
-                }
-                from ("../examples/src/main/java/") {
-                    include ("com/marklogic/client/example/cookbook/*.java")
-                    include ("com/marklogic/client/example/handle/*.java")
-                    include ("com/marklogic/client/example/extension/*.java")
-                }
-            }
-            into ("doc/api") {
-                from ("build/docs/javadoc")
-            }
-            into("lib") {
-                from jar
-                from(project.configurations.runtimeClasspath)
-            }
         }
     }
 }
