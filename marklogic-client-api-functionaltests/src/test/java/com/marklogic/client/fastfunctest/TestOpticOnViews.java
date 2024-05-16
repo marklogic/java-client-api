@@ -2213,10 +2213,7 @@ public class TestOpticOnViews extends AbstractFunctionalTest {
 		  .orderBy(op.desc("id"))
 		  .limit(3)
 		  .offset(1)
-		  // This is no longer working on MarkLogic 12 nightly. Neither op.col("name") works now op.schemaCol("opticFunctionalTest.detail.name").
-		  // We get an error of "Invalid arguments: expression column myName with undefined expression".
-		  //.select(p.as("myName", p.col("name")))
-		  ;
+		  .select(op.as("myName", op.col("name")));
 
 	  JacksonHandle jacksonHandle = new JacksonHandle();
 	  jacksonHandle.setMimetype("application/json");
@@ -2225,8 +2222,8 @@ public class TestOpticOnViews extends AbstractFunctionalTest {
 	  JsonNode rows = result.path("rows");
 
 	  assertEquals(2, rows.size());
-	  assertEquals("Detail 5", rows.path(0).path("opticFunctionalTest.detail.name").path("value").asText());
-	  assertEquals("Detail 4", rows.path(1).path("opticFunctionalTest.detail.name").path("value").asText());
+	  assertEquals("Detail 5", rows.path(0).path("myName").path("value").asText());
+	  assertEquals("Detail 4", rows.path(1).path("myName").path("value").asText());
   }
 
 

@@ -445,10 +445,7 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
 			result = e.getMessage();
 		}
 
-		String expectedResult = markLogicVersion.getMajor() <= 11 ?
-			"<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>" :
-			"arg2 is not of type xs:double";
-
+		String expectedResult = "<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>";
 		assertTrue(result.contains(expectedResult), "Unexpected result: " + result);
 	}
 
@@ -626,14 +623,8 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
 			result = ex.getMessage();
 		}
 
-		String expectedResult = markLogicVersion.getMajor() <= 11 ?
-			"<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>" :
-			"arg2 is not of type xs:double";
-
-		assertTrue(
-			result.contains(expectedResult),
-			"Unexpected result: " + result
-		);
+		String expectedResult = "<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>";
+		assertTrue(result.contains(expectedResult), "Unexpected result: " + result);
 	}
 
     @Test
@@ -820,10 +811,7 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
 			result = e.getMessage();
 		}
 
-		String expectedResult = markLogicVersion.getMajor() <= 11 ?
-			"<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>" :
-			"arg2 is not of type xs:double";
-
+		String expectedResult = "<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>";
 		assertTrue(result.contains(expectedResult), "Unexpected result: " + result);
 	}
 
@@ -1012,10 +1000,7 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
 			result = e.getMessage();
         }
 
-		String expectedResult = markLogicVersion.getMajor() <= 11 ?
-			"<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '-12,A'.]</search:warning>" :
-			"arg2 is not of type xs:double";
-
+		String expectedResult = "<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '-12,A'.]</search:warning>";
         assertTrue(result.contains(expectedResult), "Unexpected result: " + result);
     }
 
