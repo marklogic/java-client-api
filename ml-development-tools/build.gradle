@@ -15,6 +15,12 @@ dependencies {
 	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.15.3'
 	implementation 'com.networknt:json-schema-validator:1.0.88'
 
+	if (JavaVersion.current().isJava9Compatible()) {
+		implementation 'javax.xml.bind:jaxb-api:2.3.1'
+		implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.8'
+		implementation 'org.glassfish.jaxb:jaxb-core:2.3.0.1'
+	}
+
 	// Not yet migrating this project to JUnit 5. Will reconsider it once we have a reason to enhance
 	// this project.
 	testImplementation 'junit:junit:4.13.2'
