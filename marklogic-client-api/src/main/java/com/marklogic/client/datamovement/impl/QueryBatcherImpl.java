@@ -445,7 +445,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       urisReadyListener.initializeListener(this);
     }
     super.setJobStartTime();
-    super.getStarted().set(true);
+	setStartedToTrue();
     if(this.maxBatches < Long.MAX_VALUE) {
     	setMaxUris(getMaxBatches());
     }
@@ -720,7 +720,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
 
     public void run() {
       // don't proceed if this job is stopped (because dataMovementManager.stopJob was called)
-      if (batcher.getStopped().get() == true) {
+      if (batcher.isStoppedTrue()) {
         logger.warn("Cancelling task to query forest '{}' forestBatchNum {} with start {} after the job is stopped",
                 forest.getForestName(), forestBatchNum, start);
         return;
@@ -906,7 +906,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
 
     private void launchNextTask() {
-      if (batcher.getStopped().get() == true ) {
+      if (batcher.isStoppedTrue()) {
         // we're stopping, so don't do anything more
         return;
       }
@@ -1059,7 +1059,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
 
   @Override
   public void stop() {
-    super.getStopped().set(true);
+	  setStoppedToTrue();
     if ( threadPool != null ) threadPool.shutdownNow();
     super.setJobEndTime();
     if ( query != null ) {
@@ -1102,7 +1102,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   protected void finalize() {
-    if (this.getStopped().get() == false ) {
+    if (!isStoppedTrue()) {
       logger.warn("QueryBatcher instance \"{}\" was never cleanly stopped.  You should call dataMovementManager.stopJob.",
         getJobName());
     }

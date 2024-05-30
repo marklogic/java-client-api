@@ -78,12 +78,14 @@ public class DataMovementManagerImpl implements DataMovementManager {
   @Override
   public void stopJob(JobTicket ticket) {
     if ( ticket == null ) throw new IllegalArgumentException("ticket must not be null");
+	logger.info("Stopping {} job with ID: {}", ticket.getJobType(), ticket.getJobId());
     service.stopJob(ticket, activeJobs);
   }
 
   @Override
   public void stopJob(Batcher batcher) {
     if ( batcher == null ) throw new IllegalArgumentException("batcher must not be null");
+	logger.info("Stopping batcher; job name: {}; job ID: {}", batcher.getJobName(), batcher.getJobId());
     service.stopJob(batcher, activeJobs);
   }
 
