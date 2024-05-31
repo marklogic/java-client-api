@@ -1,11 +1,11 @@
 // Copyright (c) 2022 MarkLogic Corporation
 
 plugins {
-    id "groovy"
-    id 'maven-publish'
-    id 'com.gradle.plugin-publish' version '1.0.0'
-    id 'java-gradle-plugin'
-    id 'org.jetbrains.kotlin.jvm'  version '1.8.22'
+	id "groovy"
+	id 'maven-publish'
+	id "com.gradle.plugin-publish" version "1.2.1"
+	id "java-gradle-plugin"
+	id 'org.jetbrains.kotlin.jvm' version '1.8.22'
 }
 
 dependencies {
@@ -14,6 +14,12 @@ dependencies {
 	implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
 	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.15.3'
 	implementation 'com.networknt:json-schema-validator:1.0.88'
+
+	if (JavaVersion.current().isJava9Compatible()) {
+		implementation 'javax.xml.bind:jaxb-api:2.3.1'
+		implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.8'
+		implementation 'org.glassfish.jaxb:jaxb-core:2.3.0.1'
+	}
 
 	// Not yet migrating this project to JUnit 5. Will reconsider it once we have a reason to enhance
 	// this project.
@@ -27,39 +33,36 @@ dependencies {
 // Added to avoid problem where processResources fails because - somehow - the plugin properties file is getting
 // copied twice. This started occurring with the upgrade of Gradle from 6.x to 7.x.
 tasks.processResources {
-    duplicatesStrategy = "exclude"
+	duplicatesStrategy = "exclude"
 }
 
 task mlDevelopmentToolsJar(type: Jar, dependsOn: classes) {
-    archivesBaseName = 'ml-development-tools'
-}
-
-pluginBundle {
-    website = 'https://github.com/marklogic/java-client-api'
-    vcsUrl = 'https://github.com/marklogic/java-client-api.git'
-    tags = ['marklogic']
+	archivesBaseName = 'ml-development-tools'
 }
 
 gradlePlugin {
-    plugins {
-        mlDevelopmentToolsPlugin {
-            id = 'com.marklogic.ml-development-tools'
-            implementationClass = 'com.marklogic.client.tools.gradle.ToolsPlugin'
-            displayName = 'ml-development-tools MarkLogic Data Service Tools'
-            description = 'ml-development-tools plugin for developing data services on MarkLogic'
-        }
-    }
+	website = 'https://www.marklogic.com/'
+	vcsUrl = 'https://github.com/marklogic/java-client-api.git'
+	plugins {
+		mlDevelopmentToolsPlugin {
+			id = 'com.marklogic.ml-development-tools'
+			displayName = 'ml-development-tools MarkLogic Data Service Tools'
+			description = 'ml-development-tools plugin for developing data services on MarkLogic'
+			tags.set(['marklogic', 'progress'])
+			implementationClass = 'com.marklogic.client.tools.gradle.ToolsPlugin'
+		}
+	}
 }
 
 publishing {
-    publications {
-        main(MavenPublication) {
-            from components.java
-        }
-    }
-	 repositories {
+	publications {
+		main(MavenPublication) {
+			from components.java
+		}
+	}
+	repositories {
 		maven {
-			if(project.hasProperty("mavenUser")) {
+			if (project.hasProperty("mavenUser")) {
 				credentials {
 					username mavenUser
 					password mavenPassword
@@ -71,16 +74,16 @@ publishing {
 }
 
 compileKotlin {
-    kotlinOptions.jvmTarget = '1.8'
+	kotlinOptions.jvmTarget = '1.8'
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = '1.8'
+	kotlinOptions.jvmTarget = '1.8'
 }
 
 task generateTests(type: JavaExec) {
-    classpath = sourceSets.test.runtimeClasspath
-    main = 'com.marklogic.client.test.dbfunction.FntestgenKt'
-    args = [ './src/test/', 'latest' ]
+	classpath = sourceSets.test.runtimeClasspath
+	main = 'com.marklogic.client.test.dbfunction.FntestgenKt'
+	args = ['./src/test/', 'latest']
 }
 
 // Allows running "./gradlew test" without having to remember to generate the tests first.

@@ -190,7 +190,7 @@ public class WriteBatcherImpl
 		  logger.debug("batchSize={}", getBatchSize());
 	  }
       super.setJobStartTime();
-      super.getStarted().set(true);
+	  setStartedToTrue();
     }
   }
 
@@ -207,8 +207,9 @@ public class WriteBatcherImpl
 
   @Override
   public WriteBatcher add(DocumentWriteOperation writeOperation) {
-    if ( writeOperation.getUri() == null ) throw new IllegalArgumentException("uri must not be null");
-    if ( writeOperation.getContent() == null ) throw new IllegalArgumentException("contentHandle must not be null");
+	  if (writeOperation.getUri() == null) throw new IllegalArgumentException("uri must not be null");
+	  // Prior to 6.6.1 and higher, threw an exception here if the content was null. But that was not necessary - the
+	  // v1/documents endpoint supports writing a 'naked' properties fragment with no content.
     initialize();
     requireNotStopped();
     queue.add(writeOperation);
@@ -458,7 +459,7 @@ public class WriteBatcherImpl
   @Override
   public void stop() {
     super.setJobEndTime();
-    super.getStopped().set(true);
+	setStoppedToTrue();
     if ( threadPool != null ) threadPool.shutdownNow();
     closeAllListeners();
   }

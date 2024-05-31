@@ -51,6 +51,9 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
             .write());
 
         // Verify first doc inherits the default collections and permissions
+		// 2024-05-16 This started failing in the 15th due to the existence of the "collections" and "permissions"
+		// columns having null values. The server treats that as "Don't assign any collections/permissions" and thus
+		// the user's default ones are not applied.
         verifyJsonDoc(firstUri, doc -> assertEquals("world", doc.get("hello").asText()));
         verifyMetadata(firstUri, metadata -> {
             DocumentMetadataHandle.DocumentPermissions perms = metadata.getPermissions();

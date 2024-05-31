@@ -37,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -189,10 +188,9 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 	}
 
 	@Test
-	public void testNullQdef() throws IOException, InterruptedException {
+	public void testNullQdef() {
 		System.out.println("In testNullQdef method");
 		JsonNode node = null;
-		JacksonHandle jacksonHandle = null;
 
 		WriteBatcher wbatcher = dmManager.newWriteBatcher().withBatchSize(32).withThreadCount(20);
 		try {
@@ -203,19 +201,7 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 		}
 
 		try {
-			wbatcher.add("/nulldoc", jacksonHandle);
-			fail("Exception was not thrown, when it should have been");
-		} catch (IllegalArgumentException e) {
-			assertTrue(e.getMessage().equals("contentHandle must not be null"));
-		}
-
-		QueryManager queryMgr = dbClient.newQueryManager();
-		StringQueryDefinition querydef = queryMgr.newStringDefinition();
-
-		querydef = null;
-
-		try {
-			QueryBatcher batcher = dmManager.newQueryBatcher(querydef).withBatchSize(32).withThreadCount(20);
+			dmManager.newQueryBatcher((StringQueryDefinition) null).withBatchSize(32).withThreadCount(20);
 			fail("Exception was not thrown, when it should have been");
 		} catch (IllegalArgumentException e) {
 			assertTrue(e.getMessage().equals("query must not be null"));

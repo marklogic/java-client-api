@@ -5,7 +5,9 @@ def getJava(){
         return "/home/builder/java/jdk-17.0.2"
     }else if(env.JAVA_VERSION=="JAVA11"){
         return "/home/builder/java/jdk-11.0.2"
-    }else{
+    }else if(env.JAVA_VERSION=="JAVA21"){
+		return "/home/builder/java/jdk-21.0.1"
+	}else{
         return "/home/builder/java/openjdk-1.8.0-262"
     }
 }
@@ -195,19 +197,18 @@ pipeline{
       }
     }
 
-// Can't run these as all the Optic Update tests fail now (as expected) on 11.1.0.
-// 		stage('regressions-11.1.0') {
-// 			when {
-// 				allOf {
-// 					branch 'develop'
-// 					expression {return params.regressions}
-// 				}
-// 			}
-// 			steps {
-// 			runAllTests('Release', '11.1.0', false)
-// 				junit '**/build/**/TEST*.xml'
-// 			}
-// 		}
+		stage('regressions-11.2.0') {
+			when {
+				allOf {
+					branch 'develop'
+					expression {return params.regressions}
+				}
+			}
+			steps {
+			runAllTests('Release', '11.2.0', false)
+				junit '**/build/**/TEST*.xml'
+			}
+		}
 
 		stage('regressions-11') {
 			when {
@@ -247,7 +248,7 @@ pipeline{
 				junit '**/build/**/TEST*.xml'
 			}
 		}
-    
+
 		stage('regressions-10.0') {
 			when {
 				allOf {
