@@ -17,11 +17,16 @@ package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class BatcherImpl implements Batcher {
+
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+
   private String jobName = "unnamed";
   private String jobId = null;
   private int batchSize = 100;
@@ -31,6 +36,7 @@ public abstract class BatcherImpl implements Batcher {
   private JobTicket jobTicket;
   private Calendar jobStartTime;
   private Calendar jobEndTime;
+
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private final AtomicBoolean started = new AtomicBoolean(false);
 
@@ -136,19 +142,32 @@ public abstract class BatcherImpl implements Batcher {
     this.jobEndTime = Calendar.getInstance();
   }
 
-  AtomicBoolean getStarted() {
-    return this.started;
-  }
   @Override
   public boolean isStarted() {
     return started.get();
   }
+
   @Override
   public boolean isStopped() {
     return stopped.get();
   }
-  AtomicBoolean getStopped() {
-    return this.stopped;
+
+	final void setStartedToTrue() {
+		logger.info("Setting 'started' to true.");
+		this.started.set(true);
+	}
+
+	final void setStoppedToTrue() {
+		logger.info("Setting 'stopped' to true.");
+		this.stopped.set(true);
+	}
+
+  final boolean isStoppedTrue() {
+	  // This method is necessary as calling "isStopped()" results in different behavior in QueryBatcherImpl, where
+	  // that method has been overridden to inspect the thread pool status instead. It's not clear why that was done,
+	  // so this preserves the existing behavior where the value of `stopped` is check in multiple places (it would seem
+	  // that in all of those places, calling "isStopped()" would be preferable).
+	  return this.stopped.get() == true;
   }
 
   protected DataMovementManagerImpl getMoveMgr() {

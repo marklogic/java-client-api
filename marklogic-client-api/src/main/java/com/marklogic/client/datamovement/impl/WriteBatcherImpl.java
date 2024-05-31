@@ -190,7 +190,7 @@ public class WriteBatcherImpl
 		  logger.debug("batchSize={}", getBatchSize());
 	  }
       super.setJobStartTime();
-      super.getStarted().set(true);
+	  setStartedToTrue();
     }
   }
 
@@ -459,7 +459,7 @@ public class WriteBatcherImpl
   @Override
   public void stop() {
     super.setJobEndTime();
-    super.getStopped().set(true);
+	setStoppedToTrue();
     if ( threadPool != null ) threadPool.shutdownNow();
     closeAllListeners();
   }

@@ -350,14 +350,14 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
     @Override
     public void stop() {
-        if (super.getStopped().get()) return;
-        super.getStopped().set(true);
+        if (isStoppedTrue()) return;
+		setStoppedToTrue();
         if (threadPool != null) threadPool.shutdownNow();
         super.setJobEndTime();
     }
     private void orderlyStop() {
-        if (super.getStopped().get()) return;
-        super.getStopped().set(true);
+        if (isStoppedTrue()) return;
+		setStoppedToTrue();
         if (threadPool != null) threadPool.shutdown();
         super.setJobEndTime();
     }
@@ -409,7 +409,7 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
         super.setJobTicket(ticket);
         super.setJobStartTime();
-        super.getStarted().set(true);
+		setStartedToTrue();
 
         for (int i=0; i<super.getThreadCount(); i++) {
             ContentHandle<T> threadHandle = rowsHandle.newHandle();
@@ -528,7 +528,7 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     private boolean shouldRequestBatch(RowBatchFailureEventImpl requestEvent, int batchRetries) {
         if (batchRetries == 0)        return true;  // first request
         if (requestEvent == null)     return false; // request succeeded
-        if (super.getStopped().get()) return false; // stopped
+        if (isStoppedTrue()) return false; // stopped
         // whether to retry request
         return (requestEvent.getDisposition() == RowBatchFailureListener.BatchFailureDisposition.RETRY &&
                 batchRetries < requestEvent.getMaxRetries());
