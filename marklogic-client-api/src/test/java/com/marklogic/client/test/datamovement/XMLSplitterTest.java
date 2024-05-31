@@ -24,21 +24,44 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 import org.junit.jupiter.api.Test;
 
+import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class XMLSplitterTest {
+
     static final private String xmlFile = "src/test/resources/data" + File.separator + "pathSplitter/people.xml";
     static final private String[] expected = new String[]{
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?><person xmlns=\"http://www.marklogic.com/people/\" president=\"yes\"><first>George</first><last>Washington</last></person>",
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?><person xmlns=\"http://www.marklogic.com/people/\" president=\"no\"><first>Betsy</first><last>Ross</last></person>",
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?><person xmlns=\"http://www.marklogic.com/people/\" president=\"yes\"><first>John</first><last>Kennedy</last></person>"
     };
+
+	private static final String ENCODED_FILE = "src/test/resources/encoding/medline04.small.iso-8859-1.xml";
+
+	@Test
+	void customEncoding() throws Exception {
+		InputStream inputStream = new FileInputStream(ENCODED_FILE);
+		XMLStreamReader reader = XMLInputFactory.newFactory().createXMLStreamReader(inputStream, "iso-8859-1");
+		assertEquals(2, XMLSplitter.makeSplitter(null, "MedlineCitation").split(reader).count(),
+			"By constructing a reader with a custom encoding, the file can be read and split successfully " +
+				"into 2 XML fragments.");
+	}
+
+	@Test
+	void wrongEncoding() throws Exception {
+		InputStream inputStream = new FileInputStream(ENCODED_FILE);
+		final Stream<StringHandle> stream = XMLSplitter.makeSplitter(null, "MedlineCitation").split(inputStream);
+		assertThrows(RuntimeException.class, () -> stream.count(), "An error should occur since the input file uses " +
+			"'iso-8859-1' as the encoding, but the splitter defaults to assuming UTF-8.");
+	}
 
     @Test
     public void testXMLSplitter() throws Exception {
