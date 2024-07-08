@@ -15,19 +15,34 @@
  */
 package com.marklogic.client.type;
 
-// IMPORTANT: Do not edit. This file is generated.
-
 /**
  * An option controlling the scoring and weighting of fromSearch()
  * for a row pipeline.
  */
 public interface PlanSearchOptions {
-    XsDoubleVal getQualityWeight();
+	/**
+	 * Changed in release 6.7.0 to return a float, as the server requires a float and throws an error on a double.
+	 */
+	XsFloatVal getQualityWeight();
     ScoreMethod getScoreMethod();
-    PlanSearchOptions withQualityWeight(double qualityWeight);
-    PlanSearchOptions withQualityWeight(XsDoubleVal qualityWeight);
+	/**
+	 * @since 6.7.0
+	 */
+	XsDoubleVal getBm25LengthWeight();
+	/**
+	 * Changed in release 6.7.0 to return a float, as the server requires a float and throws an error on a double.
+	 */
+    PlanSearchOptions withQualityWeight(float qualityWeight);
+	/**
+	 * Changed in release 6.7.0 to return a float, as the server requires a float and throws an error on a double.
+	 */
+    PlanSearchOptions withQualityWeight(XsFloatVal qualityWeight);
     PlanSearchOptions withScoreMethod(ScoreMethod scoreMethod);
+	/**
+	 * @since 6.7.0
+	 */
+	PlanSearchOptions withBm25LengthWeight(double bm25LengthWeight);
     enum ScoreMethod {
-        LOGTFIDF, LOGTF, SIMPLE;
+        LOGTFIDF, LOGTF, SIMPLE, BM25, ZERO, RANDOM;
     }
 }

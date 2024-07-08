@@ -675,7 +675,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
   }
 
-  static Map<String,String> makeMap(PlanSearchOptions options) {
+  static Map<String,Object> makeMap(PlanSearchOptions options) {
     if (options == null) {
       return null;
     }
