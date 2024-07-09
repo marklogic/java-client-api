@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public abstract class PlanBuilder implements PlanBuilderBase {
   protected PlanBuilder(
-    CtsExpr cts, FnExpr fn, GeoExpr geo, JsonExpr json, MapExpr map, MathExpr math, RdfExpr rdf, SemExpr sem, SpellExpr spell, SqlExpr sql, XdmpExpr xdmp, XsExpr xs, RdtExpr rdt
+    CtsExpr cts, FnExpr fn, GeoExpr geo, JsonExpr json, MapExpr map, MathExpr math, RdfExpr rdf, SemExpr sem, SpellExpr spell, SqlExpr sql, VecExpr vec, XdmpExpr xdmp, XsExpr xs, RdtExpr rdt
     ) {
     this.cts = cts;
      this.fn = fn;
@@ -39,6 +39,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
      this.sem = sem;
      this.spell = spell;
      this.sql = sql;
+     this.vec = vec;
      this.xdmp = xdmp;
      this.xs = xs;
      this.rdt = rdt;
@@ -84,6 +85,10 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * Builds expressions with sql server functions.
   */
   public final SqlExpr sql;
+ /**
+  * Builds expressions with vec server functions.
+  */
+  public final VecExpr vec;
  /**
   * Builds expressions with xdmp server functions.
   */
@@ -312,13 +317,13 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public abstract PlanColumn viewCol(XsStringVal view, XsStringVal column);
   /**
   * Specifies a name for adding a fragment id column to the row set identifying the source documents for the rows from a view, lexicons or triples. The only use for the fragment id is joining other rows from the same document, the document uri, or the document content. The fragment id is only useful during execution of the query and not after.
-  * @param column  the column  value.
+  * @param column  The name of the fragment ID column.
   * @return  a PlanSystemColumn object
   */
   public abstract PlanSystemColumn fragmentIdCol(String column);
   /**
   * Specifies a name for adding a fragment id column to the row set identifying the source documents for the rows from a view, lexicons or triples. The only use for the fragment id is joining other rows from the same document, the document uri, or the document content. The fragment id is only useful during execution of the query and not after.
-  * @param column  the column  value.
+  * @param column  The name of the fragment ID column.
   * @return  a PlanSystemColumn object
   */
   public abstract PlanSystemColumn fragmentIdCol(XsStringVal column);
@@ -1781,26 +1786,26 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public abstract ModifyPlan orderBy(PlanSortKeySeq keys);
 /**
   * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
-  * @param action  Valid options are: "fail" - stop procesisng and "continue" - add an error to the error column and continue processing.
+  * @param action  Valid options are: "fail" - stop processing and "continue" - add an error to the error column and continue processing.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan onError(String action);
 /**
   * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
-  * @param action  Valid options are: "fail" - stop procesisng and "continue" - add an error to the error column and continue processing.
+  * @param action  Valid options are: "fail" - stop processing and "continue" - add an error to the error column and continue processing.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan onError(XsStringVal action);
 /**
   * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
-  * @param action  Valid options are: "fail" - stop procesisng and "continue" - add an error to the error column and continue processing.
+  * @param action  Valid options are: "fail" - stop processing and "continue" - add an error to the error column and continue processing.
   * @param errorColumn  An optional error column which is not used in the plan. If this parameter is not passed in 'sys.errors' is used. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan onError(String action, String errorColumn);
 /**
   * Add an error-handler to the Optic Pipeline to catch Optic Update runtime errors. The runtime errors are added in the errors column. If no error occurred the value of the error column is null. When added, the error-handler should be the last operator before op:result.
-  * @param action  Valid options are: "fail" - stop procesisng and "continue" - add an error to the error column and continue processing.
+  * @param action  Valid options are: "fail" - stop processing and "continue" - add an error to the error column and continue processing.
   * @param errorColumn  An optional error column which is not used in the plan. If this parameter is not passed in 'sys.errors' is used. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a ModifyPlan object
   */

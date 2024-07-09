@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 MarkLogic Corporation
+ * Copyright (c) 2024 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ import com.marklogic.client.type.CtsReferenceSeqExpr;
 import com.marklogic.client.type.CtsRegionExpr;
 import com.marklogic.client.type.CtsRegionSeqExpr;
 
-// IMPORTANT: Do not edit. This file is generated.
+// IMPORTANT: Do not edit. This file is generated. 
 
 // 2023-10-24 Exception: Manual changes have been made to this to expose the string constructors for cts.point and
 // cts.polygon. These changes can be removed once optic-defs.json in the xdmp repository is updated to define these
@@ -60,7 +60,7 @@ public interface CtsExpr {
   * Returns a query matching fragments committed after a specified timestamp.
   *
   * <a name="ml-server-type-after-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:after-query" target="mlserverdoc">cts:after-query</a> server function.
   * @param timestamp  A commit timestamp. Database fragments committed after this timestamp are matched.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
@@ -71,7 +71,7 @@ public interface CtsExpr {
   * Returns a query specifying the set difference of the matches specified by two sub-queries.
   *
   * <a name="ml-server-type-and-not-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:and-not-query" target="mlserverdoc">cts:and-not-query</a> server function.
   * @param positiveQuery  A positive query, specifying the search results filtered in.  (of <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a>)
@@ -91,7 +91,7 @@ public interface CtsExpr {
   * Returns a query specifying the intersection of the matches specified by the sub-queries.
   *
   * <a name="ml-server-type-and-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:and-query" target="mlserverdoc">cts:and-query</a> server function.
   * @param queries  A sequence of sub-queries.  (of <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a>)
@@ -120,7 +120,7 @@ public interface CtsExpr {
   * Returns a query matching fragments committed before or at a specified timestamp.
   *
   * <a name="ml-server-type-before-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:before-query" target="mlserverdoc">cts:before-query</a> server function.
   * @param timestamp  A commit timestamp. Database fragments committed before this timestamp are matched.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
@@ -131,7 +131,7 @@ public interface CtsExpr {
   * Returns a query specifying that matches to matching-query should have their search relevance scores boosted if they also match boosting-query.
   *
   * <a name="ml-server-type-boost-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:boost-query" target="mlserverdoc">cts:boost-query</a> server function.
   * @param matchingQuery  A sub-query that is used for match and scoring.  (of <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a>)
@@ -154,7 +154,7 @@ public interface CtsExpr {
   * Returns a geospatial box value.
   *
   * <a name="ml-server-type-box"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:box" target="mlserverdoc">cts:box</a> server function.
   * @param south  The southern boundary of the box.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
@@ -168,7 +168,7 @@ public interface CtsExpr {
   * Returns a box's eastern boundary.
   *
   * <a name="ml-server-type-box-east"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:box-east" target="mlserverdoc">cts:box-east</a> server function.
   * @param box  The box.  (of <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a>)
@@ -179,7 +179,7 @@ public interface CtsExpr {
   * Returns a box's northern boundary.
   *
   * <a name="ml-server-type-box-north"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:box-north" target="mlserverdoc">cts:box-north</a> server function.
   * @param box  The box.  (of <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a>)
@@ -190,7 +190,7 @@ public interface CtsExpr {
   * Returns a box's southern boundary.
   *
   * <a name="ml-server-type-box-south"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:box-south" target="mlserverdoc">cts:box-south</a> server function.
   * @param box  The box.  (of <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a>)
@@ -201,7 +201,7 @@ public interface CtsExpr {
   * Returns a box's western boundary.
   *
   * <a name="ml-server-type-box-west"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:box-west" target="mlserverdoc">cts:box-west</a> server function.
   * @param box  The box.  (of <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a>)
@@ -221,7 +221,7 @@ public interface CtsExpr {
   * Returns a geospatial circle value.
   *
   * <a name="ml-server-type-circle"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:circle" target="mlserverdoc">cts:circle</a> server function.
   * @param radius  The radius of the circle. The units for the radius is determined at runtime by the query options (miles is currently the only option).  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
@@ -233,7 +233,7 @@ public interface CtsExpr {
   * Returns a circle's center point.
   *
   * <a name="ml-server-type-circle-center"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:circle-center" target="mlserverdoc">cts:circle-center</a> server function.
   * @param circle  The circle.  (of <a href="{@docRoot}/doc-files/types/cts_circle.html">cts:circle</a>)
@@ -244,7 +244,7 @@ public interface CtsExpr {
   * Returns a circle's radius.
   *
   * <a name="ml-server-type-circle-radius"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:circle-radius" target="mlserverdoc">cts:circle-radius</a> server function.
   * @param circle  The circle.  (of <a href="{@docRoot}/doc-files/types/cts_circle.html">cts:circle</a>)
@@ -263,7 +263,7 @@ public interface CtsExpr {
   * Match documents in at least one of the specified collections. It will match both documents and properties documents in the collections with the given URIs.
   *
   * <a name="ml-server-type-collection-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:collection-query" target="mlserverdoc">cts:collection-query</a> server function.
   * @param uris  One or more collection URIs. A document matches the query if it is in at least one of these collections.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -274,7 +274,7 @@ public interface CtsExpr {
   * Creates a reference to the collection lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
   *
   * <a name="ml-server-type-collection-reference"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:collection-reference" target="mlserverdoc">cts:collection-reference</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_reference.html">cts:reference</a> server data type
@@ -311,7 +311,7 @@ public interface CtsExpr {
   * Returns a cts:query matching documents matching a TDE-view column equals to an value. Searches with the cts:column-range-query constructor require the triple index; if the triple index is not configured, then an exception is thrown.
   *
   * <a name="ml-server-type-column-range-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:column-range-query" target="mlserverdoc">cts:column-range-query</a> server function.
   * @param schema  The TDE schema name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -403,7 +403,7 @@ public interface CtsExpr {
   * Returns a geospatial complex polygon value.
   *
   * <a name="ml-server-type-complex-polygon"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:complex-polygon" target="mlserverdoc">cts:complex-polygon</a> server function.
   * @param outer  The outer polygon.  (of <a href="{@docRoot}/doc-files/types/cts_polygon.html">cts:polygon</a>)
@@ -423,7 +423,7 @@ public interface CtsExpr {
   * Returns a query matching documents in the directories with the given URIs.
   *
   * <a name="ml-server-type-directory-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:directory-query" target="mlserverdoc">cts:directory-query</a> server function.
   * @param uris  One or more directory URIs.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -460,7 +460,7 @@ public interface CtsExpr {
   * Returns a query matching documents of a given format.
   *
   * <a name="ml-server-type-document-format-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:document-format-query" target="mlserverdoc">cts:document-format-query</a> server function.
   * @param format  Case insensitve one of: "json","xml","text","binary". This will result in a XDMP-ARG exception in case of an invalid format.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -471,7 +471,7 @@ public interface CtsExpr {
   * Returns a query that matches all documents where query matches any document fragment. When searching documents, document-properties, or document-locks, this function provides a convenient way to additionally constrain the search against any document fragment.
   *
   * <a name="ml-server-type-document-fragment-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:document-fragment-query" target="mlserverdoc">cts:document-fragment-query</a> server function.
   * @param query  A query to be matched against any document fragment.  (of <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a>)
@@ -491,7 +491,7 @@ public interface CtsExpr {
   * Returns a query matching documents with a given permission.
   *
   * <a name="ml-server-type-document-permission-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:document-permission-query" target="mlserverdoc">cts:document-permission-query</a> server function.
   * @param role  The role of the permission  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -511,7 +511,7 @@ public interface CtsExpr {
   * Returns a query matching documents with the given URIs. It will match both documents and properties documents with the given URIs.
   *
   * <a name="ml-server-type-document-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:document-query" target="mlserverdoc">cts:document-query</a> server function.
   * @param uris  One or more document URIs.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -530,7 +530,7 @@ public interface CtsExpr {
   * Returns a query matching documents with a given root element.
   *
   * <a name="ml-server-type-document-root-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:document-root-query" target="mlserverdoc">cts:document-root-query</a> server function.
   * @param root  The root QName to query.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -552,7 +552,7 @@ public interface CtsExpr {
   * Returns a query matching elements by name which has specific attributes representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
   *
   * <a name="ml-server-type-element-attribute-pair-geospatial-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-attribute-pair-geospatial-query" target="mlserverdoc">cts:element-attribute-pair-geospatial-query</a> server function.
   * @param elementName  One or more parent element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -627,7 +627,7 @@ public interface CtsExpr {
   * Constructs a query that matches element-attributes by name with a range-index entry equal to a given value. An element attribute range index on the specified QName(s) must exist when you use this query in a search; if no such range index exists, the search throws an exception.
   *
   * <a name="ml-server-type-element-attribute-range-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-attribute-range-query" target="mlserverdoc">cts:element-attribute-range-query</a> server function.
   * @param elementName  One or more element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -700,7 +700,7 @@ public interface CtsExpr {
   * Creates a reference to an element attribute value lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
   *
   * <a name="ml-server-type-element-attribute-reference"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-attribute-reference" target="mlserverdoc">cts:element-attribute-reference</a> server function.
   * @param element  An element QName.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -742,7 +742,7 @@ public interface CtsExpr {
   * Returns a query matching elements by name with attributes by name with text content equal a given phrase.
   *
   * <a name="ml-server-type-element-attribute-value-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-attribute-value-query" target="mlserverdoc">cts:element-attribute-value-query</a> server function.
   * @param elementName  One or more element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -811,7 +811,7 @@ public interface CtsExpr {
   * Returns a query matching elements by name with attributes by name with text content containing a given phrase.
   *
   * <a name="ml-server-type-element-attribute-word-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-attribute-word-query" target="mlserverdoc">cts:element-attribute-word-query</a> server function.
   * @param elementName  One or more element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -880,7 +880,7 @@ public interface CtsExpr {
   * Returns a query matching elements by name which has specific element children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
   *
   * <a name="ml-server-type-element-child-geospatial-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-child-geospatial-query" target="mlserverdoc">cts:element-child-geospatial-query</a> server function.
   * @param elementName  One or more parent element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -948,7 +948,7 @@ public interface CtsExpr {
   * Returns a query matching elements by name whose content represents a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
   *
   * <a name="ml-server-type-element-geospatial-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-geospatial-query" target="mlserverdoc">cts:element-geospatial-query</a> server function.
   * @param elementName  One or more element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -1013,7 +1013,7 @@ public interface CtsExpr {
   * Returns a query matching elements by name which has specific element children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
   *
   * <a name="ml-server-type-element-pair-geospatial-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-pair-geospatial-query" target="mlserverdoc">cts:element-pair-geospatial-query</a> server function.
   * @param elementName  One or more parent element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -1086,7 +1086,7 @@ public interface CtsExpr {
   * Constructs a query that matches elements by name with the content constrained by the query given in the second parameter. Searches for matches in the specified element and all of its descendants. If the query specified in the second parameter includes any element attribute sub-queries, it will search attributes on the specified element and attributes on any descendant elements. See the second example below).
   *
   * <a name="ml-server-type-element-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-query" target="mlserverdoc">cts:element-query</a> server function.
   * @param elementName  One or more element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -1108,7 +1108,7 @@ public interface CtsExpr {
   * Constructs a query that matches elements by name with range index entry equal to a given value. Searches that use an element range query require an element range index on the specified QName(s); if no such range index exists, then an exception is thrown.
   *
   * <a name="ml-server-type-element-range-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-range-query" target="mlserverdoc">cts:element-range-query</a> server function.
   * @param elementName  One or more element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -1175,7 +1175,7 @@ public interface CtsExpr {
   * Creates a reference to an element value lexicon, for use as a parameter to cts:value-tuples, temporal:axis-create, or any other function that takes an index reference. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
   *
   * <a name="ml-server-type-element-reference"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-reference" target="mlserverdoc">cts:element-reference</a> server function.
   * @param element  An element QName.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -1212,7 +1212,7 @@ public interface CtsExpr {
   * Returns a query matching elements by name with text content equal a given phrase. cts:element-value-query only matches against simple elements (that is, elements that contain only text and have no element children).
   *
   * <a name="ml-server-type-element-value-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-value-query" target="mlserverdoc">cts:element-value-query</a> server function.
   * @param elementName  One or more element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -1292,7 +1292,7 @@ public interface CtsExpr {
   * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element. If neither word searches nor stemmed word searches is enabled for the target database, an XDMP-SEARCH error is thrown.
   *
   * <a name="ml-server-type-element-word-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-word-query" target="mlserverdoc">cts:element-word-query</a> server function.
   * @param elementName  One or more element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -1346,7 +1346,7 @@ public interface CtsExpr {
   * Returns a query that matches no fragments.
   *
   * <a name="ml-server-type-false-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:false-query" target="mlserverdoc">cts:false-query</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a> server data type
@@ -1366,7 +1366,7 @@ public interface CtsExpr {
   * Returns a cts:query matching fields by name with a range-index entry equal to a given value. Searches with the cts:field-range-query constructor require a field range index on the specified field name(s); if there is no range index configured, then an exception is thrown.
   *
   * <a name="ml-server-type-field-range-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:field-range-query" target="mlserverdoc">cts:field-range-query</a> server function.
   * @param fieldName  One or more field names to match. When multiple field names are specified, the query matches if any field name matches.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1433,7 +1433,7 @@ public interface CtsExpr {
   * Creates a reference to a field value lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
   *
   * <a name="ml-server-type-field-reference"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:field-reference" target="mlserverdoc">cts:field-reference</a> server function.
   * @param field  A field name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1471,7 +1471,7 @@ public interface CtsExpr {
   * Returns a query matching text content containing a given value in the specified field. If the specified field does not exist, cts:field-value-query throws an exception. If the specified field does not have the index setting field value searches enabled, either for the database or for the specified field, then a cts:search with a cts:field-value-query throws an exception. A field is a named object that specified elements to include and exclude from a search, and can include score weights for any included elements. You create fields at the database level using the Admin Interface. For details on fields, see the chapter on "Fields Database Settings" in the Administrator's Guide.
   *
   * <a name="ml-server-type-field-value-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:field-value-query" target="mlserverdoc">cts:field-value-query</a> server function.
   * @param fieldName  One or more field names to search over. If multiple field names are supplied, the match can be in any of the specified fields (or-query semantics).  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1534,7 +1534,7 @@ public interface CtsExpr {
   * Returns a query matching fields with text content containing a given phrase. If the specified field does not exist, this function throws an exception. A field is a named object that specified elements to include and exclude from a search, and can include score weights for any included elements. You create fields at the database level using the Admin Interface. For details on fields, see the chapter on "Fields Database Settings" in the Administrator's Guide.
   *
   * <a name="ml-server-type-field-word-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:field-word-query" target="mlserverdoc">cts:field-word-query</a> server function.
   * @param fieldName  One or more field names to search over. If multiple field names are supplied, the match can be in any of the specified fields (or-query semantics).  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1596,7 +1596,7 @@ public interface CtsExpr {
   * Creates a reference to a geospatial path range index, for use as a parameter to cts:value-tuples. This function will throw an exception if the specified range index does not exist.
   *
   * <a name="ml-server-type-geospatial-path-reference"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:geospatial-path-reference" target="mlserverdoc">cts:geospatial-path-reference</a> server function.
   * @param pathExpression  A path expression.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1653,7 +1653,7 @@ public interface CtsExpr {
   * Create a reference to a geospatial region path index, for use as a parameter to cts:geospatial-region-query and other query operations on geospatial region indexes. This function throws an exception if the specified region path index does not exist.
   *
   * <a name="ml-server-type-geospatial-region-path-reference"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:geospatial-region-path-reference" target="mlserverdoc">cts:geospatial-region-path-reference</a> server function.
   * @param pathExpression  The XPath expression specified in the index configuration.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1784,7 +1784,7 @@ public interface CtsExpr {
   * Construct a query to match regions in documents that satisfy a specified relationship relative to other regions. For example, regions in documents that intersect with regions specified in the search criteria.
   *
   * <a name="ml-server-type-geospatial-region-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:geospatial-region-query" target="mlserverdoc">cts:geospatial-region-query</a> server function.
   * @param reference  Zero or more geospatial path region index references that identify regions in your content. To create a reference, see cts:geospatial-region-path-reference.  (of <a href="{@docRoot}/doc-files/types/cts_reference.html">cts:reference</a>)
@@ -1843,7 +1843,7 @@ public interface CtsExpr {
   * Creates a reference to the URI lexicon, for use as a parameter to cts:value-tuples. This function requires the URI lexicon to be enabled, otherwise it throws an exception. This reference returns URIs as IRIs.
   *
   * <a name="ml-server-type-iri-reference"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:iri-reference" target="mlserverdoc">cts:iri-reference</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_reference.html">cts:reference</a> server data type
@@ -1863,7 +1863,7 @@ public interface CtsExpr {
   * Returns a query matching json properties by name which has specific children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
   *
   * <a name="ml-server-type-json-property-child-geospatial-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:json-property-child-geospatial-query" target="mlserverdoc">cts:json-property-child-geospatial-query</a> server function.
   * @param propertyName  One or more parent property names to match. When multiple names are specified, the query matches if any name matches.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1931,7 +1931,7 @@ public interface CtsExpr {
   * Returns a query matching json properties by name whose content represents a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
   *
   * <a name="ml-server-type-json-property-geospatial-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:json-property-geospatial-query" target="mlserverdoc">cts:json-property-geospatial-query</a> server function.
   * @param propertyName  One or more json property names to match. When multiple names are specified, the query matches if any name matches.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1996,7 +1996,7 @@ public interface CtsExpr {
   * Returns a query matching json properties by name which has specific property children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
   *
   * <a name="ml-server-type-json-property-pair-geospatial-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:json-property-pair-geospatial-query" target="mlserverdoc">cts:json-property-pair-geospatial-query</a> server function.
   * @param propertyName  One or more parent property names to match. When multiple names are specified, the query matches if any name matches.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -2070,7 +2070,7 @@ public interface CtsExpr {
   * Returns a cts:query matching JSON properties by name with a range-index entry equal to a given value. Searches with the cts:json-property-range-query constructor require a property range index on the specified names; if there is no range index configured, then an exception is thrown.
   *
   * <a name="ml-server-type-json-property-range-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:json-property-range-query" target="mlserverdoc">cts:json-property-range-query</a> server function.
   * @param propertyName  One or more property name to match. When multiple names are specified, the query matches if any name matches.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -2137,7 +2137,7 @@ public interface CtsExpr {
   * Creates a reference to a JSON property value lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
   *
   * <a name="ml-server-type-json-property-reference"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:json-property-reference" target="mlserverdoc">cts:json-property-reference</a> server function.
   * @param property  A property name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -2175,7 +2175,7 @@ public interface CtsExpr {
   * Returns a cts:query matching JSON properties by name with the content constrained by the given cts:query in the second parameter. Searches for matches in the specified property and all of its descendants.
   *
   * <a name="ml-server-type-json-property-scope-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:json-property-scope-query" target="mlserverdoc">cts:json-property-scope-query</a> server function.
   * @param propertyName  One or more property names to match. When multiple names are specified, the query matches if any name matches.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -2196,7 +2196,7 @@ public interface CtsExpr {
   * Returns a query matching JSON properties by name with value equal the given value. For arrays, the query matches if the value of any elements in the array matches the given value.
   *
   * <a name="ml-server-type-json-property-value-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:json-property-value-query" target="mlserverdoc">cts:json-property-value-query</a> server function.
   * @param propertyName  One or more property names to match. When multiple names are specified, the query matches if any name matches.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -2259,7 +2259,7 @@ public interface CtsExpr {
   * Returns a query matching JSON properties by name with text content containing a given phrase. Searches only through immediate text node children of the specified property.
   *
   * <a name="ml-server-type-json-property-word-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:json-property-word-query" target="mlserverdoc">cts:json-property-word-query</a> server function.
   * @param propertyName  One or more JSON property names to match. When multiple names are specified, the query matches if any name matches.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -2321,7 +2321,7 @@ public interface CtsExpr {
   * Returns a geospatial linestring value.
   *
   * <a name="ml-server-type-linestring"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:linestring" target="mlserverdoc">cts:linestring</a> server function.
   * @param vertices  The waypoints of the linestring, given in order. vertexes.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -2332,7 +2332,7 @@ public interface CtsExpr {
   * Returns a query that matches all documents where query matches document-locks. When searching documents or document-properties, cts:locks-fragment-query provides a convenient way to additionally constrain the search against document-locks fragments.
   *
   * <a name="ml-server-type-locks-fragment-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:locks-fragment-query" target="mlserverdoc">cts:locks-fragment-query</a> server function.
   * @param query  A query to be matched against the locks fragment.  (of <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a>)
@@ -2351,7 +2351,7 @@ public interface CtsExpr {
   * Returns only documents before LSQT or a timestamp before LSQT for stable query results.
   *
   * <a name="ml-server-type-lsqt-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:lsqt-query" target="mlserverdoc">cts:lsqt-query</a> server function.
   * @param temporalCollection  The name of the temporal collection.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -2430,7 +2430,7 @@ public interface CtsExpr {
   * Returns a query matching all of the specified queries, where the matches occur within the specified distance from each other.
   *
   * <a name="ml-server-type-near-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:near-query" target="mlserverdoc">cts:near-query</a> server function.
   * @param queries  A sequence of queries to match.  (of <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a>)
@@ -2501,7 +2501,7 @@ public interface CtsExpr {
   * Returns a query matching the first sub-query, where those matches do not occur within 0 distance of the other query.
   *
   * <a name="ml-server-type-not-in-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:not-in-query" target="mlserverdoc">cts:not-in-query</a> server function.
   * @param positiveQuery  A positive query, specifying the search results filtered in.  (of <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a>)
@@ -2513,7 +2513,7 @@ public interface CtsExpr {
   * Returns a query specifying the matches not specified by its sub-query.
   *
   * <a name="ml-server-type-not-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:not-query" target="mlserverdoc">cts:not-query</a> server function.
   * @param query  A negative query, specifying the search results to filter out.  (of <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a>)
@@ -2532,7 +2532,7 @@ public interface CtsExpr {
   * Returns a query specifying the union of the matches specified by the sub-queries.
   *
   * <a name="ml-server-type-or-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:or-query" target="mlserverdoc">cts:or-query</a> server function.
   * @param queries  A sequence of sub-queries.  (of <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a>)
@@ -2561,7 +2561,7 @@ public interface CtsExpr {
   * Returns the part of speech for a cts:token, if any.
   *
   * <a name="ml-server-type-part-of-speech"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:part-of-speech" target="mlserverdoc">cts:part-of-speech</a> server function.
   * @param token  A token, as returned from cts:tokenize.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -2581,7 +2581,7 @@ public interface CtsExpr {
   * Returns a query matching path expressions whose content represents a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
   *
   * <a name="ml-server-type-path-geospatial-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:path-geospatial-query" target="mlserverdoc">cts:path-geospatial-query</a> server function.
   * @param pathExpression  One or more path expressions to match. When multiple path expressions are specified, the query matches if any path expression matches.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -2645,7 +2645,7 @@ public interface CtsExpr {
   * Returns a cts:query matching documents where the content addressed by an XPath expression satisfies the specified relationship (=, &lt;, &gt;, etc.) with respect to the input criteria values. A path range index must exist for each path when you perform a search.
   *
   * <a name="ml-server-type-path-range-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:path-range-query" target="mlserverdoc">cts:path-range-query</a> server function.
   * @param pathName  One or more XPath expressions that identify the content to match. When multiple paths are specified, the query matches if any path matches.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -2712,7 +2712,7 @@ public interface CtsExpr {
   * Creates a reference to a path value lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
   *
   * <a name="ml-server-type-path-reference"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:path-reference" target="mlserverdoc">cts:path-reference</a> server function.
   * @param pathExpression  A path range index expression.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -2770,7 +2770,7 @@ public interface CtsExpr {
   * Creates a period value, for use as a parameter to cts:period-range-query or cts:period-compare-query.
   *
   * <a name="ml-server-type-period"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:period" target="mlserverdoc">cts:period</a> server function.
   * @param start  The dateTime value indicating start of the period.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
@@ -2792,7 +2792,7 @@ public interface CtsExpr {
   * Returns a cts:query matching documents that have relevant pair of period values. Searches with the cts:period-compare-query constructor require two valid names of period, if the either of the specified period does not exist, then an exception is thrown.
   *
   * <a name="ml-server-type-period-compare-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:period-compare-query" target="mlserverdoc">cts:period-compare-query</a> server function.
   * @param axis1  Name of the first axis to compare  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -2836,7 +2836,7 @@ public interface CtsExpr {
   * Returns a cts:query matching axis by name with a period value with an operator. Searches with the cts:period-range-query constructor require a axis definition on the axis name; if there is no axis configured, then an exception is thrown.
   *
   * <a name="ml-server-type-period-range-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:period-range-query" target="mlserverdoc">cts:period-range-query</a> server function.
   * @param axis  One or more axis to match on.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -2906,7 +2906,7 @@ public interface CtsExpr {
   * Returns a point value.
   *
   * <a name="ml-server-type-point"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:point" target="mlserverdoc">cts:point</a> server function.
   * @param latitude  The latitude of the point.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
@@ -2918,7 +2918,7 @@ public interface CtsExpr {
   * Returns a point's latitude value.
   *
   * <a name="ml-server-type-point-latitude"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:point-latitude" target="mlserverdoc">cts:point-latitude</a> server function.
   * @param point  The point.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
@@ -2929,7 +2929,7 @@ public interface CtsExpr {
   * Returns a point's longitude value.
   *
   * <a name="ml-server-type-point-longitude"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:point-longitude" target="mlserverdoc">cts:point-longitude</a> server function.
   * @param point  The point.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
@@ -2940,7 +2940,7 @@ public interface CtsExpr {
   * Returns a geospatial polygon value.
   *
   * <a name="ml-server-type-polygon"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:polygon" target="mlserverdoc">cts:polygon</a> server function.
   * @param vertices  The vertices of the polygon, given in order. No edge may cover more than 180 degrees of either latitude or longitude. The polygon as a whole may not encompass both poles. These constraints are necessary to ensure an unambiguous interpretation of the polygon. There must be at least three vertices. The first vertex should be identical to the last vertex to close the polygon. vertexes.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
@@ -2957,7 +2957,7 @@ public interface CtsExpr {
   * Returns a query that matches all documents where query matches document-properties. When searching documents or document-locks, this query type provides a convenient way to additionally constrain the search against document-properties fragments.
   *
   * <a name="ml-server-type-properties-fragment-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:properties-fragment-query" target="mlserverdoc">cts:properties-fragment-query</a> server function.
   * @param query  A query to be matched against the properties fragment.  (of <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a>)
@@ -2978,7 +2978,7 @@ public interface CtsExpr {
   * Returns a cts:query matching specified nodes with a range-index entry compared to a given value. Searches with the cts:range-query constructor require a range index; if there is no range index configured, then an exception is thrown.
   *
   * <a name="ml-server-type-range-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:range-query" target="mlserverdoc">cts:range-query</a> server function.
   * @param index  One or more range index references. When multiple indexes are specified, the query matches if any index matches.  (of <a href="{@docRoot}/doc-files/types/cts_reference.html">cts:reference</a>)
@@ -3037,7 +3037,7 @@ public interface CtsExpr {
   * Returns the stem(s) for a word.
   *
   * <a name="ml-server-type-stem"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:stem" target="mlserverdoc">cts:stem</a> server function.
   * @param text  A word or phrase to stem.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -3086,7 +3086,7 @@ public interface CtsExpr {
   * Tokenizes text into words, punctuation, and spaces. Returns output in the type cts:token, which has subtypes cts:word, cts:punctuation, and cts:space, all of which are subtypes of xs:string.
   *
   * <a name="ml-server-type-tokenize"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:tokenize" target="mlserverdoc">cts:tokenize</a> server function.
   * @param text  A word or phrase to tokenize.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -3145,7 +3145,7 @@ public interface CtsExpr {
   * Returns a cts:query matching triples with a triple index entry equal to the given values. Searches with the cts:triple-range-query constructor require the triple index; if the triple index is not configured, then an exception is thrown.
   *
   * <a name="ml-server-type-triple-range-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:triple-range-query" target="mlserverdoc">cts:triple-range-query</a> server function.
   * @param subject  The subjects to look up. When multiple values are specified, the query matches if any value matches. When the empty sequence is specified, then triples with any subject are matched.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -3230,7 +3230,7 @@ public interface CtsExpr {
   * Returns a query that matches all fragments.
   *
   * <a name="ml-server-type-true-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:true-query" target="mlserverdoc">cts:true-query</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a> server data type
@@ -3240,7 +3240,7 @@ public interface CtsExpr {
   * Creates a reference to the URI lexicon, for use as a parameter to cts:value-tuples. This function requires the URI lexicon to be enabled, otherwise it throws an exception.
   *
   * <a name="ml-server-type-uri-reference"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:uri-reference" target="mlserverdoc">cts:uri-reference</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_reference.html">cts:reference</a> server data type
@@ -3258,7 +3258,7 @@ public interface CtsExpr {
   * Returns a query matching text content containing a given phrase.
   *
   * <a name="ml-server-type-word-query"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:word-query" target="mlserverdoc">cts:word-query</a> server function.
   * @param text  Some words or phrases to match. When multiple strings are specified, the query matches if any string matches.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -3309,49 +3309,49 @@ public interface CtsExpr {
   * @return  a CtsBoxSeqExpr sequence
   */
   public CtsBoxSeqExpr boxSeq(CtsBoxExpr... items);
-
+ 
 /**
   * Constructs a sequence of CtsCircleExpr items.
   * @param items  the CtsCircleExpr items collected by the sequence
   * @return  a CtsCircleSeqExpr sequence
   */
   public CtsCircleSeqExpr circleSeq(CtsCircleExpr... items);
-
+ 
 /**
   * Constructs a sequence of CtsPeriodExpr items.
   * @param items  the CtsPeriodExpr items collected by the sequence
   * @return  a CtsPeriodSeqExpr sequence
   */
   public CtsPeriodSeqExpr periodSeq(CtsPeriodExpr... items);
-
+ 
 /**
   * Constructs a sequence of CtsPointExpr items.
   * @param items  the CtsPointExpr items collected by the sequence
   * @return  a CtsPointSeqExpr sequence
   */
   public CtsPointSeqExpr pointSeq(CtsPointExpr... items);
-
+ 
 /**
   * Constructs a sequence of CtsPolygonExpr items.
   * @param items  the CtsPolygonExpr items collected by the sequence
   * @return  a CtsPolygonSeqExpr sequence
   */
   public CtsPolygonSeqExpr polygonSeq(CtsPolygonExpr... items);
-
+ 
 /**
   * Constructs a sequence of CtsQueryExpr items.
   * @param items  the CtsQueryExpr items collected by the sequence
   * @return  a CtsQuerySeqExpr sequence
   */
   public CtsQuerySeqExpr querySeq(CtsQueryExpr... items);
-
+ 
 /**
   * Constructs a sequence of CtsReferenceExpr items.
   * @param items  the CtsReferenceExpr items collected by the sequence
   * @return  a CtsReferenceSeqExpr sequence
   */
   public CtsReferenceSeqExpr referenceSeq(CtsReferenceExpr... items);
-
+ 
 /**
   * Constructs a sequence of CtsRegionExpr items.
   * @param items  the CtsRegionExpr items collected by the sequence
