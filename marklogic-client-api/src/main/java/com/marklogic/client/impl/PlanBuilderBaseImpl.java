@@ -35,7 +35,7 @@ abstract class PlanBuilderBaseImpl extends PlanBuilder {
     super(
       CtsExprImpl.cts, FnExprImpl.fn, GeoExprImpl.geo, JsonExprImpl.json, MapExprImpl.map,
       MathExprImpl.math, RdfExprImpl.rdf, SemExprImpl.sem, SpellExprImpl.spell,
-      SqlExprImpl.sql, XdmpExprImpl.xdmp, XsExprImpl.xs, RdtExprImpl.rdt
+      SqlExprImpl.sql, VecExprImpl.vec, XdmpExprImpl.xdmp, XsExprImpl.xs, RdtExprImpl.rdt
     );
   }
 
