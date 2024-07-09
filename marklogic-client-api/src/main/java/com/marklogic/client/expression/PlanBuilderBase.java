@@ -31,7 +31,7 @@ import com.marklogic.client.type.*;
 public interface PlanBuilderBase {
     /**
      * Provides a convenience for matching documents and constructing rows with the score,
-     * document uri, and document content. The convenience is equivalent to chaining
+     * document URI, and document content. The convenience is equivalent to chaining
      * {@link PlanBuilder#fromSearch(CtsQueryExpr)},
      * {@link PlanBuilder.ModifyPlan#joinDocUri(String, String)},
      * and {@link PlanBuilder.ModifyPlan#joinDoc(String, String)}.
@@ -43,7 +43,7 @@ public interface PlanBuilderBase {
     PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query);
     /**
      * Provides a convenience for matching documents and constructing rows with the score,
-     * document uri, and document content. The convenience is equivalent to chaining
+     * document URI, and document content. The convenience is equivalent to chaining
      * {@link PlanBuilder#fromSearch(CtsQueryExpr)},
      * {@link PlanBuilder.ModifyPlan#joinDocUri(String, String)},
      * and {@link PlanBuilder.ModifyPlan#joinDoc(String, String)}.
@@ -54,12 +54,25 @@ public interface PlanBuilderBase {
      * @return  a ModifyPlan object
      */
     PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query, String qualifierName);
+	/**
+	 * Provides a convenience for matching documents and constructing rows with the score,
+	 * document URI, and document content. The convenience is equivalent to chaining
+	 * {@link PlanBuilder#fromSearch(CtsQueryExpr)},
+	 * {@link PlanBuilder.ModifyPlan#joinDocUri(String, String)},
+	 * and {@link PlanBuilder.ModifyPlan#joinDoc(String, String)}.
+	 * <p>The documents can be ordered by the score and limited for the most relevant
+	 * documents.</p>
+	 * @param query  The cts.query expression for matching the documents.
+	 * @param qualifierName Specifies a name for qualifying the column names similar to a view name.
+	 * @return  a ModifyPlan object
+	 */
+	PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query, String qualifierName, PlanSearchOptions options);
     /**
      * Supports document matching and relevance by constructing rows with the document fragment id and
      * columns for relevance factors.  Typically, the plan will join the rows on the document fragment id
      * with the content of documents or with rows, triples, or lexicons indexed on the documents (where
      * the lexicons include range indexes, the document URI lexicon, and the collection lexicon).
-     * <p>The documents can be ordered by the score or other relevance factors and limited for the 
+     * <p>The documents can be ordered by the score or other relevance factors and limited for the
      * most relevant documents.</p>
      * <p>By default, the rows provide fragmentId and score columns.
      * </p>
@@ -72,7 +85,7 @@ public interface PlanBuilderBase {
      * columns for relevance factors.  Typically, the plan will join the rows on the document fragment id
      * with the content of documents or with rows, triples, or lexicons indexed on the documents (where
      * the lexicons include range indexes, the document URI lexicon, and the collection lexicon).
-     * <p>The documents can be ordered by the score or other relevance factors and limited for the 
+     * <p>The documents can be ordered by the score or other relevance factors and limited for the
      * most relevant documents.</p>
      * <p>The list of possible columns to project consists of fragmentId, confidence, fitness,
      * quality, and score. The columns other than the fragmentId provide the same relevance factors
@@ -93,7 +106,7 @@ public interface PlanBuilderBase {
      * columns for relevance factors.  Typically, the plan will join the rows on the document fragment id
      * with the content of documents or with rows, triples, or lexicons indexed on the documents (where
      * the lexicons include range indexes, the document URI lexicon, and the collection lexicon).
-     * <p>The documents can be ordered by the score or other relevance factors and limited for the 
+     * <p>The documents can be ordered by the score or other relevance factors and limited for the
      * most relevant documents.</p>
      * <p>The list of possible columns to project consists of fragmentId, confidence, fitness,
      * quality, and score. The columns other than the fragmentId provide the same relevance factors
@@ -115,7 +128,7 @@ public interface PlanBuilderBase {
      * columns for relevance factors.  Typically, the plan will join the rows on the document fragment id
      * with the content of documents or with rows, triples, or lexicons indexed on the documents (where
      * the lexicons include range indexes, the document URI lexicon, and the collection lexicon).
-     * <p>The documents can be ordered by the score or other relevance factors and limited for the 
+     * <p>The documents can be ordered by the score or other relevance factors and limited for the
      * most relevant documents.</p>
      * <p>The list of possible columns to project consists of fragmentId, confidence, fitness,
      * quality, and score. The columns other than the fragmentId provide the same relevance factors
@@ -135,7 +148,7 @@ public interface PlanBuilderBase {
     PlanBuilder.AccessPlan fromSearch(CtsQueryExpr query, PlanExprColSeq columns, XsStringVal qualifierName, PlanSearchOptions options);
 
     /**
-    * Constructs a literal row set as in the SQL VALUES or SPARQL VALUES statements. 
+    * Constructs a literal row set as in the SQL VALUES or SPARQL VALUES statements.
     * @param rows  This parameter provides any number of objects in which the key is a column name string identifying the column and the value is a literal with the value of the column.
     * @return  an AccessPlan object
     */
@@ -169,7 +182,7 @@ public interface PlanBuilderBase {
     PlanBuilder.AccessPlan fromDocUris(CtsQueryExpr querydef, String qualifierName);
     /**
      * Convenience method for constructing an {@code AccessPlan} based on a given set of URIs.
-     * 
+     *
      * @param uris one or more URIs to pass into a {@code cts.documentQuery}
      * @return an AccessPlanObject
      */
@@ -422,7 +435,7 @@ public interface PlanBuilderBase {
 
     /**
      * Construct a mapping of document descriptor column names to columns in the plan. The available set of
-     * document descriptor names are: uri, doc, collections, permissions, metadata, quality, and temporalCollection. 
+     * document descriptor names are: uri, doc, collections, permissions, metadata, quality, and temporalCollection.
      * Use this when mapping to non-standard column names.
      *
      * @param descriptorColumnMapping contains the mapping for column names to String values.
@@ -448,7 +461,7 @@ public interface PlanBuilderBase {
 
     /**
      * Build a transform definition for use with {@code transformDoc}.
-     * 
+     *
      * @param path the path (URI) of either a *.mjs or *.xslt module in a modules database
      * @return a new {@code TransformDef}
      */
@@ -734,7 +747,7 @@ public interface PlanBuilderBase {
      */
     interface ExportablePlanBase {
         /**
-         * This method exports the plan to an AST (Abstract Sytax Tree) 
+         * This method exports the plan to an AST (Abstract Sytax Tree)
          * using the specified JSON handle.
          * @param handle  a handle for reading the AST as JSON
          * @param <T> the type of the handle for reading the AST as JSON
@@ -742,11 +755,11 @@ public interface PlanBuilderBase {
          */
         <T extends JSONReadHandle> T export(T handle);
         /**
-         * This method exports the plan to an AST (Abstract Sytax Tree) 
+         * This method exports the plan to an AST (Abstract Sytax Tree)
          * using the specified JSON handle.
          * <p>
          * The IO class must have been registered before creating the database client.
-         * By default, the provided handles that implement 
+         * By default, the provided handles that implement
          * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
          * <p>
          * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
@@ -887,19 +900,19 @@ public interface PlanBuilderBase {
 
         /**
          * This method returns a subset of the rows in the result set by returning the specified number of rows.
-         * @param length  The number of rows to return. 
+         * @param length  The number of rows to return.
          * @return  a ModifyPlan object
          */
         PlanBuilder.ModifyPlan limit(long length);
         /**
          * This method returns a subset of the rows in the result set by returning the specified number of rows.
-         * @param length  The number of rows to return. 
+         * @param length  The number of rows to return.
          * @return  a ModifyPlan object
          */
         PlanBuilder.ModifyPlan limit(XsLongVal length);
         /**
          * This method returns a subset of the rows in the result set by returning the specified number of rows.
-         * @param length  The number of rows to return. 
+         * @param length  The number of rows to return.
          * @return  a ModifyPlan object
          */
         PlanBuilder.ModifyPlan limit(PlanParamExpr length);
@@ -916,38 +929,38 @@ public interface PlanBuilderBase {
         PlanBuilder.ModifyPlan lockForUpdate(PlanColumn uriColumn);
         /**
          * This method returns a subset of the rows in the result set by skipping the number of rows specified by start and returning the remaining rows up to the number specified by the prototype.limit method.
-         * @param start  The number of rows to skip. 
+         * @param start  The number of rows to skip.
          * @return  a ModifyPlan object
          */
         PlanBuilder.ModifyPlan offset(long start);
         /**
          * This method returns a subset of the rows in the result set by skipping the number of rows specified by start and returning the remaining rows up to the number specified by the prototype.limit method.
-         * @param start  The number of rows to skip. 
+         * @param start  The number of rows to skip.
          * @return  a ModifyPlan object
          */
         PlanBuilder.ModifyPlan offset(XsLongVal start);
         /**
          * This method returns a subset of the rows in the result set by skipping the number of rows specified by start and returning the remaining rows up to the number specified by the prototype.limit method.
-         * @param start  The number of rows to skip. 
+         * @param start  The number of rows to skip.
          * @return  a ModifyPlan object
          */
         PlanBuilder.ModifyPlan offset(PlanParamExpr start);
         /**
-         * This method returns a subset of the rows in the result set by skipping the number of rows specified by start and returning the remaining rows up to the length limit. The offset for the next subset of rows is start + length. 
-         * @param start  The number of rows to skip. 
-         * @param length  The number of rows to return. 
+         * This method returns a subset of the rows in the result set by skipping the number of rows specified by start and returning the remaining rows up to the length limit. The offset for the next subset of rows is start + length.
+         * @param start  The number of rows to skip.
+         * @param length  The number of rows to return.
          * @return  a ModifyPlan object
          */
         PlanBuilder.ModifyPlan offsetLimit(long start, long length);
         /**
-         * This method returns a subset of the rows in the result set by skipping the number of rows specified by start and returning the remaining rows up to the length limit. The offset for the next subset of rows is start + length. 
-         * @param start  The number of rows to skip. 
-         * @param length  The number of rows to return. 
+         * This method returns a subset of the rows in the result set by skipping the number of rows specified by start and returning the remaining rows up to the length limit. The offset for the next subset of rows is start + length.
+         * @param start  The number of rows to skip.
+         * @param length  The number of rows to return.
          * @return  a ModifyPlan object
          */
         PlanBuilder.ModifyPlan offsetLimit(XsLongVal start, XsLongVal length);
         /**
-         * Removes (deletes) any document with a URI matching the value of the "uri" column in at least one row in the 
+         * Removes (deletes) any document with a URI matching the value of the "uri" column in at least one row in the
          * pipeline.
          * @return a ModifyPlan object
          */
@@ -960,9 +973,9 @@ public interface PlanBuilderBase {
          */
         PlanBuilder.ModifyPlan remove(PlanColumn uriColumn);
         /**
-         * Removes (deletes) any temporal document with a URI matching the value of the given column in at least one 
-         * row in the pipeline. Results in each temporal document being marked as deleted. 
-         * 
+         * Removes (deletes) any temporal document with a URI matching the value of the given column in at least one
+         * row in the pipeline. Results in each temporal document being marked as deleted.
+         *
          * @param temporalCollection the name of the temporal collection containing URIs to remove
          * @param uriColumn the column containing URIs to be removed
          * @return a ModifyPlan object
@@ -971,7 +984,7 @@ public interface PlanBuilderBase {
         /**
          * Applies the given transformation to the content in the given column in each row. A {@code TransformDef}
          * can be constructed via {@code PlanBuilder#transformDef(String)}.
-         * 
+         *
          * @param docColumn the column containing content to be transformed.
          * @param transformDef defines a transform for using with the {@code transformDoc} operator.
          * @return a ModifyPlan object
@@ -979,12 +992,12 @@ public interface PlanBuilderBase {
         PlanBuilder.ModifyPlan transformDoc(PlanColumn docColumn, TransformDef transformDef);
         /**
          * This method restricts the row set to rows matched by the boolean expression. Use boolean composers such as op.and and op.or to combine multiple expressions.
-         * @param condition  The boolean expression on which to match. 
+         * @param condition  The boolean expression on which to match.
          * @return  a ModifyPlan object
          */
         PlanBuilder.ModifyPlan where(ServerExpression condition);
         /**
-         * This method restricts the row set to rows from the documents matched by the cts.query expression.  
+         * This method restricts the row set to rows from the documents matched by the cts.query expression.
          * @param condition  The cts.query expression for matching the documents.
          * @return  a ModifyPlan object
          */
