@@ -60,9 +60,18 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
   @Override
   public PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query, String qualifierName) {
-    return new AccessPlanSubImpl(
-            this, "op", "from-search-docs", new Object[]{query, (qualifierName == null) ? null : xs.string(qualifierName)}
-            );
+	  return fromSearchDocs(query, null, null);
+  }
+  @Override
+  public PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query, String qualifierName, PlanSearchOptions options) {
+	  return new AccessPlanSubImpl(
+		  this, "op", "from-search-docs",
+		  new Object[]{
+			  query,
+			  (qualifierName == null) ? null : xs.string(qualifierName),
+			  asArg(makeMap(options))
+		  }
+	  );
   }
 
   @Override
