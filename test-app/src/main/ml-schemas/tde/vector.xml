@@ -1,0 +1,31 @@
+<template xmlns="http://marklogic.com/xdmp/tde">
+	<context>/person</context>
+	<directories><directory>/optic/vectors/</directory></directories>
+	<rows>
+		<row>
+			<schema-name>vectors</schema-name>
+			<view-name>persons</view-name>
+			<columns>
+				<column>
+					<name>name</name>
+					<scalar-type>string</scalar-type>
+					<val>name</val>
+				</column>
+
+				<column>
+					<name>summary</name>
+					<scalar-type>string</scalar-type>
+					<val>summary</val>
+				</column>
+
+				<column>
+					<name>embedding</name>
+					<scalar-type>vector</scalar-type>
+					<val>vec:vector(embedding)</val>
+					<dimension>3</dimension>
+					<invalid-values>reject</invalid-values>
+				</column>
+			</columns>
+		</row>
+	</rows>
+</template>
