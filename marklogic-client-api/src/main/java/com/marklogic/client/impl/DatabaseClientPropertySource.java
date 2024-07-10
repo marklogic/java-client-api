@@ -183,9 +183,13 @@ public class DatabaseClientPropertySource {
 	}
 
 	private String getRequiredStringValue(String propertyName) {
+		return getRequiredStringValue(propertyName, String.format("%s must be of type String", propertyName));
+	}
+
+	private String getRequiredStringValue(String propertyName, String errorMessage) {
 		Object value = propertySource.apply(PREFIX + propertyName);
 		if (value == null || !(value instanceof String)) {
-			throw new IllegalArgumentException(propertyName + " must be of type String");
+			throw new IllegalArgumentException(errorMessage);
 		}
 		return (String) value;
 	}
@@ -204,13 +208,15 @@ public class DatabaseClientPropertySource {
 
 	private DatabaseClientFactory.SecurityContext newBasicAuthContext() {
 		return new DatabaseClientFactory.BasicAuthContext(
-			getRequiredStringValue("username"), getRequiredStringValue("password")
+			getRequiredStringValue("username", "Must specify a username when using basic authentication."),
+			getRequiredStringValue("password", "Must specify a password when using basic authentication.")
 		);
 	}
 
 	private DatabaseClientFactory.SecurityContext newDigestAuthContext() {
 		return new DatabaseClientFactory.DigestAuthContext(
-			getRequiredStringValue("username"), getRequiredStringValue("password")
+			getRequiredStringValue("username", "Must specify a username when using digest authentication."),
+			getRequiredStringValue("password", "Must specify a password when using digest authentication.")
 		);
 	}
 

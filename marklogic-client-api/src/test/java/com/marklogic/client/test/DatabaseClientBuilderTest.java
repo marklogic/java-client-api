@@ -92,6 +92,20 @@ public class DatabaseClientBuilderTest {
 	}
 
 	@Test
+	void digestNoUsername() {
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+			Common.newClientBuilder().withDigestAuth(null, "my-password").buildBean());
+		assertEquals("Must specify a username when using digest authentication.", ex.getMessage());
+	}
+
+	@Test
+	void digestNoPassword() {
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+			Common.newClientBuilder().withDigestAuth("my-user", null).buildBean());
+		assertEquals("Must specify a password when using digest authentication.", ex.getMessage());
+	}
+
+	@Test
 	void basic() {
 		bean = Common.newClientBuilder()
 			.withBasicAuth("my-user", "my-password")
@@ -100,6 +114,20 @@ public class DatabaseClientBuilderTest {
 		DatabaseClientFactory.BasicAuthContext context = (DatabaseClientFactory.BasicAuthContext) bean.getSecurityContext();
 		assertEquals("my-user", context.getUser());
 		assertEquals("my-password", context.getPassword());
+	}
+
+	@Test
+	void basicNoUsername() {
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+			Common.newClientBuilder().withBasicAuth(null, "my-password").buildBean());
+		assertEquals("Must specify a username when using basic authentication.", ex.getMessage());
+	}
+
+	@Test
+	void basicNoPassword() {
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+			Common.newClientBuilder().withBasicAuth("my-user", null).buildBean());
+		assertEquals("Must specify a password when using basic authentication.", ex.getMessage());
 	}
 
 	@Test
