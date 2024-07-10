@@ -1,0 +1,11 @@
+{
+	"person": {
+		"name": "Bob",
+		"summary": "Below Bob",
+		"embedding": [
+			9.9,
+			8.8,
+			7.7
+		]
+	}
+}
