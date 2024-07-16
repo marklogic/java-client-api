@@ -23,11 +23,8 @@ class FromSearchDocsWithOptionsTest extends AbstractOpticUpdateTest {
 		PlanSearchOptions options = op.searchOptions()
 			.withScoreMethod(PlanSearchOptions.ScoreMethod.BM25)
 			.withBm25LengthWeight(0.25);
-		List<RowRecord> rows = resultRows(
-			op.fromSearchDocs(op.cts.wordQuery("contents"), null, options)
-				.offsetLimit(0, 5)
-		);
-		assertEquals(5, rows.size());
+		List<RowRecord> rows = resultRows(op.fromSearchDocs(op.cts.wordQuery("saxophone"), null, options));
+		assertEquals(2, rows.size());
 	}
 
 	@Test
@@ -36,10 +33,7 @@ class FromSearchDocsWithOptionsTest extends AbstractOpticUpdateTest {
 //		It only tests that including a valid qualityWeight value does not cause any problems.
 		rowManager.withUpdate(false);
 		PlanSearchOptions options = op.searchOptions().withScoreMethod(PlanSearchOptions.ScoreMethod.LOGTFIDF).withQualityWeight(0.75F);
-		List<RowRecord> rows = resultRows(
-			op.fromSearchDocs(op.cts.wordQuery("contents"), null, options)
-				.offsetLimit(0, 5)
-		);
-		assertEquals(5, rows.size());
+		List<RowRecord> rows = resultRows(op.fromSearchDocs(op.cts.wordQuery("saxophone"), null, options));
+		assertEquals(2, rows.size());
 	}
 }
