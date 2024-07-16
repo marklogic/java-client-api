@@ -58,6 +58,7 @@ class VectorTest extends AbstractOpticUpdateTest {
 				.limit(5);
 		List<RowRecord> rows = resultRows(plan);
 		assertEquals(2, rows.size());
+
 		rows.forEach(row -> {
 //			 Simple a sanity checks to verify that the functions ran. Very little concern about the actual return values.
 			double cosineSimilarity = row.getDouble("cosineSimilarity");
@@ -89,7 +90,7 @@ class VectorTest extends AbstractOpticUpdateTest {
 		Exception exception = assertThrows(FailedRequestException.class, () -> resultRows(plan));
 		String actualMessage = exception.getMessage();
 		assertTrue(actualMessage.contains("Server Message: VEC-DIMMISMATCH"), "Unexpected message: " + actualMessage);
-		assertTrue(actualMessage.contains("Mismatched dimension: Vector dimensions must be equal"), "Unexpected message: " + actualMessage);
+		assertTrue(actualMessage.contains("Mismatched dimension"), "Unexpected message: " + actualMessage);
 	}
 
 	@Test

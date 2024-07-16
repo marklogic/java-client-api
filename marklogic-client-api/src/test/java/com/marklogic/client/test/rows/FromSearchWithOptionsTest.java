@@ -23,11 +23,8 @@ class FromSearchWithOptionsTest extends AbstractOpticUpdateTest {
 		PlanSearchOptions options = op.searchOptions()
 			.withScoreMethod(PlanSearchOptions.ScoreMethod.BM25)
 			.withBm25LengthWeight(0.25);
-		List<RowRecord> rows = resultRows(
-			op.fromSearch(op.cts.wordQuery("contents"), null, null, options)
-				.offsetLimit(0, 5)
-		);
-		assertEquals(5, rows.size());
+		List<RowRecord> rows = resultRows(op.fromSearch(op.cts.wordQuery("saxophone"), null, null, options));
+		assertEquals(2, rows.size());
 	}
 
 	@Test
@@ -36,8 +33,7 @@ class FromSearchWithOptionsTest extends AbstractOpticUpdateTest {
 		PlanSearchOptions options = op.searchOptions()
 			.withScoreMethod(PlanSearchOptions.ScoreMethod.BM25)
 			.withBm25LengthWeight(99);
-		PlanBuilder.ModifyPlan plan = op.fromSearch(op.cts.wordQuery("contents"), null, null, options)
-			.offsetLimit(0, 5);
+		PlanBuilder.ModifyPlan plan = op.fromSearch(op.cts.wordQuery("saxophone"), null, null, options);
 		Exception exception = assertThrows(FailedRequestException.class, () -> resultRows(plan));
 		String actualMessage = exception.getMessage();
 		assertTrue(actualMessage.contains("Server Message: XDMP-OPTION"));
@@ -48,11 +44,8 @@ class FromSearchWithOptionsTest extends AbstractOpticUpdateTest {
 	void zero() {
 		rowManager.withUpdate(false);
 		PlanSearchOptions options = op.searchOptions().withScoreMethod(PlanSearchOptions.ScoreMethod.ZERO);
-		List<RowRecord> rows = resultRows(
-			op.fromSearch(op.cts.wordQuery("contents"), null, null, options)
-				.offsetLimit(0, 5)
-		);
-		assertEquals(5, rows.size());
+		List<RowRecord> rows = resultRows(op.fromSearch(op.cts.wordQuery("saxophone"), null, null, options));
+		assertEquals(2, rows.size());
 		rows.forEach(row -> {
 			assertEquals(0, row.getInt("score"), "The score for every row should be 0.");
 		});
@@ -64,10 +57,7 @@ class FromSearchWithOptionsTest extends AbstractOpticUpdateTest {
 //		It only tests that including a valid qualityWeight value does not cause any problems.
 		rowManager.withUpdate(false);
 		PlanSearchOptions options = op.searchOptions().withScoreMethod(PlanSearchOptions.ScoreMethod.LOGTFIDF).withQualityWeight(0.75F);
-		List<RowRecord> rows = resultRows(
-			op.fromSearch(op.cts.wordQuery("contents"), null, null, options)
-				.offsetLimit(0, 5)
-		);
-		assertEquals(5, rows.size());
+		List<RowRecord> rows = resultRows(op.fromSearch(op.cts.wordQuery("saxophone"), null, null, options));
+		assertEquals(2, rows.size());
 	}
 }
