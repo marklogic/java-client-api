@@ -9,7 +9,6 @@ import com.marklogic.client.type.ServerExpression;
 import com.marklogic.client.type.XsDoubleSeqVal;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -49,11 +48,12 @@ class VectorTest extends AbstractOpticUpdateTest {
 				.bind(op.as("base64Encode", op.vec.base64Encode(op.col("sampleVector"))))
 				.bind(op.as("base64Decode", op.vec.base64Decode(op.col("base64Encode"))))
 				.bind(op.as("subVector", op.vec.subvector(op.col("sampleVector"), op.xs.integer(1), op.xs.integer(1))))
+				.bind(op.as("vectorScore", op.vec.vectorScore(op.xs.unsignedInt(1), op.xs.doubleVal(0.5))))
 				.select(
 					op.col("cosineSimilarity"), op.col("dotProduct"), op.col("euclideanDistance"),
 					op.col("name"), op.col("dimension"), op.col("normalize"),
 					op.col("magnitude"), op.col("get"), op.col("add"), op.col("subtract"),
-					op.col("base64Encode"), op.col("base64Decode"), op.col("subVector")
+					op.col("base64Encode"), op.col("base64Decode"), op.col("subVector"), op.col("vectorScore")
 				)
 				.limit(5);
 		List<RowRecord> rows = resultRows(plan);
@@ -77,6 +77,8 @@ class VectorTest extends AbstractOpticUpdateTest {
 			assertEquals(3, ((ArrayNode) row.get("base64Decode")).size());
 			assertEquals(5.6, row.getDouble("get"));
 			assertEquals(1, ((ArrayNode) row.get("subVector")).size());
+			double vectorScore = row.getDouble("vectorScore");
+			assertTrue(vectorScore > 0, "Unexpected value: " + vectorScore);
 		});
 	}
 
@@ -104,22 +106,6 @@ class VectorTest extends AbstractOpticUpdateTest {
 		String actualMessage = exception.getMessage();
 		assertTrue(actualMessage.contains("Server Message: XDMP-ARGTYPE"), "Unexpected message: " + actualMessage);
 		assertTrue(actualMessage.contains("arg2 is not of type vec:vector"), "Unexpected message: " + actualMessage);
-	}
-
-	@Test
-	@Disabled("See ticket MLE-15508")
-	void vectorScore() {
-		PlanBuilder.ModifyPlan plan =
-			op.fromView("vectors", "persons")
-				.bind(op.as("vectorScore", op.vec.vectorScore(op.xs.unsignedInt(1), op.xs.doubleVal(2))))
-				.select(op.col("vectorScore"))
-				.limit(5);
-		List<RowRecord> rows = resultRows(plan);
-		assertEquals(2, rows.size());
-		rows.forEach(row -> {
-			double vectorScore = row.getDouble("vectorScore");
-			assertTrue(vectorScore > 0, "Unexpected value: " + vectorScore);
-		});
 	}
 
 }
