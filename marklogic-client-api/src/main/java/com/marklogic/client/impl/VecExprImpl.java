@@ -21,6 +21,7 @@ import com.marklogic.client.type.XsDoubleVal;
 import com.marklogic.client.type.XsFloatVal;
 import com.marklogic.client.type.XsStringVal;
 import com.marklogic.client.type.XsUnsignedIntVal;
+import com.marklogic.client.type.XsUnsignedLongVal;
 
 import com.marklogic.client.type.ServerExpression;
 
@@ -156,15 +157,24 @@ class VecExprImpl implements VecExpr {
 
   
   @Override
-  public ServerExpression subvector(ServerExpression vector, ServerExpression start, ServerExpression length) {
+  public ServerExpression subvector(ServerExpression vector, ServerExpression start) {
     if (vector == null) {
       throw new IllegalArgumentException("vector parameter for subvector() cannot be null");
     }
     if (start == null) {
       throw new IllegalArgumentException("start parameter for subvector() cannot be null");
     }
-    if (length == null) {
-      throw new IllegalArgumentException("length parameter for subvector() cannot be null");
+    return new VectorCallImpl("vec", "subvector", new Object[]{ vector, start });
+  }
+
+  
+  @Override
+  public ServerExpression subvector(ServerExpression vector, ServerExpression start, ServerExpression length) {
+    if (vector == null) {
+      throw new IllegalArgumentException("vector parameter for subvector() cannot be null");
+    }
+    if (start == null) {
+      throw new IllegalArgumentException("start parameter for subvector() cannot be null");
     }
     return new VectorCallImpl("vec", "subvector", new Object[]{ vector, start, length });
   }
@@ -190,7 +200,7 @@ class VecExprImpl implements VecExpr {
     if (similarity == null) {
       throw new IllegalArgumentException("similarity parameter for vectorScore() cannot be null");
     }
-    return new XsExprImpl.UnsignedIntCallImpl("vec", "vector-score", new Object[]{ score, similarity });
+    return new XsExprImpl.UnsignedLongCallImpl("vec", "vector-score", new Object[]{ score, similarity });
   }
 
   
@@ -208,7 +218,7 @@ class VecExprImpl implements VecExpr {
     if (similarity == null) {
       throw new IllegalArgumentException("similarity parameter for vectorScore() cannot be null");
     }
-    return new XsExprImpl.UnsignedIntCallImpl("vec", "vector-score", new Object[]{ score, similarity, similarityWeight });
+    return new XsExprImpl.UnsignedLongCallImpl("vec", "vector-score", new Object[]{ score, similarity, similarityWeight });
   }
 
   static class VectorSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
