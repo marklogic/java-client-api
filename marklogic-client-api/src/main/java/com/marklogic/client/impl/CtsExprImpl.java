@@ -49,11 +49,6 @@ import com.marklogic.client.expression.CtsExpr;
 import com.marklogic.client.impl.BaseTypeImpl;
 
 // IMPORTANT: Do not edit. This file is generated.
-
-// 2023-10-24 Exception: Manual changes have been made to this to expose the string constructors for cts.point and
-// cts.polygon. These changes can be removed once optic-defs.json in the xdmp repository is updated to define these
-// constructors.
-
 class CtsExprImpl implements CtsExpr {
 
   final static XsExprImpl xs = XsExprImpl.xs;
@@ -1941,11 +1936,7 @@ class CtsExprImpl implements CtsExpr {
     return point(xs.doubleVal(latitude), xs.doubleVal(longitude));
   }
 
-	@Override
-	public CtsPointExpr point(String expression) {
-		return new PointCallImpl("cts", "point", new Object[]{ xs.string(expression) });
-	}
-
+  
   @Override
   public CtsPointExpr point(ServerExpression latitude, ServerExpression longitude) {
     if (latitude == null) {
@@ -1981,11 +1972,7 @@ class CtsExprImpl implements CtsExpr {
     return new PolygonCallImpl("cts", "polygon", new Object[]{ vertices });
   }
 
-	@Override
-	public CtsPolygonExpr polygon(String expression) {
-		return new PolygonCallImpl("cts", "polygon", new Object[]{ xs.string(expression) });
-	}
-
+  
   @Override
   public CtsQueryExpr propertiesFragmentQuery(ServerExpression query) {
     if (query == null) {

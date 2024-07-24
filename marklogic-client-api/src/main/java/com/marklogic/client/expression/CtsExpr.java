@@ -47,10 +47,6 @@ import com.marklogic.client.type.CtsRegionSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
 
-// 2023-10-24 Exception: Manual changes have been made to this to expose the string constructors for cts.point and
-// cts.polygon. These changes can be removed once optic-defs.json in the xdmp repository is updated to define these
-// constructors.
-
 /**
  * Builds expressions to call functions in the cts server library for a row
  * pipeline.
@@ -2895,13 +2891,6 @@ public interface CtsExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a> server data type
   */
   public CtsPointExpr point(double latitude, double longitude);
-
-	/**
-	 *
-	 * @param expression e.g. "3,4" or "POINT(5 6)"
-	 * @return a server expression with the <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a> server data type
-	 */
-	public CtsPointExpr point(String expression);
 /**
   * Returns a point value.
   *
@@ -2947,12 +2936,6 @@ public interface CtsExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_polygon.html">cts:polygon</a> server data type
   */
   public CtsPolygonExpr polygon(ServerExpression vertices);
-
-	/**
-	 * @param expression e.g. "1,2 3,4 5,6 1,2" or "POLYGON((2 1, 4 3, 6 5, 2 1))"
-	 * @return a server expression with the <a href="{@docRoot}/doc-files/types/cts_polygon.html">cts:polygon</a> server data type
-	 */
-	public CtsPolygonExpr polygon(String expression);
 /**
   * Returns a query that matches all documents where query matches document-properties. When searching documents or document-locks, this query type provides a convenient way to additionally constrain the search against document-properties fragments.
   *
