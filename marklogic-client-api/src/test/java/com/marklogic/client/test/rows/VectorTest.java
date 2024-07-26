@@ -108,4 +108,22 @@ class VectorTest extends AbstractOpticUpdateTest {
 		assertTrue(actualMessage.contains("arg2 is not of type vec:vector"), "Unexpected message: " + actualMessage);
 	}
 
+	@Test
+	// As of 07/26/24, this test will fail with the ML12 develop branch.
+	// However, it will succeed with the 12ea1 build.
+	// See https://progresssoftware.atlassian.net/browse/MLE-15707
+	void bindVectorFromDocs() {
+		PlanBuilder.ModifyPlan plan =
+			op.fromSearchDocs(
+				op.cts.andQuery(
+					op.cts.documentQuery("/optic/vectors/alice.json"),
+					op.cts.elementQuery(
+						"person",
+						op.cts.trueQuery()
+    				)
+  				))
+			.bind(op.as("embedding", op.vec.vector(op.xpath("doc", "/person/embedding"))));
+		List<RowRecord> rows = resultRows(plan);
+		assertEquals(1, rows.size());
+	}
 }
