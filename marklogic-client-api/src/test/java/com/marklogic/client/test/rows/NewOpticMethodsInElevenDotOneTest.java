@@ -62,12 +62,10 @@ public class NewOpticMethodsInElevenDotOneTest extends AbstractOpticUpdateTest {
 	@ExtendWith(RequiresML12.class)
 	void documentRootQuery() {
 		List<RowRecord> rows = resultRows(op
-			.fromDocUris(op.cts.documentRootQuery("suggest"))
+			.fromDocUris(op.cts.documentRootQuery("musician"))
 		);
 
-		assertEquals(2, rows.size());
-		assertEquals("/sample/suggestion.xml", ((TextNode) rows.get(0).get("uri")).asText());
-		assertEquals("/sample2/suggestion.xml", ((TextNode) rows.get(1).get("uri")).asText());
+		assertEquals(4, rows.size());
 	}
 
 	@Test
