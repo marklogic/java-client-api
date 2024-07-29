@@ -5,6 +5,7 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.junit5.RequiresML12;
 import com.marklogic.client.type.PlanSearchOptions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -41,14 +42,15 @@ class FromSearchWithOptionsTest extends AbstractOpticUpdateTest {
 	}
 
 	@Test
+	@Disabled("zero and random aren't in the 12 EA release.")
 	void zero() {
-		rowManager.withUpdate(false);
-		PlanSearchOptions options = op.searchOptions().withScoreMethod(PlanSearchOptions.ScoreMethod.ZERO);
-		List<RowRecord> rows = resultRows(op.fromSearch(op.cts.wordQuery("saxophone"), null, null, options));
-		assertEquals(2, rows.size());
-		rows.forEach(row -> {
-			assertEquals(0, row.getInt("score"), "The score for every row should be 0.");
-		});
+//		rowManager.withUpdate(false);
+//		PlanSearchOptions options = op.searchOptions().withScoreMethod(PlanSearchOptions.ScoreMethod.ZERO);
+//		List<RowRecord> rows = resultRows(op.fromSearch(op.cts.wordQuery("saxophone"), null, null, options));
+//		assertEquals(2, rows.size());
+//		rows.forEach(row -> {
+//			assertEquals(0, row.getInt("score"), "The score for every row should be 0.");
+//		});
 	}
 
 	@Test
