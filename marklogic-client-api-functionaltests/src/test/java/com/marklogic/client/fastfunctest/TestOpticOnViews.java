@@ -2219,6 +2219,7 @@ public class TestOpticOnViews extends AbstractFunctionalTest {
 	  jacksonHandle.setMimetype("application/json");
 
 	  JsonNode result = rowManager.resultDoc(plan1, new JacksonHandle()).get();
+	  assertNotNull(result, "result is unexpectedly null.");
 	  JsonNode rows = result.path("rows");
 
 	  assertEquals(2, rows.size());
