@@ -17,8 +17,8 @@ package com.marklogic.client.query;
 
 import com.marklogic.client.impl.ValueConverter;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlValue;
 
 /**
  * A CountedDistinctValue is a value that includes a frequency.

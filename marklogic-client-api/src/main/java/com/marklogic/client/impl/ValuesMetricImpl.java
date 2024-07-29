@@ -17,7 +17,7 @@ package com.marklogic.client.impl;
 
 import java.util.Calendar;
 
-import javax.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlValue;
 import javax.xml.datatype.Duration;
 
 /**

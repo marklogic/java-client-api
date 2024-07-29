@@ -23,7 +23,7 @@ import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBContext;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.IOException;

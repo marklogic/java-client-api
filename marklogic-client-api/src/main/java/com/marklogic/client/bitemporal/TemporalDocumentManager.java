@@ -18,7 +18,7 @@ package com.marklogic.client.bitemporal;
 
 import java.util.Calendar;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 import javax.xml.datatype.Duration;
 
 import com.marklogic.client.*;

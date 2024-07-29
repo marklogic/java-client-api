@@ -30,7 +30,7 @@ import com.marklogic.client.query.StructuredQueryBuilder.TemporalOperator;
 import org.junit.jupiter.api.*;
 import org.w3c.dom.Document;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 import java.util.Calendar;
 import java.util.Random;
 
