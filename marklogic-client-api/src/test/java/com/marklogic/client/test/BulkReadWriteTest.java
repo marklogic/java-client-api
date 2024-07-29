@@ -27,7 +27,7 @@ import com.marklogic.client.query.QueryManager.QueryView;
 import org.junit.jupiter.api.*;
 import org.w3c.dom.Document;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URLEncoder;

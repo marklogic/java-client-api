@@ -18,7 +18,7 @@ package com.marklogic.client.impl;
 import java.nio.charset.CharsetEncoder;
 import java.util.*;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 import javax.xml.datatype.Duration;
 
 import com.marklogic.client.query.SearchQueryDefinition;
