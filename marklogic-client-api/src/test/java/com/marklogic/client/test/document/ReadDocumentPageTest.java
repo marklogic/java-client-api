@@ -8,7 +8,6 @@ import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.test.Common;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ReadDocumentPageTest {
 
 	@Test
-	@Disabled("For MLE-15748. Using to refactor multipart reading first.")
 	void test() {
 		Common.deleteUrisWithPattern("/aaa-page/*");
 
