@@ -15,11 +15,6 @@
  */
 package com.marklogic.client.example.handle;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.marklogic.client.DatabaseClient;
@@ -28,6 +23,11 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.extra.gson.GSONHandle;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * GSONHandleExample illustrates writing and reading content as a JSON structure
@@ -53,10 +53,7 @@ public class GSONHandleExample {
       GSONHandle.newFactory()
     );
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+	  DatabaseClient client = Util.newClient(props);
 
     // create a manager for JSON documents
     JSONDocumentManager docMgr = client.newJSONDocumentManager();
@@ -97,10 +94,7 @@ public class GSONHandleExample {
   public static void runStrongTyped(ExampleProperties props) throws IOException {
     String filename = "flipper.json";
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+	  DatabaseClient client = Util.newClient(props);
 
     // create a manager for JSON documents
     JSONDocumentManager docMgr = client.newJSONDocumentManager();

@@ -15,15 +15,14 @@
  */
 package com.marklogic.client.example.cookbook;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * DocumentWriter illustrates how to write content to a database document.
@@ -36,10 +35,7 @@ public class DocumentWrite {
   public static void run(ExampleProperties props) throws IOException {
     System.out.println("example: "+DocumentWrite.class.getName());
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+	  DatabaseClient client = Util.newClient(props);
 
     // use either shortcut or strong typed IO
     runShortcut(client);

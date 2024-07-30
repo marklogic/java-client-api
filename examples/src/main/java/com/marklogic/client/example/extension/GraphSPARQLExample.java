@@ -37,12 +37,8 @@ public class GraphSPARQLExample {
   public static void main(String... args) throws IOException {
     ExampleProperties props = Util.loadProperties();
 
-    DatabaseClient appClient = DatabaseClientFactory.newClient(
-      props.host, props.port,
-      props.writerUser, props.writerPassword, props.authType);
-    DatabaseClient adminClient = DatabaseClientFactory.newClient(
-      props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
+    DatabaseClient appClient = Util.newClient(props);
+    DatabaseClient adminClient = Util.newAdminClient(props);
     run(appClient, adminClient);
     appClient.release();
     adminClient.release();

@@ -21,8 +21,7 @@ public class RecordJobInformation {
   public static void main( String args[] ) throws IOException {
     Util.ExampleProperties props = Util.loadProperties();
 
-    DatabaseClient client = DatabaseClientFactory.newClient(props.host, props.port,
-        new DatabaseClientFactory.DigestAuthContext(props.adminUser, props.adminPassword));
+	  DatabaseClient client = Util.newAdminClient(props);
     DataMovementManager dm = client.newDataMovementManager();
 
     // Create a WriteBatcher for which job information needs to be recorded

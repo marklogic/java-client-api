@@ -134,7 +134,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
       sslcontext = getSslContext();
       client = DatabaseClientFactory.newClient(
               appServerHostName, appServerHostPort,
-          new KerberosAuthContext(kdcPrincipalUser).withSSLContext(sslcontext));
+          new KerberosAuthContext(kdcPrincipalUser).withSSLContext(sslcontext, null));
     } else
       client = DatabaseClientFactory.newClient(appServerHostName,
           appServerHostPort, new KerberosAuthContext(kdcPrincipalUser));

@@ -34,10 +34,7 @@ public class ClientCreator {
   public static void run(ExampleProperties props) {
     System.out.println("example: "+ClientCreator.class.getName());
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+    DatabaseClient client = Util.newClient(props);
 
     // make use of the client connection
     TextDocumentManager docMgr = client.newTextDocumentManager();

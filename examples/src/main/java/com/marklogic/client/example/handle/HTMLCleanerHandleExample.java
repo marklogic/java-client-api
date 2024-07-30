@@ -15,20 +15,18 @@
  */
 package com.marklogic.client.example.handle;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Set;
-
-import org.htmlcleaner.ITagInfoProvider;
-import org.htmlcleaner.TagInfo;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.StringHandle;
+import org.htmlcleaner.ITagInfoProvider;
+import org.htmlcleaner.TagInfo;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Set;
 
 /**
  * HTMLCleanerHandleExample illustrates writing HTML content as
@@ -47,10 +45,7 @@ public class HTMLCleanerHandleExample {
 
     String fileroot = "sentiment";
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+	  DatabaseClient client = Util.newClient(props);
 
     // create a manager for documents of any format
     XMLDocumentManager docMgr = client.newXMLDocumentManager();

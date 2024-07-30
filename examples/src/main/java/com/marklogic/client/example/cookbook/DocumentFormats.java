@@ -15,16 +15,15 @@
  */
 package com.marklogic.client.example.cookbook;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.InputStreamHandle;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * DocumentFormats illustrates working with documents in multiple or unknown formats.
@@ -45,10 +44,7 @@ public class DocumentFormats {
       {"flipper.xml",     "XML"}
     };
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+	  DatabaseClient client = Util.newClient(props);
 
     // iterate over the files
     for (String[] fileEntry: fileEntries) {

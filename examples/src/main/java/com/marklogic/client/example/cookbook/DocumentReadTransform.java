@@ -15,17 +15,7 @@
  */
 package com.marklogic.client.example.cookbook;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.ResourceNotResendableException;
+import com.marklogic.client.*;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.document.ServerTransform;
@@ -34,6 +24,10 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * DocumentReadTransform installs a server transform for converting XML documents
@@ -54,22 +48,15 @@ public class DocumentReadTransform {
   {
     System.out.println("example: "+DocumentReadTransform.class.getName());
 
-    installTransform(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
-
-    readDocument(props.host, props.port,
-      props.writerUser, props.writerPassword, props.authType);
-
-    tearDownExample(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
+    installTransform(props);
+    readDocument(props);
+    tearDownExample(props);
   }
 
-  public static void installTransform(String host, int port, String user, String password, Authentication authType)
+  public static void installTransform(ExampleProperties props)
     throws IOException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      host, port, user, password, authType);
+	  DatabaseClient client = Util.newAdminClient(props);
 
     // create a manager for transform extensions
     TransformExtensionsManager transMgr = client.newServerConfigManager().newTransformExtensionsManager();
@@ -100,14 +87,12 @@ public class DocumentReadTransform {
     client.release();
   }
 
-  public static void readDocument(String host, int port, String user, String password, Authentication authType)
+  public static void readDocument(ExampleProperties props)
     throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     String filename = "flipper.xml";
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      host, port, user, password, authType);
+    DatabaseClient client = Util.newClient(props);
 
     // create an identifier for the document
     String docId = "/example/"+filename;
@@ -153,12 +138,10 @@ public class DocumentReadTransform {
   }
 
   // clean up by deleting the read document and the example transform
-  public static void tearDownExample(
-    String host, int port, String user, String password, Authentication authType)
+  public static void tearDownExample(ExampleProperties props)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      host, port, user, password, authType);
+    DatabaseClient client = Util.newAdminClient(props);
 
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
 

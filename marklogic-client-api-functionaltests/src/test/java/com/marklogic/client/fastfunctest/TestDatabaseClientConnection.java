@@ -17,35 +17,19 @@
 package com.marklogic.client.fastfunctest;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.alerting.RuleDefinition;
 import com.marklogic.client.alerting.RuleDefinitionList;
 import com.marklogic.client.alerting.RuleManager;
-import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.TextDocumentManager;
-import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.TuplesHandle;
-import com.marklogic.client.io.ValuesHandle;
-import com.marklogic.client.io.ValuesListHandle;
-import com.marklogic.client.query.AggregateResult;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.SuggestDefinition;
-import com.marklogic.client.query.ValuesDefinition;
-import com.marklogic.client.query.ValuesListDefinition;
+import com.marklogic.client.io.*;
+import com.marklogic.client.query.*;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -56,13 +40,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -72,12 +50,10 @@ import java.security.cert.X509Certificate;
 import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.TreeMap;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestDatabaseClientConnection extends AbstractFunctionalTest {
@@ -759,133 +735,6 @@ public class TestDatabaseClientConnection extends AbstractFunctionalTest {
 
     // release client
     client.release();
-  }
-
-  @Test
-  public void testDatabaseClientFactoryBean() throws IOException, ParserConfigurationException, SAXException, XpathException, KeyManagementException,
-  NoSuchAlgorithmException
-  {
-	  DatabaseClient client = null;
-	  try {
-		  DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
-		  clientFactoryBean.setHost(getRestAppServerHostName());
-		  clientFactoryBean.setPort(getRestAppServerPort());
-		  clientFactoryBean.setBasePath(basePath);
-		  clientFactoryBean.setConnectionType(getConnType());
-		  SecurityContext secContext = newSecurityContext("rest-admin", "x");
-
-		  clientFactoryBean.setSecurityContext(secContext);
-		  client = clientFactoryBean.newClient();
-
-		  String docId[] = { "/foo/test/myFoo1.txt", "/foo/test/myFoo2.txt", "/foo/test/myFoo3.txt" };
-
-		  TextDocumentManager docMgr = client.newTextDocumentManager();
-		  DocumentWriteSet writeset = docMgr.newWriteSet();
-
-		  writeset.add(docId[0], new StringHandle().with("This is so foo1"));
-		  writeset.add(docId[1], new StringHandle().with("This is so foo2"));
-		  writeset.add(docId[2], new StringHandle().with("This is so foo3"));
-
-		  docMgr.write(writeset);
-		  assertEquals( "This is so foo1", docMgr.read(docId[0], new StringHandle()).get());
-		  assertEquals( "This is so foo2", docMgr.read(docId[1], new StringHandle()).get());
-		  assertEquals( "This is so foo3", docMgr.read(docId[2], new StringHandle()).get());
-		  docMgr.delete(docId[0], docId[1], docId[2]);
-	  } catch (ResourceNotFoundException e) {
-		e.printStackTrace();
-	}
-	  finally {
-		  client.release();
-	  }
-  }
-
-  // Verify that DatabaseClient from Bean handles transactions
-  @Test
-  public void testDBClientFactoryBeanTransaction() throws Exception {
-	  DatabaseClient client = null;
-
-	  String filename = "facebook-10443244874876159931";
-	  DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
-	  clientFactoryBean.setHost(getRestAppServerHostName());
-	  clientFactoryBean.setPort(getRestAppServerPort());
-	  clientFactoryBean.setBasePath(basePath);
-	  clientFactoryBean.setConnectionType(getConnType());
-	  SecurityContext secContext = newSecurityContext("rest-writer", "x");
-
-	  clientFactoryBean.setSecurityContext(secContext);
-	  client = clientFactoryBean.newClient();
-
-	  DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-	  DocumentMetadataHandle readMetadataHandle = new DocumentMetadataHandle();
-	  DocumentMetadataValues metadatavalues = readMetadataHandle.getMetadataValues();
-	  Transaction t1 = null;
-	  Transaction t2 = null;
-	  metadataHandle.getMetadataValues().add("key1", "value1");
-	  metadataHandle.getMetadataValues().add("key2", "value2");
-	  metadataHandle.getMetadataValues().add("key3", "value3");
-
-	  TextDocumentManager docMgr = client.newTextDocumentManager();
-	  String uri = "/trx-jsonhandle-metadatavalues/";
-	  String docId = uri + filename;
-	  FileInputStream fis = null;
-	  Scanner scanner = null;
-	  String readContent;
-	  File file = null;
-
-	  try {
-		  file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
-		  fis = new FileInputStream(file);
-		  scanner = new Scanner(fis).useDelimiter("\\Z");
-		  readContent = scanner.next();
-	  } finally {
-		  fis.close();
-		  scanner.close();
-	  }
-	  StringHandle contentHandle = new StringHandle();
-	  contentHandle.set(readContent);
-	  // write the doc
-	  docMgr.writeAs(docId, metadataHandle, contentHandle);
-	  DocumentUriTemplate template = docMgr.newDocumentUriTemplate("Text").withDirectory("/trx-jsonhandle-metadatavalues-template/");
-
-	  try {
-		  // Trx with metadata values rollback scenario
-		  t1 = client.openTransaction();
-		  metadataHandle.getMetadataValues().add("keyTrx1", "valueTrx1");
-		  docMgr.writeMetadata(docId, metadataHandle, t1);
-		  docMgr.readMetadata(docId, readMetadataHandle, t1);
-		  assertTrue( metadatavalues.containsValue("valueTrx1"));
-		  t1.rollback();
-		  docMgr.readMetadata(docId, readMetadataHandle);
-		  metadatavalues = readMetadataHandle.getMetadataValues();
-		  assertFalse(metadatavalues.containsValue("valueTrx1"));
-
-		  // Trx with metadata values commit scenario
-		  t2 = client.openTransaction();
-		  metadataHandle.getMetadataValues().add("keyTrx2", "valueTrx2");
-		  DocumentDescriptor desc = docMgr.create(template, metadataHandle, contentHandle, t2);
-		  String docId1 = desc.getUri();
-		  docMgr.read(docId1, readMetadataHandle, contentHandle, t2);
-		  assertTrue( metadatavalues.containsValue("valueTrx2"));
-		  t2.commit();
-		  docMgr.readAs(docId1, readMetadataHandle, String.class);
-		  metadatavalues = readMetadataHandle.getMetadataValues();
-		  assertTrue( metadatavalues.containsValue("valueTrx2"));
-		  waitForPropertyPropagate();
-
-		  t1 = t2 = null;
-	  } catch (Exception e) {
-		  e.printStackTrace();
-	  } finally {
-		  if (t1 != null) {
-			  t1.rollback();
-			  t1 = null;
-
-		  } else if (t2 != null) {
-			  t2.rollback();
-			  t2 = null;
-		  }
-		  client.release();
-	  }
   }
 
   @Test

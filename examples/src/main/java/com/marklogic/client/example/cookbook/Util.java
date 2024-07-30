@@ -15,11 +15,12 @@
  */
 package com.marklogic.client.example.cookbook;
 
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 
 /**
  * Utilities to support and simplify examples.
@@ -37,7 +38,6 @@ public class Util {
     public String         readerPassword;
     public String         writerUser;
     public String         writerPassword;
-    public Authentication authType;
     public String         jdbcUrl;
     public String         jdbcUser;
     public String         jdbcPassword;
@@ -52,14 +52,23 @@ public class Util {
       readerPassword = props.getProperty("example.reader_password");
       writerUser     = props.getProperty("example.writer_user");
       writerPassword = props.getProperty("example.writer_password");
-      authType       = Authentication.valueOf(
-        props.getProperty("example.authentication_type").toUpperCase()
-      );
       jdbcUrl = props.getProperty("example.jdbc.url");
       jdbcUser = props.getProperty("example.jdbc.user");
       jdbcPassword = props.getProperty("example.jdbc.password");
     }
   }
+
+  public static DatabaseClient newClient(ExampleProperties props) {
+	  return DatabaseClientFactory.newClient(props.host, props.port,
+		  new DatabaseClientFactory.DigestAuthContext(props.writerUser, props.writerPassword)
+	  );
+  }
+
+	public static DatabaseClient newAdminClient(ExampleProperties props) {
+		return DatabaseClientFactory.newClient(props.host, props.port,
+			new DatabaseClientFactory.DigestAuthContext(props.adminUser, props.adminPassword)
+		);
+	}
 
   /**
    * Read the configuration properties for the example from the file

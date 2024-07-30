@@ -67,7 +67,8 @@ public class KerberosSSLClientCreator {
     // create the client
     // (note: a real application should use a COMMON, STRICT, or implemented hostname verifier)
     DatabaseClient client = null;
-    client = DatabaseClientFactory.newClient(props.host, props.port, new KerberosAuthContext().withSSLContext(sslContext).withSSLHostnameVerifier(SSLHostnameVerifier.ANY));
+    client = DatabaseClientFactory.newClient(props.host, props.port, new KerberosAuthContext()
+		.withSSLContext(sslContext, null).withSSLHostnameVerifier(SSLHostnameVerifier.ANY));
 
     // make use of the client connection
     TextDocumentManager docMgr = client.newTextDocumentManager();

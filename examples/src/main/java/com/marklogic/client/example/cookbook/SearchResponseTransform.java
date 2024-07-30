@@ -15,17 +15,7 @@
  */
 package com.marklogic.client.example.cookbook;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.ResourceNotResendableException;
+import com.marklogic.client.*;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
@@ -36,6 +26,10 @@ import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Search illustrates adding a result transformation to
@@ -58,26 +52,16 @@ public class SearchResponseTransform {
   {
     System.out.println("example: "+SearchResponseTransform.class.getName());
 
-    configure(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
-
-    // install the server transform
-    installTransform(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
-
-    search(props.host, props.port,
-      props.writerUser, props.writerPassword, props.authType);
-
-    tearDownExample(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
+    configure(props);
+    installTransform(props);
+    search(props);
+    tearDownExample(props);
   }
 
-  public static void installTransform(String host, int port, String user, String password, Authentication authType)
+  public static void installTransform(ExampleProperties props)
     throws IOException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      host, port, user, password, authType);
+	  DatabaseClient client = Util.newAdminClient(props);
 
     // create a manager for transform extensions
     TransformExtensionsManager transMgr = client.newServerConfigManager().newTransformExtensionsManager();
@@ -107,11 +91,10 @@ public class SearchResponseTransform {
     client.release();
   }
 
-  public static void configure(String host, int port, String user, String password, Authentication authType)
+  public static void configure(ExampleProperties props)
     throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException
   {
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+	  DatabaseClient client = Util.newAdminClient(props);
 
 
     // create a manager for writing query options
@@ -138,11 +121,10 @@ public class SearchResponseTransform {
     client.release();
   }
 
-  public static void search(String host, int port, String user, String password, Authentication authType)
+  public static void search(ExampleProperties props)
     throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+	  DatabaseClient client = Util.newClient(props);
 
     setUpExample(client);
 
@@ -194,11 +176,10 @@ public class SearchResponseTransform {
   }
 
   // clean up by deleting the documents and query options used in the example query
-  public static void tearDownExample(
-    String host, int port, String user, String password, Authentication authType)
+  public static void tearDownExample(ExampleProperties props)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+	  DatabaseClient client = Util.newAdminClient(props);
 
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
