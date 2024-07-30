@@ -27,10 +27,10 @@ dependencies {
 
 	implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
 	implementation 'org.slf4j:slf4j-api:1.7.36'
-	implementation 'com.fasterxml.jackson.core:jackson-core:2.15.3'
-	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.15.3'
-	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.3'
-	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.15.3'
+	implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+	implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+	implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+	implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-csv:${jacksonVersion}"
 
 	// Only used by extras (which some examples then depend on)
 	// Forcing codec version to avoid vulnerability with older version in httpclient
@@ -46,16 +46,17 @@ dependencies {
 	testImplementation 'org.xmlunit:xmlunit-legacy:2.9.1'
 	testImplementation project(':examples')
 
-	// Allows talking to the Manage API. It depends on the Java Client itself, which will usually be a slightly older
-	// version, but that should not have any impact on the tests.
-	testImplementation "com.marklogic:ml-app-deployer:4.7.0"
+	// Allows talking to the Manage API.
+	testImplementation ("com.marklogic:ml-app-deployer:4.8.0") {
+		exclude module: "marklogic-client-api"
+	}
 
 	// Starting with mockito 5.x, Java 11 is required, so sticking with 4.x as we have to support Java 8.
 	testImplementation "org.mockito:mockito-core:4.11.0"
 	testImplementation "org.mockito:mockito-inline:4.11.0"
 	testImplementation "com.squareup.okhttp3:mockwebserver:4.12.0"
 
-	testImplementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.3'
+	testImplementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jacksonVersion}"
 	testImplementation 'ch.qos.logback:logback-classic:1.3.14'
 	// schema validation issue with testImplementation 'xerces:xercesImpl:2.12.0'
 	testImplementation 'org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115'

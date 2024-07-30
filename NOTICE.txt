@@ -76,7 +76,7 @@ Made available under the Apache License 2.0. See Appendix for full text.
 
 Source materials are available for download at: https://github.com/apache/commons-lang
 
-Jackson Annotations 2.15.3
+Jackson Annotations 2.17.2
 Attribution Statements
 http://wiki.fasterxml.com/JacksonHome
 
@@ -86,7 +86,7 @@ Copyright ©2009 FasterXML, LLC
 License Text (http://spdx.org/licenses/Apache-2.0)
 Made available under the Apache License 2.0. See Appendix for full text.
 
-Jackson Core 2.15.3
+Jackson Core 2.17.2
 Attribution Statements
 http://wiki.fasterxml.com/JacksonHome
 
@@ -98,7 +98,7 @@ Made available under the Apache License 2.0. See Appendix for full text.
 
 Source materials are available for download at: https://github.com/FasterXML/jackson-core
 
-Jackson Databind 2.15.3
+Jackson Databind 2.17.2
 Attribution Statements
 http://wiki.fasterxml.com/JacksonHome
 
@@ -116,7 +116,7 @@ License Text (http://www.apache.org/licenses/LICENSE-2.0.txt)
 Made available under the Apache License 2.0. See Appendix for full text.
 
 Source materials are available for download at: https://github.com/FasterXML/jackson-databind
-Jackson Dataformat CSV 2.15.3
+Jackson Dataformat CSV 2.17.2
 Attribution Statements
 https://github.com/FasterXML/jackson-dataformat-csv
 
