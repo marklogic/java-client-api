@@ -64,11 +64,11 @@ import okio.Source;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.mail.BodyPart;
-import javax.mail.Header;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.util.ByteArrayDataSource;
+import jakarta.mail.BodyPart;
+import jakarta.mail.Header;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.util.ByteArrayDataSource;
 import javax.net.ssl.*;
 import jakarta.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
@@ -98,6 +98,14 @@ import java.util.stream.Stream;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class OkHttpServices implements RESTServices {
+
+	static {
+		// Added in 7.0.0. Instructs jakarta-mail to allow UTF-8 in header names in multipart responses.
+		if (System.getProperty("mail.mime.allowutf8") == null) {
+			System.setProperty("mail.mime.allowutf8", "true");
+		}
+	}
+
   static final private Logger logger = LoggerFactory.getLogger(OkHttpServices.class);
 
   static final public String OKHTTP_LOGGINGINTERCEPTOR_LEVEL = "com.marklogic.client.okhttp.httplogginginterceptor.level";
