@@ -12,7 +12,7 @@ dependencies {
 	compileOnly gradleApi()
 	implementation project(':marklogic-client-api')
 	implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.15.3'
+	implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
 	implementation 'com.networknt:json-schema-validator:1.0.88'
 
 	// Not yet migrating this project to JUnit 5. Will reconsider it once we have a reason to enhance
