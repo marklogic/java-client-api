@@ -43,6 +43,8 @@ public interface PlanSearchOptions {
 	 */
 	PlanSearchOptions withBm25LengthWeight(double bm25LengthWeight);
     enum ScoreMethod {
-        LOGTFIDF, LOGTF, SIMPLE, BM25, ZERO, RANDOM;
+        LOGTFIDF, LOGTF, SIMPLE, BM25;
+		// zero and random aren't in the 12 EA release.
+		//ZERO, RANDOM;
     }
 }
