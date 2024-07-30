@@ -800,7 +800,10 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  private OkHttpResultIterator getBulkDocumentsImpl(RequestLogger reqlog, long serverTimestamp,
+	/**
+	 * Uses v1/documents.
+	 */
+  	private OkHttpResultIterator getBulkDocumentsImpl(RequestLogger reqlog, long serverTimestamp,
                                                     Transaction transaction, Set<Metadata> categories,
                                                     Format format, RequestParameters extraParams, boolean withContent,
                                                     String... uris)
@@ -831,6 +834,9 @@ public class OkHttpServices implements RESTServices {
     return iterator;
   }
 
+	/**
+	 * Uses v1/search.
+	 */
   private OkHttpResultIterator getBulkDocumentsImpl(RequestLogger reqlog, long serverTimestamp,
                                                     SearchQueryDefinition querydef, long start, long pageLength,
                                                     Transaction transaction, SearchReadHandle searchHandle, QueryView view,
@@ -4416,45 +4422,46 @@ public class OkHttpServices implements RESTServices {
     return (reqlog != null) ? reqlog.copyContent(entity) : entity;
   }
 
-  private <U extends OkHttpResultIterator> U makeResults(
-    ResultIteratorConstructor<U> constructor, RequestLogger reqlog,
-    String operation, String entityType, Response response) {
-    if ( response == null ) return null;
-    ResponseBody body = response.body();
-    long length = body.contentLength();
-    MimeMultipart entity = length != 0 ?
-      getEntity(body, MimeMultipart.class) : null;
+  static private List<BodyPart> readMultipartBodyParts(ResponseBody body) {
+	  long length = body.contentLength();
+	  MimeMultipart entity = length != 0 ? getEntity(body, MimeMultipart.class) : null;
+	  try {
+		  if (length == -1 && entity != null) entity.getCount();
+	  } catch (MessagingException e) {
+		  entity = null;
+	  }
+	  return getPartList(entity);
+  }
 
-    try {
-        if (length == -1 && entity != null) entity.getCount();
-    } catch (MessagingException e) {
-        entity = null;
-    }
-    List<BodyPart> partList = getPartList(entity);
+  private <U extends OkHttpResultIterator> U makeResults(ResultIteratorConstructor<U> constructor, RequestLogger reqlog,
+														 String operation, String entityType, Response response) {
+	  if ( response == null ) return null;
+	  final List<BodyPart> partList = readMultipartBodyParts(response.body());
+	  throwExceptionIfErrorInTrailers(operation, entityType, response);
+	  return makeResults(constructor, reqlog, operation, entityType, partList, response, response);
+  }
 
-    String mlErrorCode = null;
-    String mlErrorMessage = null;
-    try {
-        Headers trailers = response.trailers();
-        mlErrorCode = trailers.get("ml-error-code");
-        mlErrorMessage = trailers.get("ml-error-message");
-    } catch (IOException e) {
-        // This does not seem worthy of causing the entire operation to fail; we also don't expect this to occur, as it
-        // should only occur due to a programming error where the response body has already been consumed
-        logger.warn("Unexpected IO error while getting HTTP response trailers: " + e.getMessage());
-    }
+  static private void throwExceptionIfErrorInTrailers(String operation, String entityType, Response response) {
+	  String mlErrorCode = null;
+	  String mlErrorMessage = null;
+	  try {
+		  Headers trailers = response.trailers();
+		  mlErrorCode = trailers.get("ml-error-code");
+		  mlErrorMessage = trailers.get("ml-error-message");
+	  } catch (IOException e) {
+		  // This does not seem worthy of causing the entire operation to fail; we also don't expect this to occur, as it
+		  // should only occur due to a programming error where the response body has already been consumed
+		  logger.warn("Unexpected IO error while getting HTTP response trailers: " + e.getMessage());
+	  }
 
-    if (mlErrorCode != null && !"N/A".equals(mlErrorCode)) {
-      FailedRequest failure = new FailedRequest();
-      failure.setMessageString(mlErrorCode);
-      failure.setStatusString(mlErrorMessage);
-      failure.setStatusCode(500);
-      throw new FailedRequestException("failed to " + operation + " "
-          + entityType + " at rows" + ": " + mlErrorCode + ", " + mlErrorMessage, failure);
-    }
-
-    Closeable closeable = response;
-    return makeResults(constructor, reqlog, operation, entityType, partList, response, closeable);
+	  if (mlErrorCode != null && !"N/A".equals(mlErrorCode)) {
+		  FailedRequest failure = new FailedRequest();
+		  failure.setMessageString(mlErrorCode);
+		  failure.setStatusString(mlErrorMessage);
+		  failure.setStatusCode(500);
+		  String message = String.format("failed to %s %s at rows: %s, %s", operation, entityType, mlErrorCode, mlErrorMessage);
+		  throw new FailedRequestException(message, failure);
+	  }
   }
 
   private <U extends OkHttpResultIterator> U makeResults(
