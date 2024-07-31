@@ -63,16 +63,6 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 		callerImpl.arrayCall(getClient(), checkAllowedArgs(callContext), inputHandles);
 	}
 
-	@Deprecated
-	public InputStream call(InputStream endpointState, SessionState session, InputStream endpointConstants, I[] input) {
-		CallContextImpl<I,O> callContext = newCallContext(true)
-				.withEndpointStateAs(endpointState)
-				.withSessionState(session)
-				.withEndpointConstantsAs(endpointConstants);
-		call(callContext, input);
-		return callContext.getEndpointStateAsInputStream();
-	}
-
 	@Override
 	public BulkInputCaller<I> bulkCaller() {
 		return new BulkInputCallerImpl<>(this);

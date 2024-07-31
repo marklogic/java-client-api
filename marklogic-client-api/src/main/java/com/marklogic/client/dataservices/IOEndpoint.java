@@ -46,13 +46,6 @@ public interface IOEndpoint {
     boolean allowsSession();
     /**
      * Identifies whether the endpoint accepts a data structure that defines
-     * the unit of work to be done by the endpoint.
-     * @return  whether the endpoint takes a work unit
-     */
-    @Deprecated
-    boolean allowsWorkUnit();
-    /**
-     * Identifies whether the endpoint accepts a data structure that defines
      * constant input to provide to the endpoint.
      * @return  whether the endpoint takes endpoint constants
      */
@@ -75,64 +68,6 @@ public interface IOEndpoint {
      * Base interface providing the methods common to all bulk endpoint callers.
      */
     interface BulkIOEndpointCaller {
-        /**
-         * Gets the current snapshot of the mutable endpoint state.
-         * Provide a CallContext when constructing the bulk caller instead of using this deprecated method.
-         * @return  the data structure with the endpoint state
-         */
-        @Deprecated
-        InputStream getEndpointState();
-        /**
-         * Initializes the endpoint state, typically prior to the first call.
-         * Provide a CallContext when constructing the bulk caller instead of using this deprecated method.
-         * @param endpointState the data structure for the endpoint state as a byte[] array
-         */
-        @Deprecated
-        void setEndpointState(byte[] endpointState);
-        /**
-         * Initializes the endpoint state, typically prior to the first call.
-         * Provide a CallContext when constructing the bulk caller instead of using this deprecated method.
-         * @param endpointState the data structure for the endpoint state as an InputStream
-         */
-        @Deprecated
-        void setEndpointState(InputStream endpointState);
-        /**
-         * Initializes the endpoint state, typically prior to the first call.
-         * Provide a CallContext when constructing the bulk caller instead of using this deprecated method.
-         * @param endpointState the data structure for the endpoint state as a bufferable handle
-         */
-        @Deprecated
-        void setEndpointState(BufferableHandle endpointState);
-
-        /**
-         * Gets the definition for the unit of  work to be done by the endpoint.
-         * Provide a CallContext with endpoint constants when constructing the bulk caller instead of using this deprecated method.
-         * @return  the data structure for the unit of work
-         */
-        @Deprecated
-        InputStream getWorkUnit();
-        /**
-         * Initializes the definition of the work unit prior to the first call.
-         * Provide a CallContext with endpoint constants when constructing the bulk caller instead of using this deprecated method.
-         * @param workUnit the data structure for the work unit as a byte[] array
-         */
-        @Deprecated
-        void setWorkUnit(byte[] workUnit);
-        /**
-         * Initializes the definition of the work unit prior to the first call.
-         * Provide a CallContext with endpoint constants when constructing the bulk caller instead of using this deprecated method.
-         * @param workUnit the data structure for the work unit as an InputStream
-         */
-        @Deprecated
-        void setWorkUnit(InputStream workUnit);
-        /**
-         * Initializes the definition of the work unit prior to the first call.
-         * Provide a CallContext with endpoint constants when constructing the bulk caller instead of using this deprecated method.
-         * @param workUnit the data structure for the work unit as a bufferable handle
-         */
-        @Deprecated
-        void setWorkUnit(BufferableHandle workUnit);
-
         /**
          * Waits for the bulk calling to complete, first starting the calls if appropriate.
          */

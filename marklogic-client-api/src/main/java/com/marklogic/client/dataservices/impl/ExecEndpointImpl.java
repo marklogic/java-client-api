@@ -52,16 +52,6 @@ public class ExecEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements ExecCa
         getCaller().call(getClient(), checkAllowedArgs(callContext));
     }
 
-    @Deprecated
-    public InputStream call(InputStream endpointState, SessionState session, InputStream endpointConstants) {
-        CallContextImpl<I,O> callContext = newCallContext(true)
-                .withEndpointStateAs(endpointState)
-                .withSessionState(session)
-                .withEndpointConstantsAs(endpointConstants);
-        call(callContext);
-        return callContext.getEndpointStateAsInputStream();
-    }
-
     @Override
     public BulkExecCaller bulkCaller() {
         return new BulkExecCallerImpl<>(this);

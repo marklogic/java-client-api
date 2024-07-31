@@ -80,11 +80,6 @@ abstract class IOEndpointImpl<I,O> implements IOEndpoint {
         return getCaller().getEndpointStateParamdef();
     }
     @Override
-    @Deprecated
-    public boolean allowsWorkUnit() {
-        return (getEndpointConstantsParamdef() != null);
-    }
-    @Override
     public boolean allowsEndpointConstants() {
         return (getEndpointConstantsParamdef() != null);
     }
@@ -199,67 +194,12 @@ abstract class IOEndpointImpl<I,O> implements IOEndpoint {
         boolean allowsEndpointState() {
             return callContext.getEndpoint().allowsEndpointState();
         }
-        @Override
-        @Deprecated
-        public InputStream getEndpointState() {
-            checkCallContext();
-            return new ByteArrayInputStream(callContext.getEndpointState().get());
-        }
-        @Override
-        @Deprecated
-        public void setEndpointState(byte[] endpointState) {
-            checkCallContext();
-            if (allowsEndpointState())
-                callContext.withEndpointStateAs(endpointState);
-            else if (endpointState != null)
-                throw new IllegalArgumentException("endpoint state not accepted by endpoint: "+
-                        callContext.getEndpoint().getEndpointPath());
-        }
-        @Override
-        @Deprecated
-        public void setEndpointState(InputStream endpointState) {
-            setEndpointState(NodeConverter.InputStreamToBytes(endpointState));
-        }
-        @Override
-        @Deprecated
-        public void setEndpointState(BufferableHandle endpointState) {
-            setEndpointState((endpointState == null) ? null : endpointState.toBuffer());
-        }
-
         boolean allowsEndpointConstants() {
             checkCallContext();
             return callContext.getEndpoint().allowsEndpointConstants();
         }
 
-        @Override
-        @Deprecated
-        public InputStream getWorkUnit() {
-            checkCallContext();
-            return new ByteArrayInputStream(callContext.getEndpointConstants().get());
-        }
-        @Override
-        @Deprecated
-        public void setWorkUnit(byte[] workUnit) {
-            checkCallContext();
-            if (allowsEndpointConstants())
-                callContext.withEndpointConstantsAs(workUnit);
-            else if (workUnit != null)
-                throw new IllegalArgumentException(callContext.getEndpointConstantsParamName()+
-                        " parameter not accepted by endpoint: "+callContext.getEndpoint().getEndpointPath());
-        }
-        @Override
-        @Deprecated
-        public void setWorkUnit(InputStream workUnit) {
-            setWorkUnit(NodeConverter.InputStreamToBytes(workUnit));
-        }
-        @Override
-        @Deprecated
-        public void setWorkUnit(BufferableHandle workUnit) {
-            setWorkUnit((workUnit == null) ? null : workUnit.toBuffer());
-        }
-
-
-        boolean allowsSession() {
+		boolean allowsSession() {
             return callContext.getEndpoint().allowsSession();
         }
         SessionState getSession() {
