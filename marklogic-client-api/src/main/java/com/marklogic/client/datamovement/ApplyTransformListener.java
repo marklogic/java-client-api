@@ -15,19 +15,21 @@
  */
 package com.marklogic.client.datamovement;
 
-import com.marklogic.client.impl.DatabaseClientImpl;
+import com.marklogic.client.datamovement.impl.QueryBatchImpl;
 import com.marklogic.client.document.ServerTransform;
+import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.impl.RESTServices;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.util.RequestParameters;
-import com.marklogic.client.datamovement.impl.QueryBatchImpl;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -93,7 +95,7 @@ import java.util.stream.Collectors;
  * <p>In order to handle such scenarios where we get an empty response, it is
  * recommended to add a BatchFailureListener which would take care of apply
  * transform failures and retry only for those URIs for which the apply
- * transform has failed. If the transform is idempotent, we can just initialize 
+ * transform has failed. If the transform is idempotent, we can just initialize
  * the RetryListener of the NoResponseListener by calling
  * NoResponseListener.initializeRetryListener(this) and add it to the
  * BatchFailureListeners similar to what we have in the other listeners.</p>
@@ -104,7 +106,6 @@ public class ApplyTransformListener implements QueryBatchListener {
   private ApplyResult applyResult = ApplyResult.REPLACE;
   private List<QueryBatchListener> successListeners = new ArrayList<>();
   private List<QueryBatchListener> skippedListeners = new ArrayList<>();
-  private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
   private List<BatchFailureListener<QueryBatch>> queryBatchFailureListeners = new ArrayList<>();
 
   public ApplyTransformListener() {
@@ -176,13 +177,6 @@ public class ApplyTransformListener implements QueryBatchListener {
         }
       }
     } catch (Throwable t) {
-      for ( BatchFailureListener<Batch<String>> listener : failureListeners ) {
-        try {
-          listener.processFailure(batch, t);
-        } catch (Throwable t2) {
-          logger.error("Exception thrown by an onBatchFailure listener", t2);
-        }
-      }
       for ( BatchFailureListener<QueryBatch> queryBatchFailureListener : queryBatchFailureListeners ) {
         try {
           queryBatchFailureListener.processFailure(batch, t);
@@ -218,21 +212,6 @@ public class ApplyTransformListener implements QueryBatchListener {
    */
   public ApplyTransformListener onSkipped(QueryBatchListener listener) {
     skippedListeners.add(listener);
-    return this;
-  }
-
-  /**
-   * When a batch fails or a callback throws an Exception, run this listener
-   * code.  Multiple listeners can be registered with this method.
-   *
-   * @param listener the code to run when a failure occurs
-   *
-   * @return this instance for method chaining
-   * @deprecated  use {@link #onFailure(BatchFailureListener)}
-   */
-  @Deprecated
-  public ApplyTransformListener onBatchFailure(BatchFailureListener<Batch<String>> listener) {
-    failureListeners.add(listener);
     return this;
   }
 

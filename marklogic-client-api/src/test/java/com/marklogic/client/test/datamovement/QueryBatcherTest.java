@@ -518,10 +518,10 @@ public class QueryBatcherTest {
     testListenerException(
       new ApplyTransformListener()
         .withTransform(new ServerTransform("thisTransformDoesntExist"))
-        .onBatchFailure( (batch, throwable) -> failureBatchCount.incrementAndGet() )
+        .onFailure( (batch, throwable) -> failureBatchCount.incrementAndGet() )
     );
     // there should be one failure sent to the ApplyTransformListener
-    // onBatchFailure listener since the transform is invalid
+    // onFailure listener since the transform is invalid
     assertEquals(1, failureBatchCount.get());
   }
 
@@ -651,10 +651,10 @@ public class QueryBatcherTest {
     testListenerException(
       new ExportListener()
         .withTransform(new ServerTransform("thisTransformDoesntExist"))
-        .onBatchFailure( (batch, throwable) -> failureBatchCount.incrementAndGet() )
+        .onFailure( (batch, throwable) -> failureBatchCount.incrementAndGet() )
     );
     // there should be one failure sent to the ExportListener
-    // onBatchFailure listener since the transform is invalid
+    // onFailure listener since the transform is invalid
     assertEquals(1, failureBatchCount.get());
   }
 
@@ -665,10 +665,10 @@ public class QueryBatcherTest {
     testListenerException(
       new ExportToWriterListener(new StringWriter())
         .withTransform(new ServerTransform("thisTransformDoesntExist"))
-        .onBatchFailure( (batch, throwable) -> failureBatchCount.incrementAndGet() )
+        .onFailure( (batch, throwable) -> failureBatchCount.incrementAndGet() )
     );
     // there should be one failure sent to the ExportToWriterListener
-    // onBatchFailure listener since the transform is invalid
+    // onFailure listener since the transform is invalid
     assertEquals(1, failureBatchCount.get());
   }
 
@@ -682,10 +682,10 @@ public class QueryBatcherTest {
     };
     testListenerException(
       new UrisToWriterListener(badWriter)
-        .onBatchFailure( (batch, throwable) -> failureBatchCount.incrementAndGet() )
+        .onFailure( (batch, throwable) -> failureBatchCount.incrementAndGet() )
     );
     // there should be one failure sent to the UrisToWriterListener
-    // onBatchFailure listener since the writer is invalid
+    // onFailure listener since the writer is invalid
     assertEquals(1, failureBatchCount.get());
   }
 
@@ -694,7 +694,7 @@ public class QueryBatcherTest {
     final AtomicInteger failureBatchCount = new AtomicInteger();
     testListenerException( batch -> {
         DeleteListener listener = new DeleteListener()
-          .onBatchFailure( (batch2, throwable) -> failureBatchCount.incrementAndGet() );
+          .onFailure( (batch2, throwable) -> failureBatchCount.incrementAndGet() );
         QueryBatch mockQueryBatch = new QueryBatchImpl() {
           public DatabaseClient getClient() {
             throw new InternalError(errorMessage);
@@ -708,7 +708,7 @@ public class QueryBatcherTest {
       }
     );
     // there should be one failure sent to the DeleteListener
-    // onBatchFailure listener since getClient in mockQueryBatch throws InternalError
+    // onFailure listener since getClient in mockQueryBatch throws InternalError
     assertEquals(1, failureBatchCount.get());
   }
 

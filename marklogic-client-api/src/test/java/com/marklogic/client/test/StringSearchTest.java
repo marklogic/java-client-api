@@ -189,7 +189,6 @@ public class StringSearchTest {
     assertTrue(metrics.getFacetResolutionTime() >= 0);
     assertTrue(metrics.getQueryResolutionTime() >= 0);
     assertTrue(metrics.getSnippetResolutionTime() >= 0);
-    assertTrue(metrics.getMetadataResolutionTime() >= 0);
     assertTrue(metrics.getExtractResolutionTime() >= 0);
     assertTrue(metrics.getTotalTime() >= 0);
     assertTrue(results.getPlan(new StringHandle()).get().startsWith("<search:plan"));

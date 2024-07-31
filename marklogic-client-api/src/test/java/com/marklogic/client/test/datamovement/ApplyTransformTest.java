@@ -142,7 +142,7 @@ public class ApplyTransformTest {
       .withTransform(transform)
       .withApplyResult(ApplyResult.REPLACE)
       .onSuccess(batch -> count2.addAndGet(batch.getItems().length))
-      .onBatchFailure((batch, throwable) -> throwable.printStackTrace());
+      .onFailure((batch, throwable) -> throwable.printStackTrace());
     QueryBatcher batcher = moveMgr.newQueryBatcher(query2)
       .onUrisReady(listener)
       .withConsistentSnapshot();
@@ -192,7 +192,7 @@ public class ApplyTransformTest {
               skippedUris.add(uri);
             }
           })
-          .onBatchFailure((batch, throwable) -> throwable.printStackTrace())
+          .onFailure((batch, throwable) -> throwable.printStackTrace())
       )
       .onQueryFailure(throwable -> throwable.printStackTrace());
     JobTicket ticket = moveMgr.startJob( batcher );

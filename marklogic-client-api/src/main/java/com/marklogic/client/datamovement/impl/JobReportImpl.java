@@ -84,15 +84,13 @@ public class JobReportImpl implements JobReport {
   public JobReportImpl(QueryBatcher batcher) {
     QueryJobReportListener queryJobSuccessListener = null;
     QueryJobReportListener queryJobFailureListener = null;
-    QueryBatchListener[] batchListeners = batcher.getQuerySuccessListeners();
-    for(QueryBatchListener batchListener : batchListeners) {
+    for(QueryBatchListener batchListener : batcher.getUrisReadyListeners()) {
       if(batchListener instanceof QueryJobReportListener) {
         queryJobSuccessListener = (QueryJobReportListener) batchListener;
         break;
       }
     }
-    QueryFailureListener[] failureListeners = batcher.getQueryFailureListeners();
-    for(QueryFailureListener failureListener : failureListeners) {
+    for(QueryFailureListener failureListener : batcher.getQueryFailureListeners()) {
       if(failureListener instanceof QueryJobReportListener) {
         queryJobFailureListener = (QueryJobReportListener) failureListener;
         break;
