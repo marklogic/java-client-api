@@ -15,20 +15,17 @@
  */
 package com.marklogic.client.example.cookbook;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.xml.xpath.XPathExpressionException;
-
-import org.w3c.dom.Document;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputStreamHandle;
+import org.w3c.dom.Document;
+
+import javax.xml.xpath.XPathExpressionException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * DocumentReader illustrates how to read the content of a database document.
@@ -41,10 +38,7 @@ public class DocumentRead {
   public static void run(ExampleProperties props) throws IOException, XPathExpressionException {
     System.out.println("example: "+DocumentRead.class.getName());
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+	  DatabaseClient client = Util.newClient(props);
 
     setUpExample(client);
 

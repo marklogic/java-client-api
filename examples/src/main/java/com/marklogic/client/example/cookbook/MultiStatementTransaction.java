@@ -15,16 +15,15 @@
  */
 package com.marklogic.client.example.cookbook;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * MultiStatementTransaction illustrates how to open a transaction, execute
@@ -41,10 +40,7 @@ public class MultiStatementTransaction {
     String beforeFilename = "flipper.xml";
     String afterFilename  = "flapped.xml";
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+	  DatabaseClient client = Util.newClient(props);
 
     // create a manager for XML documents
     XMLDocumentManager docMgr = client.newXMLDocumentManager();

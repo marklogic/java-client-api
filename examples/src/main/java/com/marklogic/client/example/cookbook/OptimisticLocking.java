@@ -15,19 +15,7 @@
  */
 package com.marklogic.client.example.cookbook;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.w3c.dom.Document;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.ResourceNotResendableException;
+import com.marklogic.client.*;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
 import com.marklogic.client.document.DocumentDescriptor;
@@ -35,6 +23,11 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputStreamHandle;
+import org.w3c.dom.Document;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Optimistic Locking creates a document only when the document doesn't exist and
@@ -52,22 +45,15 @@ public class OptimisticLocking {
     throws IOException, FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException
   {
     System.out.println("example: "+OptimisticLocking.class.getName());
-
-    requireOptimisticLocking(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
-
-    modifyDatabase(props.host, props.port,
-      props.writerUser, props.writerPassword, props.authType);
-
-    tearDownExample(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
+    requireOptimisticLocking(props);
+    modifyDatabase(props);
+    tearDownExample(props);
   }
 
-  public static void requireOptimisticLocking(String host, int port, String user, String password, Authentication authType)
+  public static void requireOptimisticLocking(ExampleProperties props)
     throws FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException
   {
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+	  DatabaseClient client = Util.newAdminClient(props);
 
     // create a manager for the server configuration
     ServerConfigurationManager configMgr = client.newServerConfigManager();
@@ -88,13 +74,12 @@ public class OptimisticLocking {
     client.release();
   }
 
-  public static void modifyDatabase(String host, int port, String user, String password, Authentication authType)
+  public static void modifyDatabase(ExampleProperties props)
     throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     String filename = "flipper.xml";
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+	  DatabaseClient client = Util.newClient(props);
 
     // acquire the content
     InputStream docStream = Util.openStream("data"+File.separator+filename);
@@ -148,11 +133,10 @@ public class OptimisticLocking {
   }
 
   // clean up by resetting the server configuration
-  public static void tearDownExample(
-    String host, int port, String user, String password, Authentication authType)
+  public static void tearDownExample(ExampleProperties props)
     throws FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException
   {
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+	  DatabaseClient client = Util.newAdminClient(props);
 
     ServerConfigurationManager configMgr = client.newServerConfigManager();
 

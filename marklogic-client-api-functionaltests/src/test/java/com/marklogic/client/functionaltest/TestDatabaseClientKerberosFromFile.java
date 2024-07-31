@@ -167,7 +167,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
   			.withKeyTab(keytabFile);
       client = DatabaseClientFactory.newClient(
               appServerHostName, appServerHostPort,
-              new DatabaseClientFactory.KerberosAuthContext(krbConfig).withSSLContext(sslcontext));
+              new DatabaseClientFactory.KerberosAuthContext(krbConfig).withSSLContext(sslcontext, null));
     } else {
     	/*Pass this file's location for the gradle (thru Jenkins job)
     	  QA functional test project's build.gradle file has << systemProperty "keytabFile", System.getProperty("keytabFile") >>

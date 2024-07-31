@@ -1,14 +1,6 @@
 package com.marklogic.client.example.cookbook.datamovement;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Random;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.datamovement.DataMovementManager;
@@ -16,15 +8,21 @@ import com.marklogic.client.datamovement.ExportListener;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.ServerTransform;
-import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
+
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Random;
 
 /**
  * This example demonstrates how to move data from one Marklogic Database to
@@ -46,7 +44,7 @@ public class MoveDataBetweenMarklogicDBs {
   private int threadCount  = 3;
   private String transformName = "moveDataBetweenMLDBs";
   private String ctsQuery = "<cts:and-query/>";
-  
+
   public void run() {
     setup();
     loadDataIntoSourceDB();
@@ -125,15 +123,14 @@ public class MoveDataBetweenMarklogicDBs {
     sourceMoveMgr = sourceClient.newDataMovementManager();
     try {
       Util.ExampleProperties props = Util.loadProperties();
-      destMoveMgr = DatabaseClientFactory.newClient(props.host, props.port, new DigestAuthContext(props.adminUser, props.adminPassword))
-              .newDataMovementManager();
+      destMoveMgr = Util.newAdminClient(props).newDataMovementManager();
     } catch (IOException ex) {
       throw new RuntimeException(ex);
     }
   }
 
   /*
-   * Load the documents into source DB for running this example 
+   * Load the documents into source DB for running this example
    */
   private void loadDataIntoSourceDB() {
     String[] customers = { "{ \"name\" : \"Alice\", \"id\": 1, \"phone\" : 8793993333, \"state\":\"CA\"}",

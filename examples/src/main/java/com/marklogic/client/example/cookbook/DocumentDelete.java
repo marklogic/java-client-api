@@ -38,10 +38,7 @@ public class DocumentDelete {
 
     String filename = "flipper.xml";
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+	  DatabaseClient client = Util.newClient(props);
 
     // create a manager for XML documents
     XMLDocumentManager docMgr = client.newXMLDocumentManager();

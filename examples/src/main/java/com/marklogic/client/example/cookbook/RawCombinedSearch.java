@@ -15,22 +15,17 @@
  */
 package com.marklogic.client.example.cookbook;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.MatchLocation;
-import com.marklogic.client.query.MatchSnippet;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * RawCombinedSearch illustrates searching for documents and iterating over results
@@ -46,10 +41,7 @@ public class RawCombinedSearch {
   public static void run(ExampleProperties props) throws IOException {
     System.out.println("example: "+RawCombinedSearch.class.getName());
 
-    // connect the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+	  DatabaseClient client = Util.newClient(props);
 
     setUpExample(client);
 

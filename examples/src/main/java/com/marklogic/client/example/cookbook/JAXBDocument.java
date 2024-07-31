@@ -15,18 +15,17 @@
  */
 package com.marklogic.client.example.cookbook;
 
-import java.io.IOException;
-
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.JAXBHandle;
 import com.marklogic.client.io.StringHandle;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
+import java.io.IOException;
 
 /**
  * JAXBDocument illustrates how to write and read a POJO structure as a database document.
@@ -82,10 +81,7 @@ public class JAXBDocument {
       JAXBHandle.newFactory(Product.class)
     );
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+	  DatabaseClient client = Util.newClient(props);
 
     // create a manager for XML documents
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -118,10 +114,7 @@ public class JAXBDocument {
     client.release();
   }
   public static void runStrongTyped(ExampleProperties props) throws JAXBException {
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+	  DatabaseClient client = Util.newClient(props);
 
     JAXBContext context = JAXBContext.newInstance(Product.class);
 

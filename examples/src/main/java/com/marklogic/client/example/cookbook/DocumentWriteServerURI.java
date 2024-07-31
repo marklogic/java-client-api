@@ -15,17 +15,16 @@
  */
 package com.marklogic.client.example.cookbook;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * DocumentWriterServerURI illustrates how to write content, letting MarkLogic assign a server URI
@@ -40,10 +39,7 @@ public class DocumentWriteServerURI {
 
     String filename = "flipper.xml";
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+	  DatabaseClient client = Util.newClient(props);
 
     // acquire the content
     InputStream docStream = Util.openStream("data"+File.separator+filename);

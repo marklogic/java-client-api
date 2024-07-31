@@ -15,16 +15,7 @@
  */
 package com.marklogic.client.example.cookbook;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -39,6 +30,12 @@ import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.util.RequestParameters;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * JavascriptResourceExtension installs an extension for managing spelling dictionary resources.
@@ -55,15 +52,9 @@ public class JavascriptResourceExtension {
     throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     System.out.println("example: "+JavascriptResourceExtension.class.getName());
-
-    installResourceExtension(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
-
-    useResource(props.host, props.port,
-      props.writerUser, props.writerPassword, props.authType);
-
-    tearDownExample(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
+    installResourceExtension(props);
+    useResource(props);
+    tearDownExample(props);
   }
 
   /**
@@ -115,9 +106,8 @@ public class JavascriptResourceExtension {
   }
 
   // install the resource extension on the server
-  public static void installResourceExtension(String host, int port, String user, String password, Authentication authType) throws IOException {
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+  public static void installResourceExtension(ExampleProperties props) throws IOException {
+	  DatabaseClient client = Util.newAdminClient(props);
 
     // use either shortcut or strong typed IO
     installResourceExtension(client);
@@ -125,6 +115,7 @@ public class JavascriptResourceExtension {
     // release the client
     client.release();
   }
+
   public static void installResourceExtension(DatabaseClient client) throws IOException {
     // create a manager for resource extensions
     ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
@@ -151,11 +142,10 @@ public class JavascriptResourceExtension {
   }
 
   // use the resource manager
-  public static void useResource(String host, int port, String user, String password, Authentication authType)
+  public static void useResource(ExampleProperties props)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+	  DatabaseClient client = Util.newClient(props);
 
     // create the resource extension client
     HelloWorld hello = new HelloWorld(client);
@@ -168,8 +158,8 @@ public class JavascriptResourceExtension {
   }
 
   // clean up by deleting the example resource extension
-  public static void tearDownExample(String host, int port, String user, String password, Authentication authType) {
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+  public static void tearDownExample(ExampleProperties props) {
+	  DatabaseClient client = Util.newAdminClient(props);
 
     ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
 

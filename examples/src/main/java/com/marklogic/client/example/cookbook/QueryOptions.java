@@ -43,9 +43,7 @@ public class QueryOptions {
   {
     System.out.println("example: "+QueryOptions.class.getName());
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
+	  DatabaseClient client = Util.newAdminClient(props);
 
     // use either shortcut or strong typed IO
     runShortcut(client);
