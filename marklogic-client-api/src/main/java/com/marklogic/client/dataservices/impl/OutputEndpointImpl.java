@@ -54,15 +54,6 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
         return getResponseData(callContext);
     }
 
-    @Deprecated
-    public O[] call(InputStream endpointState, SessionState session, InputStream workUnit) {
-        CallContextImpl<I,O> callContext = newCallContext(true)
-                .withEndpointStateAs(endpointState)
-                .withSessionState(session)
-                .withEndpointConstantsAs(workUnit);
-        return getResponseData(callContext);
-    }
-
     @Override
     public BulkOutputCaller<O> bulkCaller() {
         return new BulkOutputCallerImpl<>(this);
