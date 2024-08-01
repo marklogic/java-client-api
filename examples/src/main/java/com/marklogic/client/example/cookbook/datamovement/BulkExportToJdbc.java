@@ -142,7 +142,7 @@ public class BulkExportToJdbc {
 
           // in a production application we could have more elaborate error
           // handling here
-          .onBatchFailure((failedBatch,exception) -> exception.printStackTrace())
+          .onFailure((failedBatch,exception) -> exception.printStackTrace())
       )
 
       // another onUrisReady listener, this one custom, and just for logging

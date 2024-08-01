@@ -207,7 +207,7 @@ public class BulkLoadFromJdbcRaw {
     ApplyTransformListener transformListener = new ApplyTransformListener()
       .withTransform(new ServerTransform("BulkLoadFromJdbcRaw"))
       .withApplyResult(ApplyTransformListener.ApplyResult.REPLACE)
-      .onBatchFailure((batch, throwable) -> throwable.printStackTrace());
+      .onFailure((batch, throwable) -> throwable.printStackTrace());
 
     // add the ApplyTransformListener to the QueryBatcher
     qb.onUrisReady(transformListener);

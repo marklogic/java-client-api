@@ -259,11 +259,6 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   @Override
-  public QueryBatchListener[]   getQuerySuccessListeners() {
-    return getUrisReadyListeners();
-  }
-
-  @Override
   public QueryBatchListener[]   getUrisReadyListeners() {
     return urisReadyListeners.toArray(new QueryBatchListener[urisReadyListeners.size()]);
   }

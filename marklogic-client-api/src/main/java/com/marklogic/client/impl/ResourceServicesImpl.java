@@ -53,11 +53,11 @@ class ResourceServicesImpl
       transaction, prepareParams(params), output);
   }
   @Override
-  public ServiceResultIterator get(RequestParameters params, @Deprecated String... outputMimetypes) {
-    return get(params, null, outputMimetypes);
+  public ServiceResultIterator get(RequestParameters params) {
+    return get(params, (Transaction)null);
   }
   @Override
-  public ServiceResultIterator get(RequestParameters params, Transaction transaction, @Deprecated String... outputMimetypes) {
+  public ServiceResultIterator get(RequestParameters params, Transaction transaction) {
     return services.getIteratedResource(requestLogger, getResourcePath(), transaction, prepareParams(params));
   }
 
@@ -90,11 +90,11 @@ class ResourceServicesImpl
       requestLogger, getResourcePath(), transaction, prepareParams(params), input, output);
   }
   @Override
-  public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, @Deprecated String... outputMimetypes) {
-    return post(params, input, null, outputMimetypes);
+  public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input) {
+    return post(params, input, (Transaction)null);
   }
   @Override
-  public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, @Deprecated String... outputMimetypes) {
+  public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, Transaction transaction) {
     return services.postIteratedResource(
       requestLogger, getResourcePath(), transaction, prepareParams(params), input);
   }
@@ -108,11 +108,11 @@ class ResourceServicesImpl
       requestLogger, getResourcePath(), transaction, prepareParams(params), input, output);
   }
   @Override
-  public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, @Deprecated String... outputMimetypes) {
-    return post(params, input, null, outputMimetypes);
+  public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input) {
+    return post(params, input, (Transaction) null);
   }
   @Override
-  public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction, @Deprecated String... outputMimetypes) {
+  public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction) {
     return services.postIteratedResource(
       requestLogger, getResourcePath(), transaction, prepareParams(params), input);
   }

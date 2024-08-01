@@ -67,7 +67,6 @@ public class UrisToWriterListener implements QueryBatchListener {
   private String suffix = "\n";
   private String prefix;
   private List<OutputListener> outputListeners = new ArrayList<>();
-  private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
   private List<BatchFailureListener<QueryBatch>> queryBatchFailureListeners = new ArrayList<>();
 
   public UrisToWriterListener(Writer writer) {
@@ -124,13 +123,6 @@ public class UrisToWriterListener implements QueryBatchListener {
         }
       }
     } catch (Throwable t) {
-      for ( BatchFailureListener<Batch<String>> listener : failureListeners ) {
-        try {
-          listener.processFailure(batch, t);
-        } catch (Throwable t2) {
-          logger.error("Exception thrown by an onBatchFailure listener", t2);
-        }
-      }
       for ( BatchFailureListener<QueryBatch> queryBatchFailureListener : queryBatchFailureListeners ) {
         try {
           queryBatchFailureListener.processFailure(batch, t);
@@ -153,21 +145,6 @@ public class UrisToWriterListener implements QueryBatchListener {
 
   public UrisToWriterListener onGenerateOutput(OutputListener listener) {
     outputListeners.add(listener);
-    return this;
-  }
-
-  /**
-   * When a batch fails or a callback throws an Exception, run this listener
-   * code.  Multiple listeners can be registered with this method.
-   *
-   * @param listener the code to run when a failure occurs
-   *
-   * @return this instance for method chaining
-   * @deprecated  use {@link #onFailure(BatchFailureListener)}
-   */
-  @Deprecated
-  public UrisToWriterListener onBatchFailure(BatchFailureListener<Batch<String>> listener) {
-    failureListeners.add(listener);
     return this;
   }
 

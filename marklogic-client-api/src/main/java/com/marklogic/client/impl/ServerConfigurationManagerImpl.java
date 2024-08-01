@@ -15,33 +15,18 @@
  */
 package com.marklogic.client.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamWriter;
-
+import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
+import com.marklogic.client.*;
+import com.marklogic.client.admin.*;
+import com.marklogic.client.io.OutputStreamHandle;
+import com.marklogic.client.io.OutputStreamSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.ResourceNotResendableException;
-import com.marklogic.client.admin.ExtensionLibrariesManager;
-import com.marklogic.client.admin.NamespacesManager;
-import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.ResourceExtensionsManager;
-import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.admin.TransformExtensionsManager;
-import com.marklogic.client.io.OutputStreamHandle;
-import com.marklogic.client.io.OutputStreamSender;
+import javax.xml.stream.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 class ServerConfigurationManagerImpl
   implements ServerConfigurationManager, OutputStreamSender
@@ -282,10 +267,6 @@ class ServerConfigurationManagerImpl
       new ExtensionLibrariesManagerImpl(services);
     extensionMgr.setHandleRegistry(getHandleRegistry());
     return extensionMgr;
-  }
-  @Override
-  public NamespacesManager newNamespacesManager() {
-    return new NamespacesManagerImpl(services);
   }
   @Override
   public QueryOptionsManager newQueryOptionsManager() {

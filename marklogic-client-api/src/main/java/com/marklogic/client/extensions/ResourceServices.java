@@ -27,7 +27,7 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 /**
  * A ResourceServices object supports calling the services for a resource.
  * The Resource Services extension must have been installed on the server
- * previously, which can be done with 
+ * previously, which can be done with
  * {@link com.marklogic.client.admin.ResourceExtensionsManager}.
  * A {@link ResourceManager} object
  * receives a ResourceServices object when it is initialized by the
@@ -61,18 +61,16 @@ public interface ResourceServices {
   /**
    * Reads multiple resource content by calling a GET service.
    * @param params	the parameters for the call
-   * @param mimetypes	the mimetypes for the requested content; deprecated since 6.0.0, has always been ignored by implementation
    * @return	an iterator over the requested content
    */
-  ServiceResultIterator get(RequestParameters params, @Deprecated String... mimetypes);
+  ServiceResultIterator get(RequestParameters params);
   /**
    * Reads multiple resource content by calling a GET service.
    * @param params	the parameters for the call
    * @param transaction	the transaction for reading content
-   * @param mimetypes	the mimetypes for the requested content; deprecated since 6.0.0, has always been ignored by implementation
    * @return	an iterator over the requested content
    */
-  ServiceResultIterator get(RequestParameters params, Transaction transaction, @Deprecated String... mimetypes);
+  ServiceResultIterator get(RequestParameters params, Transaction transaction);
 
   /**
    * Writes content by calling a PUT service.
@@ -160,38 +158,34 @@ public interface ResourceServices {
    * Applies multiple content by calling a POST service.
    * @param params	the parameters for the call
    * @param input	the content passed with the call
-   * @param mimetypes	the mimetypes for the requested content; deprecated since 6.0.0, has always been ignored by implementation
    * @return	an iterator over the requested content
    */
-  ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, @Deprecated String... mimetypes);
+  ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input);
   /**
    * Applies multiple content by calling a POST service.
    * @param params	the parameters for the call
    * @param input	the content passed with the call
    * @param transaction	the transaction for applying content
-   * @param mimetypes	the mimetypes for the requested content; deprecated since 6.0.0, has always been ignored by implementation
    * @return	an iterator over the requested content
    */
-  ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, @Deprecated String... mimetypes);
+  ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, Transaction transaction);
   /**
    * Applies multiple content by calling a POST service.
    * @param params	the parameters for the call
    * @param input	an array of content passed with the call
-   * @param mimetypes	the mimetypes for the requested content; deprecated since 6.0.0, has always been ignored by implementation
    * @param <W> the type of AbstractWriteHandle's with content to send
    * @return	an iterator over the requested content
    */
-  <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, @Deprecated String... mimetypes);
+  <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input);
   /**
    * Applies multiple content by calling a POST service.
    * @param params	the parameters for the call
    * @param input	an array of content passed with the call
    * @param transaction	the transaction for applying content
-   * @param mimetypes	the mimetypes for the requested content; deprecated since 6.0.0, has always been ignored by implementation
    * @param <W> the type of AbstractWriteHandle's with content to send
    * @return	an iterator over the requested content
    */
-  <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction, @Deprecated String... mimetypes);
+  <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction);
 
   /**
    * Deletes content by calling a DELETE service.

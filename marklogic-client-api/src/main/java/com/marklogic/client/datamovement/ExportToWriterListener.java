@@ -116,13 +116,6 @@ public class ExportToWriterListener extends ExportListener {
         }
       }
     } catch (Throwable t) {
-      for ( BatchFailureListener<Batch<String>> listener : getFailureListeners() ) {
-        try {
-          listener.processFailure(batch, t);
-        } catch (Throwable t2) {
-          logger.error("Exception thrown by an onBatchFailure listener", t2);
-        }
-      }
       for ( BatchFailureListener<QueryBatch> queryBatchFailureListener : getBatchFailureListeners() ) {
         try {
           queryBatchFailureListener.processFailure(batch, t);

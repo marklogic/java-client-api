@@ -163,18 +163,6 @@ public interface QueryBatcher extends Batcher {
    *
    * @return the QueryBatchListener instances this batcher
    *   is using
-   *
-   * @deprecated (as of 4.0.4) this should have been called getUrisReadyListeners
-   */
-  @Deprecated
-  QueryBatchListener[] getQuerySuccessListeners();
-
-  /**
-   * Get the array of QueryBatchListener instances registered via
-   * onUrisReady.
-   *
-   * @return the QueryBatchListener instances this batcher
-   *   is using
    */
   QueryBatchListener[] getUrisReadyListeners();
 
