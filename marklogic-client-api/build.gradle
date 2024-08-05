@@ -1,4 +1,4 @@
-// Copyright (c) 2022 MarkLogic Corporation
+// Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
 
 plugins {
 	id 'java-library'
@@ -89,7 +89,7 @@ javadoc {
     options.overview = "src/main/javadoc/overview.html"
     options.windowTitle = "$rootProject.describedName $rootProject.version"
     options.docTitle = "$rootProject.describedName $rootProject.version"
-    options.bottom = "Copyright &copy; 2022 MarkLogic Corporation"
+    options.bottom = "Copyright © 2024 MarkLogic Corporation. All Rights Reserved."
     options.links = [ 'http://docs.oracle.com/javase/8/docs/api/' ]
     options.use = true
     if (JavaVersion.current().isJava9Compatible()) {

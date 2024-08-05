@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.datamovement;
 
@@ -73,18 +61,18 @@ public interface WriteBatcher extends Batcher {
    * @return this write batcher for chaining configuration
    */
     WriteBatcher withDefaultMetadata(DocumentMetadataHandle handle);
-    
+
     /**
      * Writes a document stream to the database.
      * @param operations is the DocumentWriteOperation stream passed in.
      */
     void addAll(Stream<? extends DocumentWriteOperation> operations);
-    
+
     /**
      @return the documentMetadatHandle associated with the WriteeBatcher.
      */
     DocumentMetadataHandle getDocumentMetadata();
-    
+
   /**
    * <p>Add a document to be batched then written to the server when a batch is full
    * or {@link #flushAsync} or {@link #flushAndWait} is called.</p>
@@ -97,7 +85,7 @@ public interface WriteBatcher extends Batcher {
    * @param contentHandle the document contents
    * @return WriteBatcher the batcher containing the documents added
    */
-    
+
   WriteBatcher add(String uri, AbstractWriteHandle contentHandle);
 
   /**
@@ -156,12 +144,12 @@ public interface WriteBatcher extends Batcher {
   WriteBatcher add(WriteEvent... docs);
 
   /**
-   * <p>Add a document, by passing in a 
+   * <p>Add a document, by passing in a
    * {@link com.marklogic.client.document.DocumentWriteOperation DocumentWriteOperation},
    * to be batched and then written to the server when a batch is full
    * or {@link #flushAsync} or {@link #flushAndWait} is called.</p>
-   * 
-   * @param writeOperation the DocumentWriteOperation object containing 
+   *
+   * @param writeOperation the DocumentWriteOperation object containing
    *          the document's details to be written to the server
    * @return WriteBatcher the batcher containing the documents added
    */

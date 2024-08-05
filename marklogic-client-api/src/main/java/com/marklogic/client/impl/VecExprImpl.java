@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2024 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 
 package com.marklogic.client.impl;
@@ -38,7 +26,7 @@ class VecExprImpl implements VecExpr {
   VecExprImpl() {
   }
 
-    
+
   @Override
   public ServerExpression add(ServerExpression vector1, ServerExpression vector2) {
     if (vector1 == null) {
@@ -50,7 +38,7 @@ class VecExprImpl implements VecExpr {
     return new VectorCallImpl("vec", "add", new Object[]{ vector1, vector2 });
   }
 
-  
+
   @Override
   public ServerExpression base64Decode(ServerExpression base64Vector) {
     if (base64Vector == null) {
@@ -59,7 +47,7 @@ class VecExprImpl implements VecExpr {
     return new VectorCallImpl("vec", "base64-decode", new Object[]{ base64Vector });
   }
 
-  
+
   @Override
   public ServerExpression base64Encode(ServerExpression vector1) {
     if (vector1 == null) {
@@ -68,7 +56,7 @@ class VecExprImpl implements VecExpr {
     return new XsExprImpl.StringCallImpl("vec", "base64-encode", new Object[]{ vector1 });
   }
 
-  
+
   @Override
   public ServerExpression cosineSimilarity(ServerExpression vector1, ServerExpression vector2) {
     if (vector1 == null) {
@@ -80,7 +68,7 @@ class VecExprImpl implements VecExpr {
     return new XsExprImpl.DoubleCallImpl("vec", "cosine-similarity", new Object[]{ vector1, vector2 });
   }
 
-  
+
   @Override
   public ServerExpression dimension(ServerExpression vector1) {
     if (vector1 == null) {
@@ -89,7 +77,7 @@ class VecExprImpl implements VecExpr {
     return new XsExprImpl.UnsignedIntCallImpl("vec", "dimension", new Object[]{ vector1 });
   }
 
-  
+
   @Override
   public ServerExpression dotProduct(ServerExpression vector1, ServerExpression vector2) {
     if (vector1 == null) {
@@ -101,7 +89,7 @@ class VecExprImpl implements VecExpr {
     return new XsExprImpl.DoubleCallImpl("vec", "dot-product", new Object[]{ vector1, vector2 });
   }
 
-  
+
   @Override
   public ServerExpression euclideanDistance(ServerExpression vector1, ServerExpression vector2) {
     if (vector1 == null) {
@@ -113,7 +101,7 @@ class VecExprImpl implements VecExpr {
     return new XsExprImpl.DoubleCallImpl("vec", "euclidean-distance", new Object[]{ vector1, vector2 });
   }
 
-  
+
   @Override
   public ServerExpression get(ServerExpression vector1, ServerExpression k) {
     if (vector1 == null) {
@@ -125,7 +113,7 @@ class VecExprImpl implements VecExpr {
     return new XsExprImpl.FloatCallImpl("vec", "get", new Object[]{ vector1, k });
   }
 
-  
+
   @Override
   public ServerExpression magnitude(ServerExpression vector1) {
     if (vector1 == null) {
@@ -134,7 +122,7 @@ class VecExprImpl implements VecExpr {
     return new XsExprImpl.DoubleCallImpl("vec", "magnitude", new Object[]{ vector1 });
   }
 
-  
+
   @Override
   public ServerExpression normalize(ServerExpression vector1) {
     if (vector1 == null) {
@@ -143,7 +131,7 @@ class VecExprImpl implements VecExpr {
     return new VectorCallImpl("vec", "normalize", new Object[]{ vector1 });
   }
 
-  
+
   @Override
   public ServerExpression subtract(ServerExpression vector1, ServerExpression vector2) {
     if (vector1 == null) {
@@ -155,7 +143,7 @@ class VecExprImpl implements VecExpr {
     return new VectorCallImpl("vec", "subtract", new Object[]{ vector1, vector2 });
   }
 
-  
+
   @Override
   public ServerExpression subvector(ServerExpression vector, ServerExpression start) {
     if (vector == null) {
@@ -167,7 +155,7 @@ class VecExprImpl implements VecExpr {
     return new VectorCallImpl("vec", "subvector", new Object[]{ vector, start });
   }
 
-  
+
   @Override
   public ServerExpression subvector(ServerExpression vector, ServerExpression start, ServerExpression length) {
     if (vector == null) {
@@ -179,19 +167,19 @@ class VecExprImpl implements VecExpr {
     return new VectorCallImpl("vec", "subvector", new Object[]{ vector, start, length });
   }
 
-  
+
   @Override
   public ServerExpression vector(ServerExpression values) {
     return new VectorCallImpl("vec", "vector", new Object[]{ values });
   }
 
-  
+
   @Override
   public ServerExpression vectorScore(ServerExpression score, double similarity) {
     return vectorScore(score, xs.doubleVal(similarity));
   }
 
-  
+
   @Override
   public ServerExpression vectorScore(ServerExpression score, ServerExpression similarity) {
     if (score == null) {
@@ -203,13 +191,13 @@ class VecExprImpl implements VecExpr {
     return new XsExprImpl.UnsignedLongCallImpl("vec", "vector-score", new Object[]{ score, similarity });
   }
 
-  
+
   @Override
   public ServerExpression vectorScore(ServerExpression score, double similarity, double similarityWeight) {
     return vectorScore(score, xs.doubleVal(similarity), xs.doubleVal(similarityWeight));
   }
 
-  
+
   @Override
   public ServerExpression vectorScore(ServerExpression score, ServerExpression similarity, ServerExpression similarityWeight) {
     if (score == null) {

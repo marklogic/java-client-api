@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -93,7 +81,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
   public StructuredQueryDefinition range(String pojoProperty,
     PojoQueryBuilder.Operator operator, Object... values)
   {
-    return range(pojoPropertyPath(pojoProperty), getRangeIndexType(pojoProperty), 
+    return range(pojoPropertyPath(pojoProperty), getRangeIndexType(pojoProperty),
       convertOperator(operator), values);
   }
   @Override
@@ -274,7 +262,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
     Class<?> propertyClass = types.get(propertyName);
     if ( propertyClass == null ) {
       // figure out the type of the java property
-      String initCapPojoProperty = propertyName.substring(0,1).toUpperCase() + 
+      String initCapPojoProperty = propertyName.substring(0,1).toUpperCase() +
         propertyName.substring(1);
       try {
         propertyClass = clazz.getField(propertyName).getType();

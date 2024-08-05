@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) 2022 MarkLogic Corporation -->
+<!-- Copyright © 2024 MarkLogic Corporation. All Rights Reserved. -->
 <xs:schema targetNamespace="http://marklogic.com/cts/query"
  xmlns="http://marklogic.com/cts/query"
  xmlns:err="http://marklogic.com/xdmp/error"
@@ -11,7 +11,7 @@
        being in common with the user ones in cts.xsd, conceptually these are
        disjoint. -->
 
-  <xs:import namespace="http://marklogic.com/xdmp/error" 
+  <xs:import namespace="http://marklogic.com/xdmp/error"
              schemaLocation="error.xsd"/>
 
   <xs:element name="query-plan" type="query-plan"/>
@@ -21,8 +21,8 @@
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="trace"/>
-        <xs:element ref="plan"/> 
-        <xs:element ref="true-fact"/> 
+        <xs:element ref="plan"/>
+        <xs:element ref="true-fact"/>
         <xs:element ref="ordering"/>
       </xs:choice>
       <xs:element ref="result" minOccurs="0"/>
@@ -36,14 +36,14 @@
   <xs:element name="partial-plan" type="plan" substitutionGroup="plan"/>
 
   <xs:element name="final-plan" type="plan" substitutionGroup="plan"/>
-   
+
   <xs:complexType name="plan" mixed="false">
     <xs:sequence>
       <xs:element ref="query"/>
     </xs:sequence>
-    <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+    <xs:attribute name="elapsed-time" type="xs:dateTime"/>
   </xs:complexType>
-  
+
   <xs:element name="true-fact">
     <xs:complexType>
       <xs:sequence>
@@ -504,7 +504,7 @@
   </xs:element>
 
   <xs:element name="region" type="xs:string"/>
-  
+
   <xs:element name="geohashes" type="geohashes">
     <xs:annotation>
       <xs:appinfo>
@@ -519,7 +519,7 @@
       <xs:element ref="exterior-geohash" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
-  
+
   <xs:element name="query-region" type="query-region">
     <xs:annotation>
       <xs:appinfo>
@@ -531,8 +531,8 @@
     <xs:sequence>
       <xs:element ref="region"/>
       <xs:element ref="geohashes" minOccurs="0"/>
-    </xs:sequence>	
-  </xs:complexType>   	
+    </xs:sequence>
+  </xs:complexType>
 
   <xs:element name="definite-matches" type="matches-type">
     <xs:annotation>
@@ -549,11 +549,11 @@
     </xs:annotation>
   </xs:element>
   <xs:complexType name="matches-type">
-    <xs:sequence> 
+    <xs:sequence>
       <xs:element ref="or-query"/>
     </xs:sequence>
   </xs:complexType>
-  
+
   <xs:element name="geohash-region-query" substitutionGroup="query">
     <xs:annotation>
       <xs:appinfo>
@@ -568,16 +568,16 @@
              <xs:element ref="annotation"/>
              <xs:element ref="de9im-operation"/>
              <xs:element ref="query-region" maxOccurs="unbounded"/>
-             <xs:element ref="geo-context"/>						 	 
+             <xs:element ref="geo-context"/>
              <xs:element ref="definite-matches"/>
              <xs:element ref="possible-matches"/>
            </xs:sequence>
-           <xs:attribute name="weight" type="xs:double"/>           
+           <xs:attribute name="weight" type="xs:double"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:element name="geospatial-region-query" substitutionGroup="query">
     <xs:annotation>
       <xs:appinfo>
@@ -592,9 +592,9 @@
              <xs:element ref="annotation"/>
              <xs:element ref="de9im-operation"/>
              <xs:element ref="query-region" maxOccurs="unbounded"/>
-             <xs:element ref="geo-context"/>						 	 
+             <xs:element ref="geo-context"/>
            </xs:sequence>
-           <xs:attribute name="weight" type="xs:double"/>           
+           <xs:attribute name="weight" type="xs:double"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -623,7 +623,7 @@
       </xs:appinfo>
     </xs:annotation>
   </xs:element>
-  
+
   <xs:element name="geo-context">
     <xs:annotation>
       <xs:appinfo>
@@ -634,7 +634,7 @@
       <xs:sequence>
         <xs:element ref="coordinate-system"/>
         <xs:element ref="units"/>
-        <xs:element ref="tolerance"/>   
+        <xs:element ref="tolerance"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -658,12 +658,12 @@
     <xs:simpleContent>
       <xs:extension base="xs:string">
         <xs:attribute name="projected" type="xs:boolean" use="required"/>
-      </xs:extension> 
-    </xs:simpleContent>   
-  </xs:complexType>  
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
 
-  <xs:element name="bbox" type="xs:string"/> 
-  
+  <xs:element name="bbox" type="xs:string"/>
+
   <xs:element name="boundary-geohash">
     <xs:annotation>
       <xs:appinfo>
@@ -704,7 +704,7 @@
 	  </xs:sequence>
 	</xs:complexType>
   </xs:element>
-  
+
   <xs:element name="de9im-operation" type="xs:string">
     <xs:annotation>
       <xs:appinfo>
@@ -712,11 +712,11 @@
       </xs:appinfo>
     </xs:annotation>
   </xs:element>
-  
+
   <xs:element name="key" type="xs:unsignedLong"/>
   <xs:element name="annotation" type="xs:string"/>
   <xs:element name="node" type="xs:string"/>
- 
+
   <xs:simpleType name="hex">
     <xs:restriction base="xs:string">
       <xs:pattern value="[0123456789abcdefABCDEF]{16}"/>
@@ -801,7 +801,7 @@
   </xs:simpleType>
 
   <xs:element name="trace" abstract="true" type="trace"/>
- 
+
   <xs:complexType name="trace" mixed="true">
     <xs:sequence minOccurs="0"/>
   </xs:complexType>
@@ -822,7 +822,7 @@
           </xs:sequence>
           <xs:attribute name="text" type="xs:string"/>
           <xs:attribute name="counts" type="xs:string"/>
-          <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+          <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -845,7 +845,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="info-trace">
-          <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+          <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -868,7 +868,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="expr-trace">
-          <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+          <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -881,7 +881,7 @@
           <xs:sequence>
             <xs:element ref="err:error"/>
           </xs:sequence>
-          <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+          <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -895,7 +895,7 @@
             <xs:element ref="key" minOccurs="1" maxOccurs="unbounded"/>
           </xs:sequence>
           <xs:attribute name="text" type="xs:string"/>
-          <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+          <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -909,7 +909,7 @@
              <xs:element ref="key" minOccurs="1" maxOccurs="unbounded"/>
            </xs:sequence>
            <xs:attribute name="text" type="xs:string"/>
-           <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+           <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -923,7 +923,7 @@
              <xs:element ref="key" minOccurs="1" maxOccurs="unbounded"/>
            </xs:sequence>
            <xs:attribute name="text" type="xs:string"/>
-           <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+           <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -938,7 +938,7 @@
            </xs:sequence>
            <xs:attribute name="field-name" type="xs:string"/>
            <xs:attribute name="text" type="xs:string"/>
-           <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+           <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -953,7 +953,7 @@
            </xs:sequence>
            <xs:attribute name="field-name" type="xs:string"/>
            <xs:attribute name="text" type="xs:string"/>
-           <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+           <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -968,7 +968,7 @@
            </xs:sequence>
            <xs:attribute name="field-name" type="xs:string"/>
            <xs:attribute name="text" type="xs:string"/>
-           <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+           <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -983,7 +983,7 @@
            </xs:sequence>
            <xs:attribute name="field-name" type="xs:string"/>
            <xs:attribute name="text" type="xs:string"/>
-           <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+           <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -999,7 +999,7 @@
            <xs:attribute name="elem-name" type="xs:NCName"/>
            <xs:attribute name="elem-uri" type="xs:string"/>
            <xs:attribute name="text" type="xs:string"/>
-           <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+           <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -1015,7 +1015,7 @@
            <xs:attribute name="elem-name" type="xs:NCName"/>
            <xs:attribute name="elem-uri" type="xs:string"/>
            <xs:attribute name="text" type="xs:string"/>
-           <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+           <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -1031,7 +1031,7 @@
            <xs:attribute name="elem-name" type="xs:NCName"/>
            <xs:attribute name="elem-uri" type="xs:string"/>
            <xs:attribute name="text" type="xs:string"/>
-           <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+           <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -1049,7 +1049,7 @@
            <xs:attribute name="attr-name" type="xs:NCName"/>
            <xs:attribute name="attr-uri" type="xs:string"/>
            <xs:attribute name="text" type="xs:string"/>
-           <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+           <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -1067,7 +1067,7 @@
            <xs:attribute name="attr-name" type="xs:NCName"/>
            <xs:attribute name="attr-uri" type="xs:string"/>
            <xs:attribute name="text" type="xs:string"/>
-           <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+           <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -1086,7 +1086,7 @@
            <xs:attribute name="attr-name" type="xs:NCName" use="optional"/>
            <xs:attribute name="attr-uri" type="xs:string" use="optional"/>
            <xs:attribute name="text" type="xs:string"/>
-           <xs:attribute name="elapsed-time" type="xs:dateTime"/> 
+           <xs:attribute name="elapsed-time" type="xs:dateTime"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -1104,7 +1104,7 @@
       <xs:attribute name="upperbound" type="xs:string"/>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:complexType name="relevance-info">
     <xs:sequence>
       <xs:element ref="score"/>
@@ -1115,13 +1115,13 @@
       <xs:element ref="relevance-clause"/>
     </xs:sequence>
   </xs:complexType>
-  
+
   <xs:element name="uri" type="xs:string"/>
-  
+
   <xs:element name="path" type="xs:string"/>
-  
+
   <xs:element name="relevance-clause" type="relevance-clause" abstract="true"/>
-  
+
   <xs:complexType name="relevance-clause">
     <xs:sequence/>
   </xs:complexType>
@@ -1140,7 +1140,7 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:element name="range" substitutionGroup="relevance-clause">
     <xs:complexType>
       <xs:complexContent>
@@ -1158,7 +1158,7 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:element name="and" substitutionGroup="relevance-clause">
     <xs:complexType>
       <xs:complexContent>
@@ -1171,7 +1171,7 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:element name="or" substitutionGroup="relevance-clause">
     <xs:complexType>
       <xs:complexContent>
@@ -1187,7 +1187,7 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:element name="word" substitutionGroup="relevance-clause">
     <xs:complexType>
       <xs:complexContent>
@@ -1203,7 +1203,7 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:element name="near" substitutionGroup="relevance-clause">
     <xs:complexType>
       <xs:complexContent>
@@ -1218,7 +1218,7 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:element name="score">
     <xs:complexType>
       <xs:simpleContent>
@@ -1229,7 +1229,7 @@
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:element name="confidence">
     <xs:complexType>
       <xs:simpleContent>
@@ -1240,7 +1240,7 @@
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:element name="fitness">
     <xs:complexType>
       <xs:simpleContent>

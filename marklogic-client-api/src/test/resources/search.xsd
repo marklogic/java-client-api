@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (c) 2022 MarkLogic Corporation -->
+<!-- Copyright © 2024 MarkLogic Corporation. All Rights Reserved. -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
       targetNamespace="http://marklogic.com/appservices/search"
       xmlns:search="http://marklogic.com/appservices/search"

@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.row;
 
@@ -60,11 +48,11 @@ public interface RowRecord extends Map<String, Object> {
      * For atomic values, the string is the lexical form of a QName
      * with the conventional prefix for the type namespace,
      * a separating colon, and the type local name as in
-     * xs:int or xs:dateTime. 
+     * xs:int or xs:dateTime.
      * <p>
      * For node values, the string has the node type
      * as in array, document, element, or object.
-     * 
+     *
      * @param columnName	the name of the column
      * @return	the server data type
      */
@@ -72,7 +60,7 @@ public interface RowRecord extends Map<String, Object> {
 
     /**
      * Identifies the server data type for a column.
-     * 
+     *
      * @param col	the column identifier
      * @return	the server data type
      */
@@ -209,9 +197,9 @@ public interface RowRecord extends Map<String, Object> {
     /**
      * Gets the value of a column with an atomic schema data type.
      * <p>
-     * The value class must have the same schema data type 
+     * The value class must have the same schema data type
      * as the value of the column in the row.
-     * 
+     *
      * @param columnName	the name of the column
      * @param as	the value class for the schema data type of the column
      * @param <T> the type of the object for the value
@@ -221,7 +209,7 @@ public interface RowRecord extends Map<String, Object> {
 
     /**
      * Gets the value of a column with an atomic schema data type.
-     * 
+     *
      * @param col	the column identifier
      * @param as	the value class for the schema data type of the column
      * @param <T> the type of the object for the value
@@ -275,7 +263,7 @@ public interface RowRecord extends Map<String, Object> {
      * The handle must support IO for content with the format
      * and mimetype. For instance, an XML DOM handle cannot be
      * used to read a JSON document.
-     * 
+     *
      * @param columnName	the name of the column
      * @param contentHandle	a handle for reading the content of the column value
      * @param <T> the type of the handle for reading the content
@@ -286,7 +274,7 @@ public interface RowRecord extends Map<String, Object> {
     /**
      * Gets the content of a column with a document or other
      * content node value.
-     * 
+     *
      * @param col	the column identifier
      * @param contentHandle	a handle for reading the content of the column value
      * @param <T> the type of the handle for reading the content
@@ -299,11 +287,11 @@ public interface RowRecord extends Map<String, Object> {
      * content node value.
      * <p>
      * The IO class must have been registered before creating the database client.
-     * By default, the provided handles that implement 
+     * By default, the provided handles that implement
      * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
      * <p>
      * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
-     * 
+     *
      * @param columnName	the name of the column
      * @param as	the IO class for reading the content of the column value
      * @param <T> the type of the IO object for the content
@@ -314,7 +302,7 @@ public interface RowRecord extends Map<String, Object> {
     /**
      * Gets the content of a column with a document or other
      * content node value.
-     * 
+     *
      * @param col	the column identifier
      * @param as	the IO class for reading the content of the column value
      * @param <T> the type of the IO object for the content

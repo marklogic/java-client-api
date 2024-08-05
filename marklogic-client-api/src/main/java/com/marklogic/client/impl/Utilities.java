@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -674,18 +662,18 @@ public final class Utilities {
     }
     return datatypeFactory;
   }
-  
+
   /**
    * Writes bytes from the input stream to the output stream.
    * @param in - the input stream passed in.
    * @param outStream - output stream where the bytes are written.
    */
-  static public void write(InputStream in, OutputStream outStream) throws IOException { 
+  static public void write(InputStream in, OutputStream outStream) throws IOException {
       if(in == null || outStream == null)
           return;
       try {
           byte[] byteArray = new byte[BUFFER_SIZE * 2];
-      
+
           int byteCount = 0;
           while ((byteCount = in.read(byteArray)) != -1) {
               outStream.write(byteArray, 0, byteCount);
@@ -695,7 +683,7 @@ public final class Utilities {
           in.close();
       }
   }
- 
+
   /**
    * Writes bytes from the input Reader to the Writer stream.
    * @param in - the Reader passed in.
@@ -715,7 +703,7 @@ public final class Utilities {
           in.close();
       }
   }
- 
+
   /**
    * Writes bytes from the input Reader to the output stream.
    * @param in - the Reader passed in.

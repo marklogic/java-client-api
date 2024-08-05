@@ -1,10 +1,10 @@
 xquery version "1.0-ml";
 
-(: Copyright (c) 2022 MarkLogic Corporation :)
+(: Copyright © 2024 MarkLogic Corporation. All Rights Reserved. :)
 
 module namespace docsplit = "http://marklogic.com/rest-api/resource/docsplit";
 
-(: WARNING: 
+(: WARNING:
     The document model library may change in a future release without notice.
     Do not call the functions of the document-model library in your own code.
     :)
@@ -65,7 +65,7 @@ declare private function docsplit:apply-put(
             map:put($map, "categories", "content"),
             $map
             )
-    let $env := 
+    let $env :=
         let $map := map:map()
         return (
             map:put($map, "buffer", "true"),

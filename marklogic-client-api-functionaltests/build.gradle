@@ -1,4 +1,4 @@
-// Copyright (c) 2022 MarkLogic Corporation
+// Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
 
 test {
 	useJUnitPlatform()

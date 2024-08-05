@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.query;
 
@@ -32,7 +20,7 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
  * @see QueryManager#newRawQueryByExampleDefinition(StructureWriteHandle)
  * @see QueryManager#newRawQueryByExampleDefinition(StructureWriteHandle, String)
  * @see <a href="http://docs.marklogic.com/guide/java">MarkLogic Java Application Developer's Guide</a>
- *      &gt; <a href="http://docs.marklogic.com/guide/java/searches">Searching</a> 
+ *      &gt; <a href="http://docs.marklogic.com/guide/java/searches">Searching</a>
  *      &gt; <a href="http://docs.marklogic.com/guide/java/searches#id_33275">Prototype a Query Using Query By Example</a>
  */
 public interface RawQueryByExampleDefinition extends RawQueryDefinition {
