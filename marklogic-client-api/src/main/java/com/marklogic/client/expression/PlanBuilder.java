@@ -104,7 +104,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
 
 
   /**
-  * This function returns the sum of the specified numeric expressions. In expressions, the call should pass the result from an op:col function to identify a column. 
+  * This function returns the sum of the specified numeric expressions. In expressions, the call should pass the result from an op:col function to identify a column.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:add" target="mlserverdoc">op:add</a> server function.
   * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -112,7 +112,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression add(ServerExpression... left);
   /**
-  * This function returns true if the specified expressions all return true. Otherwise, it returns false. 
+  * This function returns true if the specified expressions all return true. Otherwise, it returns false.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:and" target="mlserverdoc">op:and</a> server function.
   * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -129,7 +129,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression divide(ServerExpression left, ServerExpression right);
   /**
-  * This function takes two or more expressions and returns true if all of the expressions return the same value. Otherwise, it returns false. The expressions can include calls to the op:col function to get the value of a column. 
+  * This function takes two or more expressions and returns true if all of the expressions return the same value. Otherwise, it returns false. The expressions can include calls to the op:col function to get the value of a column.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:eq" target="mlserverdoc">op:eq</a> server function.
   * @param operand  Two or more expressions.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -190,7 +190,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression lt(ServerExpression left, ServerExpression right);
   /**
-  * This function multiplies the left numericExpression by the right numericExpression and returns the value. 
+  * This function multiplies the left numericExpression by the right numericExpression and returns the value.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:multiply" target="mlserverdoc">op:multiply</a> server function.
   * @param left  The left numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -215,7 +215,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression not(ServerExpression operand);
   /**
-  * This function returns true if the specified expressions all return true. Otherwise, it returns false. 
+  * This function returns true if the specified expressions all return true. Otherwise, it returns false.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:or" target="mlserverdoc">op:or</a> server function.
   * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -274,13 +274,13 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanParamExpr param(XsStringVal name);
   /**
-  * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist). 
+  * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist).
   * @param column  the column  value.
   * @return  a PlanColumn object
   */
   public abstract PlanColumn col(String column);
   /**
-  * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist). 
+  * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist).
   * @param column  the column  value.
   * @return  a PlanColumn object
   */
@@ -302,14 +302,14 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanColumn schemaCol(XsStringVal schema, XsStringVal view, XsStringVal column);
   /**
-  * Identifies a column where the combination of view and column name is unique. Identifying the schema isn't necessary (and it might not exist). 
+  * Identifies a column where the combination of view and column name is unique. Identifying the schema isn't necessary (and it might not exist).
   * @param view  The name of the view.
   * @param column  The name of the column.
   * @return  a PlanColumn object
   */
   public abstract PlanColumn viewCol(String view, String column);
   /**
-  * Identifies a column where the combination of view and column name is unique. Identifying the schema isn't necessary (and it might not exist). 
+  * Identifies a column where the combination of view and column name is unique. Identifying the schema isn't necessary (and it might not exist).
   * @param view  The name of the view.
   * @param column  The name of the column.
   * @return  a PlanColumn object
@@ -366,21 +366,21 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanExprColSeq colSeq(PlanExprCol... col);
   /**
-  * This function reads a row set from a configured view over TDE-indexed rows or a predefined view over range indexes. 
+  * This function reads a row set from a configured view over TDE-indexed rows or a predefined view over range indexes.
   * @param schema  The name identifying the schema containing the view. If the schema name is null, the engine searches for a view with the specified name.
   * @param view  The name identifying a configured template or range view for rows projected from documents.
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromView(String schema, String view);
   /**
-  * This function reads a row set from a configured view over TDE-indexed rows or a predefined view over range indexes. 
+  * This function reads a row set from a configured view over TDE-indexed rows or a predefined view over range indexes.
   * @param schema  The name identifying the schema containing the view. If the schema name is null, the engine searches for a view with the specified name.
   * @param view  The name identifying a configured template or range view for rows projected from documents.
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromView(XsStringVal schema, XsStringVal view);
   /**
-  * This function reads a row set from a configured view over TDE-indexed rows or a predefined view over range indexes. 
+  * This function reads a row set from a configured view over TDE-indexed rows or a predefined view over range indexes.
   * @param schema  The name identifying the schema containing the view. If the schema name is null, the engine searches for a view with the specified name.
   * @param view  The name identifying a configured template or range view for rows projected from documents.
   * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
@@ -388,7 +388,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract AccessPlan fromView(String schema, String view, String qualifierName);
   /**
-  * This function reads a row set from a configured view over TDE-indexed rows or a predefined view over range indexes. 
+  * This function reads a row set from a configured view over TDE-indexed rows or a predefined view over range indexes.
   * @param schema  The name identifying the schema containing the view. If the schema name is null, the engine searches for a view with the specified name.
   * @param view  The name identifying a configured template or range view for rows projected from documents.
   * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
@@ -396,7 +396,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract AccessPlan fromView(XsStringVal schema, XsStringVal view, XsStringVal qualifierName);
   /**
-  * This function reads a row set from a configured view over TDE-indexed rows or a predefined view over range indexes. 
+  * This function reads a row set from a configured view over TDE-indexed rows or a predefined view over range indexes.
   * @param schema  The name identifying the schema containing the view. If the schema name is null, the engine searches for a view with the specified name.
   * @param view  The name identifying a configured template or range view for rows projected from documents.
   * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
@@ -405,7 +405,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract AccessPlan fromView(String schema, String view, String qualifierName, PlanSystemColumn sysCols);
   /**
-  * This function reads a row set from a configured view over TDE-indexed rows or a predefined view over range indexes. 
+  * This function reads a row set from a configured view over TDE-indexed rows or a predefined view over range indexes.
   * @param schema  The name identifying the schema containing the view. If the schema name is null, the engine searches for a view with the specified name.
   * @param view  The name identifying a configured template or range view for rows projected from documents.
   * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
@@ -426,33 +426,33 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanPrefixer prefixer(XsStringVal base);
   /**
-  * Reads rows by matching patterns in the triple index. 
+  * Reads rows by matching patterns in the triple index.
   * @param patterns  One or more pattern definitions returned by the op:pattern function. See {@link PlanBuilder#patternSeq(PlanTriplePattern...)}
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromTriples(PlanTriplePattern... patterns);
   /**
-  * Reads rows by matching patterns in the triple index. 
+  * Reads rows by matching patterns in the triple index.
   * @param patterns  One or more pattern definitions returned by the op:pattern function. See {@link PlanBuilder#patternSeq(PlanTriplePattern...)}
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromTriples(PlanTriplePatternSeq patterns);
   /**
-  * Reads rows by matching patterns in the triple index. 
+  * Reads rows by matching patterns in the triple index.
   * @param patterns  One or more pattern definitions returned by the op:pattern function. See {@link PlanBuilder#patternSeq(PlanTriplePattern...)}
   * @param qualifierName  Specifies a name for qualifying the column names. By default, triple rows have no qualification. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName);
   /**
-  * Reads rows by matching patterns in the triple index. 
+  * Reads rows by matching patterns in the triple index.
   * @param patterns  One or more pattern definitions returned by the op:pattern function. See {@link PlanBuilder#patternSeq(PlanTriplePattern...)}
   * @param qualifierName  Specifies a name for qualifying the column names. By default, triple rows have no qualification. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromTriples(PlanTriplePatternSeq patterns, XsStringVal qualifierName);
   /**
-  * Reads rows by matching patterns in the triple index. 
+  * Reads rows by matching patterns in the triple index.
   * @param patterns  One or more pattern definitions returned by the op:pattern function. See {@link PlanBuilder#patternSeq(PlanTriplePattern...)}
   * @param qualifierName  Specifies a name for qualifying the column names. By default, triple rows have no qualification. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @param graphIris  A list of graph IRIs to restrict the results to triples in the specified graphs. The sem:default-graph-iri function returns the iri that identifies the default graph.
@@ -460,7 +460,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract AccessPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIris);
   /**
-  * Reads rows by matching patterns in the triple index. 
+  * Reads rows by matching patterns in the triple index.
   * @param patterns  One or more pattern definitions returned by the op:pattern function. See {@link PlanBuilder#patternSeq(PlanTriplePattern...)}
   * @param qualifierName  Specifies a name for qualifying the column names. By default, triple rows have no qualification. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @param graphIris  A list of graph IRIs to restrict the results to triples in the specified graphs. The sem:default-graph-iri function returns the iri that identifies the default graph.
@@ -468,7 +468,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract AccessPlan fromTriples(PlanTriplePatternSeq patterns, XsStringVal qualifierName, XsStringSeqVal graphIris);
   /**
-  * Reads rows by matching patterns in the triple index. 
+  * Reads rows by matching patterns in the triple index.
   * @param patterns  One or more pattern definitions returned by the op:pattern function. See {@link PlanBuilder#patternSeq(PlanTriplePattern...)}
   * @param qualifierName  Specifies a name for qualifying the column names. By default, triple rows have no qualification. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @param graphIris  A list of graph IRIs to restrict the results to triples in the specified graphs. The sem:default-graph-iri function returns the iri that identifies the default graph.
@@ -477,7 +477,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract AccessPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIris, PlanTripleOption option);
   /**
-  * Reads rows by matching patterns in the triple index. 
+  * Reads rows by matching patterns in the triple index.
   * @param patterns  One or more pattern definitions returned by the op:pattern function. See {@link PlanBuilder#patternSeq(PlanTriplePattern...)}
   * @param qualifierName  Specifies a name for qualifying the column names. By default, triple rows have no qualification. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @param graphIris  A list of graph IRIs to restrict the results to triples in the specified graphs. The sem:default-graph-iri function returns the iri that identifies the default graph.
@@ -527,27 +527,27 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanTriplePositionSeq objectSeq(PlanTriplePosition... object);
   /**
-  * This function dynamically constructs a view from range indexes or the uri or collection lexicons. This function will only return rows for documents where the first column has a value. The keys in the map specify the names of the columns and the values in the map provide cts:reference objects to specify the lexicon providing the values of the columns. Optic emits rows based on co-occurrence of lexicon values within the same document similar to cts:value-tuples If the cts:reference sets the nullable option to true, the column is optional in the row. 
+  * This function dynamically constructs a view from range indexes or the uri or collection lexicons. This function will only return rows for documents where the first column has a value. The keys in the map specify the names of the columns and the values in the map provide cts:reference objects to specify the lexicon providing the values of the columns. Optic emits rows based on co-occurrence of lexicon values within the same document similar to cts:value-tuples If the cts:reference sets the nullable option to true, the column is optional in the row.
   * @param indexes  An object in which each key is a column name and each value specifies a cts:reference for a range index or other lexicon (especially the cts:uri-reference lexicon) with the column values.
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromLexicons(Map<String,CtsReferenceExpr> indexes);
   /**
-  * This function dynamically constructs a view from range indexes or the uri or collection lexicons. This function will only return rows for documents where the first column has a value. The keys in the map specify the names of the columns and the values in the map provide cts:reference objects to specify the lexicon providing the values of the columns. Optic emits rows based on co-occurrence of lexicon values within the same document similar to cts:value-tuples If the cts:reference sets the nullable option to true, the column is optional in the row. 
+  * This function dynamically constructs a view from range indexes or the uri or collection lexicons. This function will only return rows for documents where the first column has a value. The keys in the map specify the names of the columns and the values in the map provide cts:reference objects to specify the lexicon providing the values of the columns. Optic emits rows based on co-occurrence of lexicon values within the same document similar to cts:value-tuples If the cts:reference sets the nullable option to true, the column is optional in the row.
   * @param indexes  An object in which each key is a column name and each value specifies a cts:reference for a range index or other lexicon (especially the cts:uri-reference lexicon) with the column values.
   * @param qualifierName  Specifies a name for qualifying the column names. By default, lexicon rows have no qualification. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromLexicons(Map<String,CtsReferenceExpr> indexes, String qualifierName);
   /**
-  * This function dynamically constructs a view from range indexes or the uri or collection lexicons. This function will only return rows for documents where the first column has a value. The keys in the map specify the names of the columns and the values in the map provide cts:reference objects to specify the lexicon providing the values of the columns. Optic emits rows based on co-occurrence of lexicon values within the same document similar to cts:value-tuples If the cts:reference sets the nullable option to true, the column is optional in the row. 
+  * This function dynamically constructs a view from range indexes or the uri or collection lexicons. This function will only return rows for documents where the first column has a value. The keys in the map specify the names of the columns and the values in the map provide cts:reference objects to specify the lexicon providing the values of the columns. Optic emits rows based on co-occurrence of lexicon values within the same document similar to cts:value-tuples If the cts:reference sets the nullable option to true, the column is optional in the row.
   * @param indexes  An object in which each key is a column name and each value specifies a cts:reference for a range index or other lexicon (especially the cts:uri-reference lexicon) with the column values.
   * @param qualifierName  Specifies a name for qualifying the column names. By default, lexicon rows have no qualification. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromLexicons(Map<String,CtsReferenceExpr> indexes, XsStringVal qualifierName);
   /**
-  * This function dynamically constructs a view from range indexes or the uri or collection lexicons. This function will only return rows for documents where the first column has a value. The keys in the map specify the names of the columns and the values in the map provide cts:reference objects to specify the lexicon providing the values of the columns. Optic emits rows based on co-occurrence of lexicon values within the same document similar to cts:value-tuples If the cts:reference sets the nullable option to true, the column is optional in the row. 
+  * This function dynamically constructs a view from range indexes or the uri or collection lexicons. This function will only return rows for documents where the first column has a value. The keys in the map specify the names of the columns and the values in the map provide cts:reference objects to specify the lexicon providing the values of the columns. Optic emits rows based on co-occurrence of lexicon values within the same document similar to cts:value-tuples If the cts:reference sets the nullable option to true, the column is optional in the row.
   * @param indexes  An object in which each key is a column name and each value specifies a cts:reference for a range index or other lexicon (especially the cts:uri-reference lexicon) with the column values.
   * @param qualifierName  Specifies a name for qualifying the column names. By default, lexicon rows have no qualification. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @param sysCols  An optional named fragment id column returned by the op:fragment-id-col function. The fragment id column can be used for joins.
@@ -555,7 +555,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract AccessPlan fromLexicons(Map<String,CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumn sysCols);
   /**
-  * This function dynamically constructs a view from range indexes or the uri or collection lexicons. This function will only return rows for documents where the first column has a value. The keys in the map specify the names of the columns and the values in the map provide cts:reference objects to specify the lexicon providing the values of the columns. Optic emits rows based on co-occurrence of lexicon values within the same document similar to cts:value-tuples If the cts:reference sets the nullable option to true, the column is optional in the row. 
+  * This function dynamically constructs a view from range indexes or the uri or collection lexicons. This function will only return rows for documents where the first column has a value. The keys in the map specify the names of the columns and the values in the map provide cts:reference objects to specify the lexicon providing the values of the columns. Optic emits rows based on co-occurrence of lexicon values within the same document similar to cts:value-tuples If the cts:reference sets the nullable option to true, the column is optional in the row.
   * @param indexes  An object in which each key is a column name and each value specifies a cts:reference for a range index or other lexicon (especially the cts:uri-reference lexicon) with the column values.
   * @param qualifierName  Specifies a name for qualifying the column names. By default, lexicon rows have no qualification. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @param sysCols  An optional named fragment id column returned by the op:fragment-id-col function. The fragment id column can be used for joins.
@@ -673,26 +673,26 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor, XsStringVal qualifier);
   /**
-  * This function returns a filter definition as input for a WHERE operation. As with a cts:query or sem:store, the filter definition cannot be used in an Optic Boolean expression but, instead, must be the only argument to the WHERE call. Add a separate WHERE call to filter based on an Optic Boolean expression. The condition must be a valid simple SQL Boolean expression expressed as a string. 
+  * This function returns a filter definition as input for a WHERE operation. As with a cts:query or sem:store, the filter definition cannot be used in an Optic Boolean expression but, instead, must be the only argument to the WHERE call. Add a separate WHERE call to filter based on an Optic Boolean expression. The condition must be a valid simple SQL Boolean expression expressed as a string.
   * @param expression  A boolean expression, such as op:eq or op:not, that might be null.
   * @return  a PlanCondition object
   */
   public abstract PlanCondition sqlCondition(String expression);
   /**
-  * This function returns a filter definition as input for a WHERE operation. As with a cts:query or sem:store, the filter definition cannot be used in an Optic Boolean expression but, instead, must be the only argument to the WHERE call. Add a separate WHERE call to filter based on an Optic Boolean expression. The condition must be a valid simple SQL Boolean expression expressed as a string. 
+  * This function returns a filter definition as input for a WHERE operation. As with a cts:query or sem:store, the filter definition cannot be used in an Optic Boolean expression but, instead, must be the only argument to the WHERE call. Add a separate WHERE call to filter based on an Optic Boolean expression. The condition must be a valid simple SQL Boolean expression expressed as a string.
   * @param expression  A boolean expression, such as op:eq or op:not, that might be null.
   * @return  a PlanCondition object
   */
   public abstract PlanCondition sqlCondition(XsStringVal expression);
   /**
-  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner, op:join-left-outer, and op:join-full-outer, and functions. 
+  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner, op:join-left-outer, and op:join-full-outer, and functions.
   * @param left  The rows from the left view. See {@link PlanBuilder#col(XsStringVal)}
   * @param right  The row set from the right view. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanJoinKey object
   */
   public abstract PlanJoinKey on(String left, String right);
   /**
-  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner, op:join-left-outer, and op:join-full-outer, and functions. 
+  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner, op:join-left-outer, and op:join-full-outer, and functions.
   * @param left  The rows from the left view. See {@link PlanBuilder#col(XsStringVal)}
   * @param right  The row set from the right view. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanJoinKey object
@@ -887,14 +887,14 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public abstract PlanAggregateCol groupKey(String name, String column);
   public abstract PlanAggregateCol groupKey(PlanColumn name, PlanExprCol column);
   /**
-  * This aggregate function adds a flag to a grouped row specifying whether a column acted as a grouping key for the row. 
+  * This aggregate function adds a flag to a grouped row specifying whether a column acted as a grouping key for the row.
   * @param name  The name to be used for the aggregated flag column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column to flag as a grouping key. The column can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol hasGroupKey(String name, String column);
   /**
-  * This aggregate function adds a flag to a grouped row specifying whether a column acted as a grouping key for the row. 
+  * This aggregate function adds a flag to a grouped row specifying whether a column acted as a grouping key for the row.
   * @param name  The name to be used for the aggregated flag column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column to flag as a grouping key. The column can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanAggregateCol object
@@ -1005,21 +1005,21 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanAggregateCol sequenceAggregate(PlanColumn name, PlanExprCol column, PlanValueOption option);
   /**
-  * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function. 
+  * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column with the values to add. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol sum(String name, String column);
   /**
-  * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function. 
+  * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column with the values to add. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol sum(PlanColumn name, PlanExprCol column);
   /**
-  * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function. 
+  * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column with the values to add. See {@link PlanBuilder#col(XsStringVal)}
   * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
@@ -1027,7 +1027,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanAggregateCol sum(String name, String column, PlanValueOption option);
   /**
-  * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function. 
+  * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column with the values to add. See {@link PlanBuilder#col(XsStringVal)}
   * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
@@ -1035,7 +1035,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanAggregateCol sum(PlanColumn name, PlanExprCol column, PlanValueOption option);
   /**
-  * This function processes the values of column for each row in the group or row set with the specified user-defined aggregate as implemented by an aggregate user-defined function (UDF) plugin. The UDF plugin must be installed on each host. The result is used for building the parameters used by the op:group-by function. 
+  * This function processes the values of column for each row in the group or row set with the specified user-defined aggregate as implemented by an aggregate user-defined function (UDF) plugin. The UDF plugin must be installed on each host. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column with the values to aggregate. See {@link PlanBuilder#col(XsStringVal)}
   * @param module  The path to the installed plugin module.
@@ -1044,7 +1044,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanAggregateCol uda(String name, String column, String module, String function);
   /**
-  * This function processes the values of column for each row in the group or row set with the specified user-defined aggregate as implemented by an aggregate user-defined function (UDF) plugin. The UDF plugin must be installed on each host. The result is used for building the parameters used by the op:group-by function. 
+  * This function processes the values of column for each row in the group or row set with the specified user-defined aggregate as implemented by an aggregate user-defined function (UDF) plugin. The UDF plugin must be installed on each host. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column with the values to aggregate. See {@link PlanBuilder#col(XsStringVal)}
   * @param module  The path to the installed plugin module.
@@ -1053,7 +1053,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanAggregateCol uda(PlanColumn name, PlanExprCol column, XsStringVal module, XsStringVal function);
   /**
-  * This function processes the values of column for each row in the group or row set with the specified user-defined aggregate as implemented by an aggregate user-defined function (UDF) plugin. The UDF plugin must be installed on each host. The result is used for building the parameters used by the op:group-by function. 
+  * This function processes the values of column for each row in the group or row set with the specified user-defined aggregate as implemented by an aggregate user-defined function (UDF) plugin. The UDF plugin must be installed on each host. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column with the values to aggregate. See {@link PlanBuilder#col(XsStringVal)}
   * @param module  The path to the installed plugin module.
@@ -1063,7 +1063,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanAggregateCol uda(String name, String column, String module, String function, String arg);
   /**
-  * This function processes the values of column for each row in the group or row set with the specified user-defined aggregate as implemented by an aggregate user-defined function (UDF) plugin. The UDF plugin must be installed on each host. The result is used for building the parameters used by the op:group-by function. 
+  * This function processes the values of column for each row in the group or row set with the specified user-defined aggregate as implemented by an aggregate user-defined function (UDF) plugin. The UDF plugin must be installed on each host. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column with the values to aggregate. See {@link PlanBuilder#col(XsStringVal)}
   * @param module  The path to the installed plugin module.
@@ -1391,7 +1391,6 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-attribute-seq" target="mlserverdoc">op:xml-attribute-seq</a> server function.
   * @param attribute  the attribute values for the sequence
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/attribute-node.html">attribute-node</a> server data type
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public abstract ServerExpression xmlAttributeSeq(ServerExpression... attribute);
   /**
@@ -1450,13 +1449,13 @@ public abstract class PlanBuilder implements PlanBuilderBase {
  */
   public interface AccessPlan extends ModifyPlan, PlanBuilderBase.AccessPlanBase {
 /**
-  * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist). 
+  * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist).
   * @param column  the column  value.
   * @return  a PlanColumn object
   */
   public abstract PlanColumn col(String column);
 /**
-  * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist). 
+  * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist).
   * @param column  the column  value.
   * @return  a PlanColumn object
   */
@@ -1474,7 +1473,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public abstract ModifyPlan sampleBy(PlanSampleByOptions option);
   }
 
-  
+
 /**
  * Provides functions and operations in the exportable phase
  * of the plan for executing a row pipeline on the server.
@@ -1483,7 +1482,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
 
   }
 
-  
+
 /**
  * Provides functions and operations in the modify phase
  * of the plan for executing a row pipeline on the server.
@@ -1516,27 +1515,27 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan except(ModifyPlan right);
 /**
-  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan existsJoin(ModifyPlan right);
 /**
-  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan existsJoin(ModifyPlan right, PlanJoinKey... keys);
 /**
-  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan existsJoin(ModifyPlan right, PlanJoinKeySeq keys);
 /**
-  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
@@ -1544,7 +1543,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan existsJoin(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
 /**
-  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
@@ -1552,13 +1551,13 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan existsJoin(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
 /**
-  * This method collapses a group of rows into a single row. 
+  * This method collapses a group of rows into a single row.
   * @param keys  This parameter specifies the columns used to determine the groups. Rows with the same values in these columns are consolidated into a single group. The columns can be existing columns or new columns created by an expression specified with op:as. The rows produced by the group by operation include the key columns. Specify an empty sequence to create a single group for all of the rows in the row set. See {@link PlanBuilder#colSeq(PlanExprCol...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan groupBy(PlanExprColSeq keys);
 /**
-  * This method collapses a group of rows into a single row. 
+  * This method collapses a group of rows into a single row.
   * @param keys  This parameter specifies the columns used to determine the groups. Rows with the same values in these columns are consolidated into a single group. The columns can be existing columns or new columns created by an expression specified with op:as. The rows produced by the group by operation include the key columns. Specify an empty sequence to create a single group for all of the rows in the row set. See {@link PlanBuilder#colSeq(PlanExprCol...)}
   * @param aggregates  This parameter specifies either new columns for aggregate functions over the rows in the group or columndefs that are constant for the group. The aggregate library functions are listed below. See {@link PlanBuilder#aggregateSeq(PlanAggregateCol...)}
   * @return  a ModifyPlan object
@@ -1571,41 +1570,41 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan intersect(ModifyPlan right);
 /**
-  * This method yields one output row set that concatenates every left row with every right row. Matches other than equality matches (for instance, greater-than comparisons between keys) can be implemented with a condition on the cross product. 
+  * This method yields one output row set that concatenates every left row with every right row. Matches other than equality matches (for instance, greater-than comparisons between keys) can be implemented with a condition on the cross product.
   * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinCrossProduct(ModifyPlan right);
 /**
-  * This method yields one output row set that concatenates every left row with every right row. Matches other than equality matches (for instance, greater-than comparisons between keys) can be implemented with a condition on the cross product. 
+  * This method yields one output row set that concatenates every left row with every right row. Matches other than equality matches (for instance, greater-than comparisons between keys) can be implemented with a condition on the cross product.
   * @param right  The row set from the right view.
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinCrossProduct(ModifyPlan right, boolean condition);
 /**
-  * This method yields one output row set that concatenates every left row with every right row. Matches other than equality matches (for instance, greater-than comparisons between keys) can be implemented with a condition on the cross product. 
+  * This method yields one output row set that concatenates every left row with every right row. Matches other than equality matches (for instance, greater-than comparisons between keys) can be implemented with a condition on the cross product.
   * @param right  The row set from the right view.
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinCrossProduct(ModifyPlan right, ServerExpression condition);
 /**
-  * This function specifies a document column to add to the rows by reading the documents for an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). 
+  * This function specifies a document column to add to the rows by reading the documents for an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows).
   * @param docCol  The document column to add to the rows. This can be a string or column specifying the name of the new column that should have the document as its value. See {@link PlanBuilder#col(XsStringVal)}
   * @param sourceCol  The document uri or fragment id value. This is either the output from op:fragment-id-col specifying a fragment id column or a document uri column. Joining on a fragment id is more efficient than joining on a uri column. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinDoc(String docCol, String sourceCol);
 /**
-  * This function specifies a document column to add to the rows by reading the documents for an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). 
+  * This function specifies a document column to add to the rows by reading the documents for an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows).
   * @param docCol  The document column to add to the rows. This can be a string or column specifying the name of the new column that should have the document as its value. See {@link PlanBuilder#col(XsStringVal)}
   * @param sourceCol  The document uri or fragment id value. This is either the output from op:fragment-id-col specifying a fragment id column or a document uri column. Joining on a fragment id is more efficient than joining on a uri column. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinDoc(PlanColumn docCol, PlanColumn sourceCol);
 /**
-  * This method adds an uri column and a document column to rows based on an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). If the fragment id column is null in the row, the row is dropped from the rowset. 
+  * This method adds an uri column and a document column to rows based on an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). If the fragment id column is null in the row, the row is dropped from the rowset.
   * @param docCol  The document column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document as its value. See {@link PlanBuilder#col(XsStringVal)}
   * @param uriCol  The uri column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document uri as its value. See {@link PlanBuilder#col(XsStringVal)}
   * @param sourceCol  The document uri or fragment id value. This is either an op:fragment-id-col specifying a fragment id column or a document uri column as xs:string or as a column using op:col, op:view-col or op:schema-col. Joining on a fragment id is more efficient than joining on a uri column. See {@link PlanBuilder#col(XsStringVal)}
@@ -1613,7 +1612,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinDocAndUri(String docCol, String uriCol, String sourceCol);
 /**
-  * This method adds an uri column and a document column to rows based on an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). If the fragment id column is null in the row, the row is dropped from the rowset. 
+  * This method adds an uri column and a document column to rows based on an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). If the fragment id column is null in the row, the row is dropped from the rowset.
   * @param docCol  The document column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document as its value. See {@link PlanBuilder#col(XsStringVal)}
   * @param uriCol  The uri column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document uri as its value. See {@link PlanBuilder#col(XsStringVal)}
   * @param sourceCol  The document uri or fragment id value. This is either an op:fragment-id-col specifying a fragment id column or a document uri column as xs:string or as a column using op:col, op:view-col or op:schema-col. Joining on a fragment id is more efficient than joining on a uri column. See {@link PlanBuilder#col(XsStringVal)}
@@ -1621,41 +1620,41 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinDocAndUri(PlanColumn docCol, PlanColumn uriCol, PlanColumn sourceCol);
 /**
-  * This method adds a uri column to rows based on an existing fragment id column to identify the source document for each row. The fragmentIdCol must be an op:fragment-id-col specifying a fragment id column. If the fragment id column is null in the row, the row is dropped from the rowset. 
+  * This method adds a uri column to rows based on an existing fragment id column to identify the source document for each row. The fragmentIdCol must be an op:fragment-id-col specifying a fragment id column. If the fragment id column is null in the row, the row is dropped from the rowset.
   * @param uriCol  The document uri. This is the output from op:col('uri') that specifies a document uri column. See {@link PlanBuilder#col(XsStringVal)}
   * @param fragmentIdCol  The document fragment id value. This is the output from op:fragment-id-col specifying a fragment id column. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinDocUri(String uriCol, String fragmentIdCol);
 /**
-  * This method adds a uri column to rows based on an existing fragment id column to identify the source document for each row. The fragmentIdCol must be an op:fragment-id-col specifying a fragment id column. If the fragment id column is null in the row, the row is dropped from the rowset. 
+  * This method adds a uri column to rows based on an existing fragment id column to identify the source document for each row. The fragmentIdCol must be an op:fragment-id-col specifying a fragment id column. If the fragment id column is null in the row, the row is dropped from the rowset.
   * @param uriCol  The document uri. This is the output from op:col('uri') that specifies a document uri column. See {@link PlanBuilder#col(XsStringVal)}
   * @param fragmentIdCol  The document fragment id value. This is the output from op:fragment-id-col specifying a fragment id column. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinDocUri(PlanColumn uriCol, PlanColumn fragmentIdCol);
 /**
-  * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets. 
+  * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets.
   * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinInner(ModifyPlan right);
 /**
-  * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets. 
+  * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKey... keys);
 /**
-  * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets. 
+  * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys);
 /**
-  * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets. 
+  * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
@@ -1663,7 +1662,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
 /**
-  * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets. 
+  * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
@@ -1671,27 +1670,27 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
 /**
-  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set.
   * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right);
 /**
-  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKey... keys);
 /**
-  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys);
 /**
-  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
@@ -1699,7 +1698,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
 /**
-  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
@@ -1707,27 +1706,27 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
 /**
-  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets.
   * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinFullOuter(ModifyPlan right);
 /**
-  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKey... keys);
 /**
-  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys);
 /**
-  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
@@ -1735,7 +1734,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
 /**
-  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
@@ -1743,27 +1742,27 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
 /**
-  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan notExistsJoin(ModifyPlan right);
 /**
-  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan notExistsJoin(ModifyPlan right, PlanJoinKey... keys);
 /**
-  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan notExistsJoin(ModifyPlan right, PlanJoinKeySeq keys);
 /**
-  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
@@ -1771,7 +1770,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan notExistsJoin(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
 /**
-  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
@@ -1863,7 +1862,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan select(PlanExprColSeq columns, XsStringVal qualifierName);
 /**
-  * This method yields all of the rows from the input row sets. Columns that are present only in some input row sets effectively have a null value in the rows from the other row sets. 
+  * This method yields all of the rows from the input row sets. Columns that are present only in some input row sets effectively have a null value in the rows from the other row sets.
   * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
@@ -1974,7 +1973,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public abstract ModifyPlan unnestLeftOuter(PlanExprCol inputColumn, PlanExprCol valueColumn, PlanExprCol ordinalColumn);
   }
 
-  
+
 /**
  * Provides functions and operations in the final phase
  * of the plan for executing a row pipeline on the server.
@@ -1989,7 +1988,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public abstract Plan bindParam(PlanParamExpr param, PlanParamBindingVal literal);
   }
 
-  
+
 /**
  * Provides functions and operations in the prepare phase
  * of the plan for executing a row pipeline on the server.
@@ -2002,20 +2001,20 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ExportablePlan map(PlanFunction func);
 /**
-  * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the reduce() method of JavaScript Array. 
+  * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the reduce() method of JavaScript Array.
   * @param func  The function to be applied.
   * @return  a ExportablePlan object
   */
   public abstract ExportablePlan reduce(PlanFunction func);
 /**
-  * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the reduce() method of JavaScript Array. 
+  * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the reduce() method of JavaScript Array.
   * @param func  The function to be applied.
   * @param seed  The value returned by the previous request.
   * @return  a ExportablePlan object
   */
   public abstract ExportablePlan reduce(PlanFunction func, String seed);
 /**
-  * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the reduce() method of JavaScript Array. 
+  * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the reduce() method of JavaScript Array.
   * @param func  The function to be applied.
   * @param seed  The value returned by the previous request.
   * @return  a ExportablePlan object

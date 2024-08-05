@@ -28,7 +28,7 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  * {@link DocumentWriteSet#disableDefault disableDefault}.
  */
 public interface DocumentWriteOperation extends Comparable<DocumentWriteOperation> {
-  public enum OperationType {
+  enum OperationType {
     /** This write operation (REST API mime part) sets the defaults for the
      * rest of the request.
      * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_56498">
@@ -42,8 +42,8 @@ public interface DocumentWriteOperation extends Comparable<DocumentWriteOperatio
      * <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_54554">
      * REST API Guide -&gt; Example: Reverting to System Default Metadata</a>
      */
-    @Deprecated
     DISABLE_METADATA_DEFAULT,
+
     /** This write operation (REST API mime part) creates or overwrites
      * one document and/or document metadata.
      * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_33756">
@@ -128,7 +128,7 @@ public interface DocumentWriteOperation extends Comparable<DocumentWriteOperatio
 
         if(format == null || format.length() == 0)
             throw new IllegalArgumentException("Format cannot be null or empty");
-        
+
         final class FormatUriMaker {
             private String uriFormat;
 
