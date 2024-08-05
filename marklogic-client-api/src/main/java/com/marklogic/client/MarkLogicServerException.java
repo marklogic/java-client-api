@@ -94,7 +94,6 @@ public abstract class MarkLogicServerException extends RuntimeException {
     return (failedRequest == null) ? null : failedRequest.getStackTrace();
   }
 
-  @Deprecated
   public FailedRequest getFailedRequest() {
     return failedRequest;
   }

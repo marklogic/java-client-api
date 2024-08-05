@@ -25,7 +25,7 @@ import com.marklogic.client.type.XsStringSeqVal;
 /**
  * SemValue takes Java values and constructs atomic values and
  * sequences of atomic values with a semantic data type
- * 
+ *
  * The typed values can then be passed to expression functions
  * for execution on the server.
  */
@@ -91,7 +91,6 @@ public interface SemValue {
      * Takes any number of triple store specifications and constructs a store sequence
      * @param stores	the triple store specifications
      * @return	a sequence of triple store specifications
-     * @deprecated use {@link SemExpr#storeSeq(SemStoreExpr...)}
      */
     public SemStoreSeqExpr stores(SemStoreExpr... stores);
 }

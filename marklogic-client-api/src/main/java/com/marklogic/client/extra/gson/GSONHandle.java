@@ -97,7 +97,6 @@ public class GSONHandle
 
   /**
    * Returns the parser used to construct element objects from JSON.
-   * @deprecated
    * @return	the JSON parser.
    */
   public JsonParser getParser() {
