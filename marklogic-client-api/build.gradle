@@ -21,9 +21,12 @@ dependencies {
 	implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
 	implementation 'io.github.rburgst:okhttp-digest:2.7'
 
-	// https://eclipse-ee4j.github.io/angus-mail/ recommends using these two separate dependencies.
-	implementation "jakarta.mail:jakarta.mail-api:2.1.3"
-	implementation "org.eclipse.angus:angus-mail:2.0.3"
+	// We tried upgrading to the org.eclipse.angus:angus-mail dependency, but we ran into significant performance issues
+	// with using the Java Client eval call in our Spark connector. Example - an eval() call for getting 50k URIs would
+	// take 50s instead of 2 to 3s. Haven't dug into the details, but seems like the call isn't lazy and the entire set
+	// of URIs is being retrieved. This implementation - in the old "com.sun.mail" package but still adhering to the new
+	// jakarta.mail API - works fine and performs well for eval calls.
+	implementation "com.sun.mail:jakarta.mail:2.0.1"
 
 	implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
 	implementation 'org.slf4j:slf4j-api:1.7.36'
