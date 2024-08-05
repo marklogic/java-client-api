@@ -1,10 +1,10 @@
 xquery version "1.0-ml";
 
-(: Copyright (c) 2022 MarkLogic Corporation :)
+(: Copyright © 2024 MarkLogic Corporation. All Rights Reserved. :)
 
 module namespace searchcollect = "http://marklogic.com/rest-api/resource/searchcollect";
 
-(: WARNING: 
+(: WARNING:
     The search model library may change in a future release without notice.
     Do not call the functions of the search model library in your own code.
     :)

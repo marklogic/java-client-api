@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.pojo;
 
@@ -26,40 +14,40 @@ import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
 import com.marklogic.client.pojo.util.GenerateIndexConfig;
 
 /** Specific to pojos yet similar to StructuredQueryBuilder, this class generates structured queries.
- * It adds convenience methods specific to working with pojos and does not replicate 
+ * It adds convenience methods specific to working with pojos and does not replicate
  * StructuredQueryBuilder methods that don't make sense for pojos.
- * The goal of {@link com.marklogic.client.pojo the pojo facade} is to simplify working with 
- * custom pojos. PojoQueryBuilder keeps all the powerful queries available via 
- * StructuredQueryBuilder while enabling queries across objects persisted using 
+ * The goal of {@link com.marklogic.client.pojo the pojo facade} is to simplify working with
+ * custom pojos. PojoQueryBuilder keeps all the powerful queries available via
+ * StructuredQueryBuilder while enabling queries across objects persisted using
  * {@link PojoRepository}.
  *
  * <p>For methods which accept a "pojoProperty" argument we are refering to
- * properties appropriate for 
+ * properties appropriate for
  * <a href="http://docs.oracle.com/javase/tutorial/javabeans/">JavaBeans</a>,
  * including properties accessible via public getters and setters, or public fields.</p>
  *
  *
  * <p>Where StructuredQueryBuilder accepts StructuredQueryBuilder.TextIndex as a first argument
- * to 
+ * to
  * {@link StructuredQueryBuilder#value(StructuredQueryBuilder.TextIndex, String...) value(TextIndex, String...)}
- * and 
+ * and
  * {@link StructuredQueryBuilder#word(StructuredQueryBuilder.TextIndex, String...) word(TextIndex, String...)}
  * methods,
- * PojoQueryBuilder adds shortcut methods which accept as the first argument a String name of the 
- * pojoProperty. Similarly, PojoQueryBuilder accepts String pojoProperty arguments wherever 
+ * PojoQueryBuilder adds shortcut methods which accept as the first argument a String name of the
+ * pojoProperty. Similarly, PojoQueryBuilder accepts String pojoProperty arguments wherever
  * StructuredQueryBuilder accepts StructuredQueryBuilder.Element,
  * StructuredQueryBuilder.Attribute, and StructuredQueryBuilder.PathIndex
- * as arguments to 
+ * as arguments to
  * {@link StructuredQueryBuilder#geoAttributePair(StructuredQueryBuilder.Element, StructuredQueryBuilder.Attribute,
  *   StructuredQueryBuilder.Attribute)
- *   geoAttributePair(Element, Attribute, Attribute)}, 
+ *   geoAttributePair(Element, Attribute, Attribute)},
  * {@link StructuredQueryBuilder#geoElement(StructuredQueryBuilder.Element)
- *   geoElement(Element)}, 
+ *   geoElement(Element)},
  * {@link StructuredQueryBuilder#geoElement(StructuredQueryBuilder.Element, StructuredQueryBuilder.Element)
- *   geoElement(Element, Element)}, 
+ *   geoElement(Element, Element)},
  * {@link StructuredQueryBuilder#geoElementPair(StructuredQueryBuilder.Element, StructuredQueryBuilder.Element,
  *   StructuredQueryBuilder.Element)
- *   geoElementPair(Element, Element, Element)}, 
+ *   geoElementPair(Element, Element, Element)},
  * {@link StructuredQueryBuilder#geoPath(StructuredQueryBuilder.PathIndex)
  *   geoPath(PathIndex)}
  * </p>
@@ -74,9 +62,9 @@ import com.marklogic.client.pojo.util.GenerateIndexConfig;
  * <pre>{@code    PojoQueryBuilder pqb = pojoRepository.getQueryBuilder();
  *    QueryDefinition query = pqb.value("productId", 12345);}</pre>
  *
- * <p>Similarly, without the pojo facade you might persist your pojos using 
+ * <p>Similarly, without the pojo facade you might persist your pojos using
  * {@link com.marklogic.client.io.JAXBHandle JAXBHandle} and if they
- * have a geoPosition property which is an object with latitude and longitude pojoProperty's 
+ * have a geoPosition property which is an object with latitude and longitude pojoProperty's
  * (which persist as elements) you might query them thusly:</p>
  * <pre>{@code    StructuredQueryBuilder sqb = new StructuredQueryBuilder();
  *    StructuredQueryBuilder.GeospatialIndex geoIdx = sqb.geoElementPair(

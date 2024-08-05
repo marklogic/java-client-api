@@ -1,6 +1,6 @@
 xquery version "1.0-ml";
 
-(: Copyright (c) 2022 MarkLogic Corporation :)
+(: Copyright © 2024 MarkLogic Corporation. All Rights Reserved. :)
 
 (: An XQuery transform must follow some conventions rigorously:
    *  The transform must be an XQuery library module
@@ -26,7 +26,7 @@ declare option xdmp:mapping "false";
 declare function html2xhtml:transform(
     $context as map:map,
     $params  as map:map,
-    $content as document-node()  
+    $content as document-node()
 ) as document-node()
 {
     if (empty($content) or exists($content/(element()|binary())))

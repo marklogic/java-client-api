@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (c) 2022 MarkLogic Corporation -->
+<!-- Copyright © 2024 MarkLogic Corporation. All Rights Reserved. -->
 <xs:schema targetNamespace="http://marklogic.com/xdmp/error"
  xsi:schemaLocation="http://www.w3.org/2001/XMLSchema XMLSchema.xsd"
  xmlns="http://marklogic.com/xdmp/error"
@@ -13,7 +13,7 @@
       <xs:documentation>
         A data item supplied with the error as text
       </xs:documentation>
-    </xs:annotation> 
+    </xs:annotation>
   </xs:element>
 
   <xs:complexType name="data">
@@ -27,24 +27,24 @@
       <xs:documentation>
         The data fields supplied with the error if present.
       </xs:documentation>
-    </xs:annotation> 
+    </xs:annotation>
   </xs:element>
 
   <xs:element name="caused-by"  type="xs:anyType" nillable="true">
     <xs:annotation>
       <xs:documentation>
-        Information on the cause of the error if available, 
+        Information on the cause of the error if available,
         typically a nested error .
       </xs:documentation>
-    </xs:annotation> 
+    </xs:annotation>
   </xs:element>
 
   <xs:element name="status" type="xs:string">
     <xs:annotation>
       <xs:documentation>
-        HTTP Status text e.g "Not Found" 
+        HTTP Status text e.g "Not Found"
       </xs:documentation>
-    </xs:annotation> 
+    </xs:annotation>
   </xs:element>
 
   <xs:element name="status-code" type="xs:string">
@@ -52,7 +52,7 @@
       <xs:documentation>
        HTTP Status code e.g 404
       </xs:documentation>
-    </xs:annotation> 
+    </xs:annotation>
   </xs:element>
 
   <xs:element name="message-code" type="xs:string">
@@ -60,7 +60,7 @@
       <xs:documentation>
         The message code from the exception, Error or Static Error if available.
       </xs:documentation>
-    </xs:annotation> 
+    </xs:annotation>
   </xs:element>
 
   <xs:element name="message" type="xs:string">
@@ -68,7 +68,7 @@
       <xs:documentation>
        The formatted message from the message catalog if available, otherwise built in format.
       </xs:documentation>
-    </xs:annotation> 
+    </xs:annotation>
   </xs:element>
 
   <xs:element name="message-title" type="xs:string">
@@ -76,9 +76,9 @@
       <xs:documentation>
         The message "text" from the message catalog if available
       </xs:documentation>
-    </xs:annotation> 
+    </xs:annotation>
   </xs:element>
-  
+
   <xs:complexType name="message-detail">
     <xs:all>
       <xs:element ref="message-title" maxOccurs="1" minOccurs="0"/>
@@ -103,7 +103,7 @@
       <xs:documentation>
         Root element of all error messages
       </xs:documentation>
-    </xs:annotation> 
+    </xs:annotation>
   </xs:element>
 
   <xs:element name="name" type="xs:string"/>

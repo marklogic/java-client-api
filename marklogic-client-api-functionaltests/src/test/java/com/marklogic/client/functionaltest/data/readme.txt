@@ -1,4 +1,4 @@
-Copyright (c) 2023 MarkLogic Corporation
+Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
 
 MarkLogic Client API for Java version ${project.version}
 
