@@ -49,10 +49,6 @@ Full documentation is available at:
 * [Java Application Developer's Guide](http://docs.marklogic.com/guide/java)
 * [JavaDoc](http://docs.marklogic.com/javadoc/client/index.html)
 
-## Including JAXB support 
-
-TODO, Need to rewrite this for Java Client 7.0.0.
-
 ## Support
 
 The MarkLogic Java Client is maintained by [MarkLogic](https://www.marklogic.com/) Engineering and is made available under 

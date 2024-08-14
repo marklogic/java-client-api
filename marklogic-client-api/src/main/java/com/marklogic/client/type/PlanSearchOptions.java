@@ -9,25 +9,25 @@ package com.marklogic.client.type;
  */
 public interface PlanSearchOptions {
 	/**
-	 * Changed in release 6.7.0 to return a float, as the server requires a float and throws an error on a double.
+	 * Changed in release 7.0.0 to return a float, as the server requires a float and throws an error on a double.
 	 */
 	XsFloatVal getQualityWeight();
     ScoreMethod getScoreMethod();
 	/**
-	 * @since 6.7.0
+	 * @since 7.0.0
 	 */
 	XsDoubleVal getBm25LengthWeight();
 	/**
-	 * Changed in release 6.7.0 to return a float, as the server requires a float and throws an error on a double.
+	 * Changed in release 7.0.0 to return a float, as the server requires a float and throws an error on a double.
 	 */
     PlanSearchOptions withQualityWeight(float qualityWeight);
 	/**
-	 * Changed in release 6.7.0 to return a float, as the server requires a float and throws an error on a double.
+	 * Changed in release 7.0.0 to return a float, as the server requires a float and throws an error on a double.
 	 */
     PlanSearchOptions withQualityWeight(XsFloatVal qualityWeight);
     PlanSearchOptions withScoreMethod(ScoreMethod scoreMethod);
 	/**
-	 * @since 6.7.0
+	 * @since 7.0.0
 	 */
 	PlanSearchOptions withBm25LengthWeight(double bm25LengthWeight);
     enum ScoreMethod {
