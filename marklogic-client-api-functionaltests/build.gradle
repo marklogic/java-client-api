@@ -1,4 +1,4 @@
-// Copyright (c) 2022 MarkLogic Corporation
+// Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
 
 test {
 	useJUnitPlatform()
@@ -24,15 +24,11 @@ dependencies {
   implementation 'org.slf4j:slf4j-api:1.7.36'
   implementation 'commons-io:commons-io:2.11.0'
   implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-  implementation 'com.fasterxml.jackson.core:jackson-core:2.15.3'
-  implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.3'
+  implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+  implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
   implementation "org.jdom:jdom2:2.0.6.1"
-  implementation "com.marklogic:ml-app-deployer:4.6.1"
-
-	if (JavaVersion.current().isJava9Compatible()) {
-		implementation 'javax.xml.bind:jaxb-api:2.3.1'
-		implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.8'
-		implementation 'org.glassfish.jaxb:jaxb-core:2.3.0.1'
+  implementation ("com.marklogic:ml-app-deployer:4.8.0") {
+		exclude module: "marklogic-client-api"
 	}
 
   testImplementation 'ch.qos.logback:logback-classic:1.3.14'

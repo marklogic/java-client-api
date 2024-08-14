@@ -1,25 +1,14 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.example.cookbook;
+
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 
 /**
  * Utilities to support and simplify examples.
@@ -37,7 +26,6 @@ public class Util {
     public String         readerPassword;
     public String         writerUser;
     public String         writerPassword;
-    public Authentication authType;
     public String         jdbcUrl;
     public String         jdbcUser;
     public String         jdbcPassword;
@@ -52,14 +40,23 @@ public class Util {
       readerPassword = props.getProperty("example.reader_password");
       writerUser     = props.getProperty("example.writer_user");
       writerPassword = props.getProperty("example.writer_password");
-      authType       = Authentication.valueOf(
-        props.getProperty("example.authentication_type").toUpperCase()
-      );
       jdbcUrl = props.getProperty("example.jdbc.url");
       jdbcUser = props.getProperty("example.jdbc.user");
       jdbcPassword = props.getProperty("example.jdbc.password");
     }
   }
+
+  public static DatabaseClient newClient(ExampleProperties props) {
+	  return DatabaseClientFactory.newClient(props.host, props.port,
+		  new DatabaseClientFactory.DigestAuthContext(props.writerUser, props.writerPassword)
+	  );
+  }
+
+	public static DatabaseClient newAdminClient(ExampleProperties props) {
+		return DatabaseClientFactory.newClient(props.host, props.port,
+			new DatabaseClientFactory.DigestAuthContext(props.adminUser, props.adminPassword)
+		);
+	}
 
   /**
    * Read the configuration properties for the example from the file

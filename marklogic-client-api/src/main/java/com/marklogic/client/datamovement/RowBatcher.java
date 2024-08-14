@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.datamovement;
 
@@ -122,7 +110,7 @@ public interface RowBatcher<T> extends Batcher {
      * Specifies the plan for getting rows from a view
      * with PlanBuilder.
      * @see RowManager#newPlanBuilder()
-     * @see PlanBuilder#fromView(String, String) 
+     * @see PlanBuilder#fromView(String, String)
      * @param viewPlan the PlanBuilder view providing the rows exported by the RowBatcher
      * @return the RowBatcher for chaining other initializations
      */
@@ -130,7 +118,7 @@ public interface RowBatcher<T> extends Batcher {
     /**
      * Specifies the plan for getting rows from a view
      * from a serialized AST in JSON format.
-     * @see RowManager#newRawPlanDefinition(JSONWriteHandle) 
+     * @see RowManager#newRawPlanDefinition(JSONWriteHandle)
      * @param viewPlan the raw AST for the rows exported by the RowBatcher
      * @return the RowBatcher for chaining other initializations
      */
@@ -138,7 +126,7 @@ public interface RowBatcher<T> extends Batcher {
     /**
      * Specifies the plan for getting rows from a view
      * from a serialized Query DSL in JavaScript format.
-     * @see RowManager#newRawQueryDSLPlan(TextWriteHandle) 
+     * @see RowManager#newRawQueryDSLPlan(TextWriteHandle)
      * @param viewPlan the raw Query DSL for the rows exported by the RowBatcher
      * @return the RowBatcher for chaining other initializations
      */

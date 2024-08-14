@@ -1,8 +1,9 @@
 package com.marklogic.client.test.rows;
 
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.test.junit5.RequiresML12;
 import com.marklogic.client.test.junit5.RequiresMLElevenDotOne;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -57,30 +58,34 @@ public class NewOpticMethodsInElevenDotOneTest extends AbstractOpticUpdateTest {
 	}
 
 	@Test
-	@Disabled("See DBQ-643")
+	// Fixed via MLE-55
+	@ExtendWith(RequiresML12.class)
 	void documentRootQuery() {
 		List<RowRecord> rows = resultRows(op
-			.fromDocUris(op.cts.documentRootQuery("suggest"))
+			.fromDocUris(op.cts.documentRootQuery("musician"))
 		);
 
-		assertEquals(2, rows.size());
-		assertEquals("/sample/suggestion.xml", rows.get(0).get("uri"));
-		assertEquals("/sample2/suggestion.xml", rows.get(1).get("uri"));
+		assertEquals(4, rows.size());
 	}
 
 	@Test
-	@Disabled("See DBQ-643")
+	// Fixed via MLE-55
+	@ExtendWith(RequiresML12.class)
 	void documentFormatQuery() {
 		List<RowRecord> rows = resultRows(op
-			.fromDocUris(op.cts.documentFormatQuery("text"))
+			.fromDocUris(op.cts.andQuery(
+				op.cts.documentFormatQuery("text"),
+				op.cts.collectionQuery("document-format-query-test")
+			))
 		);
 
 		assertEquals(1, rows.size());
-		assertEquals("/sample/second.txt", rows.get(0).get("uri"));
+		assertEquals("/sample/second.txt", ((TextNode) rows.get(0).get("uri")).asText());
 	}
 
 	@Test
-	@Disabled("See DBQ-643")
+	// Fixed via MLE-55
+	@ExtendWith(RequiresML12.class)
 	void documentPermissionQuery() {
 		List<RowRecord> rows = resultRows(op
 			.fromDocUris(op.cts.documentPermissionQuery("rest-reader", "read"))

@@ -1,10 +1,10 @@
 xquery version "1.0-ml";
 
-(: Copyright (c) 2022 MarkLogic Corporation :)
+(: Copyright © 2024 MarkLogic Corporation. All Rights Reserved. :)
 
 module namespace dictionary = "http://marklogic.com/rest-api/resource/dictionary";
 
-import module namespace spell = "http://marklogic.com/xdmp/spell" 
+import module namespace spell = "http://marklogic.com/xdmp/spell"
           at "/MarkLogic/spell.xqy";
 
 declare default function namespace "http://www.w3.org/2005/xpath-functions";

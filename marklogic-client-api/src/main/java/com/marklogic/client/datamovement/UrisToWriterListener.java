@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.datamovement;
 
@@ -67,7 +55,6 @@ public class UrisToWriterListener implements QueryBatchListener {
   private String suffix = "\n";
   private String prefix;
   private List<OutputListener> outputListeners = new ArrayList<>();
-  private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
   private List<BatchFailureListener<QueryBatch>> queryBatchFailureListeners = new ArrayList<>();
 
   public UrisToWriterListener(Writer writer) {
@@ -124,13 +111,6 @@ public class UrisToWriterListener implements QueryBatchListener {
         }
       }
     } catch (Throwable t) {
-      for ( BatchFailureListener<Batch<String>> listener : failureListeners ) {
-        try {
-          listener.processFailure(batch, t);
-        } catch (Throwable t2) {
-          logger.error("Exception thrown by an onBatchFailure listener", t2);
-        }
-      }
       for ( BatchFailureListener<QueryBatch> queryBatchFailureListener : queryBatchFailureListeners ) {
         try {
           queryBatchFailureListener.processFailure(batch, t);
@@ -153,21 +133,6 @@ public class UrisToWriterListener implements QueryBatchListener {
 
   public UrisToWriterListener onGenerateOutput(OutputListener listener) {
     outputListeners.add(listener);
-    return this;
-  }
-
-  /**
-   * When a batch fails or a callback throws an Exception, run this listener
-   * code.  Multiple listeners can be registered with this method.
-   *
-   * @param listener the code to run when a failure occurs
-   *
-   * @return this instance for method chaining
-   * @deprecated  use {@link #onFailure(BatchFailureListener)}
-   */
-  @Deprecated
-  public UrisToWriterListener onBatchFailure(BatchFailureListener<Batch<String>> listener) {
-    failureListeners.add(listener);
     return this;
   }
 

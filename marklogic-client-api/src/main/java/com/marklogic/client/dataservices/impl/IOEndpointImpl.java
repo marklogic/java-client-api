@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.dataservices.impl;
 
@@ -78,11 +66,6 @@ abstract class IOEndpointImpl<I,O> implements IOEndpoint {
     }
     BaseCallerImpl.ParamdefImpl getEndpointStateParamdef() {
         return getCaller().getEndpointStateParamdef();
-    }
-    @Override
-    @Deprecated
-    public boolean allowsWorkUnit() {
-        return (getEndpointConstantsParamdef() != null);
     }
     @Override
     public boolean allowsEndpointConstants() {
@@ -199,67 +182,12 @@ abstract class IOEndpointImpl<I,O> implements IOEndpoint {
         boolean allowsEndpointState() {
             return callContext.getEndpoint().allowsEndpointState();
         }
-        @Override
-        @Deprecated
-        public InputStream getEndpointState() {
-            checkCallContext();
-            return new ByteArrayInputStream(callContext.getEndpointState().get());
-        }
-        @Override
-        @Deprecated
-        public void setEndpointState(byte[] endpointState) {
-            checkCallContext();
-            if (allowsEndpointState())
-                callContext.withEndpointStateAs(endpointState);
-            else if (endpointState != null)
-                throw new IllegalArgumentException("endpoint state not accepted by endpoint: "+
-                        callContext.getEndpoint().getEndpointPath());
-        }
-        @Override
-        @Deprecated
-        public void setEndpointState(InputStream endpointState) {
-            setEndpointState(NodeConverter.InputStreamToBytes(endpointState));
-        }
-        @Override
-        @Deprecated
-        public void setEndpointState(BufferableHandle endpointState) {
-            setEndpointState((endpointState == null) ? null : endpointState.toBuffer());
-        }
-
         boolean allowsEndpointConstants() {
             checkCallContext();
             return callContext.getEndpoint().allowsEndpointConstants();
         }
 
-        @Override
-        @Deprecated
-        public InputStream getWorkUnit() {
-            checkCallContext();
-            return new ByteArrayInputStream(callContext.getEndpointConstants().get());
-        }
-        @Override
-        @Deprecated
-        public void setWorkUnit(byte[] workUnit) {
-            checkCallContext();
-            if (allowsEndpointConstants())
-                callContext.withEndpointConstantsAs(workUnit);
-            else if (workUnit != null)
-                throw new IllegalArgumentException(callContext.getEndpointConstantsParamName()+
-                        " parameter not accepted by endpoint: "+callContext.getEndpoint().getEndpointPath());
-        }
-        @Override
-        @Deprecated
-        public void setWorkUnit(InputStream workUnit) {
-            setWorkUnit(NodeConverter.InputStreamToBytes(workUnit));
-        }
-        @Override
-        @Deprecated
-        public void setWorkUnit(BufferableHandle workUnit) {
-            setWorkUnit((workUnit == null) ? null : workUnit.toBuffer());
-        }
-
-
-        boolean allowsSession() {
+		boolean allowsSession() {
             return callContext.getEndpoint().allowsSession();
         }
         SessionState getSession() {

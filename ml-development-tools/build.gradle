@@ -1,4 +1,4 @@
-// Copyright (c) 2022 MarkLogic Corporation
+// Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
 
 plugins {
 	id "groovy"
@@ -12,14 +12,8 @@ dependencies {
 	compileOnly gradleApi()
 	implementation project(':marklogic-client-api')
 	implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.15.3'
+	implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
 	implementation 'com.networknt:json-schema-validator:1.0.88'
-
-	if (JavaVersion.current().isJava9Compatible()) {
-		implementation 'javax.xml.bind:jaxb-api:2.3.1'
-		implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.8'
-		implementation 'org.glassfish.jaxb:jaxb-core:2.3.0.1'
-	}
 
 	// Not yet migrating this project to JUnit 5. Will reconsider it once we have a reason to enhance
 	// this project.

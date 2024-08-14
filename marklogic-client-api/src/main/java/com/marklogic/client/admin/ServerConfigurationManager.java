@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.admin;
 
@@ -160,14 +148,6 @@ public interface ServerConfigurationManager {
    * @return	a new manager for query options
    */
   QueryOptionsManager        newQueryOptionsManager();
- /**
-  * Deprecated. To configure namespaces on a MarkLogic server, use Management REST API.
-  * @return	a new manager for namespace bindings
-  *
-  * See <a href="https://docs.marklogic.com/REST/management/app-servers">Management REST API</a>
-  */
-  @Deprecated
-  NamespacesManager newNamespacesManager();
   /**
    * Creates a manager for listing, reading, writing, and deleting
    * resource service extensions.

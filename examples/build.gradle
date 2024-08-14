@@ -1,15 +1,10 @@
-// Copyright (c) 2022 MarkLogic Corporation
+// Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
 
 plugins {
 	id "java-library"
 }
 
 dependencies {
-	if (JavaVersion.current().isJava9Compatible()) {
-		implementation 'javax.xml.bind:jaxb-api:2.3.1'
-		implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.2'
-		implementation 'org.glassfish.jaxb:jaxb-core:2.3.0.1'
-	}
 	implementation project(':marklogic-client-api')
 
 	// Forcing usage of 3.4.0 instead of 3.2.0 to address vulnerability - https://security.snyk.io/vuln/SNYK-JAVA-COMSQUAREUPOKIO-5820002
@@ -21,7 +16,7 @@ dependencies {
 	api 'com.squareup.okhttp3:okhttp:4.11.0'
 	api 'io.github.rburgst:okhttp-digest:2.7'
 	api 'org.slf4j:slf4j-api:1.7.36'
-	api 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+	api "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
 
 	// hsqldb < 2.7 has a High CVE - https://nvd.nist.gov/vuln/detail/CVE-2022-41853 .
 	// And hsqldb 2.6+ requires Java 11+. So this is ignored, along with the associated test,
@@ -35,5 +30,4 @@ dependencies {
 	api 'com.opencsv:opencsv:4.6'
 	api 'org.springframework:spring-jdbc:5.3.29'
 	api 'org.apache.commons:commons-lang3:3.12.0'
-	api 'org.apache.httpcomponents:httpclient:4.5.14'
 }

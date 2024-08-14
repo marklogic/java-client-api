@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.pojo;
 
@@ -42,19 +30,19 @@ import java.io.Serializable;
  *    }
  *    ...
  *    DatabaseClient client = ...;
- *    PojoRepository&lt;MyClass, Integer&gt; myClassRepo = 
+ *    PojoRepository&lt;MyClass, Integer&gt; myClassRepo =
  *        client.newPojoRepository(MyClass.class, Integer.class);</pre>
  *
  * <p>Where MyClass is your custom pojo type, and myId is the bean property of type Integer
- * marked with the 
- * {@literal @}{@link Id Id annotation}.  The 
- * {@literal @}Id annotation can be attached to a public field or a public getter or a 
- * public setter.  The bean property marked with {@literal @}Id must be a native type or 
- * {@link java.io.Serializable} class and must contain an 
+ * marked with the
+ * {@literal @}{@link Id Id annotation}.  The
+ * {@literal @}Id annotation can be attached to a public field or a public getter or a
+ * public setter.  The bean property marked with {@literal @}Id must be a native type or
+ * {@link java.io.Serializable} class and must contain an
  * identifier value unique across all persisted instances of that
  * type or the instance will overwrite the persisted instance with the same identifier.</p>
  *
- * <p>The current implementation of the Pojo Facade uses 
+ * <p>The current implementation of the Pojo Facade uses
  * <a href="https://github.com/FasterXML/jackson-databind/">Jackson databind</a>
  * for serialization and deserialization to and from json.  Thus only classes which
  * can be serialized and deserialized directly by Jackson can be serialized by the

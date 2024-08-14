@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2023 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -183,9 +171,13 @@ public class DatabaseClientPropertySource {
 	}
 
 	private String getRequiredStringValue(String propertyName) {
+		return getRequiredStringValue(propertyName, String.format("%s must be of type String", propertyName));
+	}
+
+	private String getRequiredStringValue(String propertyName, String errorMessage) {
 		Object value = propertySource.apply(PREFIX + propertyName);
 		if (value == null || !(value instanceof String)) {
-			throw new IllegalArgumentException(propertyName + " must be of type String");
+			throw new IllegalArgumentException(errorMessage);
 		}
 		return (String) value;
 	}
@@ -204,13 +196,15 @@ public class DatabaseClientPropertySource {
 
 	private DatabaseClientFactory.SecurityContext newBasicAuthContext() {
 		return new DatabaseClientFactory.BasicAuthContext(
-			getRequiredStringValue("username"), getRequiredStringValue("password")
+			getRequiredStringValue("username", "Must specify a username when using basic authentication."),
+			getRequiredStringValue("password", "Must specify a password when using basic authentication.")
 		);
 	}
 
 	private DatabaseClientFactory.SecurityContext newDigestAuthContext() {
 		return new DatabaseClientFactory.DigestAuthContext(
-			getRequiredStringValue("username"), getRequiredStringValue("password")
+			getRequiredStringValue("username", "Must specify a username when using digest authentication."),
+			getRequiredStringValue("password", "Must specify a password when using digest authentication.")
 		);
 	}
 

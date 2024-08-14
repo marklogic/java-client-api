@@ -1,27 +1,9 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.example.extension;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -37,6 +19,10 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * BatchManagerExample illustrates executing a batch of document read, write,
@@ -54,23 +40,16 @@ public class BatchManagerExample {
     throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     System.out.println("example: "+BatchManagerExample.class.getName());
-
-    installResourceExtension(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
-
-    useResource(props.host, props.port,
-      props.writerUser, props.writerPassword, props.authType);
-
-    tearDownExample(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
+    installResourceExtension(props);
+    useResource(props);
+    tearDownExample(props);
   }
 
   // install the resource extension on the server
-  public static void installResourceExtension(String host, int port, String user, String password, Authentication authType)
+  public static void installResourceExtension(ExampleProperties props)
     throws IOException
   {
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+	  DatabaseClient client = Util.newAdminClient(props);
 
     // create a manager for resource extensions
     ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
@@ -102,11 +81,10 @@ public class BatchManagerExample {
   }
 
   // use the resource manager
-  public static void useResource(String host, int port, String user, String password, Authentication authType)
+  public static void useResource(ExampleProperties props)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+	  DatabaseClient client = Util.newClient(props);
 
     setUpExample(client);
 
@@ -183,11 +161,10 @@ public class BatchManagerExample {
     docMgr.write("/batch/delete1.xml", handle.with("<delete1/>"));
   }
 
-  // clean up by deleting the example resource extension
-  public static void tearDownExample(String host, int port, String user, String password, Authentication authType)
+  public static void tearDownExample(ExampleProperties props)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+	  DatabaseClient client = Util.newAdminClient(props);
 
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
     docMgr.delete("/batch/read1.xml");

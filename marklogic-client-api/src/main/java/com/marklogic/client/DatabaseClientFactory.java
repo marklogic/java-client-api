@@ -1,28 +1,23 @@
 /*
- * Copyright (c) 2023 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client;
 
+import com.marklogic.client.extra.httpclient.HttpClientConfigurator;
+import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
+import com.marklogic.client.impl.*;
+import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
+import okhttp3.OkHttpClient;
+
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
+import javax.net.ssl.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
@@ -30,26 +25,6 @@ import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
-
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
-import com.marklogic.client.impl.*;
-import okhttp3.OkHttpClient;
-
-import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
-import com.marklogic.client.extra.httpclient.HttpClientConfigurator;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
 
 /**
  * A Database Client Factory configures a database client for making
@@ -61,43 +36,6 @@ public class DatabaseClientFactory {
 
   static private HandleFactoryRegistry handleRegistry =
     HandleFactoryRegistryImpl.newDefault();
-
-  /**
-   * Authentication enumerates the methods for verifying a user and
-   * password with the database.
-   * @deprecated (as of 4.0.1) use BasicAuthContext, DigestAuthContext and KerberosAuthContext classes
-   */
-  @Deprecated
-  public enum Authentication {
-    /**
-     * Minimal security unless used with SSL.
-     */
-    BASIC,
-    /**
-     * Moderate security without SSL.
-     */
-    DIGEST,
-    /**
-     * Authentication using Kerberos.
-     */
-    KERBEROS,
-    /**
-     * Authentication using Certificates;
-     */
-    CERTIFICATE,
-	/**
-	 * Authentication using SAML;
-	 */
-	SAML;
-    /**
-     * Returns the enumerated value for the case-insensitive name.
-     * @param name	the name of the enumerated value
-     * @return	the enumerated value
-     */
-    static public Authentication valueOfUncased(String name) {
-      return Authentication.valueOf(name.toUpperCase());
-    }
-  }
 
   /**
    * An SSLHostnameVerifier checks whether a hostname is acceptable during SSL
@@ -325,15 +263,7 @@ public class DatabaseClientFactory {
 	   */
 	  X509TrustManager getTrustManager();
 
-    /**
-     * Set the context without a trust manager
-     * @param context - the SSLContext object required for the SSL connection
-     * @deprecated	(as of 4.0.1) use SecurityContext.withSSLContext(SSLContext,X509TrustManager)
-     */
-    @Deprecated
-    void setSSLContext(SSLContext context);
-
-    /*
+   	/*
      * Returns the host verifier.
      * @return	the host verifier
      */
@@ -345,15 +275,6 @@ public class DatabaseClientFactory {
      * @param verifier	the host verifier
      */
     void setSSLHostnameVerifier(SSLHostnameVerifier verifier);
-
-    /**
-     * Set the context without a trust manager
-     * @param context - the SSLContext object required for the SSL connection
-     * @deprecated	(as of 4.0.1) use SecurityContext.withSSLContext(SSLContext,X509TrustManager)
-     * @return a context containing authentication information
-     */
-    @Deprecated
-    SecurityContext withSSLContext(SSLContext context);
 
     /**
      * The SSLContext should be initialized with KeyManager and TrustManager
@@ -401,12 +322,6 @@ public class DatabaseClientFactory {
     }
 
     @Override
-    @Deprecated
-    public void setSSLContext(SSLContext context) {
-      this.sslContext = context;
-    }
-
-    @Override
     public SSLHostnameVerifier getSSLHostnameVerifier() {
       return sslVerifier;
     }
@@ -419,13 +334,6 @@ public class DatabaseClientFactory {
 	public X509TrustManager getTrustManager() {
 		return this.trustManager;
 	}
-
-    @Override
-    @Deprecated
-    public SecurityContext withSSLContext(SSLContext context) {
-      this.sslContext = context;
-      return this;
-    }
 
     @Override
     public SecurityContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
@@ -565,13 +473,6 @@ public class DatabaseClientFactory {
     }
 
     @Override
-    @Deprecated
-    public BasicAuthContext withSSLContext(SSLContext context) {
-      this.sslContext = context;
-      return this;
-    }
-
-    @Override
     public BasicAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
       this.sslContext = context;
       this.trustManager = trustManager;
@@ -600,13 +501,6 @@ public class DatabaseClientFactory {
 
     public String getPassword() {
       return password;
-    }
-
-    @Override
-    @Deprecated
-    public DigestAuthContext withSSLContext(SSLContext context) {
-      this.sslContext = context;
-      return this;
     }
 
     @Override
@@ -643,13 +537,6 @@ public class DatabaseClientFactory {
     public KerberosAuthContext(KerberosConfig krbConfig) {
 
       krbOptions = Collections.unmodifiableMap(krbConfig.toOptions());
-    }
-
-    @Override
-    @Deprecated
-    public KerberosAuthContext withSSLContext(SSLContext context) {
-      this.sslContext = context;
-      return this;
     }
 
     @Override
@@ -829,13 +716,6 @@ public class DatabaseClientFactory {
 			return sslContext;
 		}
 
-		@Override
-        @Deprecated
-		public void setSSLContext(SSLContext context) {
-			this.sslContext = context;
-
-		}
-
       /**
        * Gets the hostname verifier when using SSL.
        * @return the hostname verifier used for authentication
@@ -848,14 +728,6 @@ public class DatabaseClientFactory {
 		@Override
 		public void setSSLHostnameVerifier(SSLHostnameVerifier verifier) {
 			this.sslVerifier = verifier;
-
-		}
-
-		@Override
-        @Deprecated
-		public SecurityContext withSSLContext(SSLContext context) {
-			this.sslContext = context;
-			return this;
 		}
 	}
 
@@ -1043,21 +915,8 @@ public class DatabaseClientFactory {
   public static class CertificateAuthContext extends AuthContext {
     String certFile;
     String certPassword;
-    /**
-     * Creates a CertificateAuthContext by initializing the SSLContext
-     * of the HTTPS channel with the SSLContext object passed. The KeyManager of
-     * the SSLContext should be initialized with the appropriate client
-     * certificate and client's private key
-     * @param context the SSLContext with which we initialize the
-     *				  CertificateAuthContext
-     * @deprecated	(as of 4.0.1) use CertificateAuthContext(SSLContext,X509TrustManager)
-     */
-    @Deprecated
-    public CertificateAuthContext(SSLContext context) {
-      this.sslContext = context;
-    }
 
-    /**
+	/**
      * Creates a CertificateAuthContext by initializing the SSLContext of the
      * HTTPS channel with the SSLContext object passed and using the TrustManger
      * passed. The KeyManager of the SSLContext should be initialized with the
@@ -1071,23 +930,6 @@ public class DatabaseClientFactory {
     public CertificateAuthContext(SSLContext context, X509TrustManager trustManager) {
       this.sslContext = context;
       this.trustManager = trustManager;
-    }
-
-    /**
-     * Creates a CertificateAuthContext by initializing the SSLContext
-     * of the HTTPS channel with the SSLContext object passed and assigns the
-     * SSLHostnameVerifier passed to be used for checking host names. The KeyManager of
-     * the SSLContext should be initialized with the appropriate client
-     * certificate and client's private key
-     * @param context the SSLContext with which we initialize the
-     *				  CertificateAuthContext
-     * @param verifier a callback for checking host names
-     * @deprecated	(as of 4.0.1) use CertificateAuthContext(SSLContext,SSLHostnameVerifier,X509TrustManager)
-     */
-    @Deprecated
-    public CertificateAuthContext(SSLContext context, SSLHostnameVerifier verifier) {
-      this.sslContext = context;
-      this.sslVerifier = verifier;
     }
 
     /**
@@ -1107,34 +949,6 @@ public class DatabaseClientFactory {
       this.sslContext = context;
       this.sslVerifier = verifier;
       this.trustManager = trustManager;
-    }
-
-    /**
-     * Creates a CertificateAuthContext with a PKCS12 file. The SSLContext is
-     * created from the information in the PKCS12 file. This constructor should
-     * be called when the export password of the PKCS12 file is empty.
-     *
-     * @param certFile the p12 file which contains the client's private key and
-     *          the client's certificate chain
-     * @throws CertificateException if any of the certificates in the certFile
-     *           cannot be loaded
-     * @throws UnrecoverableKeyException if the certFile has an export password
-     * @throws KeyManagementException if initializing the SSLContext with the
-     *           KeyManager fails
-     * @throws IOException if there is an I/O or format problem with the
-     *           keystore data, if a password is required but not given, or if
-     *           the given password was incorrect or if the certFile path is
-     *           invalid or if the file is not found If the error is due to a
-     *           wrong password, the cause of the IOException should be an
-     *           UnrecoverableKeyException.
-     */
-    @Deprecated
-    public CertificateAuthContext(String certFile)
-      throws CertificateException, IOException,
-      UnrecoverableKeyException, KeyManagementException {
-      this.certFile = certFile;
-      this.certPassword = "";
-      this.sslContext = createSSLContext();
     }
 
     /**
@@ -1167,30 +981,6 @@ public class DatabaseClientFactory {
         this.sslContext = createSSLContext();
       }
 
-    /**
-     * Creates a CertificateAuthContext with a PKCS12 file. The SSLContext
-     * is created from the information in the PKCS12 file. This constructor
-     * should be called when the export password of the PKCS12 file is non-empty.
-     * @param certFile the p12 file which contains the client's private key
-     * 					and the client's certificate chain
-     * @param certPassword the export password of the p12 file
-     * @throws CertificateException if any of the certificates in the certFile cannot be loaded
-     * @throws UnrecoverableKeyException if the certFile has an export password
-     * @throws KeyManagementException if initializing the SSLContext with the KeyManager fails
-     * @throws IOException if there is an I/O or format problem with the keystore data,
-     *                     if a password is required but not given, or if the given password was
-     *                     incorrect or if the certFile path is invalid or if the file is not found
-     *                     If the error is due to a wrong password, the cause of the IOException
-     *                     should be an UnrecoverableKeyException.
-     */
-    @Deprecated
-    public CertificateAuthContext(String certFile, String certPassword)
-      throws CertificateException, IOException,
-      UnrecoverableKeyException, KeyManagementException {
-      this.certFile = certFile;
-      this.certPassword = certPassword;
-      this.sslContext = createSSLContext();
-    }
     /**
      * Creates a CertificateAuthContext with a PKCS12 file. The SSLContext
      * is created from the information in the PKCS12 file. This constructor
@@ -1457,133 +1247,6 @@ public class DatabaseClientFactory {
       return client;
   }
 
-
-  static private SecurityContext makeSecurityContext(String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
-    if ( Authentication.BASIC == type ) {
-      return new BasicAuthContext(user, password)
-        .withSSLContext(context)
-        .withSSLHostnameVerifier(verifier);
-    } else if ( Authentication.DIGEST == type ) {
-      return new DigestAuthContext(user, password)
-        .withSSLContext(context)
-        .withSSLHostnameVerifier(verifier);
-    } else {
-      throw new IllegalStateException("makeSecurityContext should only be called with BASIC or DIGEST Authentication");
-    }
-  }
-
-  /**
-   * Creates a client to access the database by means of a REST server.
-   *
-   * @param host	the host with the REST server
-   * @param port	the port for the REST server
-   * @param user	the user with read, write, or administrative privileges
-   * @param password	the password for the user
-   * @param type	the type of authentication applied to the request
-   * @return	a new client for making database requests
-   * @deprecated	(as of 4.0.1) use {@link #newClient(String host, int port, SecurityContext securityContext)}
-   */
-  @Deprecated
-  static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type) {
-    return newClient(host, port, null, makeSecurityContext(user, password, type, null, null), null);
-  }
-  /**
-   * Creates a client to access the database by means of a REST server.
-   *
-   * A data service interface can only call an endpoint for the configured content database
-   * of the appserver. You cannot specify the database when constructing a client for working
-   * with a data service.
-   *
-   * @param host	the host with the REST server
-   * @param port	the port for the REST server
-   * @param database	the database to access (default: configured database for the REST server)
-   * @param user	the user with read, write, or administrative privileges
-   * @param password	the password for the user
-   * @param type	the type of authentication applied to the request
-   * @return	a new client for making database requests
-   * @deprecated	(as of 4.0.1) use {@link #newClient(String host, int port, String database, SecurityContext securityContext)}
-   */
-  @Deprecated
-  static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type) {
-    return newClient(host, port, database, makeSecurityContext(user, password, type, null, null), null);
-  }
-  /**
-   * Creates a client to access the database by means of a REST server.
-   *
-   * @param host	the host with the REST server
-   * @param port	the port for the REST server
-   * @param user	the user with read, write, or administrative privileges
-   * @param password	the password for the user
-   * @param type	the type of authentication applied to the request
-   * @param context	the SSL context for authenticating with the server
-   * @return	a new client for making database requests
-   * @deprecated	(as of 4.0.1) use {@link #newClient(String host, int port, SecurityContext securityContext)}
-   */
-  @Deprecated
-  static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context) {
-    return newClient(host, port, null, makeSecurityContext(user, password, type, context, SSLHostnameVerifier.COMMON), null);
-  }
-  /**
-   * Creates a client to access the database by means of a REST server.
-   *
-   * A data service interface can only call an endpoint for the configured content database
-   * of the appserver. You cannot specify the database when constructing a client for working
-   * with a data service.
-   *
-   * @param host	the host with the REST server
-   * @param port	the port for the REST server
-   * @param database	the database to access (default: configured database for the REST server)
-   * @param user	the user with read, write, or administrative privileges
-   * @param password	the password for the user
-   * @param type	the type of authentication applied to the request
-   * @param context	the SSL context for authenticating with the server
-   * @return	a new client for making database requests
-   * @deprecated	(as of 4.0.1) use {@link #newClient(String host, int port, String database, SecurityContext securityContext)}
-   */
-  @Deprecated
-  static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context) {
-    return newClient(host, port, database, makeSecurityContext(user, password, type, context, SSLHostnameVerifier.COMMON), null);
-  }
-  /**
-   * Creates a client to access the database by means of a REST server.
-   *
-   * @param host	the host with the REST server
-   * @param port	the port for the REST server
-   * @param user	the user with read, write, or administrative privileges
-   * @param password	the password for the user
-   * @param type	the type of authentication applied to the request
-   * @param context	the SSL context for authenticating with the server
-   * @param verifier	a callback for checking hostnames
-   * @return	a new client for making database requests
-   * @deprecated	(as of 4.0.1) use {@link #newClient(String host, int port, SecurityContext securityContext)}
-   */
-  @Deprecated
-  static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
-    return newClient(host, port, null, makeSecurityContext(user, password, type, context, verifier), null);
-  }
-  /**
-   * Creates a client to access the database by means of a REST server.
-   *
-   * A data service interface can only call an endpoint for the configured content database
-   * of the appserver. You cannot specify the database when constructing a client for working
-   * with a data service.
-   *
-   * @param host	the host with the REST server
-   * @param port	the port for the REST server
-   * @param database	the database to access (default: configured database for the REST server)
-   * @param user	the user with read, write, or administrative privileges
-   * @param password	the password for the user
-   * @param type	the type of authentication applied to the request
-   * @param context	the SSL context for authenticating with the server
-   * @param verifier	a callback for checking hostnames
-   * @return	a new client for making database requests
-   * @deprecated	(as of 4.0.1) use {@link #newClient(String host, int port, String database, SecurityContext securityContext)}
-   */
-  @Deprecated
-  static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
-    return newClient(host, port, database, makeSecurityContext(user, password, type, context, verifier), null);
-  }
-
   /**
    * Returns the default registry with factories for creating handles
    * as adapters for IO representations. To create custom registries,
@@ -1642,24 +1305,6 @@ public class DatabaseClientFactory {
   /**
    * A Database Client Factory Bean provides an object for specifying configuration
    * before creating a client to make database requests.
-   *
-   * <p>For instance, a Spring configuration file might resemble the following
-   * example:</p>
-   * <pre>
-   * &lt;bean name="databaseClientFactory"
-   * 	   class="com.marklogic.client.DatabaseClientFactory.Bean"&gt;
-   *   &lt;property name="host"                value="localhost"/&gt;
-   *   &lt;property name="port"                value="8012"/&gt;
-   *   &lt;property name="user"                value="rest-writer-user"/&gt;
-   *   &lt;property name="password"            value="rest-writer-password"/&gt;
-   *   &lt;property name="authenticationValue" value="digest"/&gt;
-   * &lt;/bean&gt;
-   *
-   * &lt;bean name="databaseClient"
-   * 	   class="com.marklogic.client.DatabaseClient"
-   * 	   factory-bean="databaseClientFactory"
-   * 	   factory-method="newClient"/&gt;
-   * </pre>
    */
   static public class Bean implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -1668,18 +1313,10 @@ public class DatabaseClientFactory {
     private           int                   port;
     private String basePath;
     private           String                database;
-    private           String                user;
-    private           String                password;
-    private           Authentication        authentication;
-    private           String                externalName;
     private           DatabaseClient.ConnectionType connectionType;
-
     transient private SecurityContext       securityContext;
     transient private HandleFactoryRegistry handleRegistry =
       HandleFactoryRegistryImpl.newDefault();
-    transient private SSLContext            context;
-    transient private SSLHostnameVerifier   verifier;
-
 
     /**
      * Zero-argument constructor for bean applications. Other
@@ -1744,96 +1381,6 @@ public class DatabaseClientFactory {
       }
 
       /**
-     * Returns the user authentication for clients created with a
-     * DatabaseClientFactory.Bean object.
-     * @return	the user
-     * @deprecated	(as of 4.0.1) use SecurityContext.getUser() with BasicAuthContext or DigestAuthContext
-     */
-    @Deprecated
-    public String getUser() {
-      return user;
-    }
-    /**
-     * Specifies the user authentication for clients created with a
-     * DatabaseClientFactory.Bean object.
-     * @param user	the user
-     * @deprecated	(as of 4.0.1) use constructors for BasicAuthContext or DigestAuthContext
-     */
-    @Deprecated
-    public void setUser(String user) {
-      this.user = user;
-    }
-    /**
-     * Returns the password authentication for clients created with a
-     * DatabaseClientFactory.Bean object.
-     * @return	the password
-     * @deprecated	(as of 4.0.1) use SecurityContext.getUser() with BasicAuthContext or DigestAuthContext
-     */
-    @Deprecated
-    public String getPassword() {
-      return password;
-    }
-    /**
-     * Specifies the password authentication for clients created with a
-     * DatabaseClientFactory.Bean object.
-     * @param password	the password
-     * @deprecated	(as of 4.0.1) use constructors for BasicAuthContext or DigestAuthContext
-     */
-    @Deprecated
-    public void setPassword(String password) {
-      this.password = password;
-    }
-    /**
-     * Returns the external name for Kerberos clients created with a
-     * DatabaseClientFactory.Bean object.
-     * @return	the external name
-	 * @deprecated	(as of 6.1.0, though has never had any impact)
-     */
-	@Deprecated
-    public String getExternalName() {
-      return externalName;
-    }
-    /**
-     * Specifies the external name for Kerberos clients created with a
-     * DatabaseClientFactory.Bean object.
-     * @param externalName	the external name
-	 * @deprecated	(as of 6.1.0, though has never had any impact)
-     */
-	@Deprecated
-    public void setExternalName(String externalName) {
-      this.externalName = externalName;
-    }
-    /**
-     * Returns the authentication type for clients created with a
-     * DatabaseClientFactory.Bean object.
-     * @return	the authentication type
-     * @deprecated	(as of 4.0.1) use instanceof on any SecurityContext to get its type
-     */
-    @Deprecated
-    public Authentication getAuthentication() {
-      return authentication;
-    }
-    /**
-     * Specifies the authentication type for clients created with a
-     * DatabaseClientFactory.Bean object.
-     * @param authentication	the authentication type
-     * @deprecated	(as of 4.0.1) use constructor for any SecurityContext
-     */
-    @Deprecated
-    public void setAuthentication(Authentication authentication) {
-      this.authentication = authentication;
-    }
-    /**
-     * Specifies the authentication type for clients created with a
-     * DatabaseClientFactory.Bean object based on a string value.
-     * @param authentication	the authentication type
-     * @deprecated	(as of 4.0.1) use constructor for any SecurityContext
-     */
-    @Deprecated
-    public void setAuthenticationValue(String authentication) {
-      this.authentication = Authentication.valueOfUncased(authentication);
-    }
-    /**
      * Returns the database for clients created with a
      * DatabaseClientFactory.Bean object.
      * @return	the database
@@ -1853,48 +1400,6 @@ public class DatabaseClientFactory {
      */
     public void setDatabase(String database) {
       this.database = database;
-    }
-    /**
-     * Returns the SSLContext for SSL clients created with a
-     * DatabaseClientFactory.Bean object.
-     * @return	the SSL context
-     * @deprecated	(as of 4.0.1) use SecurityContext.getSSLContext()
-     */
-    @Deprecated
-    public SSLContext getContext() {
-      return context;
-    }
-    /**
-     * Specifies the SSLContext for clients created with a
-     * DatabaseClientFactory.Bean object that authenticate with SSL.
-     * @param context	the SSL context
-     * @deprecated	(as of 4.0.1) use SecurityContext.withSSLContext(SSLContext,X509TrustManager)
-     */
-    @Deprecated
-    public void setContext(SSLContext context) {
-      this.context = context;
-    }
-    /**
-     * Returns the host verifier for clients created with a
-     * DatabaseClientFactory.Bean object.
-     * @return	the host verifier
-     * @deprecated	(as of 4.0.1) use SecurityContext.getSSLHostnameVerifier()
-     */
-    @Deprecated
-    public SSLHostnameVerifier getVerifier() {
-      return verifier;
-    }
-    /**
-     * Specifies the host verifier for clients created with a
-     * DatabaseClientFactory.Bean object that verify hosts for
-     * additional security.
-     * @param verifier	the host verifier
-     * @deprecated	(as of 4.0.1) use SecurityContext.setSSLHostnameVerifier(SSLHostnameVerifier)
-     *   or SecurityContext.withSSLHostnameVerifier(SSLHostnameVerifier)
-     */
-    @Deprecated
-    public void setVerifier(SSLHostnameVerifier verifier) {
-      this.verifier = verifier;
     }
     /**
      * Returns the security context for clients created with a
@@ -1965,9 +1470,7 @@ public class DatabaseClientFactory {
      */
     public DatabaseClient newClient() {
         DatabaseClientImpl client = (DatabaseClientImpl) DatabaseClientFactory.newClient(
-            host, port, basePath, database,
-            (securityContext != null ? securityContext : makeSecurityContext(user, password, authentication, context, verifier)),
-            connectionType);
+            host, port, basePath, database, securityContext, connectionType);
         client.setHandleRegistry(getHandleRegistry().copy());
         return client;
     }

@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -35,7 +23,7 @@ abstract class PlanBuilderBaseImpl extends PlanBuilder {
     super(
       CtsExprImpl.cts, FnExprImpl.fn, GeoExprImpl.geo, JsonExprImpl.json, MapExprImpl.map,
       MathExprImpl.math, RdfExprImpl.rdf, SemExprImpl.sem, SpellExprImpl.spell,
-      SqlExprImpl.sql, XdmpExprImpl.xdmp, XsExprImpl.xs, RdtExprImpl.rdt
+      SqlExprImpl.sql, VecExprImpl.vec, XdmpExprImpl.xdmp, XsExprImpl.xs, RdtExprImpl.rdt
     );
   }
 
@@ -61,49 +49,65 @@ abstract class PlanBuilderBaseImpl extends PlanBuilder {
 
   static class PlanSearchOptionsImpl implements PlanSearchOptions {
     private PlanBuilderBaseImpl pb;
-    private XsDoubleVal qualityWeight;
+    private XsFloatVal qualityWeight;
     private ScoreMethod scoreMethod;
+	private XsDoubleVal bm25LengthWeight;
     PlanSearchOptionsImpl(PlanBuilderBaseImpl pb) {
       this.pb = pb;
     }
-    PlanSearchOptionsImpl(PlanBuilderBaseImpl pb, XsDoubleVal qualityWeight, ScoreMethod scoreMethod) {
-      this(pb);
-      this.qualityWeight = qualityWeight;
-      this.scoreMethod   = scoreMethod;
-    }
+	PlanSearchOptionsImpl(PlanBuilderBaseImpl pb, XsFloatVal qualityWeight,
+						  ScoreMethod scoreMethod, XsDoubleVal bm25LengthWeight) {
+		  this(pb);
+		  this.qualityWeight = qualityWeight;
+		  this.scoreMethod   = scoreMethod;
+		  this.bm25LengthWeight = bm25LengthWeight;
+	}
 
     @Override
-    public XsDoubleVal getQualityWeight() {
+    public XsFloatVal getQualityWeight() {
       return qualityWeight;
     }
     @Override
     public ScoreMethod getScoreMethod() {
       return scoreMethod;
     }
+	@Override
+	public XsDoubleVal getBm25LengthWeight() {
+		  return bm25LengthWeight;
+	  }
     @Override
-    public PlanSearchOptions withQualityWeight(double qualityWeight) {
-      return withQualityWeight(pb.xs.doubleVal(qualityWeight));
+    public PlanSearchOptions withQualityWeight(float qualityWeight) {
+      return withQualityWeight(pb.xs.floatVal(qualityWeight));
     }
     @Override
-    public PlanSearchOptions withQualityWeight(XsDoubleVal qualityWeight) {
-      return new PlanSearchOptionsImpl(pb, qualityWeight, getScoreMethod());
+    public PlanSearchOptions withQualityWeight(XsFloatVal qualityWeight) {
+      return new PlanSearchOptionsImpl(pb, qualityWeight, getScoreMethod(), getBm25LengthWeight());
     }
     @Override
     public PlanSearchOptions withScoreMethod(ScoreMethod scoreMethod) {
-      return new PlanSearchOptionsImpl(pb, getQualityWeight(), scoreMethod);
+      return new PlanSearchOptionsImpl(pb, getQualityWeight(), scoreMethod, getBm25LengthWeight());
     }
-    Map<String,String> makeMap() {
-      if (qualityWeight == null && scoreMethod == null) return null;
 
-      Map<String, String> map = new HashMap<String, String>();
-      if (qualityWeight != null) {
-        map.put("qualityWeight", String.valueOf(qualityWeight));
-      }
-      if (scoreMethod != null) {
-        map.put("scoreMethod", scoreMethod.name().toLowerCase());
-      }
-      return map;
-    }
+	  @Override
+	  public PlanSearchOptions withBm25LengthWeight(double bm25LengthWeight) {
+		  return new PlanSearchOptionsImpl(pb, getQualityWeight(), getScoreMethod(), pb.xs.doubleVal(bm25LengthWeight));
+	  }
+
+	  Map<String,Object> makeMap() {
+	      if (qualityWeight == null && scoreMethod == null && bm25LengthWeight == null) return null;
+
+	      Map<String, Object> map = new HashMap<>();
+    	  if (qualityWeight != null) {
+			  map.put("qualityWeight", qualityWeight);
+		  }
+		  if (scoreMethod != null) {
+			  map.put("scoreMethod", scoreMethod.name().toLowerCase());
+		  }
+		  if (bm25LengthWeight != null) {
+			  map.put("bm25LengthWeight", bm25LengthWeight);
+		  }
+		  return map;
+	}
   }
 
   static class PlanParamBase extends BaseTypeImpl.BaseCallImpl<XsValueImpl.StringValImpl> implements PlanParamExpr {

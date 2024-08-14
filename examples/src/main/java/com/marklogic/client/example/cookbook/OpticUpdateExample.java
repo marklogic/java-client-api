@@ -21,8 +21,7 @@ public class OpticUpdateExample {
     public static void main(String[] args) throws Exception {
         System.out.println("example: " + OpticUpdateExample.class.getName());
         Util.ExampleProperties props = Util.loadProperties();
-        DatabaseClient client = DatabaseClientFactory.newClient(props.host, props.port,
-            new DatabaseClientFactory.DigestAuthContext(props.writerUser, props.writerPassword));
+		DatabaseClient client = Util.newClient(props);
 
         // Load a TDE template that establishes a tabular view of zip codes
         loadTdeTemplate(props);

@@ -1,22 +1,10 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.example.cookbook.datamovement;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +41,7 @@ public class WriteandReadPOJOs {
 
   /**
    * A sample class which we will be using in order to demonstrate
-   * reading and writing large number of POJOs 
+   * reading and writing large number of POJOs
    */
   @XmlRootElement
   public static class ProductDetails {
@@ -136,7 +124,7 @@ public class WriteandReadPOJOs {
     // Create a query definition in order to use it with QueryBatcher
     StructuredQueryDefinition query = new StructuredQueryBuilder().collection("products-collection1");
 
-    // Create a QueryBatcher in order to retrieve bulk POJOs 
+    // Create a QueryBatcher in order to retrieve bulk POJOs
     // from the database matching the query definition
     QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
       .withBatchSize(batchSize)

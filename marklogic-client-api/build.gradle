@@ -1,7 +1,8 @@
-// Copyright (c) 2022 MarkLogic Corporation
+// Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
 
 plugins {
-    id 'maven-publish'
+	id 'java-library'
+	id 'maven-publish'
 }
 
 group = 'com.marklogic'
@@ -9,23 +10,30 @@ group = 'com.marklogic'
 description = "The official MarkLogic Java client API."
 
 dependencies {
-	if (JavaVersion.current().isJava9Compatible()) {
-		implementation 'javax.xml.bind:jaxb-api:2.3.1'
-		implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.8'
-		implementation 'org.glassfish.jaxb:jaxb-core:2.3.0.1'
-	}
+	// With 7.0.0, now using the Jakarta JAXB APIs instead of the JAVAX JAXB APIs that were bundled in Java 8.
+	// To ease support for Java 8, we are depending on version 3.x of the Jakarta JAXB APIs as those only require Java 8,
+	// whereas the 4.x version requires Java 11 or higher.
+	api "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
+	implementation "org.glassfish.jaxb:jaxb-runtime:3.0.2"
+	implementation "org.glassfish.jaxb:jaxb-core:3.0.2"
 
 	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
 	implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
 	implementation 'io.github.rburgst:okhttp-digest:2.7'
 
-	implementation 'com.sun.mail:javax.mail:1.6.2'
+	// We tried upgrading to the org.eclipse.angus:angus-mail dependency, but we ran into significant performance issues
+	// with using the Java Client eval call in our Spark connector. Example - an eval() call for getting 50k URIs would
+	// take 50s instead of 2 to 3s. Haven't dug into the details, but seems like the call isn't lazy and the entire set
+	// of URIs is being retrieved. This implementation - in the old "com.sun.mail" package but still adhering to the new
+	// jakarta.mail API - works fine and performs well for eval calls.
+	implementation "com.sun.mail:jakarta.mail:2.0.1"
+
 	implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
 	implementation 'org.slf4j:slf4j-api:1.7.36'
-	implementation 'com.fasterxml.jackson.core:jackson-core:2.15.3'
-	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.15.3'
-	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.3'
-	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.15.3'
+	implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+	implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+	implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+	implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-csv:${jacksonVersion}"
 
 	// Only used by extras (which some examples then depend on)
 	// Forcing codec version to avoid vulnerability with older version in httpclient
@@ -41,18 +49,19 @@ dependencies {
 	testImplementation 'org.xmlunit:xmlunit-legacy:2.9.1'
 	testImplementation project(':examples')
 
-	// Allows talking to the Manage API. It depends on the Java Client itself, which will usually be a slightly older
-	// version, but that should not have any impact on the tests.
-	testImplementation "com.marklogic:ml-app-deployer:4.6.1"
+	// Allows talking to the Manage API.
+	testImplementation ("com.marklogic:ml-app-deployer:4.8.0") {
+		exclude module: "marklogic-client-api"
+	}
 
 	// Starting with mockito 5.x, Java 11 is required, so sticking with 4.x as we have to support Java 8.
 	testImplementation "org.mockito:mockito-core:4.11.0"
 	testImplementation "org.mockito:mockito-inline:4.11.0"
 	testImplementation "com.squareup.okhttp3:mockwebserver:4.12.0"
 
-	testImplementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.3'
+	testImplementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jacksonVersion}"
 	testImplementation 'ch.qos.logback:logback-classic:1.3.14'
-// schema validation issue with testImplementation 'xerces:xercesImpl:2.12.0'
+	// schema validation issue with testImplementation 'xerces:xercesImpl:2.12.0'
 	testImplementation 'org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115'
 	testImplementation 'org.apache.commons:commons-lang3:3.14.0'
 	testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
@@ -72,13 +81,6 @@ test {
 	systemProperty "TEST_USE_REVERSE_PROXY_SERVER", testUseReverseProxyServer
 }
 
-jar {
-    exclude (
-            'search.xsd', 'search-bindings.xjb',
-            '*.txt', 'property.xsd',
-            'restapi-bindings.xjb', 'security.xsd'
-    )
-}
 task sourcesJar(type: Jar) {
     archiveClassifier = 'sources'
     exclude ('property', '*.xsd', '*.xjb')
@@ -90,7 +92,7 @@ javadoc {
     options.overview = "src/main/javadoc/overview.html"
     options.windowTitle = "$rootProject.describedName $rootProject.version"
     options.docTitle = "$rootProject.describedName $rootProject.version"
-    options.bottom = "Copyright &copy; 2022 MarkLogic Corporation"
+    options.bottom = "Copyright © 2024 MarkLogic Corporation. All Rights Reserved."
     options.links = [ 'http://docs.oracle.com/javase/8/docs/api/' ]
     options.use = true
     if (JavaVersion.current().isJava9Compatible()) {
@@ -210,4 +212,12 @@ task debugCloudAuth(type: JavaExec) {
 	main = 'com.marklogic.client.test.MarkLogicCloudAuthenticationDebugger'
 	classpath = sourceSets.test.runtimeClasspath
 	args = [cloudHost, cloudKey, cloudBasePath]
+}
+
+task runXmlSmokeTests(type: Test) {
+	description = "Run a bunch of XML-related tests for smoke-testing on a particular JVM"
+	include "com/marklogic/client/test/BufferableHandleTest.class"
+	include "com/marklogic/client/test/EvalTest.class"
+	include "com/marklogic/client/test/HandleAsTest.class"
+	include "com/marklogic/client/test/JAXBHandleTest.class"
 }

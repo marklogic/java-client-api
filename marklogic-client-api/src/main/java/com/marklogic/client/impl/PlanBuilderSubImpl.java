@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -60,9 +48,15 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
   @Override
   public PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query, String qualifierName) {
-    return new AccessPlanSubImpl(
-            this, "op", "from-search-docs", new Object[]{query, (qualifierName == null) ? null : xs.string(qualifierName)}
-            );
+	  return fromSearchDocs(query, null, null);
+  }
+  @Override
+  public PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query, String qualifierName, PlanSearchOptions options) {
+	  XsStringVal qualifierValue = qualifierName == null ? null : xs.string(qualifierName);
+	  Object[] args = options == null ?
+		  new Object[] {query, qualifierValue} :
+		  new Object[] {query, qualifierValue, asArg(makeMap(options))};
+	  return new AccessPlanSubImpl(this, "op", "from-search-docs", args);
   }
 
   @Override
@@ -675,7 +669,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
   }
 
-  static Map<String,String> makeMap(PlanSearchOptions options) {
+  static Map<String,Object> makeMap(PlanSearchOptions options) {
     if (options == null) {
       return null;
     }

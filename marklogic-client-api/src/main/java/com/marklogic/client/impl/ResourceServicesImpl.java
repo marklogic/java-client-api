@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -53,11 +41,11 @@ class ResourceServicesImpl
       transaction, prepareParams(params), output);
   }
   @Override
-  public ServiceResultIterator get(RequestParameters params, @Deprecated String... outputMimetypes) {
-    return get(params, null, outputMimetypes);
+  public ServiceResultIterator get(RequestParameters params) {
+    return get(params, (Transaction)null);
   }
   @Override
-  public ServiceResultIterator get(RequestParameters params, Transaction transaction, @Deprecated String... outputMimetypes) {
+  public ServiceResultIterator get(RequestParameters params, Transaction transaction) {
     return services.getIteratedResource(requestLogger, getResourcePath(), transaction, prepareParams(params));
   }
 
@@ -90,11 +78,11 @@ class ResourceServicesImpl
       requestLogger, getResourcePath(), transaction, prepareParams(params), input, output);
   }
   @Override
-  public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, @Deprecated String... outputMimetypes) {
-    return post(params, input, null, outputMimetypes);
+  public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input) {
+    return post(params, input, (Transaction)null);
   }
   @Override
-  public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, @Deprecated String... outputMimetypes) {
+  public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, Transaction transaction) {
     return services.postIteratedResource(
       requestLogger, getResourcePath(), transaction, prepareParams(params), input);
   }
@@ -108,11 +96,11 @@ class ResourceServicesImpl
       requestLogger, getResourcePath(), transaction, prepareParams(params), input, output);
   }
   @Override
-  public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, @Deprecated String... outputMimetypes) {
-    return post(params, input, null, outputMimetypes);
+  public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input) {
+    return post(params, input, (Transaction) null);
   }
   @Override
-  public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction, @Deprecated String... outputMimetypes) {
+  public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction) {
     return services.postIteratedResource(
       requestLogger, getResourcePath(), transaction, prepareParams(params), input);
   }

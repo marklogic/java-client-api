@@ -1,29 +1,7 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.example.handle;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-import org.jdom2.Document;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.input.sax.XMLReaders;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -31,6 +9,15 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.extra.jdom.JDOMHandle;
+import org.jdom2.Document;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaders;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * JDOMHandleExample illustrates writing and reading content as a JDOM structure
@@ -60,10 +47,7 @@ public class JDOMHandleExample {
       JDOMHandle.newFactory()
     );
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+	  DatabaseClient client = Util.newClient(props);
 
     // create a manager for documents of any format
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -104,10 +88,7 @@ public class JDOMHandleExample {
   {
     String filename = "flipper.xml";
 
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+	  DatabaseClient client = Util.newClient(props);
 
     // create a manager for documents of any format
     XMLDocumentManager docMgr = client.newXMLDocumentManager();

@@ -1,30 +1,9 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.example.extension;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-import javax.xml.parsers.ParserConfigurationException;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -37,6 +16,12 @@ import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * OpenCSVBatcherExample illustrates splitting a CSV stream
@@ -55,23 +40,16 @@ public class OpenCSVBatcherExample {
     throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     System.out.println("example: "+OpenCSVBatcherExample.class.getName());
-
-    installResourceExtension(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
-
-    useResource(props.host, props.port,
-      props.writerUser, props.writerPassword, props.authType);
-
-    tearDownExample(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
+    installResourceExtension(props);
+    useResource(props);
+    tearDownExample(props);
   }
 
   // install the resource extension on the server
-  public static void installResourceExtension(String host, int port, String user, String password, Authentication authType)
+  public static void installResourceExtension(ExampleProperties props)
     throws IOException
   {
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+	  DatabaseClient client = Util.newAdminClient(props);
 
     // create a manager for resource extensions
     ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
@@ -104,11 +82,10 @@ public class OpenCSVBatcherExample {
   }
 
   // use the resource manager
-  public static void useResource(String host, int port, String user, String password, Authentication authType)
+  public static void useResource(ExampleProperties props)
     throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+	  DatabaseClient client = Util.newClient(props);
 
     // create the CSV splitter
     OpenCSVBatcher splitter = new OpenCSVBatcher(client);
@@ -139,10 +116,10 @@ public class OpenCSVBatcherExample {
   }
 
   // clean up by deleting the example resource extension
-  public static void tearDownExample(String host, int port, String user, String password, Authentication authType)
+  public static void tearDownExample(ExampleProperties props)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+	  DatabaseClient client = Util.newAdminClient(props);
 
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
     for (int i=1; i <= 4; i++) {

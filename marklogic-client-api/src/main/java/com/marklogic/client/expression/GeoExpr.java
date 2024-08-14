@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2024 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 
 package com.marklogic.client.expression;
@@ -33,7 +21,7 @@ import com.marklogic.client.type.XsStringVal;
 
 import com.marklogic.client.type.ServerExpression;
 
-// IMPORTANT: Do not edit. This file is generated. 
+// IMPORTANT: Do not edit. This file is generated.
 
 /**
  * Builds expressions to call functions in the geo server library for a row
@@ -44,7 +32,7 @@ public interface GeoExpr {
   * Return a point approximating the center of the given region. For a point, this is the point itself. For a circle, it is the center point. For a box, it is the point whose latitude is half-way between the northern and southern limits and whose longitude is half-way between the western and eastern limits. For polygons, complex polygons, and linestrings, an approximate centroid is returned. This approximation is rough, and useful for quick comparisons.
   *
   * <a name="ml-server-type-approx-center"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:approx-center" target="mlserverdoc">geo:approx-center</a> server function.
   * @param region  A geospatial region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -73,7 +61,7 @@ public interface GeoExpr {
   * Returns the point at the intersection of two arcs. If the arcs do not intersect, or lie on the same great circle, or if either arc covers more than 180 degrees, an error is raised.
   *
   * <a name="ml-server-type-arc-intersection"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:arc-intersection" target="mlserverdoc">geo:arc-intersection</a> server function.
   * @param p1  The starting point of the first arc.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
@@ -111,7 +99,7 @@ public interface GeoExpr {
   * Returns the true bearing in radians of the path from the first point to the second. An error is raised if the two points are the same.
   *
   * <a name="ml-server-type-bearing"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:bearing" target="mlserverdoc">geo:bearing</a> server function.
   * @param p1  The first point.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
@@ -143,7 +131,7 @@ public interface GeoExpr {
   * Returns a sequence of boxes that bound the given region.
   *
   * <a name="ml-server-type-bounding-boxes"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:bounding-boxes" target="mlserverdoc">geo:bounding-boxes</a> server function.
   * @param region  A geographic region (box, circle, polygon, or point).  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -172,7 +160,7 @@ public interface GeoExpr {
   * Returns true if the box intersects with a region.
   *
   * <a name="ml-server-type-box-intersects"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:box-intersects" target="mlserverdoc">geo:box-intersects</a> server function.
   * @param box  A geographic box.  (of <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a>)
@@ -204,7 +192,7 @@ public interface GeoExpr {
   * Returns true if the circle intersects with a region.
   *
   * <a name="ml-server-type-circle-intersects"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:circle-intersects" target="mlserverdoc">geo:circle-intersects</a> server function.
   * @param circle  A geographic circle.  (of <a href="{@docRoot}/doc-files/types/cts_circle.html">cts:circle</a>)
@@ -245,7 +233,7 @@ public interface GeoExpr {
   * Construct a polygon approximating a circle.
   *
   * <a name="ml-server-type-circle-polygon"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:circle-polygon" target="mlserverdoc">geo:circle-polygon</a> server function.
   * @param circle  A cts circle that defines the circle to be approximated.  (of <a href="{@docRoot}/doc-files/types/cts_circle.html">cts:circle</a>)
@@ -277,7 +265,7 @@ public interface GeoExpr {
   * Compares geospatial regions to see if they fulfill the 'contains' DE-9IM relation.
   *
   * <a name="ml-server-type-contains"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:contains" target="mlserverdoc">geo:contains</a> server function.
   * @param region1  The first geospatial region to compare. This region is the left operand of contains.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -309,7 +297,7 @@ public interface GeoExpr {
   * Return a count of the distinct number of vertices in a region, taking tolerance into account.
   *
   * <a name="ml-server-type-count-distinct-vertices"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:count-distinct-vertices" target="mlserverdoc">geo:count-distinct-vertices</a> server function.
   * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -338,7 +326,7 @@ public interface GeoExpr {
   * This function returns a count of the number of vertices in a region.
   *
   * <a name="ml-server-type-count-vertices"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:count-vertices" target="mlserverdoc">geo:count-vertices</a> server function.
   * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -349,7 +337,7 @@ public interface GeoExpr {
   * Compares geospatial regions to see if they fulfill the 'covered by' DE-9IM relation.
   *
   * <a name="ml-server-type-covered-by"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:covered-by" target="mlserverdoc">geo:covered-by</a> server function.
   * @param region1  The first geospatial region to compare. This region is the left operand of covered-by.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -381,7 +369,7 @@ public interface GeoExpr {
   * Compares geospatial regions to see if they fulfill the 'covers' DE-9IM relation.
   *
   * <a name="ml-server-type-covers"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:covers" target="mlserverdoc">geo:covers</a> server function.
   * @param region1  The first geospatial region to compare. This region is the left operand of covers.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -413,7 +401,7 @@ public interface GeoExpr {
   * Compares geospatial regions to see if they fulfill the 'crosses' DE-9IM relation.
   *
   * <a name="ml-server-type-crosses"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:crosses" target="mlserverdoc">geo:crosses</a> server function.
   * @param region1  The first geospatial region to compare. This region is the left operand of crosses.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -455,7 +443,7 @@ public interface GeoExpr {
   * Returns the point at the given distance (in units) along the given bearing (in radians) from the starting point.
   *
   * <a name="ml-server-type-destination"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:destination" target="mlserverdoc">geo:destination</a> server function.
   * @param p  The starting point.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
@@ -490,7 +478,7 @@ public interface GeoExpr {
   * Compares geospatial regions to see if they fulfill the 'disjoint' DE-9IM relation.
   *
   * <a name="ml-server-type-disjoint"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:disjoint" target="mlserverdoc">geo:disjoint</a> server function.
   * @param region1  The first geospatial region to compare. This region is the left operand of disjoint.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -522,7 +510,7 @@ public interface GeoExpr {
   * Returns the distance (in units) between two points.
   *
   * <a name="ml-server-type-distance"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:distance" target="mlserverdoc">geo:distance</a> server function.
   * @param p1  The first point.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
@@ -564,7 +552,7 @@ public interface GeoExpr {
   * This function converts a distance from one unit of measure to another. The supported units are "miles", "feet", "km", and "meters". This is a proper superset of the units supported as options to various geospatial functions ("miles","km").
   *
   * <a name="ml-server-type-distance-convert"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:distance-convert" target="mlserverdoc">geo:distance-convert</a> server function.
   * @param distance  The distance.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
@@ -589,7 +577,7 @@ public interface GeoExpr {
   * Construct a polygon approximating an ellipse.
   *
   * <a name="ml-server-type-ellipse-polygon"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:ellipse-polygon" target="mlserverdoc">geo:ellipse-polygon</a> server function.
   * @param center  Center of the ellipse.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
@@ -630,7 +618,7 @@ public interface GeoExpr {
   * Compares geospatial regions to see if they fulfill the 'equals' DE-9IM relation.
   *
   * <a name="ml-server-type-equals"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:equals" target="mlserverdoc">geo:equals</a> server function.
   * @param region1  The first geospatial region to compare. This region is the left operand of equals.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -670,7 +658,7 @@ public interface GeoExpr {
   * Given a geohash string, return the bounding box for that hash.
   *
   * <a name="ml-server-type-geohash-decode"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:geohash-decode" target="mlserverdoc">geo:geohash-decode</a> server function.
   * @param hash  The geohash value, as produced by geo:geohash-encode.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -689,7 +677,7 @@ public interface GeoExpr {
   * Given a geohash string, return the point for that hash.
   *
   * <a name="ml-server-type-geohash-decode-point"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:geohash-decode-point" target="mlserverdoc">geo:geohash-decode-point</a> server function.
   * @param hash  The geohash string, as produced from the function geo:geohash-encode.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -700,7 +688,7 @@ public interface GeoExpr {
   * Compute a set of covering geohashes for the given region, to the given level of precision.
   *
   * <a name="ml-server-type-geohash-encode"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:geohash-encode" target="mlserverdoc">geo:geohash-encode</a> server function.
   * @param region  The region to encode.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -749,7 +737,7 @@ public interface GeoExpr {
   * Given a geohash string, return hashes for the neighbors. The result is a map with the keys "N", "NE", "E", "SE", "S", "SW", "W", "NW" for the neighbors in those directions.
   *
   * <a name="ml-server-type-geohash-neighbors"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:geohash-neighbors" target="mlserverdoc">geo:geohash-neighbors</a> server function.
   * @param hash  The geohash string, as produced by geo:geohash-encode.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -760,7 +748,7 @@ public interface GeoExpr {
   * Given a geohash string, return the height and width for the given precision. The result is a pair of double: the height (latitude span) followed by the width (longitude span).
   *
   * <a name="ml-server-type-geohash-precision-dimensions"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:geohash-precision-dimensions" target="mlserverdoc">geo:geohash-precision-dimensions</a> server function.
   * @param precision  The precision. This should be a number between 0 and 12, as with geo:geohash-encode.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
@@ -771,7 +759,7 @@ public interface GeoExpr {
   * Given a geohash string, return the 32 subhashes.
   *
   * <a name="ml-server-type-geohash-subhashes"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:geohash-subhashes" target="mlserverdoc">geo:geohash-subhashes</a> server function.
   * @param hash  The geohash string, as produced from the function geo:geohash-encode.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -800,7 +788,7 @@ public interface GeoExpr {
   * This function returns a point that is guaranteed to be inside the bounds of the given region. For a given region and set of options, the point returned should be stable from one call to the next.
   *
   * <a name="ml-server-type-interior-point"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:interior-point" target="mlserverdoc">geo:interior-point</a> server function.
   * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -829,7 +817,7 @@ public interface GeoExpr {
   * Compares geospatial regions to see if they fulfill the 'intersects' DE-9IM relation.
   *
   * <a name="ml-server-type-intersects"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:intersects" target="mlserverdoc">geo:intersects</a> server function.
   * @param region1  The first geospatial region to compare. This region is the left operand of intersects.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -861,7 +849,7 @@ public interface GeoExpr {
   * Compares geospatial regions to see if they fulfill the 'overlaps' DE-9IM relation.
   *
   * <a name="ml-server-type-overlaps"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:overlaps" target="mlserverdoc">geo:overlaps</a> server function.
   * @param region1  The first geospatial region to compare. This region is the left operand of overlaps.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -901,7 +889,7 @@ public interface GeoExpr {
   * Returns a sequence of geospatial regions parsed from Well-Known Text format.
   *
   * <a name="ml-server-type-parse-wkt"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:parse-wkt" target="mlserverdoc">geo:parse-wkt</a> server function.
   * @param wkt  A sequence of strings in Well-Known Text format.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -921,7 +909,7 @@ public interface GeoExpr {
   * This function returns a simplified approximation of the region, using the Douglas-Peucker algorithm.
   *
   * <a name="ml-server-type-region-approximate"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:region-approximate" target="mlserverdoc">geo:region-approximate</a> server function.
   * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -953,7 +941,7 @@ public interface GeoExpr {
   * This function fixes various problems with the region or raises an error if it is not repairable. The only relevant fix for MarkLogic is to remove duplicate adjacent vertices in polygons (including inner and outer polygons of complex polygons). The only relevant options are options controlling the coordinate system and the tolerance option.
   *
   * <a name="ml-server-type-region-clean"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:region-clean" target="mlserverdoc">geo:region-clean</a> server function.
   * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -982,7 +970,7 @@ public interface GeoExpr {
   * Returns true if one region contains the other region.
   *
   * <a name="ml-server-type-region-contains"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:region-contains" target="mlserverdoc">geo:region-contains</a> server function.
   * @param target  A geographic region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -1014,7 +1002,7 @@ public interface GeoExpr {
   * Calculates the Dimensionally Extended nine-Intersection Matrix (DE-9IM) of two geospatial regions.
   *
   * <a name="ml-server-type-region-de9im"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:region-de9im" target="mlserverdoc">geo:region-de9im</a> server function.
   * @param region1  The first geospatial region to compare.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -1046,7 +1034,7 @@ public interface GeoExpr {
   * Returns true if the target region intersects with a region.
   *
   * <a name="ml-server-type-region-intersects"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:region-intersects" target="mlserverdoc">geo:region-intersects</a> server function.
   * @param target  A geographic region (box, circle, polygon, or point).  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -1088,7 +1076,7 @@ public interface GeoExpr {
   * Compares geospatial regions based on a specified relationship. For example, determine if two regions overlap.
   *
   * <a name="ml-server-type-region-relate"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:region-relate" target="mlserverdoc">geo:region-relate</a> server function.
   * @param region1  The first geospatial region to compare. This region is the left operand of $operation.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -1123,7 +1111,7 @@ public interface GeoExpr {
   * Remove duplicate (adjacent) vertices.
   *
   * <a name="ml-server-type-remove-duplicate-vertices"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:remove-duplicate-vertices" target="mlserverdoc">geo:remove-duplicate-vertices</a> server function.
   * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -1152,7 +1140,7 @@ public interface GeoExpr {
   * Returns the great circle distance (in units) between a point and a region. The region is defined by a cts:region.
   *
   * <a name="ml-server-type-shortest-distance"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:shortest-distance" target="mlserverdoc">geo:shortest-distance</a> server function.
   * @param p1  The first point.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
@@ -1184,7 +1172,7 @@ public interface GeoExpr {
   * Returns a sequence of strings in Well-Known Text format.
   *
   * <a name="ml-server-type-to-wkt"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:to-wkt" target="mlserverdoc">geo:to-wkt</a> server function.
   * @param wkt  A sequence of geospatial regions.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -1195,7 +1183,7 @@ public interface GeoExpr {
   * Compares geospatial regions to see if they fulfill the 'touches' DE-9IM relation.
   *
   * <a name="ml-server-type-touches"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:touches" target="mlserverdoc">geo:touches</a> server function.
   * @param region1  The first geospatial region to compare. This region is the left operand of touches.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
@@ -1227,7 +1215,7 @@ public interface GeoExpr {
   * Returns true if the string is valid Well-Known Text for a supported region type.
   *
   * <a name="ml-server-type-validate-wkt"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:validate-wkt" target="mlserverdoc">geo:validate-wkt</a> server function.
   * @param wkt  A string to validate.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1238,7 +1226,7 @@ public interface GeoExpr {
   * Compares geospatial regions to see if they fulfill the 'within' DE-9IM relation.
   *
   * <a name="ml-server-type-within"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:within" target="mlserverdoc">geo:within</a> server function.
   * @param region1  The first geospatial region to compare. This region is the left operand of within.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)

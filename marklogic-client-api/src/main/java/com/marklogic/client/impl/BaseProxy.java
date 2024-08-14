@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -132,8 +120,8 @@ public class BaseProxy {
       final public static String NAME = "boolean";
       static final public String         fromBoolean(Boolean value)                    { return ValueConverter.BooleanToString(value);  }
       static final public Stream<String> fromBoolean(Stream<? extends Boolean> values) { return ValueConverter.BooleanToString(values); }
-      static final public String[] fromBoolean(Boolean[] values) { 
-          return ValueConverter.convert(values, ValueConverter::BooleanToString); 
+      static final public String[] fromBoolean(Boolean[] values) {
+          return ValueConverter.convert(values, ValueConverter::BooleanToString);
       }
       static final public String         fromString(String value)                      { return value;                                  }
       static final public Stream<String> fromString(Stream<String> values)             { return values;                                 }
@@ -146,7 +134,7 @@ public class BaseProxy {
       final public static String NAME = "date";
       static final public String         fromLocalDate(LocalDate value)                    { return ValueConverter.LocalDateToString(value);  }
       static final public Stream<String> fromLocalDate(Stream<? extends LocalDate> values) { return ValueConverter.LocalDateToString(values); }
-      static final public String[] fromLocalDate(LocalDate[] values) { 
+      static final public String[] fromLocalDate(LocalDate[] values) {
           return ValueConverter.convert(values, ValueConverter::LocalDateToString);
       }
       static final public String         fromString(String value)                          { return value;                                    }
@@ -160,17 +148,17 @@ public class BaseProxy {
       final public static String NAME = "dateTime";
       static final public String         fromDate(Date value)                                         { return ValueConverter.DateToString(value);            }
       static final public Stream<String> fromDate(Stream<? extends Date> values)                      { return ValueConverter.DateToString(values);           }
-      static final public String[] fromDate(Date[] values) { 
+      static final public String[] fromDate(Date[] values) {
           return ValueConverter.convert(values, ValueConverter::DateToString);
       }
       static final public String         fromLocalDateTime(LocalDateTime value)                       { return ValueConverter.LocalDateTimeToString(value);   }
       static final public Stream<String> fromLocalDateTime(Stream<? extends LocalDateTime> values)    { return ValueConverter.LocalDateTimeToString(values);  }
-      static final public String[] fromLocalDateTime(LocalDateTime[] values) { 
+      static final public String[] fromLocalDateTime(LocalDateTime[] values) {
           return ValueConverter.convert(values, ValueConverter::LocalDateTimeToString);
       }
       static final public String         fromOffsetDateTime(OffsetDateTime value)                     { return ValueConverter.OffsetDateTimeToString(value);  }
       static final public Stream<String> fromOffsetDateTime(Stream<? extends OffsetDateTime> values)  { return ValueConverter.OffsetDateTimeToString(values); }
-      static final public String[] fromOffsetDateTime(OffsetDateTime[] values) { 
+      static final public String[] fromOffsetDateTime(OffsetDateTime[] values) {
           return ValueConverter.convert(values, ValueConverter::OffsetDateTimeToString);
       }
       static final public String         fromString(String value)                                     { return value;                                         }
@@ -188,7 +176,7 @@ public class BaseProxy {
       final public static String NAME = "dayTimeDuration";
       static final public String         fromDuration(Duration value)                    { return ValueConverter.DurationToString(value);  }
       static final public Stream<String> fromDuration(Stream<? extends Duration> values) { return ValueConverter.DurationToString(values); }
-      static final public String[] fromDuration(Duration[] values) { 
+      static final public String[] fromDuration(Duration[] values) {
           return ValueConverter.convert(values, ValueConverter::DurationToString);
       }
       static final public String         fromString(String value)                        { return value;                                   }
@@ -202,7 +190,7 @@ public class BaseProxy {
       final public static String NAME = "decimal";
       static final public String         fromBigDecimal(BigDecimal value)                    { return ValueConverter.BigDecimalToString(value);  }
       static final public Stream<String> fromBigDecimal(Stream<? extends BigDecimal> values) { return ValueConverter.BigDecimalToString(values); }
-      static final public String[] fromBigDecimal(BigDecimal[] values) { 
+      static final public String[] fromBigDecimal(BigDecimal[] values) {
           return ValueConverter.convert(values, ValueConverter::BigDecimalToString);
       }
       static final public String         fromString(String value)                            { return value;                                     }
@@ -216,7 +204,7 @@ public class BaseProxy {
       final public static String NAME = "double";
       static final public String         fromDouble(Double value)                    { return ValueConverter.DoubleToString(value);  }
       static final public Stream<String> fromDouble(Stream<? extends Double> values) { return ValueConverter.DoubleToString(values); }
-      static final public String[] fromDouble(Double[] values) { 
+      static final public String[] fromDouble(Double[] values) {
           return ValueConverter.convert(values, ValueConverter::DoubleToString);
       }
       static final public String         fromString(String value)                    { return value;                                 }
@@ -230,7 +218,7 @@ public class BaseProxy {
       final public static String NAME = "float";
       static final public String         fromFloat(Float value)                    { return ValueConverter.FloatToString(value);  }
       static final public Stream<String> fromFloat(Stream<? extends Float> values) { return ValueConverter.FloatToString(values); }
-      static final public String[] fromFloat(Float[] values) { 
+      static final public String[] fromFloat(Float[] values) {
           return ValueConverter.convert(values, ValueConverter::FloatToString);
       }
       static final public String         fromString(String value)                  { return value;                                }
@@ -244,7 +232,7 @@ public class BaseProxy {
       final public static String NAME = "int";
       static final public String         fromInteger(Integer value)                    { return ValueConverter.IntegerToString(value);  }
       static final public Stream<String> fromInteger(Stream<? extends Integer> values) { return ValueConverter.IntegerToString(values); }
-      static final public String[] fromInteger(Integer[] values) { 
+      static final public String[] fromInteger(Integer[] values) {
           return ValueConverter.convert(values, ValueConverter::IntegerToString);
       }
       static final public String         fromString(String value)                      { return value;                                  }
@@ -258,7 +246,7 @@ public class BaseProxy {
       final public static String NAME = "long";
       static final public String         fromLong(Long value)                    { return ValueConverter.LongToString(value);  }
       static final public Stream<String> fromLong(Stream<? extends Long> values) { return ValueConverter.LongToString(values); }
-      static final public String[] fromLong(Long[] values) { 
+      static final public String[] fromLong(Long[] values) {
           return ValueConverter.convert(values, ValueConverter::LongToString);
       }
       static final public String         fromString(String value)                { return value;                               }
@@ -279,12 +267,12 @@ public class BaseProxy {
       final public static String NAME = "time";
       static final public String         fromLocalTime(LocalTime value)                      { return ValueConverter.LocalTimeToString(value);   }
       static final public Stream<String> fromLocalTime(Stream<? extends LocalTime> values)   { return ValueConverter.LocalTimeToString(values);  }
-      static final public String[] fromLocalTime(LocalTime[] values) { 
+      static final public String[] fromLocalTime(LocalTime[] values) {
           return ValueConverter.convert(values, ValueConverter::LocalTimeToString);
       }
       static final public String         fromOffsetTime(OffsetTime value)                    { return ValueConverter.OffsetTimeToString(value);  }
       static final public Stream<String> fromOffsetTime(Stream<? extends OffsetTime> values) { return ValueConverter.OffsetTimeToString(values); }
-      static final public String[] fromOffsetTime(OffsetTime[] values) { 
+      static final public String[] fromOffsetTime(OffsetTime[] values) {
           return ValueConverter.convert(values, ValueConverter::OffsetTimeToString);
       }
       static final public String         fromString(String value)                            { return value;                                     }
@@ -300,7 +288,7 @@ public class BaseProxy {
       final public static String NAME = "unsignedInt";
       static final public String         fromInteger(Integer value)                    { return ValueConverter.UnsignedIntegerToString(value);  }
       static final public Stream<String> fromInteger(Stream<? extends Integer> values) { return ValueConverter.UnsignedIntegerToString(values); }
-      static final public String[] fromInteger(Integer[] values) { 
+      static final public String[] fromInteger(Integer[] values) {
           return ValueConverter.convert(values, ValueConverter::UnsignedIntegerToString);
       }
       static final public String         fromString(String value)                      { return value;                                          }
@@ -314,7 +302,7 @@ public class BaseProxy {
       final public static String NAME = "unsignedLong";
       static final public String         fromLong(Long value)                    { return ValueConverter.UnsignedLongToString(value);  }
       static final public Stream<String> fromLong(Stream<? extends Long> values) { return ValueConverter.UnsignedLongToString(values); }
-      static final public String[] fromLong(Long[] values) { 
+      static final public String[] fromLong(Long[] values) {
           return ValueConverter.convert(values, ValueConverter::UnsignedLongToString);
       }
       static final public String         fromString(String value)                { return value;                                       }

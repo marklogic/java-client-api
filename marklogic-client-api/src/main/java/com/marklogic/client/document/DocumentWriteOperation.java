@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.document;
 
@@ -28,7 +16,7 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  * {@link DocumentWriteSet#disableDefault disableDefault}.
  */
 public interface DocumentWriteOperation extends Comparable<DocumentWriteOperation> {
-  public enum OperationType {
+  enum OperationType {
     /** This write operation (REST API mime part) sets the defaults for the
      * rest of the request.
      * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_56498">
@@ -42,8 +30,8 @@ public interface DocumentWriteOperation extends Comparable<DocumentWriteOperatio
      * <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_54554">
      * REST API Guide -&gt; Example: Reverting to System Default Metadata</a>
      */
-    @Deprecated
     DISABLE_METADATA_DEFAULT,
+
     /** This write operation (REST API mime part) creates or overwrites
      * one document and/or document metadata.
      * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_33756">
@@ -128,7 +116,7 @@ public interface DocumentWriteOperation extends Comparable<DocumentWriteOperatio
 
         if(format == null || format.length() == 0)
             throw new IllegalArgumentException("Format cannot be null or empty");
-        
+
         final class FormatUriMaker {
             private String uriFormat;
 

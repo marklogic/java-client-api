@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2023 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
@@ -280,15 +268,6 @@ public class StructuredQueryBuilderTest {
       assertXMLEqual("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" "
         + "xmlns:search=\"http://marklogic.com/appservices/search\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
         + "<properties-fragment-query><directory-query><uri>/dir1</uri><uri>dir2</uri><infinite>false</infinite></directory-query></properties-fragment-query></query>", q);
-    }
-
-    t = qb.directory(4, "/dir1", "dir2");
-    for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
-      xml = new StringInputStream(q);
-      parser.parse(xml, handler);
-      assertXMLEqual("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" "
-        + "xmlns:search=\"http://marklogic.com/appservices/search\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
-        + "<directory-query depth=\"4\"><uri>/dir1</uri><uri>dir2</uri><infinite>false</infinite></directory-query></query>", q);
     }
 
     t = qb.locks(qb.term("one"));

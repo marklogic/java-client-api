@@ -1,45 +1,22 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.example.extension;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.ResourceNotResendableException;
-import com.marklogic.client.admin.ExtensionMetadata;
-import com.marklogic.client.admin.MethodType;
-import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.ResourceExtensionsManager;
+import com.marklogic.client.*;
+import com.marklogic.client.admin.*;
 import com.marklogic.client.admin.ResourceExtensionsManager.MethodParameters;
-import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.example.extension.SearchCollector.CollectorResults;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * SearchCollectorExample illustrates reading a page of documents
@@ -62,25 +39,17 @@ public class SearchCollectorExample {
     throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
   {
     System.out.println("example: "+SearchCollectorExample.class.getName());
-
-    configureExample(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
-
-    useResource(props.host, props.port,
-      props.writerUser, props.writerPassword, props.authType);
-
-    tearDownExample(props.host, props.port,
-      props.adminUser, props.adminPassword, props.authType);
+    configureExample(props);
+    useResource(props);
+    tearDownExample(props);
   }
 
   // set up the query options for the collecting search
-  public static void configureExample(String host, int port, String user, String password, Authentication authType)
+  public static void configureExample(ExampleProperties props)
     throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
   {
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
-
-    installResourceExtension(client);
+	  DatabaseClient client = Util.newAdminClient(props);
+	  installResourceExtension(client);
 
     configureQueryOptions(client);
 
@@ -195,11 +164,8 @@ public class SearchCollectorExample {
   }
 
   // use the resource manager
-  public static void useResource(String host, int port, String user, String password, Authentication authType)
-    throws IOException, ParserConfigurationException
-  {
-    // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+  public static void useResource(ExampleProperties props) {
+	  DatabaseClient client = Util.newClient(props);
 
     // create the search collector
     SearchCollector collector = new SearchCollector(client);
@@ -229,11 +195,10 @@ public class SearchCollectorExample {
   }
 
   // clean up by deleting the example resource extension
-  public static void tearDownExample(
-    String host, int port, String user, String password, Authentication authType)
+  public static void tearDownExample(ExampleProperties props)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+	  DatabaseClient client = Util.newAdminClient(props);
 
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
     for (String filename: filenames) {

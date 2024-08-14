@@ -1,37 +1,7 @@
 /*
- * Copyright (c) 2023 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.query;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import javax.xml.XMLConstants;
-import javax.xml.bind.DatatypeConverter;
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import javax.xml.transform.Templates;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.impl.AbstractQueryDefinition;
@@ -46,6 +16,23 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.IterableNamespaceContext;
+import jakarta.xml.bind.DatatypeConverter;
+
+import javax.xml.XMLConstants;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import javax.xml.transform.Templates;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * StructuredQueryBuilder builds a query for documents in the database.
@@ -460,22 +447,6 @@ public class StructuredQueryBuilder {
    */
   public StructuredQueryDefinition directory(boolean isInfinite, String... uris) {
     return new DirectoryQuery(isInfinite, uris);
-  }
-
-  /**
-   * Matches documents at the specified depth within at least one
-   * of the criteria directories.
-   * @param depth specifies how many subdirectories deep to traverse
-   * A value of 1 means to exclude subdirectories.
-   * @param uris    the identifiers for the criteria directories
-   * @return    the StructuredQueryDefinition for the directory query
-   * @deprecated  since 6.4.0; a directory query in MarkLogic does not support custom depths; it is either limited
-   * to the given directory or it is "infinite". For that reason, prefer the {@code directory} method that accepts a
-   * boolean indicating whether the directory query is infinite.
-   */
-  @Deprecated
-  public StructuredQueryDefinition directory(int depth, String... uris) {
-    return new DirectoryQuery(depth, uris);
   }
 
   /**

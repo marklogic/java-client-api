@@ -1,17 +1,15 @@
 MarkLogic® Java Client API
 
-Copyright © 2022 MarkLogic Corporation. MarkLogic and the MarkLogic logo are trademarks or registered trademarks of MarkLogic Corporation in the United States and other countries.  All other trademarks are the property of their respective owners.
+Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
 
-This project is licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except in compliance with the License. You may obtain a copy of the License at
+To the extent required by the applicable open-source license, a complete machine-readable copy of the source code
+corresponding to such code is available upon request. This offer is valid to anyone in receipt of this information and
+shall expire three years following the date of the final distribution of this product version by
+Progress Software Corporation. To obtain such source code, send an email to Legal-thirdpartyreview@progress.com.
+Please specify the product and version for which you are requesting source code.
 
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-
-To the extent required by the applicable open source license, a complete machine-readable copy of the source code corresponding to such code is available upon request. This offer is valid to anyone in receipt of this information and shall expire three years following the date of the final distribution of this product version by MarkLogic. To obtain such source code, send an email to legal@marklogic.com. Please specify the product and version for which you are requesting source code.
-
-The following software may be included in this project (last updated November 18, 2022):
-
+-------------------------------------------------------------------------
+Third Party Components
 
 Apache Commons BeanUtils™ 1.9.4
 Attribution Statements
@@ -76,7 +74,7 @@ Made available under the Apache License 2.0. See Appendix for full text.
 
 Source materials are available for download at: https://github.com/apache/commons-lang
 
-Jackson Annotations 2.15.3
+Jackson Annotations 2.17.2
 Attribution Statements
 http://wiki.fasterxml.com/JacksonHome
 
@@ -86,7 +84,7 @@ Copyright ©2009 FasterXML, LLC
 License Text (http://spdx.org/licenses/Apache-2.0)
 Made available under the Apache License 2.0. See Appendix for full text.
 
-Jackson Core 2.15.3
+Jackson Core 2.17.2
 Attribution Statements
 http://wiki.fasterxml.com/JacksonHome
 
@@ -98,7 +96,7 @@ Made available under the Apache License 2.0. See Appendix for full text.
 
 Source materials are available for download at: https://github.com/FasterXML/jackson-core
 
-Jackson Databind 2.15.3
+Jackson Databind 2.17.2
 Attribution Statements
 http://wiki.fasterxml.com/JacksonHome
 
@@ -116,7 +114,7 @@ License Text (http://www.apache.org/licenses/LICENSE-2.0.txt)
 Made available under the Apache License 2.0. See Appendix for full text.
 
 Source materials are available for download at: https://github.com/FasterXML/jackson-databind
-Jackson Dataformat CSV 2.15.3
+Jackson Dataformat CSV 2.17.2
 Attribution Statements
 https://github.com/FasterXML/jackson-dataformat-csv
 

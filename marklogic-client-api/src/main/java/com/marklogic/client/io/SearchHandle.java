@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.io;
 
@@ -442,15 +430,13 @@ public class SearchHandle
     long qrTime = -1;
     long frTime = -1;
     long srTime = -1;
-    long mrTime = -1;
     long erTime = -1;
     long totalTime = -1;
 
-    public SearchMetricsImpl(long qrTime, long frTime, long srTime, long mrTime, long erTime, long totalTime) {
+    public SearchMetricsImpl(long qrTime, long frTime, long srTime, long erTime, long totalTime) {
       this.qrTime = qrTime;
       this.frTime = frTime;
       this.srTime = srTime;
-      this.mrTime = mrTime;
       this.erTime = erTime;
       this.totalTime = totalTime;
     }
@@ -468,11 +454,6 @@ public class SearchHandle
     @Override
     public long getSnippetResolutionTime() {
       return srTime;
-    }
-
-    @Override
-    public long getMetadataResolutionTime() {
-      return mrTime;
     }
 
     @Override
@@ -1519,7 +1500,6 @@ public class SearchHandle
       long qrTime = -1;
       long frTime = -1;
       long srTime = -1;
-      long mrTime = -1;
       long erTime  = -1;
       long tTime  = -1;
 
@@ -1540,9 +1520,7 @@ public class SearchHandle
 			frTime = parseTime(dtFactory, now, readerValue);
 		} else if (snippetName.equals(startName)) {
 			srTime = parseTime(dtFactory, now, readerValue);
-		} else if (metadataName.equals(startName)) {
-			mrTime = parseTime(dtFactory, now, readerValue);
-		} else if (extractName.equals(startName)) {
+		}else if (extractName.equals(startName)) {
 			erTime = parseTime(dtFactory, now, readerValue);
 		} else if (totalName.equals(startName)) {
 			tTime = parseTime(dtFactory, now, readerValue);
@@ -1559,7 +1537,7 @@ public class SearchHandle
         }
       }
 
-      tempMetrics = new SearchMetricsImpl(qrTime, frTime, srTime, mrTime, erTime, tTime);
+      tempMetrics = new SearchMetricsImpl(qrTime, frTime, srTime, erTime, tTime);
     }
     private void handleConstraint(XMLEventReader reader, StartElement element)
       throws XMLStreamException

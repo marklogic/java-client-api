@@ -1,17 +1,5 @@
 /*
- * Copyright (c) 2024 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  */
 
 package com.marklogic.client.impl;
@@ -39,7 +27,7 @@ class MathExprImpl implements MathExpr {
   MathExprImpl() {
   }
 
-    
+
   @Override
   public ServerExpression acos(ServerExpression x) {
     if (x == null) {
@@ -48,7 +36,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "acos", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression asin(ServerExpression x) {
     if (x == null) {
@@ -57,7 +45,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "asin", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression atan(ServerExpression x) {
     if (x == null) {
@@ -66,13 +54,13 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "atan", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression atan2(ServerExpression y, double x) {
     return atan2(y, xs.doubleVal(x));
   }
 
-  
+
   @Override
   public ServerExpression atan2(ServerExpression y, ServerExpression x) {
     if (y == null) {
@@ -84,7 +72,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "atan2", new Object[]{ y, x });
   }
 
-  
+
   @Override
   public ServerExpression ceil(ServerExpression x) {
     if (x == null) {
@@ -93,13 +81,13 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "ceil", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression correlation(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "correlation", new Object[]{ arg });
   }
 
-  
+
   @Override
   public ServerExpression cos(ServerExpression x) {
     if (x == null) {
@@ -108,7 +96,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "cos", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression cosh(ServerExpression x) {
     if (x == null) {
@@ -117,7 +105,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "cosh", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression cot(ServerExpression x) {
     if (x == null) {
@@ -126,19 +114,19 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "cot", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression covariance(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "covariance", new Object[]{ arg });
   }
 
-  
+
   @Override
   public ServerExpression covarianceP(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "covariance-p", new Object[]{ arg });
   }
 
-  
+
   @Override
   public ServerExpression degrees(ServerExpression x) {
     if (x == null) {
@@ -147,7 +135,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "degrees", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression exp(ServerExpression x) {
     if (x == null) {
@@ -156,7 +144,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "exp", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression fabs(ServerExpression x) {
     if (x == null) {
@@ -165,7 +153,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "fabs", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression floor(ServerExpression x) {
     if (x == null) {
@@ -174,13 +162,13 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "floor", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression fmod(ServerExpression x, double y) {
     return fmod(x, xs.doubleVal(y));
   }
 
-  
+
   @Override
   public ServerExpression fmod(ServerExpression x, ServerExpression y) {
     if (x == null) {
@@ -192,7 +180,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "fmod", new Object[]{ x, y });
   }
 
-  
+
   @Override
   public ServerExpression frexp(ServerExpression x) {
     if (x == null) {
@@ -201,13 +189,13 @@ class MathExprImpl implements MathExpr {
     return new BaseTypeImpl.ItemSeqCallImpl("math", "frexp", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression ldexp(ServerExpression y, long i) {
     return ldexp(y, xs.integer(i));
   }
 
-  
+
   @Override
   public ServerExpression ldexp(ServerExpression y, ServerExpression i) {
     if (y == null) {
@@ -219,13 +207,13 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "ldexp", new Object[]{ y, i });
   }
 
-  
+
   @Override
   public ServerExpression linearModel(ServerExpression arg) {
     return new LinearModelCallImpl("math", "linear-model", new Object[]{ arg });
   }
 
-  
+
   @Override
   public ServerExpression linearModelCoeff(ServerExpression linearModel) {
     if (linearModel == null) {
@@ -234,7 +222,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleSeqCallImpl("math", "linear-model-coeff", new Object[]{ linearModel });
   }
 
-  
+
   @Override
   public ServerExpression linearModelIntercept(ServerExpression linearModel) {
     if (linearModel == null) {
@@ -243,7 +231,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "linear-model-intercept", new Object[]{ linearModel });
   }
 
-  
+
   @Override
   public ServerExpression linearModelRsquared(ServerExpression linearModel) {
     if (linearModel == null) {
@@ -252,7 +240,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "linear-model-rsquared", new Object[]{ linearModel });
   }
 
-  
+
   @Override
   public ServerExpression log(ServerExpression x) {
     if (x == null) {
@@ -261,7 +249,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "log", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression log10(ServerExpression x) {
     if (x == null) {
@@ -270,31 +258,31 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "log10", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression median(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "median", new Object[]{ arg });
   }
 
-  
+
   @Override
   public ServerExpression mode(ServerExpression arg) {
     return new XsExprImpl.AnyAtomicTypeSeqCallImpl("math", "mode", new Object[]{ arg });
   }
 
-  
+
   @Override
   public ServerExpression mode(ServerExpression arg, String options) {
     return mode(arg, (options == null) ? (ServerExpression) null : xs.string(options));
   }
 
-  
+
   @Override
   public ServerExpression mode(ServerExpression arg, ServerExpression options) {
     return new XsExprImpl.AnyAtomicTypeSeqCallImpl("math", "mode", new Object[]{ arg, options });
   }
 
-  
+
   @Override
   public ServerExpression modf(ServerExpression x) {
     if (x == null) {
@@ -303,13 +291,13 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleSeqCallImpl("math", "modf", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression percentRank(ServerExpression arg, String value) {
     return percentRank(arg, (value == null) ? (ServerExpression) null : xs.string(value));
   }
 
-  
+
   @Override
   public ServerExpression percentRank(ServerExpression arg, ServerExpression value) {
     if (value == null) {
@@ -318,13 +306,13 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "percent-rank", new Object[]{ arg, value });
   }
 
-  
+
   @Override
   public ServerExpression percentRank(ServerExpression arg, String value, String options) {
     return percentRank(arg, (value == null) ? (ServerExpression) null : xs.string(value), (options == null) ? (ServerExpression) null : xs.string(options));
   }
 
-  
+
   @Override
   public ServerExpression percentRank(ServerExpression arg, ServerExpression value, ServerExpression options) {
     if (value == null) {
@@ -333,31 +321,31 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "percent-rank", new Object[]{ arg, value, options });
   }
 
-  
+
   @Override
   public ServerExpression percentile(ServerExpression arg, double p) {
     return percentile(arg, xs.doubleVal(p));
   }
 
-  
+
   @Override
   public ServerExpression percentile(ServerExpression arg, ServerExpression p) {
     return new XsExprImpl.DoubleSeqCallImpl("math", "percentile", new Object[]{ arg, p });
   }
 
-  
+
   @Override
   public ServerExpression pi() {
     return new XsExprImpl.DoubleCallImpl("math", "pi", new Object[]{  });
   }
 
-  
+
   @Override
   public ServerExpression pow(ServerExpression x, double y) {
     return pow(x, xs.doubleVal(y));
   }
 
-  
+
   @Override
   public ServerExpression pow(ServerExpression x, ServerExpression y) {
     if (x == null) {
@@ -369,7 +357,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "pow", new Object[]{ x, y });
   }
 
-  
+
   @Override
   public ServerExpression radians(ServerExpression x) {
     if (x == null) {
@@ -378,13 +366,13 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "radians", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression rank(ServerExpression arg1, String arg2) {
     return rank(arg1, (arg2 == null) ? (ServerExpression) null : xs.string(arg2));
   }
 
-  
+
   @Override
   public ServerExpression rank(ServerExpression arg1, ServerExpression arg2) {
     if (arg2 == null) {
@@ -393,13 +381,13 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.IntegerCallImpl("math", "rank", new Object[]{ arg1, arg2 });
   }
 
-  
+
   @Override
   public ServerExpression rank(ServerExpression arg1, String arg2, String options) {
     return rank(arg1, (arg2 == null) ? (ServerExpression) null : xs.string(arg2), (options == null) ? (ServerExpression) null : xs.string(options));
   }
 
-  
+
   @Override
   public ServerExpression rank(ServerExpression arg1, ServerExpression arg2, ServerExpression options) {
     if (arg2 == null) {
@@ -408,7 +396,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.IntegerCallImpl("math", "rank", new Object[]{ arg1, arg2, options });
   }
 
-  
+
   @Override
   public ServerExpression sin(ServerExpression x) {
     if (x == null) {
@@ -417,7 +405,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "sin", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression sinh(ServerExpression x) {
     if (x == null) {
@@ -426,7 +414,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "sinh", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression sqrt(ServerExpression x) {
     if (x == null) {
@@ -435,19 +423,19 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "sqrt", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression stddev(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "stddev", new Object[]{ arg });
   }
 
-  
+
   @Override
   public ServerExpression stddevP(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "stddev-p", new Object[]{ arg });
   }
 
-  
+
   @Override
   public ServerExpression tan(ServerExpression x) {
     if (x == null) {
@@ -456,7 +444,7 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "tan", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression tanh(ServerExpression x) {
     if (x == null) {
@@ -465,19 +453,19 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.DoubleCallImpl("math", "tanh", new Object[]{ x });
   }
 
-  
+
   @Override
   public ServerExpression trunc(ServerExpression arg) {
     return new XsExprImpl.NumericCallImpl("math", "trunc", new Object[]{ arg });
   }
 
-  
+
   @Override
   public ServerExpression trunc(ServerExpression arg, long n) {
     return trunc(arg, xs.integer(n));
   }
 
-  
+
   @Override
   public ServerExpression trunc(ServerExpression arg, ServerExpression n) {
     if (n == null) {
@@ -486,13 +474,13 @@ class MathExprImpl implements MathExpr {
     return new XsExprImpl.NumericCallImpl("math", "trunc", new Object[]{ arg, n });
   }
 
-  
+
   @Override
   public ServerExpression variance(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "variance", new Object[]{ arg });
   }
 
-  
+
   @Override
   public ServerExpression varianceP(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "variance-p", new Object[]{ arg });
