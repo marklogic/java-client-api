@@ -49,6 +49,49 @@ Full documentation is available at:
 * [Java Application Developer's Guide](http://docs.marklogic.com/guide/java)
 * [JavaDoc](http://docs.marklogic.com/javadoc/client/index.html)
 
+## Including JAXB support
+
+As of the 7.0.0 release, the client now depends on the [Jakarta XML Binding](https://eclipse-ee4j.github.io/jaxb-ri/)
+API instead of the older [JAXB API](https://docs.oracle.com/javase/tutorial/jaxb/intro/). If you are using Java 11 or
+higher, you no longer need to declare additional dependencies in order to use Jakarta XML Binding. If you wish to use
+the older JAXB APIs - i.e. those in the `javax.xml.bind` package instead of `jakarta.xml.bind` - you are free to 
+include those as dependencies in your application; they will not conflict with the 7.0.0 release of the Java Client.
+
+### JAXB support in 6.x releases and older
+
+If you are using Java Client 6.x or older and also Java 11 or higher, and you wish to use JAXB with the Java client, 
+you will need to include JAXB API and implementation dependencies as those are no longer included in Java 11 and higher.
+
+For Maven, include the following in your pom.xml file:
+
+    <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <version>2.3.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>2.3.2</version>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-core</artifactId>
+        <version>2.3.0.1</version>
+    </dependency>
+
+For Gradle, include the following in your build.gradle file (this can be included in the same `dependencies` block
+as the one that includes the marklogic-client-api dependency):
+
+    dependencies {
+        implementation "javax.xml.bind:jaxb-api:2.3.1"
+        implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
+        implementation "org.glassfish.jaxb:jaxb-core:2.3.0.1"
+    }
+
+You are free to use any implementation of JAXB that you wish, but you need to ensure that you're using a JAXB
+implementation that corresponds to the `javax.xml.bind` interfaces.
+
 ## Support
 
 The MarkLogic Java Client is maintained by [MarkLogic](https://www.marklogic.com/) Engineering and is made available under 

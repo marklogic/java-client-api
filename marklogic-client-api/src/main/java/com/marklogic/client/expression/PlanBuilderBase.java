@@ -53,6 +53,7 @@ public interface PlanBuilderBase {
 	 * @param query  The cts.query expression for matching the documents.
 	 * @param qualifierName Specifies a name for qualifying the column names similar to a view name.
 	 * @return  a ModifyPlan object
+	 * @since 7.0.0; requires MarkLogic 12 or higher.
 	 */
 	PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query, String qualifierName, PlanSearchOptions options);
     /**

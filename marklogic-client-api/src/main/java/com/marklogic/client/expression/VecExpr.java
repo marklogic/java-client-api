@@ -18,6 +18,8 @@ import com.marklogic.client.type.ServerExpression;
 /**
  * Builds expressions to call functions in the vec server library for a row
  * pipeline.
+ *
+ * @since 7.0.0; requires MarkLogic 12 or higher.
  */
 public interface VecExpr {
     /**

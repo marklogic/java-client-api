@@ -28,6 +28,6 @@ dependencies {
 	api 'com.google.code.gson:gson:2.10.1'
 	api 'net.sourceforge.htmlcleaner:htmlcleaner:2.29'
 	api 'com.opencsv:opencsv:4.6'
-	api 'org.springframework:spring-jdbc:5.3.29'
+	api 'org.springframework:spring-jdbc:5.3.39'
 	api 'org.apache.commons:commons-lang3:3.12.0'
 }

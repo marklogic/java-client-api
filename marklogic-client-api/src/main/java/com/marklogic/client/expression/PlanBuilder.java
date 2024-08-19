@@ -75,6 +75,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public final SqlExpr sql;
  /**
   * Builds expressions with vec server functions.
+  * @since 7.0.0; requires MarkLogic 12 or higher.
   */
   public final VecExpr vec;
  /**
