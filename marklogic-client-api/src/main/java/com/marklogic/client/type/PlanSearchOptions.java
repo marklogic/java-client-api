@@ -14,7 +14,7 @@ public interface PlanSearchOptions {
 	XsFloatVal getQualityWeight();
     ScoreMethod getScoreMethod();
 	/**
-	 * @since 7.0.0
+	 * @since 7.0.0; requires MarkLogic 12 or higher.
 	 */
 	XsDoubleVal getBm25LengthWeight();
 	/**
@@ -27,7 +27,7 @@ public interface PlanSearchOptions {
     PlanSearchOptions withQualityWeight(XsFloatVal qualityWeight);
     PlanSearchOptions withScoreMethod(ScoreMethod scoreMethod);
 	/**
-	 * @since 7.0.0
+	 * @since 7.0.0; requires MarkLogic 12 or higher.
 	 */
 	PlanSearchOptions withBm25LengthWeight(double bm25LengthWeight);
     enum ScoreMethod {
