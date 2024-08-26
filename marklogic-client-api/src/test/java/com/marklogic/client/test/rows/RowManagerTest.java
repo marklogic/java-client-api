@@ -19,6 +19,7 @@ import com.marklogic.client.row.RowManager.RowSetPart;
 import com.marklogic.client.row.RowManager.RowStructure;
 import com.marklogic.client.row.RowRecord.ColumnKind;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.DisabledWhenUsingReverseProxyServer;
 import com.marklogic.client.test.junit5.RequiresML11;
 import com.marklogic.client.type.*;
 import com.marklogic.client.util.EditableNamespaceContext;
@@ -511,13 +512,9 @@ public class RowManagerTest {
 	}
 
   @Test
-  @ExtendWith(RequiresML11.class)
+  // A different kind of error is thrown when using the reverse proxy.
+  @ExtendWith({DisabledWhenUsingReverseProxyServer.class, RequiresML11.class})
   public void testErrorWhileStreamingRows() {
-	  if (Common.USE_REVERSE_PROXY_SERVER) {
-		  // Different kind of error is thrown when using reverse proxy.
-		  return;
-	  }
-
     final String validQueryThatEventuallyThrowsAnError = "select case " +
         "when lastName = 'Byron' then fn_error(fn_qname('', 'SQL-TABLENOTFOUND'), 'Internal Server Error') end, " +
         "opticUnitTest.musician.* from (select * from opticUnitTest.musician order by lastName)";
