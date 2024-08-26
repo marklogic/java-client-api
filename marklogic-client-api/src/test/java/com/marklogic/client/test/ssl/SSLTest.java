@@ -10,6 +10,8 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.test.Common;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnJre;
+import org.junit.jupiter.api.condition.JRE;
 
 import javax.net.ssl.*;
 import javax.security.auth.x500.X500Principal;
@@ -78,6 +80,8 @@ public class SSLTest {
   }
 
   @Test
+  // Not able to mock the X509Certificate class on Java 21.
+  @EnabledOnJre({JRE.JAVA_8, JRE.JAVA_11, JRE.JAVA_17})
   public void testHostnameVerifier() throws SSLException, CertificateParsingException {
     // three things our SSLHostnameVerifier will capture
     AtomicReference<String> capturedHost = new AtomicReference<>();
