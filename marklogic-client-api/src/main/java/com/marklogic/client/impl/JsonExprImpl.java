@@ -1,5 +1,17 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright (c) 2024 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.marklogic.client.impl;
@@ -23,13 +35,13 @@ class JsonExprImpl implements JsonExpr {
   JsonExprImpl() {
   }
 
-
+    
   @Override
   public ServerExpression array() {
     return new ArrayCallImpl("json", "array", new Object[]{  });
   }
 
-
+  
   @Override
   public ServerExpression array(ServerExpression array) {
     if (array == null) {
@@ -38,13 +50,13 @@ class JsonExprImpl implements JsonExpr {
     return new ArrayCallImpl("json", "array", new Object[]{ array });
   }
 
-
+  
   @Override
   public ServerExpression arraySize(ServerExpression array) {
     return new XsExprImpl.UnsignedLongCallImpl("json", "array-size", new Object[]{ array });
   }
 
-
+  
   @Override
   public ServerExpression arrayValues(ServerExpression array) {
     if (array == null) {
@@ -53,13 +65,13 @@ class JsonExprImpl implements JsonExpr {
     return new BaseTypeImpl.ItemSeqCallImpl("json", "array-values", new Object[]{ array });
   }
 
-
+  
   @Override
   public ServerExpression arrayValues(ServerExpression array, boolean flatten) {
     return arrayValues(array, xs.booleanVal(flatten));
   }
 
-
+  
   @Override
   public ServerExpression arrayValues(ServerExpression array, ServerExpression flatten) {
     if (array == null) {
@@ -68,13 +80,13 @@ class JsonExprImpl implements JsonExpr {
     return new BaseTypeImpl.ItemSeqCallImpl("json", "array-values", new Object[]{ array, flatten });
   }
 
-
+  
   @Override
   public ServerExpression object() {
     return new ObjectCallImpl("json", "object", new Object[]{  });
   }
 
-
+  
   @Override
   public ServerExpression object(ServerExpression map) {
     if (map == null) {
@@ -83,25 +95,25 @@ class JsonExprImpl implements JsonExpr {
     return new ObjectCallImpl("json", "object", new Object[]{ map });
   }
 
-
+  
   @Override
   public ServerExpression objectDefine() {
     return new ObjectCallImpl("json", "object-define", new Object[]{  });
   }
 
-
+  
   @Override
   public ServerExpression objectDefine(ServerExpression keys) {
     return new ObjectCallImpl("json", "object-define", new Object[]{ keys });
   }
 
-
+  
   @Override
   public ServerExpression subarray(ServerExpression array, double startingLoc) {
     return subarray(array, xs.doubleVal(startingLoc));
   }
 
-
+  
   @Override
   public ServerExpression subarray(ServerExpression array, ServerExpression startingLoc) {
     if (array == null) {
@@ -113,13 +125,13 @@ class JsonExprImpl implements JsonExpr {
     return new ArrayCallImpl("json", "subarray", new Object[]{ array, startingLoc });
   }
 
-
+  
   @Override
   public ServerExpression subarray(ServerExpression array, double startingLoc, double length) {
     return subarray(array, xs.doubleVal(startingLoc), xs.doubleVal(length));
   }
 
-
+  
   @Override
   public ServerExpression subarray(ServerExpression array, ServerExpression startingLoc, ServerExpression length) {
     if (array == null) {
@@ -134,37 +146,37 @@ class JsonExprImpl implements JsonExpr {
     return new ArrayCallImpl("json", "subarray", new Object[]{ array, startingLoc, length });
   }
 
-
+  
   @Override
   public ServerExpression toArray() {
     return new ArrayCallImpl("json", "to-array", new Object[]{  });
   }
 
-
+  
   @Override
   public ServerExpression toArray(ServerExpression items) {
     return new ArrayCallImpl("json", "to-array", new Object[]{ items });
   }
 
-
+  
   @Override
   public ServerExpression toArray(ServerExpression items, double limit) {
     return toArray(items, xs.doubleVal(limit));
   }
 
-
+  
   @Override
   public ServerExpression toArray(ServerExpression items, ServerExpression limit) {
     return new ArrayCallImpl("json", "to-array", new Object[]{ items, limit });
   }
 
-
+  
   @Override
   public ServerExpression toArray(ServerExpression items, double limit, ServerExpression zero) {
     return toArray(items, xs.doubleVal(limit), zero);
   }
 
-
+  
   @Override
   public ServerExpression toArray(ServerExpression items, ServerExpression limit, ServerExpression zero) {
     return new ArrayCallImpl("json", "to-array", new Object[]{ items, limit, zero });
@@ -180,7 +192,7 @@ class JsonExprImpl implements JsonExpr {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-
+ 
   static class ObjectSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
     ObjectSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);

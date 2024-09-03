@@ -1,5 +1,17 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright (c) 2024 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.marklogic.client.expression;
@@ -10,7 +22,7 @@ import com.marklogic.client.type.XsUnsignedLongVal;
 
 import com.marklogic.client.type.ServerExpression;
 
-// IMPORTANT: Do not edit. This file is generated.
+// IMPORTANT: Do not edit. This file is generated. 
 
 /**
  * Builds expressions to call functions in the json server library for a row
@@ -21,7 +33,7 @@ public interface JsonExpr {
   * Creates a (JSON) array, which is like a sequence of values, but allows for nesting.
   *
   * <a name="ml-server-type-array"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:array" target="mlserverdoc">json:array</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
@@ -39,7 +51,7 @@ public interface JsonExpr {
   * Returns the size of the array.
   *
   * <a name="ml-server-type-array-size"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:array-size" target="mlserverdoc">json:array-size</a> server function.
   * @param array  An array.  (of <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a>)
@@ -50,7 +62,7 @@ public interface JsonExpr {
   * Returns the array values as an XQuery sequence.
   *
   * <a name="ml-server-type-array-values"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:array-values" target="mlserverdoc">json:array-values</a> server function.
   * @param array  An array.  (of <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a>)
@@ -79,7 +91,7 @@ public interface JsonExpr {
   * Creates a JSON object, which is a kind of map with a fixed and ordered set of keys.
   *
   * <a name="ml-server-type-object"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:object" target="mlserverdoc">json:object</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_object.html">json:object</a> server data type
@@ -97,7 +109,7 @@ public interface JsonExpr {
   * Creates a JSON object.
   *
   * <a name="ml-server-type-object-define"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:object-define" target="mlserverdoc">json:object-define</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_object.html">json:object</a> server data type
@@ -124,7 +136,7 @@ public interface JsonExpr {
   * Extract a subarray from an array, producing a new array. The second and third arguments to this function operate similarly to those of fn:subsequence for XQuery sequences.
   *
   * <a name="ml-server-type-subarray"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:subarray" target="mlserverdoc">json:subarray</a> server function.
   * @param array  An array.  (of <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a>)
@@ -156,7 +168,7 @@ public interface JsonExpr {
   * Constructs a json:array from a sequence of items.
   *
   * <a name="ml-server-type-to-array"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:to-array" target="mlserverdoc">json:to-array</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type

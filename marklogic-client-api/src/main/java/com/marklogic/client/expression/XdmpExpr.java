@@ -1,5 +1,17 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright (c) 2024 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.marklogic.client.expression;
@@ -19,7 +31,7 @@ import com.marklogic.client.type.XsUnsignedLongVal;
 
 import com.marklogic.client.type.ServerExpression;
 
-// IMPORTANT: Do not edit. This file is generated.
+// IMPORTANT: Do not edit. This file is generated. 
 
 /**
  * Builds expressions to call functions in the xdmp server library for a row
@@ -30,7 +42,7 @@ public interface XdmpExpr {
   * Add two 64-bit integer values, discarding overflow.
   *
   * <a name="ml-server-type-add64"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:add64" target="mlserverdoc">xdmp:add64</a> server function.
   * @param x  The first value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
@@ -42,7 +54,7 @@ public interface XdmpExpr {
   * AND two 64-bit integer values.
   *
   * <a name="ml-server-type-and64"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:and64" target="mlserverdoc">xdmp:and64</a> server function.
   * @param x  The first value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
@@ -54,7 +66,7 @@ public interface XdmpExpr {
   * Converts base64-encoded string to plaintext.
   *
   * <a name="ml-server-type-base64-decode"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:base64-decode" target="mlserverdoc">xdmp:base64-decode</a> server function.
   * @param encoded  Encoded text to be decoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -65,7 +77,7 @@ public interface XdmpExpr {
   * Converts plaintext into base64-encoded string.
   *
   * <a name="ml-server-type-base64-encode"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:base64-encode" target="mlserverdoc">xdmp:base64-encode</a> server function.
   * @param plaintext  Plaintext to be encoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -86,7 +98,7 @@ public interface XdmpExpr {
   * Returns true if a value is castable. This is similar to the "castable as" XQuery predicate, except that the type is determined at runtime.
   *
   * <a name="ml-server-type-castable-as"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:castable-as" target="mlserverdoc">xdmp:castable-as</a> server function.
   * @param namespaceUri  The namespace URI of the type.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -108,7 +120,7 @@ public interface XdmpExpr {
   * Calculates the password hash for the given password and salt.
   *
   * <a name="ml-server-type-crypt"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:crypt" target="mlserverdoc">xdmp:crypt</a> server function.
   * @param password  String to be hashed.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -120,7 +132,7 @@ public interface XdmpExpr {
   * Calculates the password hash for the given plain-text password.
   *
   * <a name="ml-server-type-crypt2"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:crypt2" target="mlserverdoc">xdmp:crypt2</a> server function.
   * @param password  String to be hashed.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -128,10 +140,10 @@ public interface XdmpExpr {
   */
   public ServerExpression crypt2(ServerExpression password);
 /**
-  * Returns a string representing the dayname value in the localized value of arg.
+  * Returns a string representing the dayname value in the localized value of arg. 
   *
   * <a name="ml-server-type-dayname-from-date"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:dayname-from-date" target="mlserverdoc">xdmp:dayname-from-date</a> server function.
   * @param arg  The date whose dayname value will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
@@ -142,7 +154,7 @@ public interface XdmpExpr {
   * Invertible function that decodes characters an NCName produced by xdmp:encode-for-NCName. Given the NCName produced by xdmp:encode-for-NCName this function returns the original string.
   *
   * <a name="ml-server-type-decode-from-NCName"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:decode-from-NCName" target="mlserverdoc">xdmp:decode-from-NCName</a> server function.
   * @param name  A string representing an NCName. This string must have been the result of a previous call to xdmp:decode-from-NCName or undefined results will occur.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -153,7 +165,7 @@ public interface XdmpExpr {
   * Returns a string representing the description of a given item sequence. If you take the output of this function and evaluate it as an XQuery program, it returns the item(s) input to the function.
   *
   * <a name="ml-server-type-describe"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:describe" target="mlserverdoc">xdmp:describe</a> server function.
   * @param item  The item sequence whose description is returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
@@ -183,7 +195,7 @@ public interface XdmpExpr {
   * Returns the specified string, converting all of the characters with diacritics to characters without diacritics.
   *
   * <a name="ml-server-type-diacritic-less"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:diacritic-less" target="mlserverdoc">xdmp:diacritic-less</a> server function.
   * @param string  The string to convert.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -194,7 +206,7 @@ public interface XdmpExpr {
   * Returns the schema-defined content-type of an element ("empty", "simple", "element-only", or "mixed").
   *
   * <a name="ml-server-type-element-content-type"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:element-content-type" target="mlserverdoc">xdmp:element-content-type</a> server function.
   * @param element  An element node.  (of <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a>)
@@ -205,7 +217,7 @@ public interface XdmpExpr {
   * Invertible function that escapes characters required to be part of an NCName. This is useful when translating names from other representations such as JSON to XML. Given any string, the result is always a valid NCName. Providing all names are passed through this function the result is distinct NCNames so the results can be used for searching as well as name generation. The inverse function is xdmp:decode-from-NCName.
   *
   * <a name="ml-server-type-encode-for-NCName"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:encode-for-NCName" target="mlserverdoc">xdmp:encode-for-NCName</a> server function.
   * @param name  A string which is used as an NCName (such as the localname for an element or attribute).  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -216,7 +228,7 @@ public interface XdmpExpr {
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   *
   * <a name="ml-server-type-format-number"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
@@ -395,7 +407,7 @@ public interface XdmpExpr {
   * Atomizes a JSON node, returning a JSON value.
   *
   * <a name="ml-server-type-from-json"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:from-json" target="mlserverdoc">xdmp:from-json</a> server function.
   * @param arg  A node of kind object-node(), array-node(), text(), number-node(), boolean-node(), null-node(), or document-node().  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
@@ -406,7 +418,7 @@ public interface XdmpExpr {
   * Returns the name of the current user.
   *
   * <a name="ml-server-type-get-current-user"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:get-current-user" target="mlserverdoc">xdmp:get-current-user</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
@@ -416,7 +428,7 @@ public interface XdmpExpr {
   * Returns the 32-bit hash of a string.
   *
   * <a name="ml-server-type-hash32"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hash32" target="mlserverdoc">xdmp:hash32</a> server function.
   * @param string  The string to be hashed.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -427,7 +439,7 @@ public interface XdmpExpr {
   * Returns the 64-bit hash of a string.
   *
   * <a name="ml-server-type-hash64"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hash64" target="mlserverdoc">xdmp:hash64</a> server function.
   * @param string  The string to be hashed.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -438,7 +450,7 @@ public interface XdmpExpr {
   * Parses a hexadecimal string, returning an integer.
   *
   * <a name="ml-server-type-hex-to-integer"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hex-to-integer" target="mlserverdoc">xdmp:hex-to-integer</a> server function.
   * @param hex  The hexadecimal string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -449,7 +461,7 @@ public interface XdmpExpr {
   * Calculates the Hash-based Message Authentication Code (HMAC) using the md5 hash function of the given secret key and message arguments.
   *
   * <a name="ml-server-type-hmac-md5"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-md5" target="mlserverdoc">xdmp:hmac-md5</a> server function.
   * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
@@ -481,7 +493,7 @@ public interface XdmpExpr {
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA1 hash function of the given secret key and message arguments.
   *
   * <a name="ml-server-type-hmac-sha1"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-sha1" target="mlserverdoc">xdmp:hmac-sha1</a> server function.
   * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
@@ -513,7 +525,7 @@ public interface XdmpExpr {
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA256 hash function of the given secret key and message arguments.
   *
   * <a name="ml-server-type-hmac-sha256"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-sha256" target="mlserverdoc">xdmp:hmac-sha256</a> server function.
   * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
@@ -545,7 +557,7 @@ public interface XdmpExpr {
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA512 hash function of the given secret key and message arguments.
   *
   * <a name="ml-server-type-hmac-sha512"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-sha512" target="mlserverdoc">xdmp:hmac-sha512</a> server function.
   * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
@@ -577,7 +589,7 @@ public interface XdmpExpr {
   * Returns the string where the first letter of each token has been uppercased.
   *
   * <a name="ml-server-type-initcap"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:initcap" target="mlserverdoc">xdmp:initcap</a> server function.
   * @param string  The string to modify.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -588,7 +600,7 @@ public interface XdmpExpr {
   * Returns a hexadecimal representation of an integer.
   *
   * <a name="ml-server-type-integer-to-hex"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:integer-to-hex" target="mlserverdoc">xdmp:integer-to-hex</a> server function.
   * @param val  The integer value.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
@@ -599,7 +611,7 @@ public interface XdmpExpr {
   * Returns an octal representation of an integer.
   *
   * <a name="ml-server-type-integer-to-octal"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:integer-to-octal" target="mlserverdoc">xdmp:integer-to-octal</a> server function.
   * @param val  The integer value.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
@@ -610,7 +622,7 @@ public interface XdmpExpr {
   * Construct a context-independent string from a QName. This string is of the form "{namespaceURI}localname" and is suitable for use as a map key.
   *
   * <a name="ml-server-type-key-from-QName"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:key-from-QName" target="mlserverdoc">xdmp:key-from-QName</a> server function.
   * @param name  The QName to compute a key for.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -630,7 +642,7 @@ public interface XdmpExpr {
   * Left-shift a 64-bit integer value.
   *
   * <a name="ml-server-type-lshift64"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:lshift64" target="mlserverdoc">xdmp:lshift64</a> server function.
   * @param x  The value to shift.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
@@ -642,7 +654,7 @@ public interface XdmpExpr {
   * Calculates the md5 hash of the given argument.
   *
   * <a name="ml-server-type-md5"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:md5" target="mlserverdoc">xdmp:md5</a> server function.
   * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
@@ -668,10 +680,10 @@ public interface XdmpExpr {
   */
   public ServerExpression md5(ServerExpression data, ServerExpression encoding);
 /**
-  * Returns month name, calculated from the localized value of arg.
+  * Returns month name, calculated from the localized value of arg. 
   *
   * <a name="ml-server-type-month-name-from-date"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:month-name-from-date" target="mlserverdoc">xdmp:month-name-from-date</a> server function.
   * @param arg  The date whose month-name will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
@@ -682,7 +694,7 @@ public interface XdmpExpr {
   * Multiply two 64-bit integer values, discarding overflow.
   *
   * <a name="ml-server-type-mul64"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:mul64" target="mlserverdoc">xdmp:mul64</a> server function.
   * @param x  The first value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
@@ -694,7 +706,7 @@ public interface XdmpExpr {
   * Returns any collections for the node's document in the database. If the specified node does not come from a document in a database, then xdmp:node-collections returns an empty sequence.
   *
   * <a name="ml-server-type-node-collections"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-collections" target="mlserverdoc">xdmp:node-collections</a> server function.
   * @param node  The node whose collections are to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
@@ -702,10 +714,10 @@ public interface XdmpExpr {
   */
   public ServerExpression nodeCollections(ServerExpression node);
 /**
-  * Returns an xs:string representing the node's kind: either "document", "element", "attribute", "text", "namespace", "processing-instruction", "binary", or "comment".
+  * Returns an xs:string representing the node's kind: either "document", "element", "attribute", "text", "namespace", "processing-instruction", "binary", or "comment".  
   *
   * <a name="ml-server-type-node-kind"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-kind" target="mlserverdoc">xdmp:node-kind</a> server function.
   * @param node  The node whose kind is to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
@@ -716,7 +728,7 @@ public interface XdmpExpr {
   * Returns the metadata value of a given node.
   *
   * <a name="ml-server-type-node-metadata"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-metadata" target="mlserverdoc">xdmp:node-metadata</a> server function.
   * @param node  The node whose metadata are to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
@@ -736,7 +748,7 @@ public interface XdmpExpr {
   * Returns the metadata value of a node for a particular key.
   *
   * <a name="ml-server-type-node-metadata-value"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-metadata-value" target="mlserverdoc">xdmp:node-metadata-value</a> server function.
   * @param node  The node whose metadata are to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
@@ -748,7 +760,7 @@ public interface XdmpExpr {
   * Returns the permissions to a node's document.
   *
   * <a name="ml-server-type-node-permissions"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-permissions" target="mlserverdoc">xdmp:node-permissions</a> server function.
   * @param node  The node.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
@@ -777,7 +789,7 @@ public interface XdmpExpr {
   * Returns the document-uri property of the parameter or its ancestor.
   *
   * <a name="ml-server-type-node-uri"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-uri" target="mlserverdoc">xdmp:node-uri</a> server function.
   * @param node  The node whose URI is returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
@@ -788,7 +800,7 @@ public interface XdmpExpr {
   * NOT a 64-bit integer value.
   *
   * <a name="ml-server-type-not64"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:not64" target="mlserverdoc">xdmp:not64</a> server function.
   * @param x  The input value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
@@ -799,7 +811,7 @@ public interface XdmpExpr {
   * Parses an octal string, returning an integer.
   *
   * <a name="ml-server-type-octal-to-integer"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:octal-to-integer" target="mlserverdoc">xdmp:octal-to-integer</a> server function.
   * @param octal  The octal string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -810,7 +822,7 @@ public interface XdmpExpr {
   * OR two 64-bit integer values.
   *
   * <a name="ml-server-type-or64"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:or64" target="mlserverdoc">xdmp:or64</a> server function.
   * @param x  The first value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
@@ -831,7 +843,7 @@ public interface XdmpExpr {
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   *
   * <a name="ml-server-type-parse-dateTime"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a> server function.
   * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -918,7 +930,7 @@ public interface XdmpExpr {
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   *
   * <a name="ml-server-type-parse-yymmdd"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a> server function.
   * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -996,7 +1008,7 @@ public interface XdmpExpr {
   * Returns a string whose value corresponds to the path of the node.
   *
   * <a name="ml-server-type-path"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:path" target="mlserverdoc">xdmp:path</a> server function.
   * @param node  The node whose path is returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
@@ -1034,7 +1046,7 @@ public interface XdmpExpr {
   * Returns an integer value representing the starting position of a string within the search string. Note, the string starting position is 1. If the first parameter is empty, the result is the empty sequence.
   *
   * <a name="ml-server-type-position"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:position" target="mlserverdoc">xdmp:position</a> server function.
   * @param test  The string to test for existence in the second parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1066,7 +1078,7 @@ public interface XdmpExpr {
   * Construct a QName from a string of the form "{namespaceURI}localname". This function is useful for constructing Clark notation parameters for the xdmp:xslt-eval and xdmp:xslt-invoke functions.
   *
   * <a name="ml-server-type-QName-from-key"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:QName-from-key" target="mlserverdoc">xdmp:QName-from-key</a> server function.
   * @param key  The string from which to construct a QName.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1074,10 +1086,10 @@ public interface XdmpExpr {
   */
   public ServerExpression QNameFromKey(ServerExpression key);
 /**
-  * Returns an integer between 1 and 4, both inclusive, calculating the quarter component in the localized value of arg.
+  * Returns an integer between 1 and 4, both inclusive, calculating the quarter component in the localized value of arg. 
   *
   * <a name="ml-server-type-quarter-from-date"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:quarter-from-date" target="mlserverdoc">xdmp:quarter-from-date</a> server function.
   * @param arg  The date whose quarter component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
@@ -1088,7 +1100,7 @@ public interface XdmpExpr {
   * Returns a random unsigned integer between 0 and a number up to 64 bits long.
   *
   * <a name="ml-server-type-random"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:random" target="mlserverdoc">xdmp:random</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
@@ -1115,7 +1127,7 @@ public interface XdmpExpr {
   * Resolves a relative URI against an absolute URI. If base is specified, the URI is resolved relative to that base. If base is not specified, the base is set to the base-uri property from the static context, if the property exists; if it does not exist, an error is thrown.
   *
   * <a name="ml-server-type-resolve-uri"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:resolve-uri" target="mlserverdoc">xdmp:resolve-uri</a> server function.
   * @param relative  A URI reference to resolve against the base.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1136,7 +1148,7 @@ public interface XdmpExpr {
   * Right-shift a 64-bit integer value.
   *
   * <a name="ml-server-type-rshift64"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:rshift64" target="mlserverdoc">xdmp:rshift64</a> server function.
   * @param x  The value to shift.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
@@ -1148,7 +1160,7 @@ public interface XdmpExpr {
   * Calculates the SHA1 hash of the given argument.
   *
   * <a name="ml-server-type-sha1"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha1" target="mlserverdoc">xdmp:sha1</a> server function.
   * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
@@ -1177,7 +1189,7 @@ public interface XdmpExpr {
   * Calculates the SHA256 hash of the given argument.
   *
   * <a name="ml-server-type-sha256"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha256" target="mlserverdoc">xdmp:sha256</a> server function.
   * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
@@ -1206,7 +1218,7 @@ public interface XdmpExpr {
   * Calculates the SHA384 hash of the given argument.
   *
   * <a name="ml-server-type-sha384"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha384" target="mlserverdoc">xdmp:sha384</a> server function.
   * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
@@ -1235,7 +1247,7 @@ public interface XdmpExpr {
   * Calculates the SHA512 hash of the given argument.
   *
   * <a name="ml-server-type-sha512"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha512" target="mlserverdoc">xdmp:sha512</a> server function.
   * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
@@ -1264,7 +1276,7 @@ public interface XdmpExpr {
   * Combines an initial hash with a subsequent hash.
   *
   * <a name="ml-server-type-step64"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:step64" target="mlserverdoc">xdmp:step64</a> server function.
   * @param initial  An initial hash.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
@@ -1285,7 +1297,7 @@ public interface XdmpExpr {
   * Formats a dateTime value using POSIX strftime. This function uses the POSIX strftime system call in the way it is implemented on each platform. For other XQuery functions that have more functionality (for example, for things like timezones), use one or more if the various XQuery or XSLT standard functions such as fn:format-dateTime .
   *
   * <a name="ml-server-type-strftime"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:strftime" target="mlserverdoc">xdmp:strftime</a> server function.
   * @param format  The strftime format string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1297,7 +1309,7 @@ public interface XdmpExpr {
   * Converts a 64 bit timestamp value to an xs:dateTime.
   *
   * <a name="ml-server-type-timestamp-to-wallclock"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:timestamp-to-wallclock" target="mlserverdoc">xdmp:timestamp-to-wallclock</a> server function.
   * @param timestamp  The timestamp.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
@@ -1308,7 +1320,7 @@ public interface XdmpExpr {
   * Constructs a JSON document.
   *
   * <a name="ml-server-type-to-json"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:to-json" target="mlserverdoc">xdmp:to-json</a> server function.
   * @param item  A sequence of items from which the JSON document is to be constructed. The item sequence from which the JSON document is constructed.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
@@ -1316,10 +1328,10 @@ public interface XdmpExpr {
   */
   public ServerExpression toJson(ServerExpression item);
 /**
-  * Returns the name of the simple type of the atomic value argument as an xs:QName.
+  * Returns the name of the simple type of the atomic value argument as an xs:QName. 
   *
   * <a name="ml-server-type-type"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:type" target="mlserverdoc">xdmp:type</a> server function.
   * @param value  The value to return the type of.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -1330,7 +1342,7 @@ public interface XdmpExpr {
   * Parses a string as XML, returning one or more document nodes.
   *
   * <a name="ml-server-type-unquote"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:unquote" target="mlserverdoc">xdmp:unquote</a> server function.
   * @param arg  Input to be unquoted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1379,7 +1391,7 @@ public interface XdmpExpr {
   * Returns the content type of the given URI as matched in the mimetypes configuration. xdmp:content-type continues to work too.
   *
   * <a name="ml-server-type-uri-content-type"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:uri-content-type" target="mlserverdoc">xdmp:uri-content-type</a> server function.
   * @param uri  The document URI.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1390,7 +1402,7 @@ public interface XdmpExpr {
   * Returns the format of the given URI as matched in the mimetypes configuration.
   *
   * <a name="ml-server-type-uri-format"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:uri-format" target="mlserverdoc">xdmp:uri-format</a> server function.
   * @param uri  The document URI.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1401,7 +1413,7 @@ public interface XdmpExpr {
   * Converts URL-encoded string to plaintext. This decodes the string created with xdmp:url-encode.
   *
   * <a name="ml-server-type-url-decode"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:url-decode" target="mlserverdoc">xdmp:url-decode</a> server function.
   * @param encoded  Encoded text to be decoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1409,10 +1421,10 @@ public interface XdmpExpr {
   */
   public ServerExpression urlDecode(ServerExpression encoded);
 /**
-  * Converts plaintext into URL-encoded string. To decode the string, use xdmp:url-decode.
+  * Converts plaintext into URL-encoded string. To decode the string, use xdmp:url-decode. 
   *
   * <a name="ml-server-type-url-encode"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:url-encode" target="mlserverdoc">xdmp:url-encode</a> server function.
   * @param plaintext  Plaintext to be encoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1420,7 +1432,7 @@ public interface XdmpExpr {
   */
   public ServerExpression urlEncode(ServerExpression plaintext);
 /**
-  * Converts plaintext into URL-encoded string. To decode the string, use xdmp:url-decode.
+  * Converts plaintext into URL-encoded string. To decode the string, use xdmp:url-decode. 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:url-encode" target="mlserverdoc">xdmp:url-encode</a> server function.
   * @param plaintext  Plaintext to be encoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1429,7 +1441,7 @@ public interface XdmpExpr {
   */
   public ServerExpression urlEncode(ServerExpression plaintext, boolean noSpacePlus);
 /**
-  * Converts plaintext into URL-encoded string. To decode the string, use xdmp:url-decode.
+  * Converts plaintext into URL-encoded string. To decode the string, use xdmp:url-decode. 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:url-encode" target="mlserverdoc">xdmp:url-encode</a> server function.
   * @param plaintext  Plaintext to be encoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1441,7 +1453,7 @@ public interface XdmpExpr {
   * Converts an xs:dateTime to a 64 bit timestamp value.
   *
   * <a name="ml-server-type-wallclock-to-timestamp"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:wallclock-to-timestamp" target="mlserverdoc">xdmp:wallclock-to-timestamp</a> server function.
   * @param timestamp  The xs:datetime value.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
@@ -1449,10 +1461,10 @@ public interface XdmpExpr {
   */
   public ServerExpression wallclockToTimestamp(ServerExpression timestamp);
 /**
-  * Returns an integer between 1 and 53, both inclusive, representing the week value in the localized value of arg.
+  * Returns an integer between 1 and 53, both inclusive, representing the week value in the localized value of arg. 
   *
   * <a name="ml-server-type-week-from-date"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:week-from-date" target="mlserverdoc">xdmp:week-from-date</a> server function.
   * @param arg  The date whose weeks of the year will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
@@ -1460,10 +1472,10 @@ public interface XdmpExpr {
   */
   public ServerExpression weekFromDate(ServerExpression arg);
 /**
-  * Returns an integer in the range 1 to 7, inclusive, representing the weekday value in the localized value of arg. Monday is the first weekday value (value of 1), and Sunday is the last (value of 7).
+  * Returns an integer in the range 1 to 7, inclusive, representing the weekday value in the localized value of arg. Monday is the first weekday value (value of 1), and Sunday is the last (value of 7). 
   *
   * <a name="ml-server-type-weekday-from-date"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:weekday-from-date" target="mlserverdoc">xdmp:weekday-from-date</a> server function.
   * @param arg  The date whose weekday value will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
@@ -1474,7 +1486,7 @@ public interface XdmpExpr {
   * XOR two 64-bit integer values.
   *
   * <a name="ml-server-type-xor64"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:xor64" target="mlserverdoc">xdmp:xor64</a> server function.
   * @param x  The first value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
@@ -1483,10 +1495,10 @@ public interface XdmpExpr {
   */
   public ServerExpression xor64(ServerExpression x, ServerExpression y);
 /**
-  * Returns an integer between 1 and 366, both inclusive, representing the yearday value in the localized value of arg.
+  * Returns an integer between 1 and 366, both inclusive, representing the yearday value in the localized value of arg. 
   *
   * <a name="ml-server-type-yearday-from-date"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:yearday-from-date" target="mlserverdoc">xdmp:yearday-from-date</a> server function.
   * @param arg  The date whose days of the year will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)

@@ -1,5 +1,17 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright (c) 2024 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.marklogic.client.impl;
@@ -24,13 +36,13 @@ class MapExprImpl implements MapExpr {
   MapExprImpl() {
   }
 
-
+    
   @Override
   public ServerExpression contains(ServerExpression map, String key) {
     return contains(map, (key == null) ? (ServerExpression) null : xs.string(key));
   }
 
-
+  
   @Override
   public ServerExpression contains(ServerExpression map, ServerExpression key) {
     if (map == null) {
@@ -42,7 +54,7 @@ class MapExprImpl implements MapExpr {
     return new XsExprImpl.BooleanCallImpl("map", "contains", new Object[]{ map, key });
   }
 
-
+  
   @Override
   public ServerExpression count(ServerExpression map) {
     if (map == null) {
@@ -51,7 +63,7 @@ class MapExprImpl implements MapExpr {
     return new XsExprImpl.UnsignedIntCallImpl("map", "count", new Object[]{ map });
   }
 
-
+  
   @Override
   public ServerExpression entry(ServerExpression key, ServerExpression value) {
     if (key == null) {
@@ -60,13 +72,13 @@ class MapExprImpl implements MapExpr {
     return new MapCallImpl("map", "entry", new Object[]{ key, value });
   }
 
-
+  
   @Override
   public ServerExpression get(ServerExpression map, String key) {
     return get(map, (key == null) ? (ServerExpression) null : xs.string(key));
   }
 
-
+  
   @Override
   public ServerExpression get(ServerExpression map, ServerExpression key) {
     if (map == null) {
@@ -78,7 +90,7 @@ class MapExprImpl implements MapExpr {
     return new BaseTypeImpl.ItemSeqCallImpl("map", "get", new Object[]{ map, key });
   }
 
-
+  
   @Override
   public ServerExpression keys(ServerExpression map) {
     if (map == null) {
@@ -87,13 +99,13 @@ class MapExprImpl implements MapExpr {
     return new XsExprImpl.StringSeqCallImpl("map", "keys", new Object[]{ map });
   }
 
-
+  
   @Override
   public ServerExpression map() {
     return new MapCallImpl("map", "map", new Object[]{  });
   }
 
-
+  
   @Override
   public ServerExpression map(ServerExpression map) {
     if (map == null) {
@@ -102,13 +114,13 @@ class MapExprImpl implements MapExpr {
     return new MapCallImpl("map", "map", new Object[]{ map });
   }
 
-
+  
   @Override
   public ServerExpression newExpr() {
     return new MapCallImpl("map", "new", new Object[]{  });
   }
 
-
+  
   @Override
   public ServerExpression newExpr(ServerExpression maps) {
     return new MapCallImpl("map", "new", new Object[]{ maps });
