@@ -1,16 +1,20 @@
 package com.marklogic.client.test.rows;
 
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.expression.PlanBuilder;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.RequiresML12;
 import com.marklogic.client.type.PlanSearchOptions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(RequiresML12.class)
 class FromSearchDocsWithOptionsTest extends AbstractOpticUpdateTest {
@@ -25,6 +29,21 @@ class FromSearchDocsWithOptionsTest extends AbstractOpticUpdateTest {
 			.withBm25LengthWeight(0.25);
 		List<RowRecord> rows = resultRows(op.fromSearchDocs(op.cts.wordQuery("saxophone"), null, options));
 		assertEquals(2, rows.size());
+	}
+
+	@Disabled("Waiting on fix for MLE-16147.")
+	@Test
+	void bm25ViaSearchOptions() {
+		final String combinedQuery = "<search xmlns='http://marklogic.com/appservices/search'>" +
+			"<options><search-option>score-bm25</search-option></options>" +
+			"<qtext>saxophone</qtext></search>";
+
+		QueryManager queryManager = Common.client.newQueryManager();
+		SearchHandle results = queryManager.search(
+			queryManager.newRawCombinedQueryDefinition(new StringHandle(combinedQuery).withFormat(Format.XML)),
+			new SearchHandle());
+		assertEquals(2, results.getTotalResults(), "Just doing a simple search to verify that score-bm25 is " +
+			"recognized as a valid search option.");
 	}
 
 	@Test
