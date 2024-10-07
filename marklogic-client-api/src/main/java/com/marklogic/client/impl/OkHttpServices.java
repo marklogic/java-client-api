@@ -1908,7 +1908,7 @@ public class OkHttpServices implements RESTServices {
       params.add("start", Long.toString(start));
     }
 
-    if (len > 0) {
+    if (len > -1) {
       params.add("pageLength", Long.toString(len));
     }
 
