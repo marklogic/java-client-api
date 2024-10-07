@@ -37,3 +37,5 @@ ml-development-tools/src/test/ml-modules
 ml-development-tools/src/test/java/com/marklogic/client/test/dbfunction/generated
 
 .vscode
+docker-compose.yaml
+docker/
