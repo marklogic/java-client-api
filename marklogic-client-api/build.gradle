@@ -29,7 +29,7 @@ dependencies {
 	implementation "com.sun.mail:jakarta.mail:2.0.1"
 
 	implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
-	implementation 'org.slf4j:slf4j-api:1.7.36'
+	implementation 'org.slf4j:slf4j-api:2.0.16'
 	implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
 	implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
 	implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
