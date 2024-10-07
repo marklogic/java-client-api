@@ -43,14 +43,14 @@ dependencies {
 	compileOnly 'org.dom4j:dom4j:2.1.4'
 	compileOnly 'com.google.code.gson:gson:2.10.1'
 
-	testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.11.1'
 	// Forcing junit version to avoid vulnerability with older version in xmlunit
 	testImplementation 'junit:junit:4.13.2'
-	testImplementation 'org.xmlunit:xmlunit-legacy:2.9.1'
+	testImplementation 'org.xmlunit:xmlunit-legacy:2.10.0'
 	testImplementation project(':examples')
 
 	// Allows talking to the Manage API.
-	testImplementation ("com.marklogic:ml-app-deployer:4.8.0") {
+	testImplementation ("com.marklogic:ml-app-deployer:5.0.0") {
 		exclude module: "marklogic-client-api"
 	}
 
@@ -63,11 +63,11 @@ dependencies {
 	testImplementation 'ch.qos.logback:logback-classic:1.3.14'
 	// schema validation issue with testImplementation 'xerces:xercesImpl:2.12.0'
 	testImplementation 'org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115'
-	testImplementation 'org.apache.commons:commons-lang3:3.14.0'
+	testImplementation 'org.apache.commons:commons-lang3:3.17.0'
 	testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
 	testImplementation 'com.opencsv:opencsv:4.6'
 	testImplementation 'org.geonames:geonames:1.0'
-	testImplementation 'org.skyscreamer:jsonassert:1.5.1'
+	testImplementation 'org.skyscreamer:jsonassert:1.5.3'
 }
 
 // Ensure that mlHost and mlPassword can override the defaults of localhost/admin if they've been modified
