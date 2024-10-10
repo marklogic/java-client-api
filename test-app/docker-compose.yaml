@@ -1,0 +1,18 @@
+name: marklogic-javaclient-test-app
+
+services:
+
+  marklogic:
+    image: "${MARKLOGIC_IMAGE}"
+    platform: linux/amd64
+    environment:
+      - MARKLOGIC_INIT=true
+      - MARKLOGIC_ADMIN_USERNAME=admin
+      - MARKLOGIC_ADMIN_PASSWORD=admin
+    volumes:
+      - ./docker/marklogic/logs:/var/opt/MarkLogic/Logs
+    ports:
+      - "8000-8002:8000-8002"
+      - "8012:8012"
+      - "8014:8014"
+      - "8020:8020"
