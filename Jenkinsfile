@@ -1,31 +1,39 @@
 @Library('shared-libraries') _
 
 def getJava(){
-    if(env.JAVA_VERSION=="JAVA17"){
-        return "/home/builder/java/jdk-17.0.2"
-    }else if(env.JAVA_VERSION=="JAVA11"){
-        return "/home/builder/java/jdk-11.0.2"
-    }else if(env.JAVA_VERSION=="JAVA21"){
+	if(env.JAVA_VERSION=="JAVA17"){
+		return "/home/builder/java/jdk-17.0.2"
+	}else if(env.JAVA_VERSION=="JAVA11"){
+		return "/home/builder/java/jdk-11.0.2"
+	}else if(env.JAVA_VERSION=="JAVA21"){
 		return "/home/builder/java/jdk-21.0.1"
 	}else{
-        return "/home/builder/java/openjdk-1.8.0-262"
-    }
+		return "/home/builder/java/openjdk-1.8.0-262"
+	}
 }
 
-def runAllTests(String type, String version, Boolean useReverseProxy){
-            copyRPM type, version
-            sh 'sudo /usr/local/sbin/mladmin removeforest /space/Forests'
-            setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
-            copyConvertersRPM type,version
-            setUpMLConverters '$WORKSPACE/xdmp/src/Mark*Converters*.rpm'
+def setupDockerMarkLogic(String image){
+	sh label:'mlsetup', script: '''#!/bin/bash
+		echo "Removing any running MarkLogic server and clean up MarkLogic data directory"
+    sudo /usr/local/sbin/mladmin remove
+    sudo /usr/local/sbin/mladmin cleandata
+    cd java-client-api/test-app
+    mkdir -p docker/marklogic/logs
+    docker compose down -v || true
+    echo "Using image: "'''+image+'''
+    MARKLOGIC_IMAGE='''+image+''' docker compose up -d --build
+		echo "mlPassword=admin" > gradle-local.properties
+    echo "Waiting for MarkLogic server to initialize."
+    sleep 30s
+    cd ..
+		export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+		export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+   	./gradlew -i mlDeploy mlReloadSchemas
+  '''
+}
 
-            sh label:'deploy test app', script: '''#!/bin/bash
-                export JAVA_HOME=$JAVA_HOME_DIR
-                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-                cd java-client-api
-                ./gradlew -i mlDeploy mlReloadSchemas -PmlForestDataDirectory=/space
-            '''
+def runAllTests(Boolean useReverseProxy, String image){
+		setupDockerMarkLogic(image)
 
             if (useReverseProxy) {
 							sh label:'run marklogic-client-api tests with reverse proxy', script: '''#!/bin/bash
@@ -155,18 +163,9 @@ pipeline{
         }
       }
       steps {
-        copyRPM 'Latest','11'
-        sh 'sudo /usr/local/sbin/mladmin removeforest /space/Forests'
-        setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
-        copyConvertersRPM 'Latest','11'
-        setUpMLConverters '$WORKSPACE/xdmp/src/Mark*Converters*.rpm'
-        sh label:'deploy test app', script: '''#!/bin/bash
-          export JAVA_HOME=$JAVA_HOME_DIR
-          export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-          export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-          cd java-client-api
-          ./gradlew -i mlDeploy mlReloadSchemas -PmlForestDataDirectory=/space
-        '''
+	      setupDockerMarkLogic("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
+
+
         sh label:'run marklogic-client-api tests', script: '''#!/bin/bash
           export JAVA_HOME=$JAVA_HOME_DIR
           export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
@@ -176,6 +175,14 @@ pipeline{
           ./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runFastFunctionalTests || true
         '''
         junit '**/build/**/TEST*.xml'
+      }
+      post{
+        always{
+          sh label:'dockerCleanup', script: '''#!/bin/bash
+            cd java-client-api
+            docker compose down -v || true
+          '''
+        }
       }
     }
     stage('publish'){
@@ -205,7 +212,7 @@ pipeline{
 				}
 			}
 			steps {
-			runAllTests('Release', '11.2.0', false)
+			runAllTests(false, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:11.2.0-ubi")
 				junit '**/build/**/TEST*.xml'
 			}
 		}
@@ -218,7 +225,7 @@ pipeline{
 				}
 			}
 			steps {
-				runAllTests('Latest', '11', false)
+				runAllTests(false, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
 				junit '**/build/**/TEST*.xml'
 			}
 		}
@@ -231,7 +238,7 @@ pipeline{
 				}
 			}
 			steps {
-				runAllTests('Latest', '11', true)
+				runAllTests(true, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
 				junit '**/build/**/TEST*.xml'
 			}
 		}
@@ -244,7 +251,7 @@ pipeline{
 				}
 			}
 			steps {
-				runAllTests('Latest', '12', false)
+				runAllTests(false, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-12")
 				junit '**/build/**/TEST*.xml'
 			}
 		}
@@ -257,7 +264,7 @@ pipeline{
 				}
 			}
 			steps {
-				runAllTests('Latest', '10.0', false)
+				runAllTests(false, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-10")
 				junit '**/build/**/TEST*.xml'
 			}
 		}
@@ -270,7 +277,7 @@ pipeline{
 				}
 			}
 			steps {
-				runAllTests('Release', '10.0-10.2', false)
+				runAllTests(false, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-10")
 				junit '**/build/**/TEST*.xml'
 			}
 		}
