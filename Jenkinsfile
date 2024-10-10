@@ -18,7 +18,7 @@ def setupDockerMarkLogic(String image){
     sudo /usr/local/sbin/mladmin remove
     sudo /usr/local/sbin/mladmin cleandata
     cd java-client-api/test-app
-    mkdir -p docker/marklogic/logs
+//     mkdir -p docker/marklogic/logs
     docker compose down -v || true
     echo "Using image: "'''+image+'''
     MARKLOGIC_IMAGE='''+image+''' docker compose up -d --build
