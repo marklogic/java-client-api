@@ -28,7 +28,17 @@ and add the following (you can override additional properties as necessary):
 Note that additional properties are defined via `./tests-app/gradle.properties`, though it is not expected that these
 properties will need to be changed.
 
-The application is then deployed via the following command:
+The tests require a MarkLogic instance with access to several ports (8000,8001,8002,8012,8014,8020). That instance may
+be a local instance or it may be running in a Docker container. If you would like to create a Docker container with the
+instance, you may create the container with the following commands (starting in the project root directory):
+
+```
+cd test-app
+docker-compose up -d --build
+cd ..
+```
+
+Once you have a MarkLogic instance ready, the application is then deployed via the following command:
 
     ./gradlew mlDeploy -i
 
