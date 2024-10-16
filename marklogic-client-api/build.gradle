@@ -30,10 +30,10 @@ dependencies {
 
 	implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
 	implementation 'org.slf4j:slf4j-api:2.0.16'
-	implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
-	implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
-	implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-	implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-csv:${jacksonVersion}"
+	implementation "com.fasterxml.jackson.core:jackson-core:2.17.2"
+	implementation "com.fasterxml.jackson.core:jackson-annotations:2.17.2"
+	implementation "com.fasterxml.jackson.core:jackson-databind:2.17.2"
+	implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.17.2"
 
 	// Only used by extras (which some examples then depend on)
 	// Forcing codec version to avoid vulnerability with older version in httpclient
@@ -59,7 +59,7 @@ dependencies {
 	testImplementation "org.mockito:mockito-inline:4.11.0"
 	testImplementation "com.squareup.okhttp3:mockwebserver:4.12.0"
 
-	testImplementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jacksonVersion}"
+	testImplementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.2"
 	testImplementation 'ch.qos.logback:logback-classic:1.3.14'
 	// schema validation issue with testImplementation 'xerces:xercesImpl:2.12.0'
 	testImplementation 'org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115'
