@@ -14,8 +14,7 @@ services:
       - ${MARKLOGIC_LOGS_VOLUME}:/var/opt/MarkLogic/Logs
     ports:
       - "8000-8002:8000-8002"
-      - "8012:8012"
-      - "8014:8014"
+      - "8011-8014:8011-8014"
       - "8020:8020"
 
 volumes:
