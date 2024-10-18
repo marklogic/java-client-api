@@ -19,14 +19,17 @@ def setupDockerMarkLogic(String image){
     sudo /usr/local/sbin/mladmin cleandata
     cd java-client-api/test-app
     docker compose down -v || true
+    docker volume prune -f
     echo "Using image: "'''+image+'''
     MARKLOGIC_IMAGE='''+image+''' MARKLOGIC_LOGS_VOLUME=marklogicLogs docker compose up -d --build
 	  echo "mlPassword=admin" > gradle-local.properties
     echo "Waiting for MarkLogic server to initialize."
-    sleep 30s
+    sleep 60s
     cd ..
+	  echo "mlPassword=admin" > gradle-local.properties
 		export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
 		export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+		./gradlew mlTestConnections
    	./gradlew -i mlDeploy mlReloadSchemas
   '''
 }
@@ -180,6 +183,7 @@ pipeline{
           sh label:'dockerCleanup', script: '''#!/bin/bash
 				    cd java-client-api/test-app
             docker compose down -v || true
+            docker volume prune -f
           '''
         }
       }
@@ -200,6 +204,15 @@ pipeline{
           cd java-client-api
           ./gradlew publish
         '''
+      }
+      post{
+        always{
+          sh label:'dockerCleanup', script: '''#!/bin/bash
+				    cd java-client-api/test-app
+            docker compose down -v || true
+            docker volume prune -f
+          '''
+        }
       }
     }
 
