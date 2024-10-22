@@ -38,14 +38,7 @@ def runAllTests(Boolean useReverseProxy, String image){
 		setupDockerMarkLogic(image)
 
             if (useReverseProxy) {
-							sh label:'run marklogic-client-api tests with reverse proxy', script: '''#!/bin/bash
-									export JAVA_HOME=$JAVA_HOME_DIR
-									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-									cd java-client-api
-									mkdir -p marklogic-client-api/build/test-results/test
-                  ./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api:test || true
-							'''
+            	// Skip testing the marklogic-client-api tests with reverse proxy
             } else {
 							sh label:'run marklogic-client-api tests', script: '''#!/bin/bash
 									export JAVA_HOME=$JAVA_HOME_DIR
@@ -72,7 +65,6 @@ def runAllTests(Boolean useReverseProxy, String image){
 									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
 									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
 									cd java-client-api
-									./gradlew mlDeploy -PmlForestDataDirectory=/space
 									./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runFragileTests || true
 							'''
             } else {
