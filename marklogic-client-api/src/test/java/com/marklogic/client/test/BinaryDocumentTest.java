@@ -7,10 +7,12 @@ import com.marklogic.client.document.*;
 import com.marklogic.client.document.BinaryDocumentManager.MetadataExtraction;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.io.*;
+import com.marklogic.client.test.junit5.RequiresML11;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.w3c.dom.Document;
 
 import jakarta.xml.bind.DatatypeConverter;
@@ -36,6 +38,8 @@ public class BinaryDocumentTest {
   final static public byte[] BYTES_BINARY = DatatypeConverter.parseBase64Binary(ENCODED_BINARY);
 
   @Test
+  // Requires MarkLogic 11 or higher now that we're using Docker; the INSTALL_CONVERTERS flag does not work for MarkLogic 10.
+  @ExtendWith(RequiresML11.class)
   public void testReadWrite() throws IOException, XpathException {
     String docId = "/test/binary-sample.png";
     String mimetype = "image/png";

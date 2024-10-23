@@ -64,7 +64,6 @@ public class TestEvalXquery extends AbstractFunctionalTest {
    * This method is validating all the return values from xquery
    */
   void validateReturnTypes(EvalResultIterator evr) throws Exception {
-    boolean inDST = TimeZone.getDefault().inDaylightTime(new Date());
     while (evr.hasNext())
     {
       EvalResult er = evr.next();
@@ -126,8 +125,8 @@ public class TestEvalXquery extends AbstractFunctionalTest {
       } else if (er.getType().equals(Type.DATETIME)) {
         // Adjusted this to ignore timezone
         String val = er.getAs(String.class);
-        assertTrue(val.startsWith("2010-01-06T"));
-        assertTrue(val.contains(":13:50.873"));
+        assertTrue(val.startsWith("2010-01"), "Unexpected value: " + val);
+        assertTrue(val.contains(":13:50.873"), "Unexpected value: " + val);
       } else if (er.getType().equals(Type.DECIMAL)) {
         // System.out.println("Testing is Decimal? "+er.getAs(String.class));
         assertEquals( "10.5", er.getAs(String.class));

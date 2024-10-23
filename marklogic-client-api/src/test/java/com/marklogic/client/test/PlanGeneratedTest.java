@@ -327,7 +327,8 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 	@ExtendWith(RequiresML12.class)
 	@Test
 	public void testFnHead1Exec() {
-		executeTester("testFnHead1", p.fn.head(p.col("1")), false, null, null, Format.JSON, null, new ServerExpression[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("c")) });
+		executeTester("testFnHead1", p.fn.head(p.col("1")), false, null, null, null, "a",
+			new ServerExpression[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("c")) });
 	}
 
     @Test
