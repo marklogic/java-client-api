@@ -132,23 +132,35 @@ def runAllTests(Boolean useReverseProxy, String image){
             '''
 }
 
+def tearDownDocker() {
+	sh label:'tearDownDocker', script: '''#!/bin/bash
+		cd java-client-api/test-app
+		docker compose down -v || true
+		docker volume prune -f
+	'''
+}
+
 pipeline{
   agent {label 'javaClientLinuxPool'}
+
   options {
     checkoutToSubdirectory 'java-client-api'
     buildDiscarder logRotator(artifactDaysToKeepStr: '7', artifactNumToKeepStr: '', daysToKeepStr: '7', numToKeepStr: '10')
   }
-  parameters{
+
+  parameters {
     booleanParam(name: 'regressions', defaultValue: false, description: 'indicator if build is for regressions')
     string(name: 'Email', defaultValue: '' ,description: 'Who should I say send the email to?')
     string(name: 'JAVA_VERSION', defaultValue: 'JAVA8' ,description: 'Who should I say send the email to?')
   }
-  environment{
+
+  environment {
     JAVA_HOME_DIR= getJava()
     GRADLE_DIR   =".gradle"
     DMC_USER     = credentials('MLBUILD_USER')
     DMC_PASSWORD = credentials('MLBUILD_PASSWORD')
   }
+
   stages {
     stage('pull-request-tests') {
       when {
@@ -158,8 +170,6 @@ pipeline{
       }
       steps {
 	      setupDockerMarkLogic("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
-
-
         sh label:'run marklogic-client-api tests', script: '''#!/bin/bash
           export JAVA_HOME=$JAVA_HOME_DIR
           export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
@@ -170,15 +180,11 @@ pipeline{
         '''
         junit '**/build/**/TEST*.xml'
       }
-      post{
-        always{
-          sh label:'dockerCleanup', script: '''#!/bin/bash
-				    cd java-client-api/test-app
-            docker compose down -v || true
-            docker volume prune -f
-          '''
-        }
-      }
+			post {
+				always {
+					tearDownDocker()
+				}
+			}
     }
     stage('publish'){
       when {
@@ -197,15 +203,6 @@ pipeline{
           ./gradlew publish
         '''
       }
-      post{
-        always{
-          sh label:'dockerCleanup', script: '''#!/bin/bash
-				    cd java-client-api/test-app
-            docker compose down -v || true
-            docker volume prune -f
-          '''
-        }
-      }
     }
 
 		stage('regressions-11.2.0') {
@@ -216,8 +213,13 @@ pipeline{
 				}
 			}
 			steps {
-			runAllTests(false, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:11.2.0-ubi")
+				runAllTests(false, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:11.2.0-ubi")
 				junit '**/build/**/TEST*.xml'
+			}
+			post {
+				always {
+					tearDownDocker()
+				}
 			}
 		}
 
@@ -232,6 +234,11 @@ pipeline{
 				runAllTests(false, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
 				junit '**/build/**/TEST*.xml'
 			}
+			post {
+				always {
+					tearDownDocker()
+				}
+			}
 		}
 
 		stage('regressions-11-reverseProxy') {
@@ -244,6 +251,11 @@ pipeline{
 			steps {
 				runAllTests(true, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
 				junit '**/build/**/TEST*.xml'
+			}
+			post {
+				always {
+					tearDownDocker()
+				}
 			}
 		}
 
@@ -258,6 +270,11 @@ pipeline{
 				runAllTests(false, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-12")
 				junit '**/build/**/TEST*.xml'
 			}
+			post {
+				always {
+					tearDownDocker()
+				}
+			}
 		}
 
 		stage('regressions-10.0') {
@@ -270,6 +287,11 @@ pipeline{
 			steps {
 				runAllTests(false, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-10")
 				junit '**/build/**/TEST*.xml'
+			}
+			post {
+				always {
+					tearDownDocker()
+				}
 			}
 		}
 
