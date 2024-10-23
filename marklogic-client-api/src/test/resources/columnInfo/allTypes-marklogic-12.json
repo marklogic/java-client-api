@@ -156,7 +156,7 @@
 		"schema": "javaClient",
 		"view": "allTypes",
 		"column": "longLatPointValue",
-		"type": "point",
+		"type": "longLatPoint",
 		"hidden": false,
 		"nullable": true,
 		"coordinate-system": "wgs84"

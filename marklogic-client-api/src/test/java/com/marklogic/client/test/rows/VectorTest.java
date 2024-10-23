@@ -35,7 +35,7 @@ class VectorTest extends AbstractOpticUpdateTest {
 	void vectorFunctionsHappyPath() {
 		PlanBuilder.ModifyPlan plan =
 			op.fromView("vectors", "persons")
-				.bind(op.as("sampleVector", sampleVector))
+				.bind(op.as("sampleVector", op.vec.vector(sampleVector)))
 				.bind(op.as("cosineSimilarity", op.vec.cosineSimilarity(op.col("embedding"),op.col("sampleVector"))))
 				.bind(op.as("dotProduct", op.vec.dotProduct(op.col("embedding"),op.col("sampleVector"))))
 				.bind(op.as("euclideanDistance", op.vec.euclideanDistance(op.col("embedding"),op.col("sampleVector"))))
@@ -86,7 +86,7 @@ class VectorTest extends AbstractOpticUpdateTest {
 	void cosineSimilarity_DimensionMismatch() {
 		PlanBuilder.ModifyPlan plan =
 			op.fromView("vectors", "persons")
-				.bind(op.as("sampleVector", twoDimensionalVector))
+				.bind(op.as("sampleVector", op.vec.vector(twoDimensionalVector)))
 				.bind(op.as("cosineSimilarity", op.vec.cosineSimilarity(op.col("embedding"),op.col("sampleVector"))))
 				.select(op.col("name"), op.col("summary"), op.col("cosineSimilarity"));
 		Exception exception = assertThrows(FailedRequestException.class, () -> resultRows(plan));
