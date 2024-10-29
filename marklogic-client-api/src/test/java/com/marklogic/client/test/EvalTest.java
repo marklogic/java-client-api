@@ -85,6 +85,20 @@ public class EvalTest {
 		  "https://docs.marklogic.com/guide/rest-dev/intro#id_34966; actual error: " + message);
   }
 
+	@Test
+	void invalidJavascriptModule() {
+		FailedRequestException ex = assertThrows(FailedRequestException.class, () ->
+			Common.evalClient.newServerEval().modulePath("/data/moduleDoesNotExist.sjs").eval()
+		);
+		String message = ex.getServerMessage();
+		assertTrue(
+			message.contains("Module /data/moduleDoesNotExist.sjs not found"),
+			"The error message from the server is expected to contain the actual error, which in this case " +
+				"is due to a missing module. In order for this to happen, the Java Client should send the " +
+				"X-Error-Accept header per the docs at https://docs.marklogic.com/guide/rest-dev/intro#id_34966; " +
+				"actual error: " + message);
+	}
+
   @Test
   void invalidXQuery() {
 	  FailedRequestException ex = assertThrows(FailedRequestException.class, () ->

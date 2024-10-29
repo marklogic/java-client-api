@@ -4229,7 +4229,7 @@ public class OkHttpServices implements RESTServices {
 		// server defaults to 'compatible'. If the error format is 'compatible', a block of HTML is sent back which
 		// causes an error that prevents the user from seeing the actual error from the server. So for all eval calls,
 		// X-Error-Accept is used to request any errors back as JSON so that they can be handled correctly.
-		if ("eval".equals(path)) {
+		if ("eval".equals(path) || ("invoke".equals(path))) {
 			requestBuilder.addHeader(HEADER_ERROR_FORMAT, "application/json");
 		}
 		return requestBuilder;
