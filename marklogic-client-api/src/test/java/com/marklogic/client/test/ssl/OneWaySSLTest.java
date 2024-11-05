@@ -84,6 +84,7 @@ class OneWaySSLTest {
 		assertTrue(ex.getCause() instanceof SSLException, "Unexpected cause: " + ex.getCause());
 	}
 
+	// Currently failing on 12-nightly due to https://progresssoftware.atlassian.net/browse/MLE-17505 . 
 	@Test
 	void noSslContext() {
 		DatabaseClient client = Common.newClientBuilder().build();

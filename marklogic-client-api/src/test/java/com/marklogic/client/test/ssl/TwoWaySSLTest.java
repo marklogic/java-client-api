@@ -97,6 +97,7 @@ public class TwoWaySSLTest {
 	 * - When the breakpoint is hit, look for the location of the files in stdout.
 	 * - Copy those files to a more accessible location and use them for accessing the 8012 app server.
 	 */
+	// Currently failing on 12-nightly due to https://progresssoftware.atlassian.net/browse/MLE-17505 .
 	@Test
 	void digestAuthentication() {
 		// This client uses our Java KeyStore file with a client certificate in it, so it should work.
