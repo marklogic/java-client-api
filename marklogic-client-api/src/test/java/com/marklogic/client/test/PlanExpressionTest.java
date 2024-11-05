@@ -219,7 +219,6 @@ public class PlanExpressionTest {
       assertEquals("the=g=text", cTargetVal);
    }
 
-   // Currently failing on 12-nightly due to server bug - https://progresssoftware.atlassian.net/browse/MLE-17611
    @Test
    public void testRedactUsPhone() {
       final String testStr = "123-456-7890";
