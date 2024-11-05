@@ -3,6 +3,8 @@ package com.marklogic.client.test.rows;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.expression.PlanBuilder;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.row.RawQueryDSLPlan;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.junit5.RequiresML12;
 import com.marklogic.client.type.ServerExpression;
@@ -125,5 +127,13 @@ class VectorTest extends AbstractOpticUpdateTest {
 			.bind(op.as("embedding", op.vec.vector(op.xpath("doc", "/person/embedding"))));
 		List<RowRecord> rows = resultRows(plan);
 		assertEquals(1, rows.size());
+	}
+
+	@Test
+	void vecVectorWithCol() {
+		String query = "op.fromView('vectors', 'persons').limit(2).bind(op.as('summaryCosineSim', op.vec.vector(op.col('embedding'))))";
+		RawQueryDSLPlan plan = rowManager.newRawQueryDSLPlan(new StringHandle(query));
+		List<RowRecord> rows = resultRows(plan);
+		assertEquals(2, rows.size());
 	}
 }
