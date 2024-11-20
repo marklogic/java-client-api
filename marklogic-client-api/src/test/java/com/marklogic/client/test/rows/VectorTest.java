@@ -129,6 +129,8 @@ class VectorTest extends AbstractOpticUpdateTest {
 		assertEquals(1, rows.size());
 	}
 
+	// This is passing locally when running 12-nightly on Docker, but has been failing on Jenkins since it was
+	// introduced on Nov 5th. Created https://progresssoftware.atlassian.net/browse/MLE-17964 to track it.
 	@Test
 	void vecVectorWithCol() {
 		String query = "op.fromView('vectors', 'persons').limit(2).bind(op.as('summaryCosineSim', op.vec.vector(op.col('embedding'))))";
