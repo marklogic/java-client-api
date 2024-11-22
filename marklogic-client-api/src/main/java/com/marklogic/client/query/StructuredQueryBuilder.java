@@ -336,6 +336,39 @@ public class StructuredQueryBuilder {
     return new AndNotQuery(positive, negative);
   }
 
+	/**
+	 * Defines a "true" query that selects all documents.
+	 *
+	 * @since 7.1.0
+	 * @return the StructuredQueryDefinition for the "true" query.
+	 */
+	public StructuredQueryDefinition trueQuery() {
+		return new TrueQuery();
+	}
+
+	/**
+	 * Defines a "true" query that selects all documents.
+	 *
+	 * @since 7.1.0
+	 * @return the StructuredQueryDefinition for the "true" query.
+	 */
+	public StructuredQueryDefinition falseQuery() {
+		return new FalseQuery();
+	}
+
+	/**
+	 * Define a new operator state; see https://docs.marklogic.com/guide/search-dev/structured-query#id_45570 for
+	 * more information.
+	 *
+	 * @param operatorName The name of a custom runtime configuration operator defined by the <operator/> query option.
+	 * @param stateName The name of a state recognized by this operator.
+	 * @since 7.1.0
+	 * @return the StructuredQueryDefinition for the operator state.
+	 */
+	public StructuredQueryDefinition operatorState(String operatorName, String stateName) {
+		return new OperatorState(operatorName, stateName);
+	}
+
   /**
    * Defines a NEAR query over the list of query definitions
    * with default parameters.
@@ -1287,6 +1320,43 @@ public class StructuredQueryBuilder {
       writeQuery(serializer, "negative-query", (AbstractStructuredQuery) negative);
       serializer.writeEndElement();
     }
+  }
+
+  protected class TrueQuery extends AbstractStructuredQuery {
+	  @Override
+	  public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
+		  serializer.writeEmptyElement(SEARCH_API_NS, "true-query");
+	  }
+  }
+
+  protected class FalseQuery extends AbstractStructuredQuery {
+	  @Override
+	  public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
+		  serializer.writeEmptyElement(SEARCH_API_NS, "false-query");
+	  }
+  }
+
+  protected class OperatorState extends AbstractStructuredQuery {
+
+	  private final String operatorName;
+	  private final String stateName;
+	  public OperatorState(String operatorName, String stateName) {
+		  super();
+		  this.operatorName = operatorName;
+		  this.stateName = stateName;
+	  }
+
+	  @Override
+	  public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
+		  writeSearchElement(serializer, "operator-state");
+		  writeSearchElement(serializer, "operator-name");
+		  serializer.writeCharacters(operatorName);
+		  serializer.writeEndElement();
+		  writeSearchElement(serializer, "state-name");
+		  serializer.writeCharacters(stateName);
+		  serializer.writeEndElement();
+		  serializer.writeEndElement();
+	  }
   }
 
   protected class AndNotQuery
