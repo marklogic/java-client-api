@@ -7,6 +7,7 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.DisabledWhenUsingReverseProxyServer;
 import com.marklogic.client.test.junit5.RequireSSLExtension;
+import com.marklogic.client.test.junit5.RequiresML11OrLower;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -84,8 +85,9 @@ class OneWaySSLTest {
 		assertTrue(ex.getCause() instanceof SSLException, "Unexpected cause: " + ex.getCause());
 	}
 
-	// Currently failing on 12-nightly due to https://progresssoftware.atlassian.net/browse/MLE-17505 . 
+	// Currently failing on 12-nightly due to https://progresssoftware.atlassian.net/browse/MLE-17505 .
 	@Test
+	@ExtendWith(RequiresML11OrLower.class)
 	void noSslContext() {
 		DatabaseClient client = Common.newClientBuilder().build();
 

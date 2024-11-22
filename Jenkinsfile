@@ -34,102 +34,102 @@ def setupDockerMarkLogic(String image){
   '''
 }
 
-def runAllTests(Boolean useReverseProxy, String image){
-		setupDockerMarkLogic(image)
+def runTests(String image) {
+	setupDockerMarkLogic(image)
 
-            if (useReverseProxy) {
-            	// Skip testing the marklogic-client-api tests with reverse proxy
-            } else {
-							sh label:'run marklogic-client-api tests', script: '''#!/bin/bash
-									export JAVA_HOME=$JAVA_HOME_DIR
-									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-									cd java-client-api
-									mkdir -p marklogic-client-api/build/test-results/test
-									./gradlew marklogic-client-api:test  || true
-							'''
-            }
+	sh label:'run marklogic-client-api tests', script: '''#!/bin/bash
+			export JAVA_HOME=$JAVA_HOME_DIR
+			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+			cd java-client-api
+			mkdir -p marklogic-client-api/build/test-results/test
+			./gradlew marklogic-client-api:test  || true
+	'''
 
-            sh label:'run ml-development-tools tests', script: '''#!/bin/bash
-                export JAVA_HOME=$JAVA_HOME_DIR
-                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-                cd java-client-api
-                mkdir -p ml-development-tools/build/test-results/test
-                ./gradlew ml-development-tools:test || true
-            '''
+	sh label:'run ml-development-tools tests', script: '''#!/bin/bash
+			export JAVA_HOME=$JAVA_HOME_DIR
+			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+			cd java-client-api
+			mkdir -p ml-development-tools/build/test-results/test
+			./gradlew ml-development-tools:test || true
+	'''
 
-            if (useReverseProxy) {
-            	sh label:'run fragile functional tests with reverse proxy', script: '''#!/bin/bash
-									export JAVA_HOME=$JAVA_HOME_DIR
-									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-									cd java-client-api
-									./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runFragileTests || true
-							'''
-            } else {
-							sh label:'run fragile functional tests', script: '''#!/bin/bash
-									export JAVA_HOME=$JAVA_HOME_DIR
-									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-									cd java-client-api
-									./gradlew mlDeploy -PmlForestDataDirectory=/space
-									./gradlew marklogic-client-api-functionaltests:runFragileTests || true
-							'''
-            }
+	sh label:'run fragile functional tests', script: '''#!/bin/bash
+			export JAVA_HOME=$JAVA_HOME_DIR
+			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+			cd java-client-api
+			./gradlew mlDeploy -PmlForestDataDirectory=/space
+			./gradlew marklogic-client-api-functionaltests:runFragileTests || true
+	'''
 
-            if (useReverseProxy) {
-							sh label:'run fast functional tests with reverse proxy', script: '''#!/bin/bash
-									export JAVA_HOME=$JAVA_HOME_DIR
-									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-									cd java-client-api
-									./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runFastFunctionalTests || true
-							'''
-            } else {
-							sh label:'run fast functional tests', script: '''#!/bin/bash
-									export JAVA_HOME=$JAVA_HOME_DIR
-									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-									cd java-client-api
-									./gradlew marklogic-client-api-functionaltests:runFastFunctionalTests || true
-							'''
-            }
+	sh label:'run fast functional tests', script: '''#!/bin/bash
+			export JAVA_HOME=$JAVA_HOME_DIR
+			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+			cd java-client-api
+			./gradlew marklogic-client-api-functionaltests:runFastFunctionalTests || true
+	'''
 
-            if (useReverseProxy) {
-            	sh label:'run slow functional tests with reverse proxy', script: '''#!/bin/bash
-									export JAVA_HOME=$JAVA_HOME_DIR
-									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-									cd java-client-api
-									./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runSlowFunctionalTests || true
-							'''
-            } else {
-							sh label:'run slow functional tests', script: '''#!/bin/bash
-									export JAVA_HOME=$JAVA_HOME_DIR
-									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-									cd java-client-api
-									./gradlew marklogic-client-api-functionaltests:runSlowFunctionalTests || true
-							'''
-            }
+	sh label:'run slow functional tests', script: '''#!/bin/bash
+			export JAVA_HOME=$JAVA_HOME_DIR
+			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+			cd java-client-api
+			./gradlew marklogic-client-api-functionaltests:runSlowFunctionalTests || true
+	'''
 
-            sh label:'post-test-process', script: '''
-            		cd java-client-api
-								mkdir -p marklogic-client-api-functionaltests/build/test-results/runFragileTests
-								mkdir -p marklogic-client-api-functionaltests/build/test-results/runFastFunctionalTests
-								mkdir -p marklogic-client-api-functionaltests/build/test-results/runSlowFunctionalTests
-                cd $WORKSPACE/java-client-api/marklogic-client-api/build/test-results/test/
-                sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
-                cd $WORKSPACE/java-client-api/ml-development-tools/build/test-results/test/
-                sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
-                cd $WORKSPACE/java-client-api/marklogic-client-api-functionaltests/build/test-results/runFragileTests/
-                sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
-                cd $WORKSPACE/java-client-api/marklogic-client-api-functionaltests/build/test-results/runFastFunctionalTests/
-                sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
-                cd $WORKSPACE/java-client-api/marklogic-client-api-functionaltests/build/test-results/runSlowFunctionalTests/
-                sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
-            '''
+	postProcessTestResults()
+}
+
+def runTestsWithReverseProxy(String image) {
+	setupDockerMarkLogic(image)
+
+	sh label:'run fragile functional tests with reverse proxy', script: '''#!/bin/bash
+			export JAVA_HOME=$JAVA_HOME_DIR
+			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+			cd java-client-api
+			./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runFragileTests || true
+	'''
+
+	sh label:'run fast functional tests with reverse proxy', script: '''#!/bin/bash
+			export JAVA_HOME=$JAVA_HOME_DIR
+			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+			cd java-client-api
+			./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runFastFunctionalTests || true
+	'''
+
+	sh label:'run slow functional tests with reverse proxy', script: '''#!/bin/bash
+			export JAVA_HOME=$JAVA_HOME_DIR
+			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+			cd java-client-api
+			./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runSlowFunctionalTests || true
+	'''
+
+	postProcessTestResults()
+}
+
+def postProcessTestResults() {
+	sh label:'post-test-process', script: '''
+			cd java-client-api
+			mkdir -p marklogic-client-api-functionaltests/build/test-results/runFragileTests
+			mkdir -p marklogic-client-api-functionaltests/build/test-results/runFastFunctionalTests
+			mkdir -p marklogic-client-api-functionaltests/build/test-results/runSlowFunctionalTests
+			cd $WORKSPACE/java-client-api/marklogic-client-api/build/test-results/test/
+			sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
+			cd $WORKSPACE/java-client-api/ml-development-tools/build/test-results/test/
+			sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
+			cd $WORKSPACE/java-client-api/marklogic-client-api-functionaltests/build/test-results/runFragileTests/
+			sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
+			cd $WORKSPACE/java-client-api/marklogic-client-api-functionaltests/build/test-results/runFastFunctionalTests/
+			sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
+			cd $WORKSPACE/java-client-api/marklogic-client-api-functionaltests/build/test-results/runSlowFunctionalTests/
+			sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
+	'''
 }
 
 def tearDownDocker() {
@@ -169,7 +169,7 @@ pipeline{
         }
       }
       steps {
-	      setupDockerMarkLogic("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
+	      setupDockerMarkLogic("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-12")
         sh label:'run marklogic-client-api tests', script: '''#!/bin/bash
           export JAVA_HOME=$JAVA_HOME_DIR
           export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
@@ -213,7 +213,7 @@ pipeline{
 				}
 			}
 			steps {
-				runAllTests(false, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:11.2.0-ubi")
+				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:11.2.0-ubi")
 				junit '**/build/**/TEST*.xml'
 			}
 			post {
@@ -231,7 +231,7 @@ pipeline{
 				}
 			}
 			steps {
-				runAllTests(false, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
+				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
 				junit '**/build/**/TEST*.xml'
 			}
 			post {
@@ -249,7 +249,7 @@ pipeline{
 				}
 			}
 			steps {
-				runAllTests(true, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
+				runTestsWithReverseProxy("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
 				junit '**/build/**/TEST*.xml'
 			}
 			post {
@@ -267,7 +267,7 @@ pipeline{
 				}
 			}
 			steps {
-				runAllTests(false, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-12")
+				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-12")
 				junit '**/build/**/TEST*.xml'
 			}
 			post {
@@ -285,7 +285,7 @@ pipeline{
 				}
 			}
 			steps {
-				runAllTests(false, "ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-10")
+				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-10")
 				junit '**/build/**/TEST*.xml'
 			}
 			post {
