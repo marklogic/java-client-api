@@ -11,6 +11,7 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.DisabledWhenUsingReverseProxyServer;
 import com.marklogic.client.test.junit5.RequireSSLExtension;
+import com.marklogic.client.test.junit5.RequiresML11OrLower;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
 import com.marklogic.mgmt.resource.security.CertificateTemplateManager;
@@ -99,6 +100,7 @@ public class TwoWaySSLTest {
 	 */
 	// Currently failing on 12-nightly due to https://progresssoftware.atlassian.net/browse/MLE-17505 .
 	@Test
+	@ExtendWith(RequiresML11OrLower.class)
 	void digestAuthentication() {
 		// This client uses our Java KeyStore file with a client certificate in it, so it should work.
 		DatabaseClient clientWithCert = Common.newClientBuilder()
