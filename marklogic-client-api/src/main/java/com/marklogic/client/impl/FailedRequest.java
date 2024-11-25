@@ -150,6 +150,11 @@ public class FailedRequest {
   public FailedRequest() {
   }
 
+  public FailedRequest(int statusCode, String messageString) {
+	  this.statusCode = statusCode;
+	  this.messageString = messageString;
+  }
+
   public String getStackTrace() {
     return stackTrace;
   }
