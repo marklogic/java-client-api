@@ -183,6 +183,9 @@ public class DocumentMetadataHandleTest {
   @Test
   // Requires MarkLogic 11 or higher now that we're using Docker; the INSTALL_CONVERTERS flag does not work for MarkLogic 10.
   @ExtendWith(RequiresML11.class)
+  @Disabled("This is consistently failing in Jenkins with an error of: " +
+	  "Process run error: fork: Cannot allocate memory. It runs fine locally and is ultimately just a test of a " +
+	  "v1/documents feature and not of the Java Client.")
   public void testMetadataPropertiesExtraction() {
 	String docId = "/test.bin";
 	// Make a document manager to work with binary files

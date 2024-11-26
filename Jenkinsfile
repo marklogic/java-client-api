@@ -21,6 +21,7 @@ def setupDockerMarkLogic(String image){
     docker compose down -v || true
     docker volume prune -f
     echo "Using image: "'''+image+'''
+    docker pull '''+image+'''
     MARKLOGIC_IMAGE='''+image+''' MARKLOGIC_LOGS_VOLUME=marklogicLogs docker compose up -d --build
 	  echo "mlPassword=admin" > gradle-local.properties
     echo "Waiting for MarkLogic server to initialize."
