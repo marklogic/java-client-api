@@ -1498,6 +1498,21 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan bindAs(PlanColumn column, ServerExpression expression);
+
+	/**
+	 * Facilitates Approximate Nearest Neighbor (ann) vector search. Given a query vector, it searches for K nearest
+	 * neighbor vector embeddings that are stored in the database.
+	 *
+	 * @param k This positive integer k is the top-K rows to return as a result of the index lookup.
+	 * @param vectorColumn The column representing the vector ann-indexed column to perform the index lookup against.
+	 * @param queryVector Specifies the query vector to perform the index lookup with.
+	 * @param distanceColumn Optional output column that captures the values of the distance metric of the vectors retrieved from the index associated with vectorColumn and the queryVector.
+	 * @param queryTolerance Specifies the query tolerance to help balance recall and search time. The value is between 0.0 and 1.0. At 0.0, the recall will be highest. At 1.0 the recall will likely see a large degradation, but queries will be quick. The default value is 0.0.
+	 * @return
+	 * @since 7.1.0
+	 */
+  ModifyPlan annTopK(int k, PlanColumn vectorColumn, ServerExpression queryVector, PlanColumn distanceColumn, float queryTolerance);
+
 /**
   * This method restricts the left row set to rows where a row with the same columns and values doesn't exist in the right row set.
   * @param right  The row set from the right view.

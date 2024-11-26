@@ -409,7 +409,11 @@ public class BaseTypeImpl {
       Arrays.stream(items)
         .map(item -> {
           if (item != null && !as.isInstance(item)) {
-            throw new IllegalArgumentException("expected "+as.getName()+" argument instead of "+item.getClass().getName());
+			  // Prior to 7.1.0, this threw an exception, as it was requiring every item to be an instance of the given
+			  // class. This meant that a primitive value could never be passed. But that forces the server to support
+			  // both a primitive value and a "wrapped" value (e.g. with ns=xs, fn=float, args=value) for every
+			  // argument. This instead assumes that it can just write the item as-is and the server will accept it.
+			  return (BaseArgImpl) serializedPlanBuilder -> serializedPlanBuilder.append(item);
           }
           return (T) item;
         })

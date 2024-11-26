@@ -987,6 +987,13 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
 	  @Override
+	  public ModifyPlan annTopK(int k, PlanColumn vectorColumn, ServerExpression queryVector, PlanColumn distanceColumn, float queryTolerance) {
+		  return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "annTopK", new Object[]{
+			  k, vectorColumn, queryVector, distanceColumn, queryTolerance
+		  });
+	  }
+
+	  @Override
 	  public ModifyPlan patch(String docColumn, PatchBuilder patchDef) {
 		  return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "patch", new Object[]{ this.col(docColumn), patchDef });
 	  }
