@@ -1470,7 +1470,7 @@ public class RowManagerTest {
   }
 
   @Test
-  @Disabled("Waiting on a fix for https://bugtrack.marklogic.com/58233")
+  @Disabled("Waiting on a fix for MLE-241")
   public void testBug58233() {
     RowManager rowMgr = Common.client.newRowManager();
 
