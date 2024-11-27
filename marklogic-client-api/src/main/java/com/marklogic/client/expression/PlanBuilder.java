@@ -2030,28 +2030,6 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @since 7.1.0; requires MarkLogic 12
   */
   public abstract ModifyPlan shortestPath(PlanExprCol start, PlanExprCol end, PlanExprCol path, PlanExprCol length);
-/**
-  * This method can be used to find the shortest path between two nodes in a given graph.
-  * @param start  The column representing the input starting subject of the shortest path search. The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
-  * @param end  The column representing the input ending object of the shortest path search. The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
-  * @param path  The column is the output column representing the actual shortest path(s) taken from start to end. Values are not returned for this column if this is the empty sequence.The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
-  * @param length  The column is the output column representing the length of the shortest path. Value is not returned for this column if this is the empty sequence.The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
-  * @param weight  the weight  value. See {@link PlanBuilder#col(XsStringVal)}
-  * @return  a ModifyPlan object
-  * @since 7.1.0; requires MarkLogic 12
-  */
-  public abstract ModifyPlan shortestPath(String start, String end, String path, String length, String weight);
-/**
-  * This method can be used to find the shortest path between two nodes in a given graph.
-  * @param start  The column representing the input starting subject of the shortest path search. The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
-  * @param end  The column representing the input ending object of the shortest path search. The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
-  * @param path  The column is the output column representing the actual shortest path(s) taken from start to end. Values are not returned for this column if this is the empty sequence.The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
-  * @param length  The column is the output column representing the length of the shortest path. Value is not returned for this column if this is the empty sequence.The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
-  * @param weight  the weight  value. See {@link PlanBuilder#col(XsStringVal)}
-  * @return  a ModifyPlan object
-  * @since 7.1.0; requires MarkLogic 12
-  */
-  public abstract ModifyPlan shortestPath(PlanExprCol start, PlanExprCol end, PlanExprCol path, PlanExprCol length, PlanExprCol weight);
   }
 
 

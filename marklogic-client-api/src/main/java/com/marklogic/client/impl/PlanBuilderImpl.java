@@ -2247,7 +2247,6 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
     return shortestPath((start == null) ? (PlanExprCol) null : exprCol(start), (end == null) ? (PlanExprCol) null : exprCol(end), (path == null) ? (PlanExprCol) null : exprCol(path), (length == null) ? (PlanExprCol) null : exprCol(length));
   }
 
-
   @Override
   public ModifyPlan shortestPath(PlanExprCol start, PlanExprCol end, PlanExprCol path, PlanExprCol length) {
     if (start == null) {
@@ -2258,25 +2257,6 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
     }
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "shortest-path", new Object[]{ start, end, path, length });
   }
-
-
-  @Override
-  public ModifyPlan shortestPath(String start, String end, String path, String length, String weight) {
-    return shortestPath((start == null) ? (PlanExprCol) null : exprCol(start), (end == null) ? (PlanExprCol) null : exprCol(end), (path == null) ? (PlanExprCol) null : exprCol(path), (length == null) ? (PlanExprCol) null : exprCol(length), (weight == null) ? (PlanExprCol) null : exprCol(weight));
-  }
-
-
-  @Override
-  public ModifyPlan shortestPath(PlanExprCol start, PlanExprCol end, PlanExprCol path, PlanExprCol length, PlanExprCol weight) {
-    if (start == null) {
-      throw new IllegalArgumentException("start parameter for shortestPath() cannot be null");
-    }
-    if (end == null) {
-      throw new IllegalArgumentException("end parameter for shortestPath() cannot be null");
-    }
-    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "shortest-path", new Object[]{ start, end, path, length, weight });
-  }
-
 
   @Override
   public ModifyPlan union(ModifyPlan right) {
