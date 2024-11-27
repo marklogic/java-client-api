@@ -31,7 +31,6 @@ class FromSearchDocsWithOptionsTest extends AbstractOpticUpdateTest {
 		assertEquals(2, rows.size());
 	}
 
-	@Disabled("Waiting on fix for MLE-16147.")
 	@Test
 	void bm25ViaSearchOptions() {
 		final String combinedQuery = "<search xmlns='http://marklogic.com/appservices/search'>" +
