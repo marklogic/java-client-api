@@ -3,6 +3,7 @@
  */
 package com.marklogic.client;
 
+import java.io.Closeable;
 import java.io.OutputStream;
 import java.io.Serializable;
 
@@ -28,7 +29,7 @@ import com.marklogic.client.DatabaseClientFactory.SecurityContext;
  * A Database Client instantiates document and query managers and other objects
  * with shared access to a database.
  */
-public interface DatabaseClient {
+public interface DatabaseClient extends Closeable {
   /**
    * Identifies whether the client connects directly to MarkLogic (the default) or
    * by means of a gateway such as a load balancer.
@@ -241,4 +242,14 @@ public interface DatabaseClient {
   String getDatabase();
 
   SecurityContext getSecurityContext();
+
+	/**
+	 * Overridden from the {@code Closeable} interface so that a user doesn't have to deal with a checked
+	 * IOException.
+	 *
+	 * @since 7.1.0
+	 */
+	default void close() {
+		release();
+	}
 }
