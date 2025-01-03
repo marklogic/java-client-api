@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import com.marklogic.client.impl.IoUtil;
 import com.marklogic.client.io.marker.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +45,6 @@ public class InputStreamHandle
 
   private byte[] contentBytes;
   private InputStream content;
-
-  final static private int BUFFER_SIZE = 8192;
 
   /**
    * Creates a factory to create an InputStreamHandle instance for an input stream.
@@ -186,17 +185,9 @@ public class InputStreamHandle
   public byte[] contentToBytes(InputStream content) {
     try {
       if (content == null) return null;
-
-      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-      byte[] b = new byte[BUFFER_SIZE];
-      int len = 0;
-      while ((len = content.read(b)) != -1) {
-        buffer.write(b, 0, len);
-      }
+	  byte[] bytes = IoUtil.streamToBytes(content);
       content.close();
-
-      return buffer.toByteArray();
+	  return bytes;
     } catch (IOException e) {
       throw new MarkLogicIOException(e);
     }
