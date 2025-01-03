@@ -19,6 +19,7 @@ import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.impl.okhttp.HttpUrlBuilder;
 import com.marklogic.client.impl.okhttp.OkHttpUtil;
+import com.marklogic.client.impl.okhttp.PartIterator;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.*;
 import com.marklogic.client.query.*;
@@ -3836,7 +3837,29 @@ public class OkHttpServices implements RESTServices {
 
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPostFunction, resendableConsumer);
 		checkStatus(response, response.code(), "apply", "resource", path, ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
-		return makeResults(constructor, reqlog, "apply", "resource", response);
+
+		boolean shouldStreamResults = "eval".equalsIgnoreCase(path) || "invoke".equalsIgnoreCase(path);
+		boolean hasDataToStream = response.body().contentLength() != 0;
+		// If body is empty, we can use the "old" way of reading results as there's nothing to stream.
+		return shouldStreamResults && hasDataToStream ?
+			evalAndStreamResults(reqlog, response) :
+			makeResults(constructor, reqlog, "apply", "resource", response);
+	}
+
+	/**
+	 * Added to resolve MLE-19222, where the eval/invoke response was read into memory, leading to OutOfMemoryErrors.
+	 * The one thing we are not able to do here though is check for errors in the trailers, as trailers cannot be
+	 * read until the entire body has been read. But we don't want to read the entire body right away.
+	 */
+	private <U extends OkHttpResultIterator> U evalAndStreamResults(RequestLogger reqlog, Response response) {
+		if (response == null) return null;
+		try {
+			MultipartReader reader = new MultipartReader(response.body());
+			PartIterator partIterator = new PartIterator(reader);
+			return (U) new DefaultOkHttpResultIterator(reqlog, partIterator, response);
+		} catch (IOException e) {
+			throw new MarkLogicIOException(e);
+		}
 	}
 
 	@Override
@@ -4587,6 +4610,12 @@ public class OkHttpServices implements RESTServices {
 		private long totalSize = -1;
 		private Closeable closeable;
 
+		OkHttpResultIterator(RequestLogger reqlog, Iterator<BodyPart> partIterator, Closeable closeable) {
+			this.reqlog = reqlog;
+			this.partQueue = partIterator;
+			this.closeable = closeable;
+		}
+
 		OkHttpResultIterator(RequestLogger reqlog, List<BodyPart> partList, Closeable closeable) {
 			this.reqlog = reqlog;
 			if (partList != null && partList.size() > 0) {
@@ -4685,12 +4714,13 @@ public class OkHttpServices implements RESTServices {
 		}
 	}
 
-	static class DefaultOkHttpResultIterator
-		extends OkHttpResultIterator<OkHttpResult>
-		implements Iterator<OkHttpResult> {
-		DefaultOkHttpResultIterator(RequestLogger reqlog,
-									List<BodyPart> partList, Closeable closeable) {
+	static class DefaultOkHttpResultIterator extends OkHttpResultIterator<OkHttpResult> implements Iterator<OkHttpResult> {
+		DefaultOkHttpResultIterator(RequestLogger reqlog, List<BodyPart> partList, Closeable closeable) {
 			super(reqlog, partList, closeable);
+		}
+
+		DefaultOkHttpResultIterator(RequestLogger reqlog, Iterator<BodyPart> partIterator, Closeable closeable) {
+			super(reqlog, partIterator, closeable);
 		}
 
 		OkHttpResult constructNext(RequestLogger logger, BodyPart part) {
