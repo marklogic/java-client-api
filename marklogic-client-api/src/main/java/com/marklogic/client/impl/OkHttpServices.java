@@ -3856,7 +3856,17 @@ public class OkHttpServices implements RESTServices {
 		try {
 			MultipartReader reader = new MultipartReader(response.body());
 			PartIterator partIterator = new PartIterator(reader);
-			return (U) new DefaultOkHttpResultIterator(reqlog, partIterator, response);
+			return (U) new DefaultOkHttpResultIterator(reqlog, partIterator, () -> {
+				// Looking at OkHttp source code, it does not appear necessary to call close on the reader; it appears
+				// sufficient to only call it on the response. But doing both in case this behavior changes in a future
+				// OkHttp release.
+				try {
+					reader.close();
+				} catch (IOException e) {
+					// Ignore, the next call should close everything properly.
+				}
+				response.close();
+			});
 		} catch (IOException e) {
 			throw new MarkLogicIOException(e);
 		}
