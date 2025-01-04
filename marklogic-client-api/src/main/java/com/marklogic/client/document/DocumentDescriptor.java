@@ -6,7 +6,9 @@ package com.marklogic.client.document;
 import com.marklogic.client.io.Format;
 
 /**
- * A Document Descriptor describes a database document.
+ * A Document Descriptor describes a database document. If content versioning is enabled on the app server used
+ * to retrieve a document via an instance of this class, note that you may receive a null return value if the
+ * corresponding document has not been modified. 
  */
 public interface DocumentDescriptor extends ContentDescriptor {
   /**
