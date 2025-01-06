@@ -15,7 +15,6 @@ dependencies {
 	// whereas the 4.x version requires Java 11 or higher.
 	api "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
 	implementation "org.glassfish.jaxb:jaxb-runtime:3.0.2"
-	implementation "org.glassfish.jaxb:jaxb-core:3.0.2"
 
 	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
 	implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
@@ -30,8 +29,6 @@ dependencies {
 
 	implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
 	implementation 'org.slf4j:slf4j-api:2.0.16'
-	implementation "com.fasterxml.jackson.core:jackson-core:2.17.2"
-	implementation "com.fasterxml.jackson.core:jackson-annotations:2.17.2"
 	implementation "com.fasterxml.jackson.core:jackson-databind:2.17.2"
 	implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.17.2"
 
