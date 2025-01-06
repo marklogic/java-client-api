@@ -14,13 +14,17 @@ import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.*;
 import com.marklogic.client.util.EditableNamespaceContext;
+import org.jdom2.Namespace;
+import org.jdom2.input.SAXBuilder;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
@@ -28,9 +32,55 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class StructuredSearchTest {
 
+	private QueryManager queryManager;
+	private StructuredQueryBuilder queryBuilder;
+
 	@BeforeAll
 	public static void beforeClass() {
 		Common.connect();
+	}
+
+	@BeforeEach
+	void setup() {
+		queryManager = Common.client.newQueryManager();
+		queryBuilder = queryManager.newStructuredQueryBuilder();
+	}
+
+	@Test
+	void trueQuery() {
+		long total = queryManager.search(queryBuilder.and(
+			queryBuilder.trueQuery(),
+			queryBuilder.collection("zipcode")
+		), new SearchHandle()).getTotalResults();
+		assertEquals(2, total, "Expecting 2 documents in the zipcode collection, and the trueQuery should not affect that.");
+
+		total = queryManager.search(queryBuilder.trueQuery(), new SearchHandle()).getTotalResults();
+		assertTrue(total > 2, "Expecting all documents to be returned, which should be more than the 2 in the " +
+			"zipcode collection. Actual count: " + total);
+	}
+
+	@Test
+	void falseQuery() {
+		long total = queryManager.search(queryBuilder.and(
+			queryBuilder.falseQuery(),
+			queryBuilder.collection("zipcode")
+		), new SearchHandle()).getTotalResults();
+		assertEquals(0, total, "Expecting 0 documents due to the false query.");
+
+		total = queryManager.search(queryBuilder.falseQuery(), new SearchHandle()).getTotalResults();
+		assertEquals(0, total, "A false-query should return zero documents.");
+	}
+
+	@Test
+	void operatorState() throws Exception {
+		StructuredQueryDefinition query = queryBuilder.operatorState("sort", "date");
+		String xml = query.serialize();
+
+		org.jdom2.Document doc = new SAXBuilder().build(new StringReader(xml));
+		Namespace ns = Namespace.getNamespace("http://marklogic.com/appservices/search");
+		org.jdom2.Element operatorState = doc.getRootElement().getChild("operator-state", ns);
+		assertEquals("sort", operatorState.getChildText("operator-name", ns));
+		assertEquals("date", operatorState.getChildText("state-name", ns));
 	}
 
 	@Test

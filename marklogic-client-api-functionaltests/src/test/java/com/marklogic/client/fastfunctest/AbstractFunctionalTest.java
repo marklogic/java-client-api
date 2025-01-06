@@ -46,6 +46,7 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
 	protected static MarkLogicVersion markLogicVersion;
 
     protected static boolean isML11OrHigher;
+    protected static boolean isML12OrHigher;
     private static String originalHttpPort;
 	private static String originalRestServerName;
 
@@ -63,6 +64,7 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
 		markLogicVersion = MarkLogicVersion.getMarkLogicVersion(connectAsAdmin());
         System.out.println("ML version: " + markLogicVersion.getVersionString());
         isML11OrHigher = markLogicVersion.getMajor() >= 11;
+        isML12OrHigher = markLogicVersion.getMajor() >= 12;
 
 		client = newDatabaseClientBuilder().build();
 		schemasClient = newDatabaseClientBuilder().withDatabase("java-functest-schemas").build();

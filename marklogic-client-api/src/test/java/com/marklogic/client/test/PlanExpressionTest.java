@@ -218,6 +218,7 @@ public class PlanExpressionTest {
       assertNotNull(cTargetVal);
       assertEquals("the=g=text", cTargetVal);
    }
+
    @Test
    public void testRedactUsPhone() {
       final String testStr = "123-456-7890";

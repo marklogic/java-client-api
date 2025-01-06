@@ -1,291 +1,81 @@
-MarkLogic® for Java Client API
+MarkLogic® Java Client
 
 Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
 
-This project is licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except in compliance with the License. You may obtain a copy of the License at
+To the extent required by the applicable open-source license, a complete machine-readable copy of the source code
+corresponding to such code is available upon request. This offer is valid to anyone in receipt of this information and
+shall expire three years following the date of the final distribution of this product version by Progress Software
+Corporation. To obtain such source code, send an email to Legal-thirdpartyreview@progress.com. Please specify the
+product and version for which you are requesting source code.
 
-http://www.apache.org/licenses/LICENSE-2.0
+Third Party Notices
 
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-
-To the extent required by the applicable open-source license, a complete machine-readable copy of the source code corresponding to such code is available upon request. This offer is valid to anyone in receipt of this information and shall expire three years following the date of the final distribution of this product version by MarkLogic Corporation. To obtain such source code, send an email to Legal-thirdpartyreview@progress.com. Please specify the product and version for which you are requesting source code.
-
-The following software may be included in this project (last updated October 3, 2023):
-
--------------------------------------------------------------------------
-Third Party Components
-    commons-io  2.11.0  (Apache-2.0)
-    commons-lang3  3.14.0  (Apache-2.0)
-    dom4j  2.1.4  (BSD)
-    gson  2.10.1  (Apache-2.0)
-    htmlcleaner  2.29  (BSD)
-    httpclient  4.5.14  (Apache-2.0)
-    jackson-annotations  2.17.2  (Apache-2.0)
-    jackson-core  2.17.2  (Apache-2.0)
-    jackson-databind  2.17.2  (Apache-2.0)
-    jackson-dataformat-csv  2.17.2  (Apache-2.0)
-    jackson-module-kotlin  2.17.2  (Apache-2.0)
-    jakarta.mail  2.0.1  (CDDL-1.1)
-    javax.ws.rs-api  2.1.1  (CDDL-1.1)
-    jakarta.xml.bind-api  3.0.1  (CDDL-1.1)
-    jaxb-core  3.0.2  (CDDL-1.1)
-    jaxb-runtime  3.0.2  (CDDL-1.1)
-    jdom2  2.0.6.1  (BSD)
-    json-schema-validator  1.0.88  (Apache-2.0)
-    jsonassert  1.5.1  (Apache-2.0)
-    kotlin-stdlib  1.8.22  (Apache-2.0)
-    logback-classic  1.3.14  (EPL-1.0)
-    logging-interceptor  4.12.0  (Apache-2.0)
-    okhttp  4.12.0  (Apache-2.0)
-    okhttp-digest  2.7  (Apache-2.0)
-    okio  3.6.0  (Apache-2.0)
-    opencsv  4.6  (Apache-2.0)
-    slf4j-api  1.7.36  (MIT)
-    spring-jdbc  5.3.39  (Apache-2.0)
-    undertow-core  2.2.32.Final  (Apache-2.0)
-    undertow-servlet  2.2.32.Final  (Apache-2.0)
+jackson-databind 2.17.2 (Apache-2.0)
+jackson-dataformat-csv 2.17.2 (Apache-2.0)
+okhttp 4.12.0 (Apache-2.0)
+logging-interceptor 4.12.0 (Apache-2.0)
+jakarta.mail 2.0.1 (EPL-1.0)
+okhttp-digest 2.7 (Apache-2.0)
+jakarta.xml.bind-api 3.0.1 (EPL-1.0)
+javax.ws.rs-api 2.1.1 (CDDL-1.1)
+jaxb-runtime 3.0.2 (CDDL-1.1)
+slf4j-api 2.0.16 (Apache-2.0)
 
 Common Licenses
-       Apache License 2.0  (Apache-2.0)
-       Common Development and Distribution License 1.1  (CDDL-1.1)
-       Eclipse Public License 1.0  (EPL-1.0)
 
+Apache License 2.0 (Apache-2.0)
+Common Development and Distribution License 1.1  (CDDL-1.1)
+Eclipse Public License 1.0  (EPL-1.0)
 
------------------------------------------
 Third-Party Components
-    The following is a list of the third-party components used by MarkLogic for Java Client API.
 
-commons-io  2.11.0  (Apache-2.0)
+The following is a list of the third-party components used by the MarkLogic® Java Client 7.1.0 (last updated January 6, 2025):
 
-    https://repo1.maven.org/maven2/commons-io/commons-io
+jackson-databind 2.17.2 (Apache-2.0)
+https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/
+For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
+jackson-dataformat-csv 2.17.2 (Apache-2.0)
+https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-csv/
+For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-commons-lang3  3.14.0  (Apache-2.0)
+okhttp 4.12.0 (Apache-2.0)
+https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/
+For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-    https://repo1.maven.org/maven2/org/apache/commons/commons-lang3
+logging-interceptor 4.12.0 (Apache-2.0)
+https://repo1.maven.org/maven2/com/squareup/okhttp3/logging-interceptor/
+For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
+jakarta.mail 2.0.1 (Apache-2.0)
+https://repo1.maven.org/maven2/com/sun/mail/jakarta.mail/
+For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-dom4j  2.1.4  (BSD)
+okhttp-digest 2.7 (Apache-2.0)
+https://repo1.maven.org/maven2/io/github/rburgst/okhttp-digest/
+For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-    https://repo1.maven.org/maven2/org/dom4j/dom4j
+jakarta.xml.bind-api 3.0.1 (Apache-2.0)
+https://repo1.maven.org/maven2/jakarta/xml/bind/jakarta.xml.bind-api/
+For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-    Copyright 2001-2023 © MetaStuff, Ltd. and DOM4J contributors. All Rights Reserved.
-Redistribution and use of this software and associated documentation
-("Software"), with or without modification, are permitted provided
-that the following conditions are met:
-1. Redistributions of source code must retain copyright
-   statements and notices.  Redistributions must also contain a
-   copy of this document.
-2. Redistributions in binary form must reproduce the
-   above copyright notice, this list of conditions and the
-   following disclaimer in the documentation and/or other
-   materials provided with the distribution.
-3. The name "DOM4J" must not be used to endorse or promote
-   products derived from this Software without prior written
-   permission of MetaStuff, Ltd.  For written permission,
-   please contact dom4j-info@metastuff.com.
-4. Products derived from this Software may not be called "DOM4J"
-   nor may "DOM4J" appear in their names without prior written
-   permission of MetaStuff, Ltd. DOM4J is a registered
-   trademark of MetaStuff, Ltd.
-5. Due credit should be given to the DOM4J Project - https://dom4j.github.io/
-THIS SOFTWARE IS PROVIDED BY METASTUFF, LTD. AND CONTRIBUTORS
-“AS IS” AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
-METASTUFF, LTD. OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
-OF THE POSSIBILITY OF SUCH DAMAGE.
+javax.ws.rs-api 2.1.1 (Apache-2.0)
+https://repo1.maven.org/maven2/javax/ws/rs/javax.ws.rs-api/
+For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-gson  2.10.1  (Apache-2.0)
+jaxb-runtime 3.0.2 (Apache-2.0)
+https://repo1.maven.org/maven2/org/glassfish/jaxb/jaxb-runtime/
+For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-    https://repo1.maven.org/maven2/com/google/code/gson/gson
+slf4j-api 2.0.16 (Apache-2.0)
+https://repo1.maven.org/maven2/org/slf4j/slf4j-api/
+For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-htmlcleaner  2.29  (BSD)
-
-    https://repo1.maven.org/maven2/net/sourceforge/htmlcleaner/htmlcleaner
-
-    Copyright (c) 2006-2023, the HTMLCleaner project All rights reserved.  Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-* Redistributions of source code must retain the above   copyright notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above   copyright notice, this list of conditions and the   following disclaimer in the documentation and/or other   materials provided with the distribution.
-* The name of HtmlCleaner may not be used to endorse or promote   products derived from this software without specific prior   written permission.  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  Report any issues and contact the developers through Sourceforge at https://sourceforge.net/projects/htmlcleaner/
-
-httpclient  4.5.14  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-jackson-annotations  2.17.2  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-jackson-core  2.17.2  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-jackson-databind  2.17.2  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-jackson-dataformat-csv  2.17.2  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-csv
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-jackson-module-kotlin  2.17.2  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-kotlin
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-jakarta.mail  2.0.1  (CDDL-1.1)
-
-    https://repo1.maven.org/maven2/com/sun/mail/jakarta.mail
-
-       For the full text of the CDDL-1.1 license, see Common Development and Distribution License 1.1  (CDDL-1.1)
-
-javax.ws.rs-api  2.1.1  (CDDL-1.1)
-
-    https://repo1.maven.org/maven2/javax/ws/rs/javax.ws.rs-api
-
-       For the full text of the CDDL-1.1 license, see Common Development and Distribution License 1.1  (CDDL-1.1)
-
-jakarta.xml.bind-api  3.0.1  (CDDL-1.1)
-
-    https://repo1.maven.org/maven2/jakarta/xml/bind/jakarta.xml.bind-api
-
-
-       For the full text of the CDDL-1.1 license, see Common Development and Distribution License 1.1  (CDDL-1.1)
-
-jaxb-core  3.0.2  (CDDL-1.1)
-
-    https://repo1.maven.org/maven2/org/glassfish/jaxb/jaxb-core
-
-       For the full text of the CDDL-1.1 license, see Common Development and Distribution License 1.1  (CDDL-1.1)
-
-jaxb-runtime  3.0.2  (CDDL-1.1)
-
-    https://repo1.maven.org/maven2/org/glassfish/jaxb/jaxb-runtime
-
-       For the full text of the CDDL-1.1 license, see Common Development and Distribution License 1.1  (CDDL-1.1)
-
-jdom2  2.0.6.1  (BSD)
-
-    https://repo1.maven.org/maven2/org/jdom/jdom2
-
-    Copyright (C) 2000-2012 Jason Hunter &amp; Brett McLaughlin.  All rights reserved.
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-1. Redistributions of source code must retain the above copyright     notice, this list of conditions, and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright     notice, this list of conditions, and the disclaimer that follows      these conditions in the documentation and/or other materials      provided with the distribution.
-3. The name "JDOM" must not be used to endorse or promote products     derived from this software without prior written permission.  For     written permission, please contact request_AT_jdom_DOT_org.
-4. Products derived from this software may not be called "JDOM", nor     may "JDOM" appear in their name, without prior written permission     from the JDOM Project Management, please contact request_AT_jdom_DOT_org.
-In addition, we request (but do not require) that you include in the   end-user documentation provided with the redistribution and/or in the   software itself an acknowledgement equivalent to the following:      "This product includes software developed by the JDOM Project (http://www.jdom.org/)."  Alternatively, the acknowledgment may be graphical using the logos   available at http://www.jdom.org/images/logos.
-THIS SOFTWARE IS PROVIDED “AS IS” AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE JDOM AUTHORS OR THE PROJECT  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF  SUCH DAMAGE.   This software consists of voluntary contributions made by many individuals on behalf of the JDOM Project and was originally created by Jason Hunter; jhunter_AT_jdom_DOT_org; and Brett McLaughlin brett_AT_jdom_DOT_org.  For more information on the JDOM Project, please see http://www.jdom.org.
-
-json-schema-validator  1.0.88  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/com/networknt/json-schema-validator
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-jsonassert  1.5.1  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/org/skyscreamer/jsonassert
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-kotlin-stdlib  1.8.22  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-logback-classic  1.3.14  (EPL-1.0)
-
-    https://repo1.maven.org/maven2/ch/qos/logback/logback-classic
-
-    Logback LICENSE
-Logback: the reliable, generic, fast and flexible logging framework. Copyright (C) 1999-2015, QOS.ch. All rights reserved.  This program and the accompanying materials are dual-licensed under either the terms of the Eclipse Public License v1.0 as published by the Eclipse Foundation or (per the licensee's choosing) under the terms of the GNU Lesser General Public License version 2.1 as published by the Free Software Foundation.
-
-For the full text of the EPL-1.0 license, see Eclipse Public License 1.0  (EPL-1.0)
-
-logging-interceptor  4.12.0  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/com/squareup/okhttp3/logging-interceptor
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-okhttp  4.12.0  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-okhttp-digest  2.7  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/io/github/rburgst/okhttp-digest
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-okio  3.6.0  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/com/squareup/okio/okio
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-opencsv  4.6  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/com/opencsv/opencsv
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-slf4j-api  1.7.36  (MIT)
-
-    https://repo1.maven.org/maven2/org/slf4j/slf4j-api
-
-    Copyright (c) 2004-2023 QOS.ch All rights reserved.  Permission is hereby granted, free  of charge, to any person obtaining a  copy  of this  software  and  associated  documentation files  (the "Software"), to  deal in  the Software without  restriction, including without limitation  the rights to  use, copy, modify,  merge, publish, distribute,  sublicense, and/or sell  copies of  the Software,  and to permit persons to whom the Software  is furnished to do so, subject to the following conditions:  The  above  copyright  notice  and  this permission  notice  shall  be included in all copies or substantial portions of the Software.  THE SOFTWARE IS PROVIDED “AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING  BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-spring-jdbc  5.3.39  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/org/springframework/spring-jdbc
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-undertow-core  2.2.32.Final  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/io/undertow/undertow-core
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
-undertow-servlet  2.2.32.Final  (Apache-2.0)
-
-    https://repo1.maven.org/maven2/io/undertow/undertow-servlet
-
-    For the full text of the Apache-2.0 license, see Apache License 2.0  (Apache-2.0)
-
------------------------------------------
 Common Licenses
 
-This section shows the text of common third-party licenses used by MarkLogic for Java Client API.
+This section shows the text of common third-party licenses used by MarkLogic® Flux™ v1 (last updated July 2, 2024):
 
-Apache License 2.0  (Apache-2.0)
+Apache License 2.0 (Apache-2.0)
 https://spdx.org/licenses/Apache-2.0.html
 
 Apache License
@@ -362,9 +152,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-
 ====================
-
 
 Common Development and Distribution License 1.1  (CDDL-1.1)
 https://spdx.org/licenses/CDDL-1.1.html
@@ -523,11 +311,4 @@ All Recipient's rights under this Agreement shall terminate if it fails to compl
 Everyone is permitted to copy and distribute copies of this Agreement, but in order to avoid inconsistency the Agreement is copyrighted and may only be modified in the following manner. The Agreement Steward reserves the right to publish new versions (including revisions) of this Agreement from time to time. No one other than the Agreement Steward has the right to modify this Agreement. The Eclipse Foundation is the initial Agreement Steward. The Eclipse Foundation may assign the responsibility to serve as the Agreement Steward to a suitable separate entity. Each new version of the Agreement will be given a distinguishing version number. The Program (including Contributions) may always be distributed subject to the version of the Agreement under which it was received. In addition, after a new version of the Agreement is published, Contributor may elect to distribute the Program (including its Contributions) under the new version. Except as expressly stated in Sections 2(a) and 2(b) above, Recipient receives no rights or licenses to the intellectual property of any Contributor under this Agreement, whether expressly, by implication, estoppel or otherwise. All rights in the Program not expressly granted under this Agreement are reserved.
 
 This Agreement is governed by the laws of the State of New York and the intellectual property laws of the United States of America. No party to this Agreement will bring a legal action under this Agreement more than one year after the cause of action arose. Each party waives its rights to a jury trial in any resulting litigation.
-
-
-====================
-
-
-
-
 

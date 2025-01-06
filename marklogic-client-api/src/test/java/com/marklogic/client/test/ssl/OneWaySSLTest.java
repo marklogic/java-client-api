@@ -5,7 +5,9 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.DisabledWhenUsingReverseProxyServer;
 import com.marklogic.client.test.junit5.RequireSSLExtension;
+import com.marklogic.client.test.junit5.RequiresML11OrLower;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -21,7 +23,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * certificate. See TwoWaySSLTest for scenarios where the client presents its own certificate which the server must
  * trust.
  */
-@ExtendWith(RequireSSLExtension.class)
+@ExtendWith({
+	DisabledWhenUsingReverseProxyServer.class,
+	RequireSSLExtension.class
+})
 class OneWaySSLTest {
 
 	/**
@@ -34,14 +39,6 @@ class OneWaySSLTest {
 	 */
 	@Test
 	void trustAllManager() throws Exception {
-		if (Common.USE_REVERSE_PROXY_SERVER) {
-			/**
-			 * Have not been able to get this to work yet, see the ReverseProxyServer class in test-app for more info.
-			 * We know SSL works fine when hitting MarkLogic Cloud though, which is the important part.
-			 */
-			return;
-		}
-
 		SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
 		sslContext.init(null, new TrustManager[]{Common.TRUST_ALL_MANAGER}, null);
 
@@ -63,10 +60,6 @@ class OneWaySSLTest {
 	 */
 	@Test
 	void trustManagerThatOnlyTrustsTheCertificateFromTheCertificateTemplate() {
-		if (Common.USE_REVERSE_PROXY_SERVER) {
-			return;
-		}
-
 		DatabaseClient client = Common.newClientBuilder()
 			.withSSLProtocol("TLSv1.2")
 			.withTrustManager(RequireSSLExtension.newSecureTrustManager())
@@ -92,7 +85,9 @@ class OneWaySSLTest {
 		assertTrue(ex.getCause() instanceof SSLException, "Unexpected cause: " + ex.getCause());
 	}
 
+	// Currently failing on 12-nightly due to https://progresssoftware.atlassian.net/browse/MLE-17505 .
 	@Test
+	@ExtendWith(RequiresML11OrLower.class)
 	void noSslContext() {
 		DatabaseClient client = Common.newClientBuilder().build();
 

@@ -9,7 +9,9 @@ import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.DisabledWhenUsingReverseProxyServer;
 import com.marklogic.client.test.junit5.RequireSSLExtension;
+import com.marklogic.client.test.junit5.RequiresML11OrLower;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
 import com.marklogic.mgmt.resource.security.CertificateTemplateManager;
@@ -35,7 +37,10 @@ import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(RequireSSLExtension.class)
+@ExtendWith({
+	DisabledWhenUsingReverseProxyServer.class,
+	RequireSSLExtension.class
+})
 public class TwoWaySSLTest {
 
 	private final static String TEST_DOCUMENT_URI = "/optic/test/musician1.json";
@@ -54,9 +59,6 @@ public class TwoWaySSLTest {
 
 	@BeforeAll
 	public static void setup() throws Exception {
-		if (Common.USE_REVERSE_PROXY_SERVER) {
-			return;
-		}
 		// Create a client using the java-unittest app server - which requires SSL via RequiresSSLExtension - and that
 		// talks to the Security database.
 		securityClient = Common.newClientBuilder()
@@ -82,9 +84,6 @@ public class TwoWaySSLTest {
 
 	@AfterAll
 	public static void teardown() {
-		if (Common.USE_REVERSE_PROXY_SERVER) {
-			return;
-		}
 		removeTwoWaySSLConfig();
 		deleteCertificateAuthority();
 	}
@@ -99,12 +98,10 @@ public class TwoWaySSLTest {
 	 * - When the breakpoint is hit, look for the location of the files in stdout.
 	 * - Copy those files to a more accessible location and use them for accessing the 8012 app server.
 	 */
+	// Currently failing on 12-nightly due to https://progresssoftware.atlassian.net/browse/MLE-17505 .
 	@Test
+	@ExtendWith(RequiresML11OrLower.class)
 	void digestAuthentication() {
-		if (Common.USE_REVERSE_PROXY_SERVER) {
-			return;
-		}
-
 		// This client uses our Java KeyStore file with a client certificate in it, so it should work.
 		DatabaseClient clientWithCert = Common.newClientBuilder()
 			.withKeyStorePath(keyStoreFile.getAbsolutePath())
@@ -199,10 +196,6 @@ public class TwoWaySSLTest {
 	 */
 	@Test
 	void certificateAuthenticationWithSSLContext() throws Exception {
-		if (Common.USE_REVERSE_PROXY_SERVER) {
-			return;
-		}
-
 		setAuthenticationToCertificate();
 		try {
 			SSLContext sslContext = createSSLContextWithClientCertificate(keyStoreFile);
@@ -223,10 +216,6 @@ public class TwoWaySSLTest {
 	 */
 	@Test
 	void certificateAuthenticationWithCertificateFileAndPassword() {
-		if (Common.USE_REVERSE_PROXY_SERVER) {
-			return;
-		}
-
 		setAuthenticationToCertificate();
 		try {
 			DatabaseClient client = Common.newClientBuilder()

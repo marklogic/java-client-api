@@ -240,7 +240,8 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
    * @param contentHandle	a handle for reading the content of the document
    * @param <T> the type of content handle to return
-   * @return	the content handle populated with the content of the document in the database
+   * @return	the content handle populated with the content of the document in the database, or null if content
+   * versioning is enabled and the document has not been modified.
    * @throws ResourceNotFoundException if the document is not found
    */
   <T extends R> T read(DocumentDescriptor desc, T contentHandle)
@@ -254,7 +255,8 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param contentHandle	a handle for reading the content of the document
    * @param transform	a server transform to modify the document content
    * @param <T> the type of content handle to return
-   * @return	the content handle populated with the content of the document in the database
+   * @return	the content handle populated with the content of the document in the database, or null if content
+   * versioning is enabled and the document has not been modified.
    * @throws ResourceNotFoundException if the document is not found
    */
   <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform)
@@ -298,7 +300,8 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param metadataHandle	a handle for reading the metadata of the document
    * @param contentHandle	a handle for reading the content of the document
    * @param <T> the type of content handle to return
-   * @return	the content handle populated with the content of the document in the database
+   * @return	the content handle populated with the content of the document in the database, or null if content
+   *    versioning is enabled and the document has not been modified.
    * @throws ResourceNotFoundException if the document is not found
    */
   <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle)
@@ -313,7 +316,8 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param contentHandle	a handle for reading the content of the document
    * @param transform	a server transform to modify the document content
    * @param <T> the type of content handle to return
-   * @return	the content handle populated with the content of the document in the database
+   * @return	the content handle populated with the content of the document in the database, or null if content
+   *    versioning is enabled and the document has not been modified.
    * @throws ResourceNotFoundException if the document is not found
    */
   <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
@@ -357,7 +361,8 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param contentHandle	a handle for reading the content of the document
    * @param transaction	a open transaction under which the document may have been created or deleted
    * @param <T> the type of content handle to return
-   * @return	the content handle populated with the content of the document in the database
+   * @return	the content handle populated with the content of the document in the database, or null if content
+   *    versioning is enabled and the document has not been modified.
    * @throws ResourceNotFoundException if the document is not found
    */
   <T extends R> T read(DocumentDescriptor desc, T contentHandle, Transaction transaction)
@@ -372,7 +377,8 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param transform	a server transform to modify the document content
    * @param transaction	a open transaction under which the document may have been created or deleted
    * @param <T> the type of content handle to return
-   * @return	the content handle populated with the content of the document in the database
+   * @return	the content handle populated with the content of the document in the database, or null if content
+   *    versioning is enabled and the document has not been modified.
    * @throws ResourceNotFoundException if the document is not found
    */
   <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, Transaction transaction)
@@ -419,7 +425,8 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param contentHandle	a handle for reading the content of the document
    * @param transaction	a open transaction under which the document may have been created or deleted
    * @param <T> the type of content handle to return
-   * @return	the content handle populated with the content of the document in the database
+   * @return	the content handle populated with the content of the document in the database, or null if content
+   *    versioning is enabled and the document has not been modified.
    * @throws ResourceNotFoundException if the document is not found
    */
   <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
@@ -435,7 +442,8 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param transform	a server transform to modify the document content
    * @param transaction	a open transaction under which the document may have been created or deleted
    * @param <T> the type of content handle to return
-   * @return	the content handle populated with the content of the document in the database
+   * @return	the content handle populated with the content of the document in the database, or null if content
+   *    versioning is enabled and the document has not been modified.
    * @throws ResourceNotFoundException if the document is not found
    */
   <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)

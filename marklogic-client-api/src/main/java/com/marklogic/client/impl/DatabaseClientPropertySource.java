@@ -36,6 +36,22 @@ public class DatabaseClientPropertySource {
 
 	static {
 		connectionPropertyHandlers = new LinkedHashMap<>();
+
+		// Connection string is handled first so that certain properties can override it as needed. This is useful
+		// for e.g. specifying a specific host in a cluster while reusing the rest of the connection string.
+		connectionPropertyHandlers.put(PREFIX + "connectionString", (bean, value) -> {
+			if (value instanceof String) {
+				ConnectionString cs = new ConnectionString((String) value, "connection string");
+				bean.setHost(cs.getHost());
+				bean.setPort(cs.getPort());
+				if (cs.getDatabase() != null && cs.getDatabase().trim().length() > 0) {
+					bean.setDatabase(cs.getDatabase());
+				}
+			} else {
+				throw new IllegalArgumentException("Connection string must be of type String");
+			}
+		});
+
 		connectionPropertyHandlers.put(PREFIX + "host", (bean, value) -> {
 			if (value instanceof String) {
 				bean.setHost((String) value);
@@ -125,6 +141,11 @@ public class DatabaseClientPropertySource {
 		return bean;
 	}
 
+	private ConnectionString makeConnectionString() {
+		String value = (String) propertySource.apply(PREFIX + "connectionString");
+		return value != null && value.trim().length() > 0 ? new ConnectionString(value, "connection string") : null;
+	}
+
 	private DatabaseClientFactory.SecurityContext newSecurityContext() {
 		Object securityContextValue = propertySource.apply(PREFIX + "securityContext");
 		if (securityContextValue != null) {
@@ -134,14 +155,11 @@ public class DatabaseClientPropertySource {
 			throw new IllegalArgumentException("Security context must be of type " + DatabaseClientFactory.SecurityContext.class.getName());
 		}
 
-		Object typeValue = propertySource.apply(PREFIX + "authType");
-		if (typeValue == null || !(typeValue instanceof String)) {
-			throw new IllegalArgumentException("Security context should be set, or auth type must be of type String");
-		}
-		final String authType = (String) typeValue;
+		ConnectionString connectionString = makeConnectionString();
+		final String authType = determineAuthType(connectionString);
 
 		final SSLUtil.SSLInputs sslInputs = buildSSLInputs(authType);
-		DatabaseClientFactory.SecurityContext securityContext = newSecurityContext(authType, sslInputs);
+		DatabaseClientFactory.SecurityContext securityContext = newSecurityContext(authType, connectionString, sslInputs);
 		if (sslInputs.getSslContext() != null) {
 			securityContext.withSSLContext(sslInputs.getSslContext(), sslInputs.getTrustManager());
 		}
@@ -149,12 +167,23 @@ public class DatabaseClientPropertySource {
 		return securityContext;
 	}
 
-	private DatabaseClientFactory.SecurityContext newSecurityContext(String type, SSLUtil.SSLInputs sslInputs) {
+	private String determineAuthType(ConnectionString connectionString) {
+		Object value = propertySource.apply(PREFIX + "authType");
+		if (value == null && connectionString != null) {
+			return "digest";
+		}
+		if (value == null || !(value instanceof String)) {
+			throw new IllegalArgumentException("Security context should be set, or auth type must be of type String");
+		}
+		return (String) value;
+	}
+
+	private DatabaseClientFactory.SecurityContext newSecurityContext(String type, ConnectionString connectionString, SSLUtil.SSLInputs sslInputs) {
 		switch (type.toLowerCase()) {
 			case DatabaseClientBuilder.AUTH_TYPE_BASIC:
-				return newBasicAuthContext();
+				return newBasicAuthContext(connectionString);
 			case DatabaseClientBuilder.AUTH_TYPE_DIGEST:
-				return newDigestAuthContext();
+				return newDigestAuthContext(connectionString);
 			case DatabaseClientBuilder.AUTH_TYPE_MARKLOGIC_CLOUD:
 				return newCloudAuthContext();
 			case DatabaseClientBuilder.AUTH_TYPE_KERBEROS:
@@ -194,14 +223,24 @@ public class DatabaseClientPropertySource {
 		return value != null ? (String) value : defaultValue;
 	}
 
-	private DatabaseClientFactory.SecurityContext newBasicAuthContext() {
+	private DatabaseClientFactory.SecurityContext newBasicAuthContext(ConnectionString connectionString) {
+		if (connectionString != null) {
+			return new DatabaseClientFactory.BasicAuthContext(
+				connectionString.getUsername(), connectionString.getPassword()
+			);
+		}
 		return new DatabaseClientFactory.BasicAuthContext(
 			getRequiredStringValue("username", "Must specify a username when using basic authentication."),
 			getRequiredStringValue("password", "Must specify a password when using basic authentication.")
 		);
 	}
 
-	private DatabaseClientFactory.SecurityContext newDigestAuthContext() {
+	private DatabaseClientFactory.SecurityContext newDigestAuthContext(ConnectionString connectionString) {
+		if (connectionString != null) {
+			return new DatabaseClientFactory.DigestAuthContext(
+				connectionString.getUsername(), connectionString.getPassword()
+			);
+		}
 		return new DatabaseClientFactory.DigestAuthContext(
 			getRequiredStringValue("username", "Must specify a username when using digest authentication."),
 			getRequiredStringValue("password", "Must specify a password when using digest authentication.")

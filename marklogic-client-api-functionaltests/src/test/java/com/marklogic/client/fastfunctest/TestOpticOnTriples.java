@@ -1423,4 +1423,68 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     assertEquals( "19", nodeValNeg1.path("PlayerAge").path("value").asText());
     assertEquals( "Midfielder", nodeValNeg1.path("PlayerPosition").path("value").asText());
   }
+
+	@Test
+	public void testShortestPathWithColumnInputs()
+	{
+		if(!isML12OrHigher){
+			return;
+		}
+
+		RowManager rowMgr = client.newRowManager();
+		PlanBuilder p = rowMgr.newPlanBuilder();
+
+		PlanColumn teamIdCol = p.col("player_team");
+		PlanColumn teamNameCol = p.col("team_name");
+		PlanColumn teamCityCol = p.col("team_city");
+
+		PlanPrefixer team = p.prefixer("http://marklogic.com/mlb/team/");
+		PlanBuilder.ModifyPlan team_plan = p.fromTriples(
+			p.pattern(teamIdCol, team.iri("name"), teamNameCol),
+			p.pattern(teamIdCol, team.iri("city"), teamCityCol)
+		).shortestPath(p.col("team_name"), p.col("team_city"), p.col("path"), p.col("length"));
+		JacksonHandle jacksonHandle = new JacksonHandle().withMimetype("application/json");
+		rowMgr.resultDoc(team_plan, jacksonHandle);
+		JsonNode jsonResults = jacksonHandle.get();
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
+		for (int i=0; i<jsonBindingsNodes.size(); i++){
+			JsonNode path = jsonBindingsNodes.path(i);
+			assertNotNull(path.path("team_name"));
+			assertNotNull(path.path("team_city"));
+			assertNotNull(path.path("path"));
+			assertEquals("1",path.path("length").path("value").toString());
+		}
+	}
+
+	@Test
+	public void testShortestPathWithStringInputs()
+	{
+		if(!isML12OrHigher){
+			return;
+		}
+
+		RowManager rowMgr = client.newRowManager();
+		PlanBuilder p = rowMgr.newPlanBuilder();
+
+		PlanColumn teamIdCol = p.col("player_team");
+		PlanColumn teamNameCol = p.col("team_name");
+		PlanColumn teamCityCol = p.col("team_city");
+
+		PlanPrefixer team = p.prefixer("http://marklogic.com/mlb/team/");
+		PlanBuilder.ModifyPlan team_plan = p.fromTriples(
+			p.pattern(teamIdCol, team.iri("name"), teamNameCol),
+			p.pattern(teamIdCol, team.iri("city"), teamCityCol)
+		).shortestPath("team_name", "team_city", "path", "length");
+		JacksonHandle jacksonHandle = new JacksonHandle().withMimetype("application/json");
+		rowMgr.resultDoc(team_plan, jacksonHandle);
+		JsonNode jsonResults = jacksonHandle.get();
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
+		for (int i=0; i<jsonBindingsNodes.size(); i++){
+			JsonNode path = jsonBindingsNodes.path(i);
+			assertNotNull(path.path("team_name"));
+			assertNotNull(path.path("team_city"));
+			assertNotNull(path.path("path"));
+			assertEquals("1",path.path("length").path("value").toString());
+		}
+	}
 }
