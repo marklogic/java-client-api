@@ -3,6 +3,7 @@
  */
 package com.marklogic.client;
 
+import com.marklogic.client.impl.ConnectionString;
 import com.marklogic.client.impl.DatabaseClientPropertySource;
 
 import javax.net.ssl.SSLContext;
@@ -82,6 +83,24 @@ public class DatabaseClientBuilder {
 	public DatabaseClientBuilder withPort(int port) {
 		props.put(PREFIX + "port", port);
 		return this;
+	}
+
+	/**
+	 * @param connectionString of the form "username:password@host:port/optionalDatabaseName".
+	 * @since 7.1.0
+	 */
+	public DatabaseClientBuilder withConnectionString(String connectionString) {
+		ConnectionString cs = new ConnectionString(connectionString, "connection string");
+		if (!props.containsKey(PREFIX + "authType")) {
+			withAuthType("digest");
+		}
+		if (cs.getDatabase() != null && cs.getDatabase().trim().length() > 0) {
+			withDatabase(cs.getDatabase());
+		}
+		return withHost(cs.getHost())
+			.withPort(cs.getPort())
+			.withUsername(cs.getUsername())
+			.withPassword(cs.getPassword());
 	}
 
 	public DatabaseClientBuilder withBasePath(String basePath) {

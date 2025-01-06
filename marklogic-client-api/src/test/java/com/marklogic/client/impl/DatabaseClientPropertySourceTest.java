@@ -5,14 +5,13 @@ import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Intent of this test is to cover code that cannot be covered by DatabaseClientBuilderTest.
@@ -121,6 +120,86 @@ public class DatabaseClientPropertySourceTest {
 		// if the value equals 'true'.
 		props.put(prop, "123");
 		buildBean();
+	}
+
+	@Test
+	void connectionString() {
+		useConnectionString("user:password@localhost:8000");
+		DatabaseClientFactory.Bean bean = buildBean();
+
+		assertEquals("localhost", bean.getHost());
+		assertEquals(8000, bean.getPort());
+		assertNull(bean.getDatabase());
+		DatabaseClientFactory.DigestAuthContext context = (DatabaseClientFactory.DigestAuthContext) bean.getSecurityContext();
+		assertEquals("user", context.getUser());
+		assertEquals("password", context.getPassword());
+	}
+
+	@Test
+	void connectionStringWithDatabase() {
+		useConnectionString("user:password@localhost:8000/Documents");
+		DatabaseClientFactory.Bean bean = buildBean();
+
+		assertEquals("localhost", bean.getHost());
+		assertEquals(8000, bean.getPort());
+		assertEquals("Documents", bean.getDatabase());
+		DatabaseClientFactory.DigestAuthContext context = (DatabaseClientFactory.DigestAuthContext) bean.getSecurityContext();
+		assertEquals("user", context.getUser());
+		assertEquals("password", context.getPassword());
+	}
+
+	@Test
+	void connectionStringWithSeparateDatabase() {
+		useConnectionString("user:password@localhost:8000");
+		props.put(PREFIX + "database", "SomeDatabase");
+		DatabaseClientFactory.Bean bean = buildBean();
+
+		assertEquals("localhost", bean.getHost());
+		assertEquals(8000, bean.getPort());
+		assertEquals("SomeDatabase", bean.getDatabase());
+	}
+
+	@Test
+	void usernameAndPasswordBothRequireDecoding() {
+		useConnectionString("test-user%40:sp%40r%3Ak@localhost:8000/Documents");
+		DatabaseClientFactory.Bean bean = buildBean();
+
+		assertEquals("localhost", bean.getHost());
+		assertEquals(8000, bean.getPort());
+		assertEquals("Documents", bean.getDatabase());
+
+		DatabaseClientFactory.DigestAuthContext context = (DatabaseClientFactory.DigestAuthContext) bean.getSecurityContext();
+		assertEquals("test-user@", context.getUser());
+		assertEquals("sp@r:k", context.getPassword(), "Verifies that the user must encode username and password " +
+			"values that contain ':' or '@'. The builder is then expected to decode them into the correct values.");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"user@host@port",
+		"user@host:port",
+		"user:password@host",
+		"user:password:something@host:port",
+		"user:password@host:port:something"
+	})
+	void invalidConnectionString(String connectionString) {
+		useConnectionString(connectionString);
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> buildBean());
+		assertEquals("Invalid value for connection string; must be username:password@host:port/optionalDatabaseName",
+			ex.getMessage());
+	}
+
+	@Test
+	void nonNumericPortInConnectionString() {
+		useConnectionString("user:password@host:nonNumericPort");
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> buildBean());
+		assertEquals("Invalid value for connection string; port must be numeric, but was 'nonNumericPort'", ex.getMessage());
+	}
+
+	private void useConnectionString(String connectionString) {
+		props = new HashMap() {{
+			put(PREFIX + "connectionString", connectionString);
+		}};
 	}
 
 	private DatabaseClientFactory.Bean buildBean() {
