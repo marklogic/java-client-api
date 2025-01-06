@@ -36,6 +36,22 @@ public class DatabaseClientPropertySource {
 
 	static {
 		connectionPropertyHandlers = new LinkedHashMap<>();
+
+		// Connection string is handled first so that certain properties can override it as needed. This is useful
+		// for e.g. specifying a specific host in a cluster while reusing the rest of the connection string.
+		connectionPropertyHandlers.put(PREFIX + "connectionString", (bean, value) -> {
+			if (value instanceof String) {
+				ConnectionString cs = new ConnectionString((String) value, "connection string");
+				bean.setHost(cs.getHost());
+				bean.setPort(cs.getPort());
+				if (cs.getDatabase() != null && cs.getDatabase().trim().length() > 0) {
+					bean.setDatabase(cs.getDatabase());
+				}
+			} else {
+				throw new IllegalArgumentException("Connection string must be of type String");
+			}
+		});
+
 		connectionPropertyHandlers.put(PREFIX + "host", (bean, value) -> {
 			if (value instanceof String) {
 				bean.setHost((String) value);
@@ -57,18 +73,6 @@ public class DatabaseClientPropertySource {
 				bean.setDatabase((String) value);
 			} else {
 				throw new IllegalArgumentException("Database must be of type String");
-			}
-		});
-		connectionPropertyHandlers.put(PREFIX + "connectionString", (bean, value) -> {
-			if (value instanceof String) {
-				ConnectionString cs = new ConnectionString((String) value, "connection string");
-				bean.setHost(cs.getHost());
-				bean.setPort(cs.getPort());
-				if (cs.getDatabase() != null && cs.getDatabase().trim().length() > 0) {
-					bean.setDatabase(cs.getDatabase());
-				}
-			} else {
-				throw new IllegalArgumentException("Connection string must be of type String");
 			}
 		});
 		connectionPropertyHandlers.put(PREFIX + "basePath", (bean, value) -> {

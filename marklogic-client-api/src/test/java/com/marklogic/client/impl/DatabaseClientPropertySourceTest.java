@@ -196,6 +196,19 @@ public class DatabaseClientPropertySourceTest {
 		assertEquals("Invalid value for connection string; port must be numeric, but was 'nonNumericPort'", ex.getMessage());
 	}
 
+	@Test
+	void hostTakesPrecedence() {
+		props = new HashMap() {{
+			put(PREFIX + "host", "somehost");
+			put(PREFIX + "connectionString", "user:password@localhost:8000/Documents");
+		}};
+
+		DatabaseClientFactory.Bean bean = buildBean();
+		assertEquals("somehost", bean.getHost(), "This allows a user to use a connection string as a starting " +
+			"point, and then override the host for a direct connection to a particular host in a cluster. This " +
+			"capability is used by our Spark connector to support direct connections to multiple hosts.");
+	}
+
 	private void useConnectionString(String connectionString) {
 		props = new HashMap() {{
 			put(PREFIX + "connectionString", connectionString);
