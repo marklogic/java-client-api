@@ -1,6 +1,6 @@
-MarkLogic® Java Client
+MarkLogic® for Java Client
 
-Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
 
 To the extent required by the applicable open-source license, a complete machine-readable copy of the source code
 corresponding to such code is available upon request. This offer is valid to anyone in receipt of this information and
@@ -29,7 +29,7 @@ Eclipse Public License 1.0  (EPL-1.0)
 
 Third-Party Components
 
-The following is a list of the third-party components used by the MarkLogic® Java Client 7.1.0 (last updated January 6, 2025):
+The following is a list of the third-party components used by the MarkLogic® for Java Client 7.1.0 (last updated January 6, 2025):
 
 jackson-databind 2.17.2 (Apache-2.0)
 https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/
@@ -73,7 +73,7 @@ For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
 Common Licenses
 
-This section shows the text of common third-party licenses used by MarkLogic® Flux™ v1 (last updated July 2, 2024):
+The following is a list of the third-party components used by the MarkLogic® for Java Client 7.1.0 (last updated January 6, 2025):
 
 Apache License 2.0 (Apache-2.0)
 https://spdx.org/licenses/Apache-2.0.html
