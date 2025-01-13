@@ -99,5 +99,5 @@ the [Apache 2.0 license](https://github.com/marklogic/java-client-api/blob/maste
 Everyone is encouraged to file bug reports, feature requests, and pull requests through [GitHub](https://github.com/marklogic/java-client-api/issues). 
 This input is critical and will be carefully considered. However, we can’t promise a specific resolution or timeframe 
 for any request. In addition, MarkLogic provides technical support for [release tags](https://github.com/marklogic/java-client-api/releases) of the Java Client to 
-licensed customers under the terms outlined in the [MarkLogic Technical Support Handbook](http://www.marklogic.com/files/Mark_Logic_Support_Handbook.pdf). Customers with an 
-active maintenance contract can sign up for MarkLogic Technical Support on our [support portal](https://help.marklogic.com/).
+licensed customers. Please visit [our support guide](https://community.progress.com/s/products/marklogic/support-guide) 
+for more information on technical support. 
