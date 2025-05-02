@@ -301,7 +301,10 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
         if ( value instanceof OutputStreamSender ) {
           ((OutputStreamSender) value).write(out);
         } else {
-          out.write(HandleAccessor.contentAsString(options).getBytes("UTF-8"));
+			String content = HandleAccessor.contentAsString(options);
+			if (content != null) {
+				out.write(content.getBytes("UTF-8"));
+			}
         }
         out.flush();
       }

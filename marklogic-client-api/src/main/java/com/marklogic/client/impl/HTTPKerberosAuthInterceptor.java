@@ -48,6 +48,7 @@ public class HTTPKerberosAuthInterceptor implements Interceptor {
     try {
       buildSubjectCredentials();
     } catch (LoginException e) {
+		SSLUtil.logSecurityRelatedException(e);
       throw new FailedRequestException(e.getMessage(), e);
     }
   }

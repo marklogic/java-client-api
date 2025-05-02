@@ -1030,7 +1030,7 @@ public class DatabaseClientFactory {
         this.certFile = certFile;
         this.certPassword = certPassword;
         this.trustManager = trustManager;
-        this.sslContext = createSSLContext();
+        this.sslContext = createSSLContext(DEFAULT_SSL_PROTOCOL);
 	}
 
 	  /**
@@ -1060,11 +1060,6 @@ public class DatabaseClientFactory {
 		this.sslContext = createSSLContext(sslProtocol);
 	}
 
-    private SSLContext createSSLContext()
-			throws UnrecoverableKeyException, CertificateException, IOException, KeyManagementException {
-		return createSSLContext(DEFAULT_SSL_PROTOCOL);
-    }
-
     private SSLContext createSSLContext(String sslProtocol)
       throws CertificateException, IOException, UnrecoverableKeyException, KeyManagementException {
       if(certPassword == null) {
@@ -1076,12 +1071,14 @@ public class DatabaseClientFactory {
       try {
         keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
       } catch (NoSuchAlgorithmException e) {
+		  SSLUtil.logSecurityRelatedException(e);
         throw new IllegalStateException(
           "CertificateAuthContext requires KeyManagerFactory.getInstance(\"SunX509\")");
       }
       try {
         keyStore = KeyStore.getInstance("PKCS12");
       } catch (KeyStoreException e) {
+		  SSLUtil.logSecurityRelatedException(e);
         throw new IllegalStateException("CertificateAuthContext requires KeyStore.getInstance(\"PKCS12\")");
       }
       try {
@@ -1100,6 +1097,7 @@ public class DatabaseClientFactory {
 			sslContext = SSLContext.getInstance(sslProtocol);
 		}
       } catch (NoSuchAlgorithmException | KeyStoreException e) {
+		  SSLUtil.logSecurityRelatedException(e);
         throw new IllegalStateException("The certificate algorithm used or the Key store "
           + "Service provider Implementaion (SPI) is invalid. CertificateAuthContext "
           + "requires SunX509 algorithm and PKCS12 Key store SPI", e);
@@ -1291,6 +1289,7 @@ public class DatabaseClientFactory {
 		  clientConfigurators.forEach(configurator -> {
 			  if (configurator instanceof OkHttpClientConfigurator) {
 				  OkHttpClient okHttpClient = (OkHttpClient) services.getClientImplementation();
+				  Objects.requireNonNull(okHttpClient);
 				  OkHttpClient.Builder clientBuilder = okHttpClient.newBuilder();
 				  ((OkHttpClientConfigurator) configurator).configure(clientBuilder);
 				  ((OkHttpServices) services).setClientImplementation(clientBuilder.build());

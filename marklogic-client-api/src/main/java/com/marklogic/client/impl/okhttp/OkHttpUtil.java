@@ -180,6 +180,7 @@ public abstract class OkHttpUtil {
 			// the default trust manager is the appropriate one to pass to OkHttp.
 			sslContext.init(null, trustManagers, null);
 		} catch (KeyManagementException e) {
+			SSLUtil.logSecurityRelatedException(e);
 			throw new RuntimeException("Unable to initialize SSLContext; cause: " + e.getMessage(), e);
 		}
 		clientBuilder.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), (X509TrustManager) trustManagers[0]);
