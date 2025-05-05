@@ -412,24 +412,24 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
             break;
           }
         }
-        if ( property.hasGetter() ) {
-          Method getter = property.getGetter().getAnnotated();
-          if ( getter.getAnnotation(Id.class) != null ) {
-            idPropertyName = property.getName();
-            idMethod = getter;
-            break;
-          }
-          if ( property.hasSetter() ) {
-            Method setter = property.getSetter().getAnnotated();
-            if ( setter.getAnnotation(Id.class) != null ) {
-              idPropertyName = property.getName();
-              idMethod = getter;
-              break;
-            }
-          }
-        }
-        // setter only doesn't work because it gives us no value accessor
-      }
+		  if (property.hasGetter()) {
+			  Method getter = property.getGetter().getAnnotated();
+			  if (getter.getAnnotation(Id.class) != null) {
+				  idPropertyName = property.getName();
+				  idMethod = getter;
+			  }
+			  else if (property.hasSetter()) {
+				  Method setter = property.getSetter().getAnnotated();
+				  if (setter.getAnnotation(Id.class) != null) {
+					  idPropertyName = property.getName();
+					  // Polaris thinks this might be a copy/paste issue, but based on the tests -
+					  // TestPOJOMissingIdGetSetMethod - it appears to be correct.
+					  idMethod = getter;
+				  }
+			  }
+		  }
+		  // setter only doesn't work because it gives us no value accessor
+	  }
     }
     // Jackson's introspect approach should find it, but our old approach below
     // gives some helpful errors
