@@ -54,21 +54,13 @@ dependencies {
 	testImplementation "com.squareup.okhttp3:mockwebserver:4.12.0"
 
 	testImplementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.2"
-	testImplementation 'ch.qos.logback:logback-classic:1.3.14'
+	testImplementation 'ch.qos.logback:logback-classic:1.3.15'
 
-	// schema validation issue with testImplementation 'xerces:xercesImpl:2.12.0'
+	// Using this to avoid a schema validation issue with the regular xercesImpl
 	testImplementation 'org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115'
 
 	testImplementation 'org.apache.commons:commons-lang3:3.17.0'
-	testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
 	testImplementation 'com.opencsv:opencsv:5.10'
-
-	// This is used by a single test - JacksonDatabindTest - and it does not need the jdom module for the test to pass.
-	// The jdom module has a CVE associated with it - https://nvd.nist.gov/vuln/detail/CVE-2021-33813 .
-	testImplementation ('org.geonames:geonames:1.0') {
-		exclude module: "jdom"
-	}
-
 	testImplementation 'org.skyscreamer:jsonassert:1.5.3'
 }
 

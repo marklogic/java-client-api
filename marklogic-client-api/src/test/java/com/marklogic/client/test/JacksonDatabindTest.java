@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
@@ -25,7 +24,6 @@ import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.test.BulkReadWriteTest.CityWriter;
-import org.geonames.Toponym;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -157,41 +155,41 @@ public class JacksonDatabindTest {
    * via JacksonDatabindHandle with configuration provided by mix-in annotations.
    **/
   @Test
-  public void testDatabindingThirdPartyPojoWithMixinAnnotations() throws JsonProcessingException, IOException {
+  public void testDatabindingThirdPartyPojoWithMixinAnnotations() throws IOException {
     CsvSchema schema = CsvSchema.builder()
       .setColumnSeparator('\t')
       .addColumn("geoNameId")
-      .addColumn("name")
-      .addColumn("asciiName")
-      .addColumn("alternateNames")
-      .addColumn("latitude", CsvSchema.ColumnType.NUMBER)
-      .addColumn("longitude", CsvSchema.ColumnType.NUMBER)
-      .addColumn("featureClass")
-      .addColumn("featureCode")
-      .addColumn("countryCode")
-      .addColumn("countryCode2")
-      .addColumn("adminCode1")
-      .addColumn("adminCode2")
-      .addColumn("adminCode3")
-      .addColumn("adminCode4")
-      .addColumn("population")
-      .addColumn("elevation", CsvSchema.ColumnType.NUMBER)
-      .addColumn("dem", CsvSchema.ColumnType.NUMBER)
-      .addColumn("timezoneCode")
-      .addColumn("lastModified")
-      .build();
+		.addColumn("name")
+		.addColumn("asciiName")
+		.addColumn("alternateNames")
+		.addColumn("latitude", CsvSchema.ColumnType.NUMBER)
+		.addColumn("longitude", CsvSchema.ColumnType.NUMBER)
+		.addColumn("featureClass")
+		.addColumn("featureCode")
+		.addColumn("countryCode")
+		.addColumn("countryCode2")
+		.addColumn("adminCode1")
+		.addColumn("adminCode2")
+		.addColumn("adminCode3")
+		.addColumn("adminCode4")
+		.addColumn("population")
+		.addColumn("elevation", CsvSchema.ColumnType.NUMBER)
+		.addColumn("dem", CsvSchema.ColumnType.NUMBER)
+		.addColumn("timezoneCode")
+		.addColumn("lastModified")
+		.build();
     CsvMapper mapper = new CsvMapper();
     mapper.addMixInAnnotations(Toponym.class, ToponymMixIn1.class);
     ObjectReader reader = mapper.reader(Toponym.class).with(schema);
     try (BufferedReader cityReader = new BufferedReader(Common.testFileToReader(CITIES_FILE))) {
       GenericDocumentManager docMgr = client.newDocumentManager();
       DocumentWriteSet set = docMgr.newWriteSet();
-      String line = null;
+      String line;
       for (int numWritten = 0; numWritten < MAX_TO_WRITE && (line = cityReader.readLine()) != null; numWritten++ ) {
         Toponym city = reader.readValue(line);
         JacksonDatabindHandle handle = new JacksonDatabindHandle(city);
         handle.getMapper().addMixInAnnotations(Toponym.class, ToponymMixIn2.class);
-        set.add(DIRECTORY + "/thirdPartyJsonCities/" + city.getGeoNameId() + ".json", handle);
+        set.add(DIRECTORY + "/thirdPartyJsonCities/" + city.geoNameId + ".json", handle);
       }   docMgr.write(set);
       // we can add assertions later, for now this test just serves as example code and
       // ensures no exceptions are thrown
@@ -203,5 +201,199 @@ public class JacksonDatabindTest {
     DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
     deleteQuery.setDirectory(DIRECTORY);
     queryMgr.delete(deleteQuery);
+  }
+
+	// Copy of the class from the org.geonames dependency; copied here to avoid a Black Duck warning on the
+	// transitive jdom dependency.
+	private static class Toponym {
+		private int geoNameId;
+		private String name;
+		private String alternateNames;
+		private String countryCode;
+		private String countryName;
+		private Integer population;
+		private Integer elevation;
+		private String featureClass;
+		private String featureClassName;
+		private String featureCode;
+		private String featureCodeName;
+		private double latitude;
+		private double longitude;
+		private String adminCode1;
+		private String adminName1;
+		private String adminCode2;
+		private String adminName2;
+		private String adminCode3;
+		private String adminCode4;
+		private String timezone;
+		private String style;
+
+	  public String getFeatureClass() {
+		  return featureClass;
+	  }
+
+	  public void setFeatureClass(String featureClass) {
+		  this.featureClass = featureClass;
+	  }
+
+	  public String getTimezone() {
+		  return timezone;
+	  }
+
+	  public void setTimezone(String timezone) {
+		  this.timezone = timezone;
+	  }
+
+	  public String getStyle() {
+		  return style;
+	  }
+
+	  public void setStyle(String style) {
+		  this.style = style;
+	  }
+
+	  public int getGeoNameId() {
+		  return geoNameId;
+	  }
+
+	  public void setGeoNameId(int geoNameId) {
+		  this.geoNameId = geoNameId;
+	  }
+
+	  public String getName() {
+		  return name;
+	  }
+
+	  public void setName(String name) {
+		  this.name = name;
+	  }
+
+	  public String getAlternateNames() {
+		  return alternateNames;
+	  }
+
+	  public void setAlternateNames(String alternateNames) {
+		  this.alternateNames = alternateNames;
+	  }
+
+	  public String getCountryCode() {
+		  return countryCode;
+	  }
+
+	  public void setCountryCode(String countryCode) {
+		  this.countryCode = countryCode;
+	  }
+
+	  public String getCountryName() {
+		  return countryName;
+	  }
+
+	  public void setCountryName(String countryName) {
+		  this.countryName = countryName;
+	  }
+
+	  public Integer getPopulation() {
+		  return population;
+	  }
+
+	  public void setPopulation(Integer population) {
+		  this.population = population;
+	  }
+
+	  public Integer getElevation() {
+		  return elevation;
+	  }
+
+	  public void setElevation(Integer elevation) {
+		  this.elevation = elevation;
+	  }
+
+	  public String getFeatureClassName() {
+		  return featureClassName;
+	  }
+
+	  public void setFeatureClassName(String featureClassName) {
+		  this.featureClassName = featureClassName;
+	  }
+
+	  public String getFeatureCode() {
+		  return featureCode;
+	  }
+
+	  public void setFeatureCode(String featureCode) {
+		  this.featureCode = featureCode;
+	  }
+
+	  public String getFeatureCodeName() {
+		  return featureCodeName;
+	  }
+
+	  public void setFeatureCodeName(String featureCodeName) {
+		  this.featureCodeName = featureCodeName;
+	  }
+
+	  public double getLatitude() {
+		  return latitude;
+	  }
+
+	  public void setLatitude(double latitude) {
+		  this.latitude = latitude;
+	  }
+
+	  public double getLongitude() {
+		  return longitude;
+	  }
+
+	  public void setLongitude(double longitude) {
+		  this.longitude = longitude;
+	  }
+
+	  public String getAdminCode1() {
+		  return adminCode1;
+	  }
+
+	  public void setAdminCode1(String adminCode1) {
+		  this.adminCode1 = adminCode1;
+	  }
+
+	  public String getAdminName1() {
+		  return adminName1;
+	  }
+
+	  public void setAdminName1(String adminName1) {
+		  this.adminName1 = adminName1;
+	  }
+
+	  public String getAdminCode2() {
+		  return adminCode2;
+	  }
+
+	  public void setAdminCode2(String adminCode2) {
+		  this.adminCode2 = adminCode2;
+	  }
+
+	  public String getAdminName2() {
+		  return adminName2;
+	  }
+
+	  public void setAdminName2(String adminName2) {
+		  this.adminName2 = adminName2;
+	  }
+
+	  public String getAdminCode3() {
+		  return adminCode3;
+	  }
+
+	  public void setAdminCode3(String adminCode3) {
+		  this.adminCode3 = adminCode3;
+	  }
+
+	  public String getAdminCode4() {
+		  return adminCode4;
+	  }
+
+	  public void setAdminCode4(String adminCode4) {
+		  this.adminCode4 = adminCode4;
+	  }
   }
 }

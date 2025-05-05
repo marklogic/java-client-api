@@ -7,9 +7,6 @@ plugins {
 dependencies {
 	implementation project(':marklogic-client-api')
 
-	// Forcing usage of 3.4.0 instead of 3.2.0 to address vulnerability - https://security.snyk.io/vuln/SNYK-JAVA-COMSQUAREUPOKIO-5820002
-	implementation 'com.squareup.okio:okio:3.4.0'
-
 	// The 'api' configuration is used so that the test configuration in marklogic-client-api doesn't have to declare
 	// all of these dependencies. This library project won't otherwise be depended on by anything else as it's not
 	// setup for publishing.
