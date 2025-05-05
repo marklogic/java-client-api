@@ -22,8 +22,6 @@ import io.undertow.util.Headers;
 import okhttp3.Credentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.util.StringUtils;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
@@ -31,7 +29,9 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.security.KeyStore;
@@ -89,7 +89,7 @@ public class ReverseProxyServer {
 					serverPort = Integer.parseInt(args[2]);
 					if (args.length > 3) {
 						secureServerPort = Integer.parseInt(args[3]);
-						if (args.length > 4 && StringUtils.hasText(args[4])) {
+						if (args.length > 4 && args[4].trim().length() > 0) {
 							customMappings = Arrays.asList(args[4].split(","));
 						}
 					}
@@ -200,7 +200,9 @@ public class ReverseProxyServer {
 		final String keyStorePassword = "password";
 		KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-		keyStore.load(new ClassPathResource("selfsigned.jks").getInputStream(), keyStorePassword.toCharArray());
+		try (InputStream inputStream = new FileInputStream("src/main/resources/selfsigned.jks")) {
+			keyStore.load(inputStream, keyStorePassword.toCharArray());
+		}
 		kmf.init(keyStore, keyStorePassword.toCharArray());
 
 		SSLContext sslContext = SSLContext.getInstance("TLSv1.2");

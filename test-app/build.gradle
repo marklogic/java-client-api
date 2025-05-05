@@ -7,9 +7,8 @@ plugins {
 dependencies {
 	implementation "io.undertow:undertow-core:2.2.37.Final"
 	implementation "io.undertow:undertow-servlet:2.2.37.Final"
-	implementation "org.springframework:spring-context:5.3.39"
 	implementation 'org.slf4j:slf4j-api:2.0.17'
-	implementation 'ch.qos.logback:logback-classic:1.3.14'
+	implementation 'ch.qos.logback:logback-classic:1.3.15'
 	implementation "com.fasterxml.jackson.core:jackson-databind:2.17.2"
 	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
 }
@@ -17,7 +16,8 @@ dependencies {
 // See https://github.com/psxpaul/gradle-execfork-plugin for docs.
 // Note that the task will stop at the end of the build by default, which is typically the behavior we want when
 // running tests.
-task runReverseProxyServer(type: com.github.psxpaul.task.JavaExecFork, dependsOn: 'compileJava') {
+tasks.register("runReverseProxyServer", com.github.psxpaul.task.JavaExecFork) {
+	dependsOn compileJava
 	description = "Run a reverse proxy so that the Java tests can be verified when talking to a reverse proxy instead of " +
 		"directly to MarkLogic"
 	classpath = sourceSets.main.runtimeClasspath
@@ -27,7 +27,7 @@ task runReverseProxyServer(type: com.github.psxpaul.task.JavaExecFork, dependsOn
 	errorOutput = file("$buildDir/reverse-proxy-error.log")
 }
 
-task runBlockingReverseProxyServer(type: JavaExec) {
+tasks.register("runBlockingReverseProxyServer", JavaExec) {
 	description = "Run the reverse proxy server so that it blocks and waits for requests; use ctrl-C to stop it. " +
 		"This is intended for manual testing with the reverse proxy server. If you wish to enable an HTTPS port that is 443" +
 		"or any value less than 1024, you will need to use sudo to run this - e.g. " +
