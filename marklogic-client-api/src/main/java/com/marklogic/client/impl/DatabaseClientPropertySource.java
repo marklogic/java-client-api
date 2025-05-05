@@ -440,6 +440,7 @@ public class DatabaseClientPropertySource {
 		try {
 			sslContext = SSLContext.getInstance(sslProtocol);
 		} catch (NoSuchAlgorithmException e) {
+			SSLUtil.logSecurityRelatedException(e);
 			throw new RuntimeException(String.format("Unable to get SSLContext instance with protocol: %s; cause: %s",
 				sslProtocol, e.getMessage()), e);
 		}
@@ -447,6 +448,7 @@ public class DatabaseClientPropertySource {
 			try {
 				sslContext.init(null, new X509TrustManager[]{userTrustManager}, null);
 			} catch (KeyManagementException e) {
+				SSLUtil.logSecurityRelatedException(e);
 				throw new RuntimeException(String.format("Unable to initialize SSLContext; protocol: %s; cause: %s",
 					sslProtocol, e.getMessage()), e);
 			}

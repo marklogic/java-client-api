@@ -879,8 +879,8 @@ public class OkHttpServices implements RESTServices {
 				"Document read for document identifier without uri");
 		}
 
-		assert metadataHandle != null : "metadataHandle is null";
-		assert contentHandle != null : "contentHandle is null";
+		Objects.requireNonNull(metadataHandle);
+		Objects.requireNonNull(contentHandle);
 
 		logger.debug("Getting multipart for {} in transaction {}", uri, getTransactionId(transaction));
 

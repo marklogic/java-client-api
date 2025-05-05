@@ -7,6 +7,7 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.io.BaseHandle;
 
 import java.lang.reflect.Array;
+import java.util.Objects;
 
 /**
  * A Content Handle provides get / set access to a representation
@@ -101,6 +102,8 @@ public interface ContentHandle<C>
   @SuppressWarnings("unchecked")
   default C[] newArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
-    return (C[]) Array.newInstance(getContentClass(), length);
+	Class<C> clazz = getContentClass();
+	  Objects.requireNonNull(clazz);
+    return (C[]) Array.newInstance(clazz, length);
   }
 }

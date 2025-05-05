@@ -63,7 +63,7 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         this.rowsHandle = rowsHandle;
 
 		DatabaseClient databaseClient = getPrimaryClient();
-		assert databaseClient != null;
+		Objects.requireNonNull(databaseClient);
 		defaultRowManager = databaseClient.newRowManager();
 
         super.withBatchSize(DEFAULT_BATCH_SIZE);

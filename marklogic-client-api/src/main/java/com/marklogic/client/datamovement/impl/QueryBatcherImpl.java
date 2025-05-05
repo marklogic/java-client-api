@@ -731,7 +731,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                 .withForest(forest);
 
         QueryManagerImpl queryMgr = (QueryManagerImpl) client.newQueryManager();
-        queryMgr.setPageLength(getBatchSize() * getDocToUriBatchRatio());
+		final long newPageLength = (long)getBatchSize() * (long)getDocToUriBatchRatio();
+        queryMgr.setPageLength(newPageLength);
         UrisHandle handle = new UrisHandle();
 
         if (consistentSnapshot == true && serverTimestamp.get() > -1) {
@@ -881,11 +882,13 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
               logger.error("Exception thrown by an onQueryFailure listener", e2);
             }
           }
-          if (retryForestMap.get(forest).get() == 0) {
-            isDone.set(true);
-          } else {
-            retryForestMap.get(forest).decrementAndGet();
-          }
+			AtomicInteger forestRetryCounter = retryForestMap.get(forest);
+			Objects.requireNonNull(forestRetryCounter);
+			if (forestRetryCounter.get() == 0) {
+				isDone.set(true);
+			} else {
+				forestRetryCounter.decrementAndGet();
+			}
         } else if (t instanceof RuntimeException) {
           throw (RuntimeException) t;
         } else {
@@ -905,7 +908,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     	  shutdownIfAllForestsAreDone();
     	  return;
       }
-      long nextStart = start + getBatchSize() * getDocToUriBatchRatio();
+	  final long interval = (long)getBatchSize() * (long)getDocToUriBatchRatio();
+      long nextStart = start + interval;
       threadPool.execute(new QueryTask(
           moveMgr, batcher, forest, QueryBatcherImpl.this.queryMethod, query, filtered, forestBatchNum + getBatchSize(), nextStart, null, nextAfterUri
       ));
