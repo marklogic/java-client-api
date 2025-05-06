@@ -311,8 +311,10 @@ public class QueryManagerImpl
 
     String mimetype = optionsFormat.getDefaultMimetype();
 
-    String tid = transaction == null ? null : transaction.getTransactionId();
-    optionsBase.receiveContent(services.optionsList(optionsBase.receiveAs(), mimetype, transaction));
+	Object content = services.optionsList(optionsBase.receiveAs(), mimetype, transaction);
+	if (content != null) {
+		optionsBase.receiveContent(content);
+	}
     return optionsHandle;
   }
 

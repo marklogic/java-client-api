@@ -182,8 +182,10 @@ public class QueryOptionsManagerImpl
     }
 
     String mimetype = optionsFormat.getDefaultMimetype();
-
-    optionsBase.receiveContent(services.optionsList(optionsBase.receiveAs(), mimetype, null));
+	Object content = services.optionsList(optionsBase.receiveAs(), mimetype, null);
+	if (content != null) {
+		optionsBase.receiveContent(content);
+	}
     return optionsHandle;
   }
 }
