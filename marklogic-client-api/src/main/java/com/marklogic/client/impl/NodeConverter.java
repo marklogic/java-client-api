@@ -52,10 +52,7 @@ public class NodeConverter {
    static private DocumentBuilderFactory getDocumentBuilderFactory() {
       // okay if one thread overwrites another during lazy initialization
       if (documentBuilderFactory == null) {
-         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-         factory.setNamespaceAware(true);
-         factory.setValidating(false);
-         documentBuilderFactory = factory;
+         documentBuilderFactory = XmlFactories.makeNewDocumentBuilderFactory();
       }
       return documentBuilderFactory;
    }

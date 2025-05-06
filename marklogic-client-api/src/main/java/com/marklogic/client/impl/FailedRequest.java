@@ -3,20 +3,17 @@
  */
 package com.marklogic.client.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import com.marklogic.client.io.Format;
-import okhttp3.MediaType;
+import com.marklogic.client.io.JSONErrorParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.io.JSONErrorParser;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Encapsulate data passed in an error response from a REST server instance
@@ -50,10 +47,7 @@ public class FailedRequest {
     @Override
     public FailedRequest parseFailedRequest(int httpStatus, InputStream is) {
       FailedRequest failure = new FailedRequest();
-      DocumentBuilderFactory factory = DocumentBuilderFactory
-        .newInstance();
-      factory.setNamespaceAware(true);
-      factory.setValidating(false);
+      DocumentBuilderFactory factory = XmlFactories.makeNewDocumentBuilderFactory();
       DocumentBuilder builder;
       try {
         builder = factory.newDocumentBuilder();

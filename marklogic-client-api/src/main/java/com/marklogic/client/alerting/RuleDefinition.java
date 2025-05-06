@@ -24,7 +24,10 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.*;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayOutputStream;
@@ -310,12 +313,8 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
         new StreamResult(baos));
       importQueryDefinition(new BytesHandle(baos.toByteArray())
         .withFormat(Format.XML));
-    } catch (TransformerConfigurationException e) {
-      throw new MarkLogicIOException(
-        "Could not get query from rule payload");
     } catch (TransformerException e) {
-      throw new MarkLogicIOException(
-        "Could not get query from rule payload");
+      throw new MarkLogicIOException("Could not get query from rule payload");
     }
 
     receiveRuleMetadataImpl(ruleElement);

@@ -24,6 +24,7 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.validation.Schema;
 
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.marker.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -428,19 +429,7 @@ public class InputSourceHandle
     }
   }
   private TransformerFactory makeTransformer() {
-    TransformerFactory factory = TransformerFactory.newInstance();
-    // default to best practices for conservative security including recommendations per
-    // https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
-    try {
-      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-    } catch (TransformerConfigurationException e) {}
-    try {
-      factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-    } catch (IllegalArgumentException e) {}
-    try {
-      factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
-    } catch (IllegalArgumentException e) {}
-    return factory;
+	  return XmlFactories.makeNewTransformerFactory();
   }
 
   /**

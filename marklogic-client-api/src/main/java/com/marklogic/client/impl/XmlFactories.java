@@ -4,12 +4,13 @@
 package com.marklogic.client.impl;
 
 import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import java.lang.ref.SoftReference;
 
 public final class XmlFactories {
@@ -51,13 +52,49 @@ public final class XmlFactories {
 		return factory;
 	}
 
-	public static TransformerFactory makeNewTransformerFactory() throws TransformerConfigurationException {
+	public static TransformerFactory makeNewTransformerFactory() {
 		TransformerFactory factory = TransformerFactory.newInstance();
 		// Avoids Polaris warning related to https://cwe.mitre.org/data/definitions/611.html .
 		// From https://stackoverflow.com/questions/32178558/how-to-prevent-xml-external-entity-injection-on-transformerfactory .
-		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		try {
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		} catch (TransformerConfigurationException e) {
+		}
 		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
 		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+		return factory;
+	}
+
+	public static DocumentBuilderFactory makeNewDocumentBuilderFactory() {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		// For 7.2.0 - these have been moved here from their previous home in the DOMHandle class so that they can be
+		// reused in each place where this factory is needed.
+		// Default to best practices for conservative security including recommendations per
+		// https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
+		try {
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		} catch (ParserConfigurationException e) {
+		}
+		try {
+			factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		} catch (ParserConfigurationException e) {
+		}
+		try {
+			factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		} catch (ParserConfigurationException e) {
+		}
+		try {
+			factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+		} catch (ParserConfigurationException e) {
+		}
+		try {
+			factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+		} catch (ParserConfigurationException e) {
+		}
+		factory.setXIncludeAware(false);
+		factory.setExpandEntityReferences(false);
+		factory.setNamespaceAware(true);
+		factory.setValidating(false);
 		return factory;
 	}
 

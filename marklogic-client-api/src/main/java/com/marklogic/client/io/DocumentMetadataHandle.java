@@ -577,10 +577,7 @@ public class DocumentMetadataHandle
 
       Document document = null;
       if (content != null) {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        factory.setValidating(false);
-        DocumentBuilder builder = factory.newDocumentBuilder();
+        DocumentBuilder builder = XmlFactories.makeNewDocumentBuilderFactory().newDocumentBuilder();
         document = builder.parse(new InputSource(new InputStreamReader(content, StandardCharsets.UTF_8)));
         content.close();
       }
