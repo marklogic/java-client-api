@@ -645,7 +645,7 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
 	              "  .filter()" +
 	              "  .slice(0, 10)" +
 	              "  .result();" +
-	              "output;";
+	              "export default output;";
 
 		  DocumentManager dm = moduleClient.newDocumentManager();
 		  DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
