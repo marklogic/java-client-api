@@ -17,6 +17,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 /**
  * SearchCollectorExample illustrates reading a page of documents
@@ -174,6 +175,7 @@ public class SearchCollectorExample {
     CollectorResults results = collector.collect(
       "neighborhood industry:\"Real Estate\"", 1, OPTIONS_NAME
     );
+	  Objects.requireNonNull(results);
 
     System.out.println();
     System.out.println("search results:");

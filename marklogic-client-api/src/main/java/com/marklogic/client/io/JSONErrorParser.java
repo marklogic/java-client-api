@@ -9,6 +9,7 @@ import com.marklogic.client.impl.FailedRequestParser;
 
 import java.io.InputStream;
 import java.util.Map;
+import java.util.Objects;
 
 public class JSONErrorParser implements FailedRequestParser {
 
@@ -23,7 +24,7 @@ public class JSONErrorParser implements FailedRequestParser {
 		} catch (Exception ex) {
 			return new FailedRequest(httpStatus, "Request failed; could not parse JSON in response body.");
 		}
-
+		Objects.requireNonNull(errorData);
 		if (!errorData.containsKey("errorResponse")) {
 			return new FailedRequest(httpStatus, "Unexpected JSON in response body; did not find 'errorResponse' key; response: " + errorData);
 		}

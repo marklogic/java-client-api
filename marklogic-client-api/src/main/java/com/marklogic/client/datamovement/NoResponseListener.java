@@ -33,7 +33,7 @@ public class NoResponseListener extends HostAvailabilityListener {
   protected boolean isHostUnavailableException(Throwable throwable, Set<Throwable> path) {
     // Check if the exception is an IOException and check if the
     // message indicates an end of stream on a Connection.
-    if ( IOException.class.isInstance(throwable) && throwable.getMessage().contains("unexpected end of stream on") ) {
+    if ( IOException.class.isInstance(throwable) && (throwable.getMessage() != null && throwable.getMessage().contains("unexpected end of stream on"))) {
       return true;
     }
     // we need to check our recursion path to avoid infinite recursion if a

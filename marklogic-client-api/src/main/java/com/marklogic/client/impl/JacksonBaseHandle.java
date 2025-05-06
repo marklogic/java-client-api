@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -69,8 +70,10 @@ public abstract class JacksonBaseHandle<T>
       if (!hasContent())
         return null;
 
-      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-      sendContent(content).write(buffer);
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		OutputStreamSender sender = sendContent(content);
+		Objects.requireNonNull(sender);
+		sender.write(buffer);
 
       return buffer.toByteArray();
     } catch (IOException e) {

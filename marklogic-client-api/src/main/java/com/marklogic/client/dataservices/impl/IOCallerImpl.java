@@ -14,6 +14,8 @@ import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
+import java.util.Objects;
+
 abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
     private final JsonNode                    apiDeclaration;
     private final String                      endpointPath;
@@ -36,6 +38,7 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
         }
 
         this.apiDeclaration = NodeConverter.handleToJsonNode(apiDeclaration);
+		Objects.requireNonNull(this.apiDeclaration);
         if (!this.apiDeclaration.isObject()) {
             throw new IllegalArgumentException(
                     "endpoint declaration must be object: " + this.apiDeclaration

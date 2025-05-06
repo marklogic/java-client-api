@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.AnnotatedParameter;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -20,6 +21,7 @@ import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /** <p>Generates a MarkLogic index configuration file in JSON format describing the indexes
  * required by the annotations on the specific classes.
@@ -284,21 +286,25 @@ public class GenerateIndexConfig {
     }
     if ( property.hasGetter() ) {
       // I have to use getMember because Jackson returns annotation whether it's on the getter or setter
-      T getterAnnotation = property.getGetter().getMember().getAnnotation(annotation);
+		AnnotatedMethod getter = property.getGetter();
+		Objects.requireNonNull(getter);
+      T getterAnnotation = getter.getMember().getAnnotation(annotation);
       if ( getterAnnotation != null ) {
         AnnotationFound<T> found = new AnnotationFound<>();
         found.annotation = getterAnnotation;
-        found.foundMessage = annotationName + " on method '" + property.getGetter().getName() + "'";
+        found.foundMessage = annotationName + " on method '" + getter.getName() + "'";
         return found;
       }
     }
     if ( property.hasSetter() ) {
       // I have to use getMember because Jackson returns annotation whether it's on the getter or setter
-      T setterAnnotation = property.getSetter().getMember().getAnnotation(annotation);
+		AnnotatedMethod setter = property.getSetter();
+		Objects.requireNonNull(setter);
+      T setterAnnotation = setter.getMember().getAnnotation(annotation);
       if ( setterAnnotation != null ) {
         AnnotationFound<T> found = new AnnotationFound<>();
         found.annotation = setterAnnotation;
-        found.foundMessage = annotationName + " on method '" + property.getSetter().getName() + "'";
+        found.foundMessage = annotationName + " on method '" + setter.getName() + "'";
         return found;
       }
     }
