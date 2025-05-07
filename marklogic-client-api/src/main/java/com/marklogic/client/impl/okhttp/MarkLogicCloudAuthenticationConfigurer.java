@@ -6,13 +6,7 @@ package com.marklogic.client.impl.okhttp;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClientFactory.MarkLogicCloudAuthContext;
-import okhttp3.Call;
-import okhttp3.FormBody;
-import okhttp3.HttpUrl;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,13 +144,18 @@ class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer
 
 		@Override
 		public Response intercept(Chain chain) throws IOException {
-			Response response = chain.proceed(addTokenToRequest(chain));
+			Request.Builder builder = chain.request().newBuilder();
+			addTokenToRequest(builder);
+			Response response = chain.proceed(builder.build());
 			if (response.code() == 401) {
 				logger.info("Received 401; will generate new token if necessary and retry request");
 				response.close();
 				final String currentToken = this.token;
 				generateNewTokenIfNecessary(currentToken);
-				response = chain.proceed(addTokenToRequest(chain));
+
+				builder = chain.request().newBuilder();
+				addTokenToRequest(builder);
+				response = chain.proceed(builder.build());
 			}
 			return response;
 		}
@@ -183,10 +182,8 @@ class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer
 			}
 		}
 
-		private Request addTokenToRequest(Chain chain) {
-			return chain.request().newBuilder()
-				.header("Authorization", "Bearer " + token)
-				.build();
+		private synchronized Request.Builder addTokenToRequest(Request.Builder builder) {
+			return builder.header("Authorization", String.format("Bearer %s", this.token));
 		}
 	}
 }

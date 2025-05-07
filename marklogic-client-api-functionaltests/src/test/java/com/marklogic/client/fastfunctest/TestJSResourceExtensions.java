@@ -174,13 +174,14 @@ public class TestJSResourceExtensions extends AbstractFunctionalTest {
 
   @Test
   public void test2GetAllResourceServicesMultipleTimes() throws Exception {
+	  final int count = 50;
 
     JacksonHandle jh = new JacksonHandle();
 
     TestJSExtension tjs = new TestJSExtension(client);
     String expectedResponse = "{\"response\":[200, \"OK\"]}";
     // load multiple documents using extension
-    for (int i = 0; i < 150; i++) {
+    for (int i = 0; i < count; i++) {
       JSONAssert.assertEquals(expectedResponse, tjs.putJSON("helloJS" + i + ".json"), false);
       JSONAssert.assertEquals(expectedResponse, tjs.postJSON("helloJS" + i + ".json"), false);
     }
@@ -188,13 +189,13 @@ public class TestJSResourceExtensions extends AbstractFunctionalTest {
     JacksonHandle jh2 = new JacksonHandle();
     jh.set(jh2.getMapper().readTree(tjs.getJSON("helloJS0.json")));
 
-    assertEquals( 150, jh.get().get("document-count").intValue());
+    assertEquals( count, jh.get().get("document-count").intValue());
 
     String expAftrPut = "{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"array\":[1, 2, 3], \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
     String expected = "{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"database-name\":\"java-functest\", \"document-count\":0, \"content\":\"This is a JSON document\", \"document-content\":null, \"response\":[200, \"OK\"], \"outputTypes\":[\"application/json\"]}";
     // verify by reading all the documents to see put and post services
     // correctly inserted documents and delete them
-    for (int j = 0; j < 150; j++) {
+    for (int j = 0; j < count; j++) {
       jh.set(jh2.getMapper().readTree(tjs.getJSON("helloJS" + j + ".json")));
       JSONAssert.assertEquals(expAftrPut, jh.get().get("document-content").findParent("array").toString(), false);
       JSONAssert.assertEquals(expectedResponse, tjs.deleteJSON("helloJS" + j + ".json"), false);

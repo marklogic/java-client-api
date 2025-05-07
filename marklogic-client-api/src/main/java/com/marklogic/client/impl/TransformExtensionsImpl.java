@@ -99,9 +99,7 @@ class TransformExtensionsImpl
     }
 
 	Object content = services.getValues(requestLogger, "config/transforms", extraParams, listFormat.getDefaultMimetype(), listBase.receiveAs());
-	if (content != null) {
-    	listBase.receiveContent(content);
-	}
+	listBase.receiveContent(content);
     return listHandle;
   }
 

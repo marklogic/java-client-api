@@ -300,9 +300,6 @@ abstract class IOEndpointImpl<I,O> implements IOEndpoint {
                 this.bulkIOEndpointCaller = bulkIOEndpointCaller;
             }
 
-            Boolean isAwaitingTermination() {
-                return this.awaitingTermination;
-            }
             synchronized void awaitTermination() throws InterruptedException {
                 if (bulkIOEndpointCaller.getCallContextQueue().isEmpty() && getActiveCount()<=1) {
                     shutdown();

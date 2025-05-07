@@ -381,9 +381,9 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 		// not the same value that a user would have provided via withBatchSize. And we don't want to log it when it's
 		// -1, which will be the case for a single batch.
 		if (logger.isDebugEnabled() && this.batchSize > 0) {
-			logger.debug("batch count: {}, calculated batch size: {}", batchCount, batchSize);
+			logger.debug("batch count: {}, calculated batch size: {}", this.batchCount, this.batchSize);
 		} else {
-			logger.info("batch count: {}", batchCount);
+			logger.info("batch count: {}", this.batchCount);
 		}
 
         if (this.hostInfos != null && getMoveMgr().getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {

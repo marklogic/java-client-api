@@ -314,9 +314,7 @@ public class QueryManagerImpl
     String mimetype = optionsFormat.getDefaultMimetype();
 
 	Object content = services.optionsList(optionsBase.receiveAs(), mimetype, transaction);
-	if (content != null) {
-		optionsBase.receiveContent(content);
-	}
+	optionsBase.receiveContent(content);
     return optionsHandle;
   }
 
