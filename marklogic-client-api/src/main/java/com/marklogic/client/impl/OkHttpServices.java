@@ -3656,6 +3656,7 @@ public class OkHttpServices implements RESTServices {
 							Objects.requireNonNull(jsonParser);
 							jsonNode = jsonParser.readValueAs(JsonNode.class);
 						}
+						Objects.requireNonNull(jsonNode);
 						value = jsonNode.toString();
 						type = getJsonType(jsonNode);
 					} else if (valueObject instanceof AbstractWriteHandle) {
