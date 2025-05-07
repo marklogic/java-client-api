@@ -1004,6 +1004,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
               }
             };
             threadPool.execute(processBatch);
+			  // Polaris warns of a race condition here, presumably based on the check on remainingCapacity. But the
+			  // cost of executing a needless IteratorTask is small enough to accept the possible race condition.
             // If the queue is almost full, stop producing and add a task to continue later
             if (isSingleThreaded && threadPool.getQueue().remainingCapacity() <= 2 && iterator.hasNext()) {
               threadPool.execute(new IteratorTask(batcher));

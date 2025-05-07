@@ -4,61 +4,76 @@
 
 package com.marklogic.client.impl;
 
+import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext.AuthorizerCallback;
+import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext.ExpiringSAMLAuth;
+import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext.RenewerCallback;
+import okhttp3.Interceptor;
+import okhttp3.Request;
+import okhttp3.Response;
+
 import java.io.IOException;
 import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext.AuthorizerCallback;
-import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext.ExpiringSAMLAuth;
-import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext.RenewerCallback;
-
-import okhttp3.Interceptor;
-import okhttp3.Request;
-import okhttp3.Response;
-
 public class HTTPSamlAuthInterceptor implements Interceptor {
 
-    private String authorizationTokenValue;
-    private AuthorizerCallback authorizer;
+    private final AuthorizerCallback authorizer;
+	private final RenewerCallback renewer;
+
+	private String authorizationTokenValue;
     private ExpiringSAMLAuth expiringSAMLAuth;
     private long threshold;
-    private RenewerCallback renewer;
     private AtomicBoolean isCallbackExecuting;
 
     public HTTPSamlAuthInterceptor(String authToken) {
-        this.authorizationTokenValue = authToken;
+		this.authorizationTokenValue = authToken;
+		this.authorizer = null;
+		this.renewer = null;
     }
 
     public HTTPSamlAuthInterceptor(AuthorizerCallback authorizer) {
         this.authorizer = authorizer;
+		this.renewer = null;
     }
 
     public HTTPSamlAuthInterceptor(ExpiringSAMLAuth authorization, RenewerCallback renew) {
         expiringSAMLAuth = authorization;
         renewer = renew;
         isCallbackExecuting = new AtomicBoolean(false);
+		this.authorizer = null;
     }
 
     @Override
     public Response intercept(Chain chain) throws IOException {
-        Request request = chain.request();
-        if (authorizer != null) {
-            if(expiringSAMLAuth == null) {
-                authorizeCallbackWrapper(null);
-            } else if(threshold<=Instant.now().getEpochSecond()){
-                authorizeCallbackWrapper(expiringSAMLAuth.getExpiry());
-            }
-        } else if (renewer != null && threshold <= Instant.now().getEpochSecond() && isCallbackExecuting.compareAndSet(false, true)) {
-                RenewCallbackWrapper renewCallbackWrapper = new RenewCallbackWrapper(expiringSAMLAuth);
-                Executors.defaultThreadFactory().newThread(renewCallbackWrapper).start();
-        }
-        String samlHeaderValue = RESTServices.AUTHORIZATION_TYPE_SAML + " " + RESTServices.AUTHORIZATION_PARAM_TOKEN
-                + "=" + authorizationTokenValue;
-        Request authenticatedRequest = request.newBuilder().header(RESTServices.HEADER_AUTHORIZATION, samlHeaderValue)
-                .build();
-        return chain.proceed(authenticatedRequest);
+		if (authorizer != null) {
+			authorizeRequest();
+		} else if (renewer != null && threshold <= Instant.now().getEpochSecond() && isCallbackExecuting.compareAndSet(false, true)) {
+			RenewCallbackWrapper renewCallbackWrapper = new RenewCallbackWrapper(expiringSAMLAuth);
+			Executors.defaultThreadFactory().newThread(renewCallbackWrapper).start();
+		}
+
+		Request authenticatedRequest = chain.request().newBuilder()
+			.header(RESTServices.HEADER_AUTHORIZATION, buildSamlHeader())
+			.build();
+
+		return chain.proceed(authenticatedRequest);
     }
+
+	private synchronized void authorizeRequest() {
+		if (expiringSAMLAuth == null) {
+			authorizeCallbackWrapper(null);
+		} else if (threshold <= Instant.now().getEpochSecond()) {
+			authorizeCallbackWrapper(expiringSAMLAuth.getExpiry());
+		}
+	}
+
+	private synchronized String buildSamlHeader() {
+		return String.format("%s %s=%s",
+			RESTServices.AUTHORIZATION_TYPE_SAML,
+			RESTServices.AUTHORIZATION_PARAM_TOKEN,
+			this.authorizationTokenValue);
+	}
 
     private synchronized void authorizeCallbackWrapper(Instant expiry) {
 
