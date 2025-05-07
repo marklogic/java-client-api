@@ -109,7 +109,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		createRESTServerWithDB(server, port);
 		assocRESTServer(server, dbName, port);
 		if (IsSecurityEnabled()) {
-			enableSecurityOnRESTServer(server, dbName);
+			enableSecurityOnRESTServer(server);
 		}
 
 		dbClient = getDatabaseClient(user, password, getConnType());
