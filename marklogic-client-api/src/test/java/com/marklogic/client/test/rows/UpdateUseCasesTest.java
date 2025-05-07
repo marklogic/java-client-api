@@ -12,6 +12,7 @@ import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.RequiresML11;
 import com.marklogic.client.type.PlanSystemColumn;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -27,6 +28,15 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @ExtendWith(RequiresML11.class)
 public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
+
+	private String transformDocModule;
+
+	@BeforeEach
+	void beforeEach() {
+		transformDocModule = Common.getMarkLogicVersion().getMajor() >= 12 ?
+			"/etc/optic/test/transformDoc-test-12.mjs" :
+			"/etc/optic/test/transformDoc-test.mjs";
+	}
 
 	/**
 	 * Use case: Given a set of doc descriptors, add a collection to each document with a URI matching one of the
@@ -177,7 +187,7 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
 			.lockForUpdate()
 			.transformDoc(
 				op.col("doc"),
-				op.transformDef("/etc/optic/test/transformDoc-test.mjs")
+				op.transformDef(transformDocModule)
 					.withParam("myParam", "my value"))
 			.write();
 
