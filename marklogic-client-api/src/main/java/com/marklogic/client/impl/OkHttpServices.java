@@ -673,7 +673,8 @@ public class OkHttpServices implements RESTServices {
 			closeResponse(response);
 		}
 
-		handleBase.receiveContent((reqlog != null) ? reqlog.copyContent(entity) : entity);
+		Object content = reqlog != null ? reqlog.copyContent(entity) : entity;
+		handleBase.receiveContent(content);
 
 		return true;
 	}
@@ -1915,8 +1916,7 @@ public class OkHttpServices implements RESTServices {
 				throw new UnsupportedOperationException("Only XML and JSON search results are possible.");
 		}
 
-		String mimetype = searchFormat != null ? searchFormat.getDefaultMimetype() : null;
-
+		String mimetype = searchFormat.getDefaultMimetype();
 		OkHttpSearchRequest request = generateSearchRequest(reqlog, queryDef, mimetype, transaction, null, params, forestName);
 		Response response = request.getResponse();
 		if (response == null) return null;
@@ -3005,8 +3005,7 @@ public class OkHttpServices implements RESTServices {
 
 		updateDescriptor(outputBase, response.headers());
 		if (as != null) {
-			outputBase.receiveContent(makeResult(reqlog, "read", "resource",
-				response, as));
+			outputBase.receiveContent(makeResult(reqlog, "read", "resource", response, as));
 		} else {
 			closeResponse(response);
 		}
@@ -3091,8 +3090,7 @@ public class OkHttpServices implements RESTServices {
 			ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
 		if (as != null) {
-			outputBase.receiveContent(makeResult(reqlog, "write", "resource",
-				response, as));
+			outputBase.receiveContent(makeResult(reqlog, "write", "resource", response, as));
 		} else {
 			closeResponse(response);
 		}
@@ -3172,7 +3170,6 @@ public class OkHttpServices implements RESTServices {
 
 		if (as != null) {
 			Object content = makeResult(reqlog, "write", "resource", response, as);
-			Objects.requireNonNull(content);
 			outputBase.receiveContent(content);
 		} else {
 			closeResponse(response);
@@ -3261,8 +3258,8 @@ public class OkHttpServices implements RESTServices {
 		}
 
 		if (as != null) {
-			outputBase.receiveContent(makeResult(reqlog, operation, "resource",
-				response, as));
+			Object content = makeResult(reqlog, operation, "resource", response, as);
+			outputBase.receiveContent(content);
 		} else {
 			closeResponse(response);
 		}
@@ -3345,8 +3342,8 @@ public class OkHttpServices implements RESTServices {
 			ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
 		if (as != null) {
-			outputBase.receiveContent(makeResult(reqlog, "apply", "resource",
-				response, as));
+			Object content = makeResult(reqlog, "apply", "resource", response, as);
+			outputBase.receiveContent(content);
 		} else {
 			closeResponse(response);
 		}
@@ -3651,10 +3648,10 @@ public class OkHttpServices implements RESTServices {
 						value = "null";
 						type = "null-node()";
 					} else if (valueObject instanceof JacksonHandle || valueObject instanceof JacksonParserHandle) {
-						JsonNode jsonNode = null;
+						JsonNode jsonNode;
 						if (valueObject instanceof JacksonHandle) {
 							jsonNode = ((JacksonHandle) valueObject).get();
-						} else if (valueObject instanceof JacksonParserHandle) {
+						} else {
 							JsonParser jsonParser = ((JacksonParserHandle) valueObject).get();
 							Objects.requireNonNull(jsonParser);
 							jsonNode = jsonParser.readValueAs(JsonNode.class);
@@ -3990,8 +3987,7 @@ public class OkHttpServices implements RESTServices {
 			ResponseStatus.OK_OR_NO_CONTENT);
 
 		if (as != null) {
-			outputBase.receiveContent(makeResult(reqlog, "delete", "resource",
-				response, as));
+			outputBase.receiveContent(makeResult(reqlog, "delete", "resource", response, as));
 		} else {
 			closeResponse(response);
 		}

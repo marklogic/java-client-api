@@ -15,6 +15,8 @@ import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
+import java.util.Objects;
+
 public class QueryOptionsManagerImpl
   extends AbstractLoggingManager
   implements QueryOptionsManager
@@ -168,6 +170,7 @@ public class QueryOptionsManagerImpl
   public <T extends QueryOptionsListReadHandle> T optionsList(T optionsHandle)
     throws ForbiddenUserException, FailedRequestException {
     HandleImplementation optionsBase = HandleAccessor.checkHandle(optionsHandle, "optionslist");
+	  Objects.requireNonNull(optionsBase);
 
     Format optionsFormat = optionsBase.getFormat();
     switch(optionsFormat) {
