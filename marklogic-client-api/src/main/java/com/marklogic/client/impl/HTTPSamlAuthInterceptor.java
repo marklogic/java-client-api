@@ -18,47 +18,51 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class HTTPSamlAuthInterceptor implements Interceptor {
 
-    private final AuthorizerCallback authorizer;
+	private final AuthorizerCallback authorizer;
 	private final RenewerCallback renewer;
 
 	private String authorizationTokenValue;
-    private ExpiringSAMLAuth expiringSAMLAuth;
-    private long threshold;
-    private AtomicBoolean isCallbackExecuting;
+	private ExpiringSAMLAuth expiringSAMLAuth;
+	private long threshold;
+	private AtomicBoolean isCallbackExecuting;
 
-    public HTTPSamlAuthInterceptor(String authToken) {
+	public HTTPSamlAuthInterceptor(String authToken) {
 		this.authorizationTokenValue = authToken;
 		this.authorizer = null;
 		this.renewer = null;
-    }
+	}
 
-    public HTTPSamlAuthInterceptor(AuthorizerCallback authorizer) {
-        this.authorizer = authorizer;
+	public HTTPSamlAuthInterceptor(AuthorizerCallback authorizer) {
+		this.authorizer = authorizer;
 		this.renewer = null;
-    }
+	}
 
-    public HTTPSamlAuthInterceptor(ExpiringSAMLAuth authorization, RenewerCallback renew) {
-        expiringSAMLAuth = authorization;
-        renewer = renew;
-        isCallbackExecuting = new AtomicBoolean(false);
+	public HTTPSamlAuthInterceptor(ExpiringSAMLAuth authorization, RenewerCallback renew) {
+		expiringSAMLAuth = authorization;
+		renewer = renew;
+		isCallbackExecuting = new AtomicBoolean(false);
 		this.authorizer = null;
-    }
+	}
 
-    @Override
-    public Response intercept(Chain chain) throws IOException {
+	@Override
+	public Response intercept(Chain chain) throws IOException {
 		if (authorizer != null) {
 			authorizeRequest();
 		} else if (renewer != null && threshold <= Instant.now().getEpochSecond() && isCallbackExecuting.compareAndSet(false, true)) {
-			RenewCallbackWrapper renewCallbackWrapper = new RenewCallbackWrapper(expiringSAMLAuth);
-			Executors.defaultThreadFactory().newThread(renewCallbackWrapper).start();
+			startRenewalOfToken();
 		}
 
 		Request authenticatedRequest = chain.request().newBuilder()
 			.header(RESTServices.HEADER_AUTHORIZATION, buildSamlHeader())
 			.build();
-
+		
 		return chain.proceed(authenticatedRequest);
-    }
+	}
+
+	private synchronized void startRenewalOfToken() {
+		RenewCallbackWrapper renewCallbackWrapper = new RenewCallbackWrapper(expiringSAMLAuth);
+		Executors.defaultThreadFactory().newThread(renewCallbackWrapper).start();
+	}
 
 	private synchronized void authorizeRequest() {
 		if (expiringSAMLAuth == null) {
@@ -75,55 +79,54 @@ public class HTTPSamlAuthInterceptor implements Interceptor {
 			this.authorizationTokenValue);
 	}
 
-    private synchronized void authorizeCallbackWrapper(Instant expiry) {
+	private synchronized void authorizeCallbackWrapper(Instant expiry) {
 
-        if(expiry == null && expiringSAMLAuth != null) {
-            return;
-        }
-        if(expiry!=null && expiry!=expiringSAMLAuth.getExpiry()) {
-            return;
-        }
-        expiringSAMLAuth = authorizer.apply(expiringSAMLAuth);
+		if (expiry == null && expiringSAMLAuth != null) {
+			return;
+		}
+		if (expiry != null && expiry != expiringSAMLAuth.getExpiry()) {
+			return;
+		}
+		expiringSAMLAuth = authorizer.apply(expiringSAMLAuth);
 
-        if(expiringSAMLAuth == null) {
-            throw new IllegalArgumentException("SAML Authentication cannot be null");
-        }
+		if (expiringSAMLAuth == null) {
+			throw new IllegalArgumentException("SAML Authentication cannot be null");
+		}
 
-        if(expiringSAMLAuth.getAuthorizationToken() == null) {
-            throw new IllegalArgumentException("SAML Authentication token cannot be null");
-        }
-        authorizationTokenValue = expiringSAMLAuth.getAuthorizationToken();
-        setThreshold(expiringSAMLAuth.getExpiry());
-    }
+		if (expiringSAMLAuth.getAuthorizationToken() == null) {
+			throw new IllegalArgumentException("SAML Authentication token cannot be null");
+		}
+		authorizationTokenValue = expiringSAMLAuth.getAuthorizationToken();
+		setThreshold(expiringSAMLAuth.getExpiry());
+	}
 
-    private void setThreshold(Instant instant) {
-        if (instant == null) {
-            throw new IllegalArgumentException("SAML authentication does not have expiry value.");
-        }
-        if (instant.isBefore(Instant.now())) {
-            throw new IllegalArgumentException("SAML authentication token has expired.");
-        }
-        long current = Instant.now().getEpochSecond();
-        threshold = current + ((instant.getEpochSecond() - current) / 2);
-    }
+	private void setThreshold(Instant instant) {
+		if (instant == null) {
+			throw new IllegalArgumentException("SAML authentication does not have expiry value.");
+		}
+		if (instant.isBefore(Instant.now())) {
+			throw new IllegalArgumentException("SAML authentication token has expired.");
+		}
+		long current = Instant.now().getEpochSecond();
+		threshold = current + ((instant.getEpochSecond() - current) / 2);
+	}
 
-    private class RenewCallbackWrapper implements Runnable {
+	private class RenewCallbackWrapper implements Runnable {
 
-        private ExpiringSAMLAuth expiringAuth;
+		private final ExpiringSAMLAuth expiringAuth;
 
-        public RenewCallbackWrapper(ExpiringSAMLAuth expiringSamlAuth) {
-            this.expiringAuth = expiringSamlAuth;
-        }
-        @Override
-        public void run() {
-            try {
-                Instant newInstant = renewer.apply(expiringAuth);
+		public RenewCallbackWrapper(ExpiringSAMLAuth expiringSamlAuth) {
+			this.expiringAuth = expiringSamlAuth;
+		}
 
-                setThreshold(newInstant);
-
-            } finally {
-                isCallbackExecuting.set(false);
-            }
-        }
-    }
+		@Override
+		public void run() {
+			try {
+				Instant newInstant = renewer.apply(expiringAuth);
+				setThreshold(newInstant);
+			} finally {
+				isCallbackExecuting.set(false);
+			}
+		}
+	}
 }
