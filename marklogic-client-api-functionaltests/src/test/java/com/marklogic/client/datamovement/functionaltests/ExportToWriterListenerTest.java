@@ -81,7 +81,7 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
  	createRESTServerWithDB(server, port);
     assocRESTServer(server, dbName, port);
     if (IsSecurityEnabled()) {
-		enableSecurityOnRESTServer(server, dbName);
+		enableSecurityOnRESTServer(server);
 	}
 
     dbClient = getDatabaseClient(user, password, getConnType());

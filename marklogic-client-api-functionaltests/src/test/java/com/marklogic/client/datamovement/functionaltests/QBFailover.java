@@ -105,14 +105,14 @@ public class QBFailover extends BasicJavaClientREST {
 				}
 				props.put("database", dbName);
 				props.put("state", "attach");
-				postRequest(null, props, "/manage/v2/forests/" + dbName + "-" + (i + 1));
+				postRequest(props, "/manage/v2/forests/" + dbName + "-" + (i + 1));
 			}
 			props = new HashMap<>();
 			props.put("journaling", "strict");
 			changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
 			associateRESTServerWithDB(server, dbName);
 			if (IsSecurityEnabled()) {
-				enableSecurityOnRESTServer(server, dbName);
+				enableSecurityOnRESTServer(server);
 			}
 			// StringHandle
 			stringTriple = "<?xml  version=\"1.0\" encoding=\"UTF-8\"?><foo>This is so foo</foo>";

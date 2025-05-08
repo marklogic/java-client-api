@@ -98,7 +98,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 
     setupAppServicesConstraint(dbName);
     // Create the External Security setting.
-    createExternalSecurityForKerberos(appServerName, extSecurityName);
+    createExternalSecurityForKerberos(extSecurityName);
     // Associate the external security with the App Server.
     associateRESTServerWithKerberosExtSecurity(appServerName, extSecurityName);
     createUserRolesWithPrevilages("test-evalKer", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
