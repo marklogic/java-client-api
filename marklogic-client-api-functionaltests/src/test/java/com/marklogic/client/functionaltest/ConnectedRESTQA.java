@@ -14,10 +14,9 @@ import com.marklogic.client.DatabaseClient.ConnectionType;
 import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.impl.OkHttpServices;
-import com.marklogic.client.impl.RESTServices;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
+import com.marklogic.client.query.QueryManager;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.ManageConfig;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
@@ -30,8 +29,6 @@ import com.marklogic.mgmt.resource.security.UserManager;
 import com.marklogic.mgmt.resource.temporal.TemporalAxesManager;
 import com.marklogic.mgmt.resource.temporal.TemporalCollectionLSQTManager;
 import com.marklogic.mgmt.resource.temporal.TemporalCollectionManager;
-import okhttp3.*;
-import org.json.JSONObject;
 
 import javax.net.ssl.*;
 import java.io.IOException;
@@ -43,9 +40,9 @@ import java.util.*;
 
 public abstract class ConnectedRESTQA {
 
-	protected static Properties testProperties = null;
+	private static Properties testProperties = null;
 
-	protected static String authType;
+	private static String authType;
 	protected static String restServerName = null;
 	private static String restSslServerName = null;
 	private static String ssl_enabled = null;
@@ -68,24 +65,7 @@ public abstract class ConnectedRESTQA {
 	private static Boolean isLBHost = false;
 
 	private static int PROPERTY_WAIT = 0;
-	private static final int ML_RES_OK = 200;
-	private static final int ML_RES_CREATED = 201;
-	private static final int ML_RES_CHANGED = 204;
-	private static final int ML_RES_BADREQT = 400;
-	private static final int ML_RES_NOTFND = 404;
-	private static final String ML_MANAGE_DB = "App-Services";
-
 	private static final ObjectMapper objectMapper = new ObjectMapper();
-
-	private static OkHttpClient createHttpClient() {
-		// build client with authentication information.
-		RESTServices services = new OkHttpServices();
-		// Manage API is assumed to require digest auth; if that assumption falls apart, we should add a new property
-		// for this and not assume that the authentication for the REST server will work
-		services.connect(host_name, Integer.parseInt(admin_port), null, ML_MANAGE_DB,
-			new DatabaseClientFactory.DigestAuthContext("admin", "admin"));
-		return (OkHttpClient) services.getClientImplementation();
-	}
 
 	public static void createDB(String dbName) {
 		new DatabaseManager(newManageClient())
@@ -101,7 +81,6 @@ public abstract class ConnectedRESTQA {
 			.toString());
 	}
 
-	// creating forests on different hosts
 	public static void createForestonHost(String fName, String dbName, String hName) {
 		new ForestManager(newManageClient()).save(objectMapper.createObjectNode()
 			.put("database", dbName)
@@ -111,82 +90,25 @@ public abstract class ConnectedRESTQA {
 	}
 
 	public static void postRequest(Map<String, String> params, String endpoint) {
-		OkHttpClient client;
-		try {
-			client = createHttpClient();
-			String postUrl = new String("http://" + host_name + ":" + admin_port + endpoint);
-			StringBuilder resp = new StringBuilder();
-			// Initialize Builder (not RequestBody)
-			FormBody.Builder builder = new FormBody.Builder();
-
-			if (params != null) {
-				for(Map.Entry<String, String> entry: params.entrySet()) {
-					builder.add(entry.getKey(), entry.getValue());
-				}
-			}
-			RequestBody formBody = builder.build();
-
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(postUrl)
-					.post(formBody)
-					.build();
-			try (Response response = client.newCall(request).execute()) {
-				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-				else  if (response.code() == ML_RES_OK) {
-					resp.append(response.body().string());
-					if (!resp.toString().isEmpty()) {
-						System.out.println("Posted params ");
-						System.out.println(resp);
-					}
-				} else {
-					System.out.println("No proper reponse from post request");
-					System.out.println(response);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		List<String> paramList = new ArrayList<>();
+		params.entrySet().forEach(entry -> {
+			paramList.add(entry.getKey());
+			paramList.add(entry.getValue());
+		});
+		newManageClient().postForm(endpoint, paramList.toArray(new String[0]));
 	}
 
 	public static void assocRESTServer(String restServerName, String dbName, int restPort) {
-		OkHttpClient client;
-		try {
-			client = createHttpClient();
-			String urlStr = new String("http://" + host_name + ":" + admin_port + "/v1/rest-apis?format=json");
-			String JSONString = "{ \"rest-api\": {\"name\":\"" + restServerName + "\",\"database\":\"" + dbName
-					+ "\",\"port\":\"" + restPort + "\"}}";
+		ObjectNode request = objectMapper.createObjectNode();
+		request.putObject("rest-api")
+			.put("name", restServerName)
+			.put("database", dbName)
+			.put("port", restPort);
 
-			StringBuilder resp = new StringBuilder();
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(urlStr)
-					.post(RequestBody.create(JSONString, MediaType.parse("application/json")))
-					.build();
-			try (Response response = client.newCall(request).execute()) {
-				resp.append(response.body().string());
-				if (!resp.toString().isEmpty()) {
-					System.out.println("Will try to associate RESTServer with DB");
-					//System.out.println(resp);
-				}
-			}
-			JsonNode returnResp = new ObjectMapper().readTree(resp.toString());
-			if (returnResp.get("errorResponse").get("statusCode").asInt() == ML_RES_BADREQT) {
-				System.out.println("AppServer already exist");
-				if (dbName.equals("Documents")) {
-					System.out.println("and Context database is Documents DB");
-				} else {
-					System.out.println("and changing context database to " + dbName);
-					associateRESTServerWithDB(restServerName, dbName);
-				}
-			} else if (returnResp.get("errorResponse").get("statusCode").asInt() == ML_RES_CREATED) {
-				// Enable security on new REST Http Server if SSL is turned on.
-				if (IsSecurityEnabled()) {
-					enableSecurityOnRESTServer(restServerName);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		ManageClient client = newManageClient();
+		new RestApiManager(client).createRestApi(restServerName, request.toString());
+		if (IsSecurityEnabled()) {
+			enableSecurityOnRESTServer(restServerName);
 		}
 	}
 
@@ -372,33 +294,10 @@ public abstract class ConnectedRESTQA {
 	}
 
 	public static void detachForest(String dbName, String fName) {
-		OkHttpClient client;
-		try {
-			client = createHttpClient();
-
-			String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/forests/" + fName);
-			RequestBody formBody = new FormBody.Builder()
-					.add("state", "detach")
-					.add("database", dbName)
-					.build();
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(postUrl)
-					.post(formBody)
-					.build();
-			Response response = client.newCall(request).execute();
-
-			if (response.code() == ML_RES_OK) {
-				System.out.println("Forest " + fName + " has been detached from database " + dbName);
-			} else {
-				System.out.println("Forest " + fName + " detaching from database " + dbName + " ran into problems");
-				System.out.println(response);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
+		newManageClient().postForm("/manage/v2/forests/" + fName,
+			"state", "detach",
+			"database", dbName
+		);
 	}
 
 	public static void deleteForest(String fName) {
@@ -409,71 +308,10 @@ public abstract class ConnectedRESTQA {
 		new DatabaseManager(newManageClient()).deleteByIdField(dbName);
 	}
 
-	//Clear the Database
 	public static void clearDB(int port) {
-		OkHttpClient client = createHttpClient();
-		try {
-			InputStream jsonstream = null;
-			String uri = null;
-			String resGet = null;
-			JsonNode jnode = null;
-			if (/*IsSecurityEnabled()*/false) {
-				// In case of SSL use 8002 port to clear DB contents.
-				String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/"
-						+ getRestAppServerName() + "/properties?group-id=Default&format=json");
-				Request request = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(getrequest)
-						.build();
-				Response response = client.newCall(request).execute();
-
-				if (response.code() == ML_RES_OK) {
-					resGet = response.body().string();
-					System.out.println("Response from Get is " + resGet);
-				}
-				if (resGet != null && !resGet.isEmpty())
-					jnode = new ObjectMapper().readTree(resGet);
-				else throw new Exception("Unexpected error " + response);
-
-				String dbName = jnode.get("content-database").asText();
-				System.out.println("App Server's content database properties value from ClearDB is :" + dbName);
-
-				ObjectMapper mapper = new ObjectMapper();
-				ObjectNode mainNode = mapper.createObjectNode();
-
-				mainNode.put("operation", "clear-database");
-
-				String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName);
-				Request requestSSLClear = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(postUrl)
-						.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
-						.build();
-				Response responseSSLClear = client.newCall(requestSSLClear).execute();
-				if (responseSSLClear.code() == ML_RES_OK) {
-					System.out.println(dbName + " database contents cleared");
-				} else {
-					System.out.println("Database contents did not clear");
-				}
-			} else {
-				uri = "http://" + host_name + ":" + port + "/v1/search/";
-				Request requestNormClear = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(uri)
-						.delete()
-						.build();
-				Response responseNormClear = client.newCall(requestNormClear).execute();
-				if (responseNormClear.code() == ML_RES_CHANGED)
-					System.out.println("Content database cleared for App Server on port " + port);
-				else {
-					System.out.println("Content database not cleared");
-					throw new Exception("Unexpected error " + responseNormClear);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
+		try (DatabaseClient client = newDatabaseClientBuilder().withPort(port).build()) {
+			QueryManager mgr = client.newQueryManager();
+			mgr.delete(mgr.newDeleteDefinition());
 		}
 	}
 
@@ -871,35 +709,6 @@ public abstract class ConnectedRESTQA {
 		new TemporalCollectionManager(newManageClient(), dbName).deleteByIdField(collectionName);
 	}
 
-	public static void loadBug18993() {
-		OkHttpClient client = null;
-		try {
-			client = createHttpClient();
-			String document = "<foo>a space b</foo>";
-			String perm = "perm:rest-writer=read&perm:rest-writer=insert&perm:rest-writer=update&perm:rest-writer=execute";
-			String putStr = new String(
-					"http://" + host_name + ":" + getRestAppServerPort() + "/v1/documents?uri=/a%20b&" + perm);
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(putStr)
-					.put(RequestBody.create(document.toLowerCase(), MediaType.parse("application/xml")))
-					.build();
-			Response response = client.newCall(request).execute();
-			if (response.code() == ML_RES_BADREQT) {
-				System.out.println(response);
-			}
-			else {
-				System.out.println("Loading documents for test 189933 has issues");
-				System.out.println(response);
-			}
-		} catch (Exception e) {
-			// writing error to Log
-			e.printStackTrace();
-		} finally {
-			client= null;
-		}
-	}
-
 	public static ObjectNode newServerPayload(String serverName) {
 		ObjectNode payload = new ObjectMapper().createObjectNode();
 		payload.put("server-name", serverName);
@@ -1087,8 +896,7 @@ public abstract class ConnectedRESTQA {
 			.build();
 	}
 
-	public static DatabaseClient getDatabaseClient(String user, String password, ConnectionType connType)
-			throws KeyManagementException, NoSuchAlgorithmException, IOException {
+	public static DatabaseClient getDatabaseClient(String user, String password, ConnectionType connType) {
 		return newDatabaseClientBuilder()
 			.withUsername(user)
 			.withPassword(password)
