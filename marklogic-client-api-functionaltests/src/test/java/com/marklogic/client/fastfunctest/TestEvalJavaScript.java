@@ -7,6 +7,7 @@ package com.marklogic.client.fastfunctest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.MarkLogicVersion;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.TextDocumentManager;
@@ -38,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
 public class TestEvalJavaScript extends AbstractFunctionalTest {
-  private static String appServerHostname = null;
+
   private String dbName = "java-functest";
 
   private DatabaseClient client;
@@ -48,7 +49,6 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
     TestEvalXquery.createUserRolesWithPrevilages("test-js-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "xdmp:invoke-in", "xdmp:invoke", "xdbc:invoke-in", "any-uri",
         "xdbc:invoke");
     TestEvalXquery.createRESTUser("eval-userJS", "x", "test-js-eval");
-    appServerHostname = getRestAppServerHostName();
   }
 
   @AfterAll
@@ -628,10 +628,8 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
     }
   }
 
-  // Making sure that mjs modules can be used in eval.
   @Test
   public void testJavaScriptModules() {
-	  System.out.println("Running testJavaScriptModules");
 	  DatabaseClient moduleClient = null;
 	  try {
 		  String docId[] = { "/test/words/wd1.json", "/test/words/wd2.json", "/test/words/wd3.json",
@@ -644,8 +642,11 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
 	              "  .orderBy('city')" +
 	              "  .filter()" +
 	              "  .slice(0, 10)" +
-	              "  .result();" +
-	              "export default output;";
+	              "  .result(); ";
+
+		  mjsString = MarkLogicVersion.getMarkLogicVersion(client).getMajor() >= 12 ?
+			  mjsString + "export default output;" :
+			  mjsString + "output";
 
 		  DocumentManager dm = moduleClient.newDocumentManager();
 		  DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
