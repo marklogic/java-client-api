@@ -1048,8 +1048,6 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     }
 
     deleteDB(UberdbName);
-    deleteForest(UberfNames[0]);
-    // release client
     clientUber.release();
   }
 

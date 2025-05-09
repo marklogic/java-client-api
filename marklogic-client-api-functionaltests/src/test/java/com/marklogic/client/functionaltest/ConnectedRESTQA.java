@@ -99,16 +99,20 @@ public abstract class ConnectedRESTQA {
 	}
 
 	public static void assocRESTServer(String restServerName, String dbName, int restPort) {
-		ObjectNode request = objectMapper.createObjectNode();
-		request.putObject("rest-api")
-			.put("name", restServerName)
-			.put("database", dbName)
-			.put("port", restPort);
-
 		ManageClient client = newManageClient();
-		new RestApiManager(client).createRestApi(restServerName, request.toString());
-		if (IsSecurityEnabled()) {
-			enableSecurityOnRESTServer(restServerName);
+		if (new ServerManager(client).exists(restServerName)) {
+			associateRESTServerWithDB(restServerName, dbName);
+		} else {
+			ObjectNode request = objectMapper.createObjectNode();
+			request.putObject("rest-api")
+				.put("name", restServerName)
+				.put("database", dbName)
+				.put("port", restPort);
+
+			new RestApiManager(client).createRestApi(restServerName, request.toString());
+			if (IsSecurityEnabled()) {
+				enableSecurityOnRESTServer(restServerName);
+			}
 		}
 	}
 
@@ -317,12 +321,6 @@ public abstract class ConnectedRESTQA {
 
 	public static void tearDownJavaRESTServer(String dbName, String[] fNames, String restServerName) {
 		associateRESTServerWithDB(restServerName, "Documents");
-		for (int i = 0; i < fNames.length; i++) {
-			detachForest(dbName, fNames[i]);
-		}
-		for (int i = 0; i < fNames.length; i++) {
-			deleteForest(fNames[i]);
-		}
 		deleteDB(dbName);
 	}
 

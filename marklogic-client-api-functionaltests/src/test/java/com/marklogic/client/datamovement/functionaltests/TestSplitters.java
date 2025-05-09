@@ -63,8 +63,6 @@ public class TestSplitters  extends BasicJavaClientREST {
     public static void testCleanUp() throws Exception {
         associateRESTServerWithDB(getRestServerName(), "Documents");
         deleteDB(dbName);
-        deleteForest(fNames[0]);
-        System.out.println("Running clear script");
     }
 
     @Test

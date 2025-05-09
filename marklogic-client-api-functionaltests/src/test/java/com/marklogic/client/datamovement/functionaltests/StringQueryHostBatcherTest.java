@@ -3,11 +3,30 @@
  */
 package com.marklogic.client.datamovement.functionaltests;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.admin.ExtensionMetadata;
+import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.admin.TransformExtensionsManager;
+import com.marklogic.client.datamovement.*;
+import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.document.ServerTransform;
+import com.marklogic.client.expression.CtsQueryBuilder;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
+import com.marklogic.client.io.*;
+import com.marklogic.client.query.*;
+import com.marklogic.client.query.StructuredQueryBuilder.Operator;
+import com.marklogic.client.type.CtsQueryExpr;
+import com.marklogic.client.util.EditableNamespaceContext;
+import org.junit.jupiter.api.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
+import javax.xml.namespace.QName;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,42 +35,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.xml.namespace.QName;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.xpath.XPathExpressionException;
-
-import com.marklogic.client.expression.CtsQueryBuilder;
-import com.marklogic.client.query.*;
-import com.marklogic.client.type.CtsQueryExpr;
-import com.marklogic.client.util.EditableNamespaceContext;
-import org.junit.jupiter.api.*;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.admin.ExtensionMetadata;
-import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.admin.TransformExtensionsManager;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.Forest;
-import com.marklogic.client.datamovement.HostAvailabilityListener;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.ProgressListener;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.document.ServerTransform;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.StructuredQueryBuilder.Operator;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author ageorge Purpose : Test String Queries - On multiple documents using
@@ -123,10 +107,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     associateRESTServerWithDB(restServerName, "Documents");
     deleteRESTUser("eval-user");
     deleteUserRole("test-eval");
-    detachForest(dbName, fNames[0]);
-
     deleteDB(dbName);
-    deleteForest(fNames[0]);
   }
 
   @BeforeEach
@@ -1516,7 +1497,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       deleteForest(testMultipleForest[0]);
       deleteForest(testMultipleForest[1]);
       deleteForest(testMultipleForest[2]);
-      Thread.sleep(10000);
     }
   }
 
@@ -1626,16 +1606,8 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       System.out.print(e.getMessage());
       fail("testBatchClientLookupTimeout method failed");
     } finally {
-      // Associate back the original DB.
-      try {
         associateRESTServerWithDB(restServerName, dbName);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-      detachForest(testMultipleDB, testMultipleForest[0]);
       deleteDB(testMultipleDB);
-      deleteForest(testMultipleForest[0]);
-      Thread.sleep(10000);
     }
   }
 

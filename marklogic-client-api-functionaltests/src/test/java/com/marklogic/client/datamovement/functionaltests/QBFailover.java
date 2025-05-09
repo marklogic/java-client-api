@@ -210,15 +210,6 @@ public class QBFailover extends BasicJavaClientREST {
 		// Perform the setup on multiple nodes only.
 		if (hostNames.length > 1) {
 			associateRESTServerWithDB(server, "Documents");
-			for (int i = 0; i < hostNames.length; i++) {
-				System.out.println(dbName + "-" + (i + 1));
-				detachForest(dbName, dbName + "-" + (i + 1));
-				if (i != 0) {
-					removeReplica(dbName + "-" + (i + 1));
-					deleteForest(dbName + "-" + (i + 1) + "-replica");
-				}
-				deleteForest(dbName + "-" + (i + 1));
-			}
 			deleteDB(dbName);
 		} else {
 			System.out.println("Test skipped -  tearDownAfterClass");

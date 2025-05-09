@@ -124,12 +124,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
         temporalCollectionName);
     ConnectedRESTQA.deleteElementRangeIndexTemporalCollection(dbName,
         bulktemporalCollectionName);
-    /*ConnectedRESTQA.deleteElementRangeIndexTemporalAxis(dbName,
-        axisValidName);
-    ConnectedRESTQA.deleteElementRangeIndexTemporalAxis(dbName,
-        axisSystemName);*/
     deleteDB(schemadbName);
-    deleteForest(schemafNames[0]);
   }
 
   @AfterEach
