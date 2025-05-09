@@ -18,7 +18,6 @@ public class ThreadClass extends BasicJavaClientREST implements Runnable {
 
   public void run() {
     DatabaseClient client;
-    try {
       client = getDatabaseClient("rest-admin", "x", getConnType());
 
       TextDocumentManager docMgr = client.newTextDocumentManager();
@@ -40,10 +39,6 @@ public class ThreadClass extends BasicJavaClientREST implements Runnable {
 
       // release client
       client.release();
-    } catch (KeyManagementException | NoSuchAlgorithmException | IOException e) {
-      e.printStackTrace();
-    }
-
   }
 
   public ThreadClass(String mg) {

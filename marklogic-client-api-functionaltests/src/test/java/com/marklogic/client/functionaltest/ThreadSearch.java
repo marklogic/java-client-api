@@ -25,7 +25,6 @@ public class ThreadSearch extends BasicJavaClientREST implements Runnable {
     long totalResults = 0;
 
     DatabaseClient client;
-    try {
 
       client = getDatabaseClient("rest-reader", "x", getConnType());
       QueryManager queryMgr = client.newQueryManager();
@@ -62,9 +61,6 @@ public class ThreadSearch extends BasicJavaClientREST implements Runnable {
 
       // release client
       client.release();
-    } catch (KeyManagementException | NoSuchAlgorithmException | IOException e1) {
-      e1.printStackTrace();
-    }
   }
 
   public ThreadSearch(String mg)
