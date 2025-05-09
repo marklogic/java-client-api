@@ -340,9 +340,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
         associateRESTServerWithModuleDB(restServerName, "Modules");
 
         deleteDB(dbName);
-        deleteForest(fNames[0]);
         deleteDB(dbNameMod);
-        deleteForest(fNamesMod[0]);
         deleteDB("TestDynamicIngest-modules");
         deleteForest("TestDynamicIngest-modules-1");
         // release client

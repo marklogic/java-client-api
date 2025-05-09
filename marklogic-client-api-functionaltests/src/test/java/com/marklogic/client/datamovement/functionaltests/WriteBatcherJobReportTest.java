@@ -127,12 +127,6 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 	@AfterAll
 	public static void tearDownAfterClass() throws Exception {
 		associateRESTServerWithDB(server, "Documents");
-		for (int i = 0; i < hostNames.length; i++) {
-			System.out.println(dbName + "-" + (i + 1));
-			detachForest(dbName, dbName + "-" + (i + 1));
-			deleteForest(dbName + "-" + (i + 1));
-		}
-
 		deleteDB(dbName);
 	}
 

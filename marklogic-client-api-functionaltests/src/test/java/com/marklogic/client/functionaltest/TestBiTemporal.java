@@ -115,21 +115,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     cleanupRESTServer(dbName, fNames);
     deleteRESTUser("eval-user");
     deleteUserRole("test-eval");
-
-    // Temporal collection needs to be delete before temporal axis associated
-    // with it can be deleted
-    /*ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
-        temporalLsqtCollectionName);
-    ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
-        temporalCollectionName);
-    ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
-        bulktemporalCollectionName);
-    ConnectedRESTQA.deleteElementRangeIndexTemporalAxis("Documents",
-        axisValidName);
-    ConnectedRESTQA.deleteElementRangeIndexTemporalAxis("Documents",
-        axisSystemName);*/
     deleteDB(schemadbName);
-    deleteForest(schemafNames[0]);
   }
 
   @BeforeEach

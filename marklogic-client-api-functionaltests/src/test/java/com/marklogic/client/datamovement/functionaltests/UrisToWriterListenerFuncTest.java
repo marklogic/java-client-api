@@ -76,10 +76,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
     associateRESTServerWithDB(restServerName, "Documents");
     deleteRESTUser("eval-user");
     deleteUserRole("test-eval");
-    detachForest(dbName, fNames[0]);
-
     deleteDB(dbName);
-    deleteForest(fNames[0]);
   }
 
   @AfterEach
