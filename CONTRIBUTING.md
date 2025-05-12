@@ -33,9 +33,7 @@ be a local instance or it may be running in a Docker container. If you would lik
 instance, you may create the container with the following commands (starting in the project root directory):
 
 ```
-cd test-app
 docker-compose up -d --build
-cd ..
 ```
 
 Once you have a MarkLogic instance ready, the application is then deployed via the following command:
