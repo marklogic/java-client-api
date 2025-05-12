@@ -38,6 +38,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 public abstract class ConnectedRESTQA {
 
 	private static Properties testProperties = null;
@@ -348,10 +350,15 @@ public abstract class ConnectedRESTQA {
 	 * root property name else if it has an existing sub property name then it
 	 * adds elements to that array
 	 */
-	private static void setDatabaseProperties(String dbName, String propName, ObjectNode objNode) throws IOException {
+	private static void setDatabaseProperties(String dbName, String propName, ObjectNode objNode) {
 		ManageClient client = newManageClient();
 		String databaseProperties = new DatabaseManager(client).getPropertiesAsJson(dbName);
-		JsonNode jnode = new ObjectMapper().readTree(databaseProperties);
+		JsonNode jnode = null;
+		try {
+			jnode = new ObjectMapper().readTree(databaseProperties);
+		} catch (JsonProcessingException e) {
+			fail("Could not parse database-properties: " + databaseProperties + "; cause: " + e.getMessage());
+		}
 
 		if (!jnode.has(propName)) {
 			((ObjectNode) jnode).putArray(propName).addAll(objNode.withArray(propName));
@@ -374,7 +381,7 @@ public abstract class ConnectedRESTQA {
 		setDatabaseProperties(dbName, "collection-lexicon", true);
 	}
 
-	public static void enableWordLexicon(String dbName) throws Exception {
+	public static void enableWordLexicon(String dbName) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
@@ -395,13 +402,11 @@ public abstract class ConnectedRESTQA {
 	 * This function constructs a range element index with default
 	 * collation,range-value-positions and invalid values
 	 */
-	public static void addRangeElementIndex(String dbName, String type, String namespace, String localname)
-			throws Exception {
+	public static void addRangeElementIndex(String dbName, String type, String namespace, String localname) {
 		addRangeElementIndex(dbName, type, namespace, localname, false);
 	}
 
-	public static void addRangeElementIndex(String dbName, String type, String namespace, String localname,
-			boolean positions) throws Exception {
+	public static void addRangeElementIndex(String dbName, String type, String namespace, String localname, boolean positions) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode mainNode = mapper.createObjectNode();
 
@@ -419,7 +424,7 @@ public abstract class ConnectedRESTQA {
 		setDatabaseProperties(dbName, "range-element-index", mainNode);
 	}
 
-	public static void addRangeElementIndex(String dbName, String[][] rangeElements) throws Exception {
+	public static void addRangeElementIndex(String dbName, String[][] rangeElements) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode mainNode = mapper.createObjectNode();
 
@@ -530,7 +535,7 @@ public abstract class ConnectedRESTQA {
 		setDatabaseProperties(dbName, "range-path-index", childNode);
 	}
 
-	public static void addRangePathIndex(String dbName, String[][] rangePaths) throws Exception {
+	public static void addRangePathIndex(String dbName, String[][] rangePaths) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
@@ -585,7 +590,7 @@ public abstract class ConnectedRESTQA {
 		setDatabaseProperties(dbName, "path-namespace", childNode);
 	}
 
-	public static void setupAppServicesConstraint(String dbName) throws Exception {
+	public static void setupAppServicesConstraint(String dbName) {
 		// Add new range elements into this array
 		String[][] rangeElements = {
 				// { scalar-type, namespace-uri, localname, collation,

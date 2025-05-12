@@ -1347,7 +1347,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * @throws InterruptedException
    */
   @Test
-  public void testQueryBatcherWithForestRemoveAndAdd() throws IOException, InterruptedException
+  public void testQueryBatcherWithForestRemoveAndAdd() throws InterruptedException
   {
     System.out.println("Running testQueryBatcherWithForestRemoveAndAdd");
     String testMultipleDB = "QBMultipleForestDB";
@@ -1476,28 +1476,10 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
           assertTrue( batchFailResultsRem.toString().contains("Test has Exceptions"));
         }
       }
-    } catch (Exception e) {
-      System.out.print(e.getMessage());
-      fail("testQueryBatcherWithForestRemoveAndAdd method failed");
-    }
-
-    finally {
-      // Associate back the original DB.
-      try {
-        associateRESTServerWithDB(restServerName, dbName);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-      detachForest(testMultipleDB, testMultipleForest[0]);
-      detachForest(testMultipleDB, testMultipleForest[1]);
-      // In case something asserts
-      detachForest(testMultipleDB, testMultipleForest[2]);
-      deleteDB(testMultipleDB);
-
-      deleteForest(testMultipleForest[0]);
-      deleteForest(testMultipleForest[1]);
-      deleteForest(testMultipleForest[2]);
-    }
+    } finally {
+		associateRESTServerWithDB(restServerName, dbName);
+		deleteDB(testMultipleDB);
+	}
   }
 
   /*
@@ -1510,9 +1492,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * @throws InterruptedException
    */
   @Test
-  public void testBatchClientLookupTimeout() throws IOException, InterruptedException
-  {
-    System.out.println("Running testBatchClientLookupTimeout");
+  public void testBatchClientLookupTimeout() throws InterruptedException{
     String testMultipleDB = "QBMultipleForestDB";
     String[] testMultipleForest = { "QBMultipleForestDB-1" };
 
@@ -1602,9 +1582,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         }
       }
       assertTrue( batchResults.toString().isEmpty());
-    } catch (Exception e) {
-      System.out.print(e.getMessage());
-      fail("testBatchClientLookupTimeout method failed");
     } finally {
         associateRESTServerWithDB(restServerName, dbName);
       deleteDB(testMultipleDB);
