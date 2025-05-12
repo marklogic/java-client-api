@@ -707,11 +707,6 @@ public abstract class ConnectedRESTQA {
 		new TemporalCollectionLSQTManager(newManageClient(), dbName, collectionName).save(rootNode.toString());
 	}
 
-	// Delete a temporal collection
-	public static void deleteElementRangeIndexTemporalCollection(String dbName, String collectionName) {
-		new TemporalCollectionManager(newManageClient(), dbName).deleteByIdField(collectionName);
-	}
-
 	public static ObjectNode newServerPayload(String serverName) {
 		ObjectNode payload = new ObjectMapper().createObjectNode();
 		payload.put("server-name", serverName);
@@ -743,7 +738,7 @@ public abstract class ConnectedRESTQA {
 		}
 	}
 
-	public static void setupServerRequestLogging(DatabaseClient client, boolean flag) throws Exception {
+	public static void setupServerRequestLogging(DatabaseClient client, boolean flag) {
 		ServerConfigurationManager scm = client.newServerConfigManager();
 		scm.readConfiguration();
 		scm.setServerRequestLogging(flag);
@@ -774,11 +769,11 @@ public abstract class ConnectedRESTQA {
 		// (note: a real application should verify certificates)
 
 		TrustManager tm = new X509TrustManager() {
-			public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+			public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
 				// nothing to do
 			}
 
-			public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+			public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
 				// nothing to do
 			}
 
@@ -794,11 +789,6 @@ public abstract class ConnectedRESTQA {
 		KeyStore keyStore = KeyStore.getInstance("PKCS12");
 		Properties property = new Properties();
 		InputStream keyInput = property.getClass().getResourceAsStream(mlCertFile);
-//		try {
-//			Thread.sleep(2000);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
 
 		try {
 			keyStore.load(keyInput, ml_certificate_password.toCharArray());

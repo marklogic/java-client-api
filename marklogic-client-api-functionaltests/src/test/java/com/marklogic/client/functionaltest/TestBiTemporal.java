@@ -2672,9 +2672,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
       assertTrue((statusCode == 400));
     }
 
-    ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
-        jsonDocId);
-
     assertTrue(exceptionThrown, "Exception not thrown for invalid temporal collection");
   }
 
