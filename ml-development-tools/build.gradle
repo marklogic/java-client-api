@@ -22,6 +22,11 @@ dependencies {
 	testCompileOnly gradleTestKit()
 
 	testImplementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+	// Needed for MarkLogicVersion class
+	testImplementation ("com.marklogic:marklogic-junit5:1.5.0") {
+		exclude module: "marklogic-client-api"
+	}
 }
 
 // Added to avoid problem where processResources fails because - somehow - the plugin properties file is getting
@@ -30,7 +35,8 @@ tasks.processResources {
 	duplicatesStrategy = "exclude"
 }
 
-task mlDevelopmentToolsJar(type: Jar, dependsOn: classes) {
+tasks.register("mlDevelopmentToolsJar", Jar) {
+	dependsOn classes
 	archivesBaseName = 'ml-development-tools'
 }
 
@@ -74,11 +80,17 @@ compileTestKotlin {
 	kotlinOptions.jvmTarget = '1.8'
 }
 
-task generateTests(type: JavaExec) {
+tasks.register("generateTests", JavaExec) {
 	classpath = sourceSets.test.runtimeClasspath
-	main = 'com.marklogic.client.test.dbfunction.FntestgenKt'
+	mainClass = 'com.marklogic.client.test.dbfunction.FntestgenKt'
 	args = ['./src/test/', 'latest']
 }
 
+tasks.register("fixMjsModulesForMarkLogic12", JavaExec) {
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass = 'com.marklogic.client.test.FixMjsModulesForMarkLogic12'
+}
+
 // Allows running "./gradlew test" without having to remember to generate the tests first.
-test.dependsOn generateTests
+test.dependsOn generateTests, fixMjsModulesForMarkLogic12
+fixMjsModulesForMarkLogic12.mustRunAfter generateTests

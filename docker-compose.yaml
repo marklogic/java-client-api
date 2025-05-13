@@ -1,4 +1,4 @@
-name: docker-tests-marklogic-javaclient-test-app
+name: docker-tests-java-client
 
 services:
 

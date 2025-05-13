@@ -47,18 +47,14 @@ def runTests(String image) {
 			./gradlew marklogic-client-api:test  || true
 	'''
 
-	// Ignoring these for now on MarkLogic 12 as they are failing due to the generated .mjs modules not including
-	// "export default" in the last line, which is now required by the MarkLogic 12 nightly build as of 2025-05-05.
-	if (!image.endsWith("12")) {
-		sh label:'run ml-development-tools tests', script: '''#!/bin/bash
-				export JAVA_HOME=$JAVA_HOME_DIR
-				export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-				export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-				cd java-client-api
-				mkdir -p ml-development-tools/build/test-results/test
-				./gradlew ml-development-tools:test || true
-		'''
-	}
+	sh label:'run ml-development-tools tests', script: '''#!/bin/bash
+			export JAVA_HOME=$JAVA_HOME_DIR
+			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+			cd java-client-api
+			mkdir -p ml-development-tools/build/test-results/test
+			./gradlew ml-development-tools:test || true
+	'''
 
 	sh label:'run fragile functional tests', script: '''#!/bin/bash
 			export JAVA_HOME=$JAVA_HOME_DIR
