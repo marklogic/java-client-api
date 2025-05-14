@@ -259,7 +259,7 @@ public class DatabaseClientPropertySource {
 				throw new IllegalArgumentException("Cloud token duration must be numeric");
 			}
 		}
-		return new DatabaseClientFactory.MarkLogicCloudAuthContext(apiKey, duration);
+		return new DatabaseClientFactory.ProgressDataCloudAuthContext(apiKey, duration);
 	}
 
 	private DatabaseClientFactory.SecurityContext newCertificateAuthContext(SSLUtil.SSLInputs sslInputs, String sslProtocol) {
@@ -315,7 +315,7 @@ public class DatabaseClientPropertySource {
 	 * Uses the given propertySource to construct the inputs pertaining to constructing an SSLContext and an
 	 * X509TrustManager.
 	 *
-	 * @param authType used for applying "default" as the SSL protocol for MarkLogic cloud authentication in
+	 * @param authType used for applying "default" as the SSL protocol for Progress Data Cloud authentication in
 	 *                 case the user does not define their own SSLContext or SSL protocol
 	 * @return
 	 */
@@ -398,8 +398,8 @@ public class DatabaseClientPropertySource {
 		if (sslProtocol != null) {
 			sslProtocol = sslProtocol.trim();
 		}
-		// For convenience for MarkLogic Cloud users, assume the JVM's default SSLContext should trust the certificate
-		// used by MarkLogic Cloud. A user can always override this default behavior by providing their own SSLContext.
+		// For convenience for Progress Data Cloud users, assume the JVM's default SSLContext should trust the certificate
+		// used by Progress Data Cloud. A user can always override this default behavior by providing their own SSLContext.
 		if ((sslProtocol == null || sslProtocol.length() == 0) && DatabaseClientBuilder.AUTH_TYPE_MARKLOGIC_CLOUD.equalsIgnoreCase(authType)) {
 			sslProtocol = "default";
 		}

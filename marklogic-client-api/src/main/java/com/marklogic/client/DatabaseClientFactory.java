@@ -350,26 +350,88 @@ public class DatabaseClientFactory {
 
 	/**
 	 * @since 6.1.0
+	 * @deprecated as of 7.2.0; use {@code ProgressDataCloudAuthContext} instead. Will be removed in 8.0.0.
 	 */
-	public static class MarkLogicCloudAuthContext extends AuthContext {
+	@Deprecated
+	public static class MarkLogicCloudAuthContext extends ProgressDataCloudAuthContext {
+
+		/**
+		 * @param apiKey user's API key for accessing Progress Data Cloud
+		 */
+		public MarkLogicCloudAuthContext(String apiKey) {
+			super(apiKey);
+		}
+
+		/**
+		 * @param apiKey user's API key for accessing Progress Data Cloud
+		 * @param tokenDuration length in minutes until the generated access token expires
+		 * @since 6.3.0
+		 */
+		public MarkLogicCloudAuthContext(String apiKey, Integer tokenDuration) {
+			super(apiKey, tokenDuration);
+		}
+
+		/**
+		 * Only intended to be used in the scenario that the token endpoint of "/token" and the grant type of "apikey"
+		 * are not the intended values.
+		 *
+		 * @param apiKey user's API key for accessing Progress Data Cloud
+		 * @param tokenEndpoint for overriding the default token endpoint if necessary
+		 * @param grantType for overriding the default grant type if necessary
+		 */
+		public MarkLogicCloudAuthContext(String apiKey, String tokenEndpoint, String grantType) {
+			super(apiKey, tokenEndpoint, grantType);
+		}
+
+		/**
+		 * Only intended to be used in the scenario that the token endpoint of "/token" and the grant type of "apikey"
+		 * are not the intended values.
+		 *
+		 * @param apiKey user's API key for accessing Progress Data Cloud
+		 * @param tokenEndpoint for overriding the default token endpoint if necessary
+		 * @param grantType for overriding the default grant type if necessary
+		 * @param tokenDuration length in minutes until the generated access token expires
+		 * @since 6.3.0
+		 */
+		public MarkLogicCloudAuthContext(String apiKey, String tokenEndpoint, String grantType, Integer tokenDuration) {
+			super(apiKey, tokenEndpoint, grantType, tokenDuration);
+		}
+
+		@Override
+		public MarkLogicCloudAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
+			this.sslContext = context;
+			this.trustManager = trustManager;
+			return this;
+		}
+
+		@Override
+		public MarkLogicCloudAuthContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
+			this.sslVerifier = verifier;
+			return this;
+		}
+	}
+
+	/**
+	 * @since 7.2.0 Use this instead of the now-deprecated {@code MarkLogicCloudAuthContext}
+	 */
+	public static class ProgressDataCloudAuthContext extends AuthContext {
 		private String tokenEndpoint;
 		private String grantType;
 		private String apiKey;
 		private Integer tokenDuration;
 
 		/**
-		 * @param apiKey user's API key for accessing MarkLogic Cloud
+		 * @param apiKey user's API key for accessing Progress Data Cloud
 		 */
-		public MarkLogicCloudAuthContext(String apiKey) {
+		public ProgressDataCloudAuthContext(String apiKey) {
 			this(apiKey, null);
 		}
 
 		/**
-		 * @param apiKey user's API key for accessing MarkLogic Cloud
+		 * @param apiKey user's API key for accessing Progress Data Cloud
 		 * @param tokenDuration length in minutes until the generated access token expires
-		 * @since 6.3.0
 		 */
-		public MarkLogicCloudAuthContext(String apiKey, Integer tokenDuration) {
+		public ProgressDataCloudAuthContext(String apiKey, Integer tokenDuration) {
 			this(apiKey, "/token", "apikey", tokenDuration);
 		}
 
@@ -377,11 +439,11 @@ public class DatabaseClientFactory {
 		 * Only intended to be used in the scenario that the token endpoint of "/token" and the grant type of "apikey"
 		 * are not the intended values.
 		 *
-		 * @param apiKey user's API key for accessing MarkLogic Cloud
+		 * @param apiKey user's API key for accessing Progress Data Cloud
 		 * @param tokenEndpoint for overriding the default token endpoint if necessary
 		 * @param grantType for overriding the default grant type if necessary
 		 */
-		public MarkLogicCloudAuthContext(String apiKey, String tokenEndpoint, String grantType) {
+		public ProgressDataCloudAuthContext(String apiKey, String tokenEndpoint, String grantType) {
 			this(apiKey, tokenEndpoint, grantType, null);
 		}
 
@@ -389,13 +451,12 @@ public class DatabaseClientFactory {
 		 * Only intended to be used in the scenario that the token endpoint of "/token" and the grant type of "apikey"
 		 * are not the intended values.
 		 *
-		 * @param apiKey user's API key for accessing MarkLogic Cloud
+		 * @param apiKey user's API key for accessing Progress Data Cloud
 		 * @param tokenEndpoint for overriding the default token endpoint if necessary
 		 * @param grantType for overriding the default grant type if necessary
 		 * @param tokenDuration length in minutes until the generated access token expires
-		 * @since 6.3.0
 		 */
-		public MarkLogicCloudAuthContext(String apiKey, String tokenEndpoint, String grantType, Integer tokenDuration) {
+		public ProgressDataCloudAuthContext(String apiKey, String tokenEndpoint, String grantType, Integer tokenDuration) {
 			this.apiKey = apiKey;
 			this.tokenEndpoint = tokenEndpoint;
 			this.grantType = grantType;
@@ -414,23 +475,19 @@ public class DatabaseClientFactory {
 			return apiKey;
 		}
 
-		/**
-		 * @return
-		 * @since 6.3.0
-		 */
 		public Integer getTokenDuration() {
 			return tokenDuration;
 		}
 
 		@Override
-		public MarkLogicCloudAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
+		public ProgressDataCloudAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
 			this.sslContext = context;
 			this.trustManager = trustManager;
 			return this;
 		}
 
 		@Override
-		public MarkLogicCloudAuthContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
+		public ProgressDataCloudAuthContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
 			this.sslVerifier = verifier;
 			return this;
 		}
@@ -1277,10 +1334,10 @@ public class DatabaseClientFactory {
                                          DatabaseClient.ConnectionType connectionType) {
       RESTServices services = new OkHttpServices();
 	  // As of 6.1.0, the following optimization is made as it's guaranteed that if the user is connecting to a
-	  // MarkLogic Cloud instance, then port 443 will be used. Every path for constructing a DatabaseClient goes through
+	  // Progress Data Cloud instance, then port 443 will be used. Every path for constructing a DatabaseClient goes through
 	  // this method, ensuring that this optimization will always be applied, and thus freeing the user from having to
-	  // worry about what port to configure when using MarkLogic Cloud.
-	  if (securityContext instanceof MarkLogicCloudAuthContext) {
+	  // worry about what port to configure when using Progress Data Cloud.
+	  if (securityContext instanceof MarkLogicCloudAuthContext || securityContext instanceof ProgressDataCloudAuthContext) {
 		  port = 443;
 	  }
       services.connect(host, port, basePath, database, securityContext);

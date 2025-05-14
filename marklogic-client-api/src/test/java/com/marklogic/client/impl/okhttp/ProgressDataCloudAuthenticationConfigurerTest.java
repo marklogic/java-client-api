@@ -10,15 +10,15 @@ import javax.net.ssl.SSLContext;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Since we don't yet have a reliable way to test against a MarkLogic cloud instance, including some small unit tests
+ * Since we don't yet have a reliable way to test against a Progress Data Cloud instance, including some small unit tests
  * to ensure that certain things are built as expected.
  */
-public class MarkLogicCloudAuthenticationConfigurerTest {
+public class ProgressDataCloudAuthenticationConfigurerTest {
 
 	@Test
 	void buildTokenUrl() throws Exception {
-		MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator client = new MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator("somehost",
-			new DatabaseClientFactory.MarkLogicCloudAuthContext("doesnt-matter")
+		ProgressDataCloudAuthenticationConfigurer.DefaultTokenGenerator client = new ProgressDataCloudAuthenticationConfigurer.DefaultTokenGenerator("somehost",
+			new DatabaseClientFactory.ProgressDataCloudAuthContext("doesnt-matter")
 				.withSSLContext(SSLContext.getDefault(), null)
 		);
 
@@ -32,8 +32,8 @@ public class MarkLogicCloudAuthenticationConfigurerTest {
 	 */
 	@Test
 	void buildTokenUrlWithCustomTokenPath() throws Exception {
-		MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator client = new MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator("otherhost",
-			new DatabaseClientFactory.MarkLogicCloudAuthContext("doesnt-matter", "/customToken", "doesnt-matter")
+		ProgressDataCloudAuthenticationConfigurer.DefaultTokenGenerator client = new ProgressDataCloudAuthenticationConfigurer.DefaultTokenGenerator("otherhost",
+			new DatabaseClientFactory.ProgressDataCloudAuthContext("doesnt-matter", "/customToken", "doesnt-matter")
 				.withSSLContext(SSLContext.getDefault(), null)
 		);
 
@@ -44,8 +44,8 @@ public class MarkLogicCloudAuthenticationConfigurerTest {
 	@Test
 	void buildTokenUrlWithDuration() throws Exception {
 		Integer duration = 10;
-		MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator client = new MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator("somehost",
-			new DatabaseClientFactory.MarkLogicCloudAuthContext("doesnt-matter", duration)
+		ProgressDataCloudAuthenticationConfigurer.DefaultTokenGenerator client = new ProgressDataCloudAuthenticationConfigurer.DefaultTokenGenerator("somehost",
+			new DatabaseClientFactory.ProgressDataCloudAuthContext("doesnt-matter", duration)
 				.withSSLContext(SSLContext.getDefault(), null)
 		);
 
@@ -56,8 +56,8 @@ public class MarkLogicCloudAuthenticationConfigurerTest {
 	@Test
 	void buildTokenUrlWithDurationAndCustomPath() throws Exception {
 		Integer duration = 10;
-		MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator client = new MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator("somehost",
-			new DatabaseClientFactory.MarkLogicCloudAuthContext("doesnt-matter", "/customToken", "doesnt-matter", duration)
+		ProgressDataCloudAuthenticationConfigurer.DefaultTokenGenerator client = new ProgressDataCloudAuthenticationConfigurer.DefaultTokenGenerator("somehost",
+			new DatabaseClientFactory.ProgressDataCloudAuthContext("doesnt-matter", "/customToken", "doesnt-matter", duration)
 				.withSSLContext(SSLContext.getDefault(), null)
 		);
 
@@ -67,8 +67,8 @@ public class MarkLogicCloudAuthenticationConfigurerTest {
 
 	@Test
 	void newFormBody() {
-		FormBody body = new MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator("host-doesnt-matter",
-			new DatabaseClientFactory.MarkLogicCloudAuthContext("myKey"))
+		FormBody body = new ProgressDataCloudAuthenticationConfigurer.DefaultTokenGenerator("host-doesnt-matter",
+			new DatabaseClientFactory.ProgressDataCloudAuthContext("myKey"))
 							.newFormBody();
 		assertEquals("grant_type", body.name(0));
 		assertEquals("apikey", body.value(0));
@@ -82,8 +82,8 @@ public class MarkLogicCloudAuthenticationConfigurerTest {
 	 */
 	@Test
 	void newFormBodyWithOverrides() {
-		FormBody body = new MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator("host-doesnt-matter",
-			new DatabaseClientFactory.MarkLogicCloudAuthContext("myKey", "doesnt-matter", "custom-grant-type"))
+		FormBody body = new ProgressDataCloudAuthenticationConfigurer.DefaultTokenGenerator("host-doesnt-matter",
+			new DatabaseClientFactory.ProgressDataCloudAuthContext("myKey", "doesnt-matter", "custom-grant-type"))
 							.newFormBody();
 		assertEquals("grant_type", body.name(0));
 		assertEquals("custom-grant-type", body.value(0));

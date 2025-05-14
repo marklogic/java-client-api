@@ -54,8 +54,9 @@ public abstract class OkHttpUtil {
 		} else if (securityContext instanceof DatabaseClientFactory.CertificateAuthContext) {
 		} else if (securityContext instanceof DatabaseClientFactory.SAMLAuthContext) {
 			configureSAMLAuth((DatabaseClientFactory.SAMLAuthContext) securityContext, clientBuilder);
-		} else if (securityContext instanceof DatabaseClientFactory.MarkLogicCloudAuthContext) {
-			authenticationConfigurer = new MarkLogicCloudAuthenticationConfigurer(host);
+		} else if (securityContext instanceof DatabaseClientFactory.ProgressDataCloudAuthContext ||
+			securityContext instanceof DatabaseClientFactory.MarkLogicCloudAuthContext) {
+			authenticationConfigurer = new ProgressDataCloudAuthenticationConfigurer(host);
 		} else if (securityContext instanceof DatabaseClientFactory.OAuthContext) {
 			authenticationConfigurer = new OAuthAuthenticationConfigurer();
 		} else {

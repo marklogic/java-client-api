@@ -9,7 +9,7 @@ To deploy it, run this from the root directory of this repository:
 
 This project also includes a Gradle task for running a reverse proxy server using [Undertow](https://undertow.io/). 
 This is intended to support testing the use of a "base path" parameter with the Java Client and to also do a reasonable
-job of emulating how MarkLogic Cloud works. 
+job of emulating how Progress Data Cloud works. 
 
 Note - the reverse proxy server only supports basic authentication, not digest authentication. Thus, you need to ensure
 that any MarkLogic app server that you proxy requests to supports either "digestbasic" or "basic" for authentication. 
@@ -22,7 +22,7 @@ To run the server, run the following:
 By default, this will listen on port 8020 and proxy requests based on the mapping that it logs when the server is 
 started up.
 
-To emulate how MarkLogic Cloud works, run the following (you can use `runBlock` as an abbreviation, Gradle will figure 
+To emulate how Progress Data Cloud works, run the following (you can use `runBlock` as an abbreviation, Gradle will figure 
 out what you mean):
 
     sudo ./gradlew runBlock -PrpsHttpsPort=443
