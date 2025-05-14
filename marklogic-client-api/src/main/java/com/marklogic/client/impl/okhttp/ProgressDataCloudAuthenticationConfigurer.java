@@ -5,23 +5,23 @@ package com.marklogic.client.impl.okhttp;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marklogic.client.DatabaseClientFactory.MarkLogicCloudAuthContext;
+import com.marklogic.client.DatabaseClientFactory;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer<MarkLogicCloudAuthContext> {
+class ProgressDataCloudAuthenticationConfigurer implements AuthenticationConfigurer<DatabaseClientFactory.ProgressDataCloudAuthContext> {
 
-	private String host;
+	private final String host;
 
-	MarkLogicCloudAuthenticationConfigurer(String host) {
+	ProgressDataCloudAuthenticationConfigurer(String host) {
 		this.host = host;
 	}
 
 	@Override
-	public void configureAuthentication(OkHttpClient.Builder clientBuilder, MarkLogicCloudAuthContext securityContext) {
+	public void configureAuthentication(OkHttpClient.Builder clientBuilder, DatabaseClientFactory.ProgressDataCloudAuthContext securityContext) {
 		final String apiKey = securityContext.getApiKey();
 		if (apiKey == null || apiKey.trim().length() < 1) {
 			throw new IllegalArgumentException("No API key provided");
@@ -38,16 +38,16 @@ class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer
 	}
 
 	/**
-	 * Knows how to call the "/token" endpoint in MarkLogic Cloud to generate a new token based on the
+	 * Knows how to call the "/token" endpoint in Progress Data Cloud to generate a new token based on the
 	 * user-provided API key.
 	 */
 	static class DefaultTokenGenerator implements TokenGenerator {
 
 		private final static Logger logger = LoggerFactory.getLogger(DefaultTokenGenerator.class);
-		private String host;
-		private MarkLogicCloudAuthContext securityContext;
+		private final String host;
+		private final DatabaseClientFactory.ProgressDataCloudAuthContext securityContext;
 
-		public DefaultTokenGenerator(String host, MarkLogicCloudAuthContext securityContext) {
+		public DefaultTokenGenerator(String host, DatabaseClientFactory.ProgressDataCloudAuthContext securityContext) {
 			this.host = host;
 			this.securityContext = securityContext;
 		}
@@ -65,7 +65,7 @@ class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer
 			final HttpUrl tokenUrl = buildTokenUrl();
 			OkHttpClient.Builder clientBuilder = OkHttpUtil.newClientBuilder();
 			// Current assumption is that the SSL config provided for connecting to MarkLogic should also be applicable
-			// for connecting to MarkLogic Cloud's "/token" endpoint.
+			// for connecting to Progress Data Cloud's "/token" endpoint.
 			OkHttpUtil.configureSocketFactory(clientBuilder, securityContext.getSSLContext(), securityContext.getTrustManager());
 			OkHttpUtil.configureHostnameVerifier(clientBuilder, securityContext.getSSLHostnameVerifier());
 
@@ -89,7 +89,7 @@ class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer
 		}
 
 		protected HttpUrl buildTokenUrl() {
-			// For the near future, it's guaranteed that https and 443 will be required for connecting to MarkLogic Cloud,
+			// For the near future, it's guaranteed that https and 443 will be required for connecting to Progress Data Cloud,
 			// so providing the ability to customize this would be misleading.
 			HttpUrl.Builder builder = new HttpUrl.Builder()
 				.scheme("https")
@@ -134,7 +134,7 @@ class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer
 
 		private final static Logger logger = LoggerFactory.getLogger(TokenAuthenticationInterceptor.class);
 
-		private TokenGenerator tokenGenerator;
+		private final TokenGenerator tokenGenerator;
 		private String token;
 
 		public TokenAuthenticationInterceptor(TokenGenerator tokenGenerator) {

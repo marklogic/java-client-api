@@ -81,9 +81,9 @@ public class DatabaseClientPropertySourceTest {
 		bean = buildBean();
 
 		assertEquals("/my/path", bean.getBasePath());
-		assertTrue(bean.getSecurityContext() instanceof DatabaseClientFactory.MarkLogicCloudAuthContext);
+		assertTrue(bean.getSecurityContext() instanceof DatabaseClientFactory.ProgressDataCloudAuthContext);
 
-		DatabaseClientFactory.MarkLogicCloudAuthContext context = (DatabaseClientFactory.MarkLogicCloudAuthContext) bean.getSecurityContext();
+		DatabaseClientFactory.ProgressDataCloudAuthContext context = (DatabaseClientFactory.ProgressDataCloudAuthContext) bean.getSecurityContext();
 		assertEquals("abc123", context.getApiKey());
 
 		assertNotNull(context.getSSLContext(), "If cloud is chosen with no SSL protocol or context, the default JVM " +

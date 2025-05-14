@@ -202,7 +202,7 @@ task testRows(type: Test) {
 }
 
 task debugCloudAuth(type: JavaExec) {
-	description = "Test program for manual testing of cloud-based authentication against a MarkLogic Cloud instance"
+	description = "Test program for manual testing of cloud-based authentication against a Progress Data Cloud instance"
 	main = 'com.marklogic.client.test.MarkLogicCloudAuthenticationDebugger'
 	classpath = sourceSets.test.runtimeClasspath
 	args = [cloudHost, cloudKey, cloudBasePath]

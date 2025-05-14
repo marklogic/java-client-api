@@ -9,10 +9,10 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.io.JacksonHandle;
 
 /**
- * We don't yet have a way to run tests against a MarkLogic Cloud instance. In the meantime, this program and its
+ * We don't yet have a way to run tests against a Progress Data Cloud instance. In the meantime, this program and its
  * related Gradle task can be used for easy manual testing.
  *
- * For local testing against the ReverseProxyServer in the test-app project, which emulates MarkLogic Cloud, use
+ * For local testing against the ReverseProxyServer in the test-app project, which emulates Progress Data Cloud, use
  * "localhost" as the cloud host, "username:password" (often "admin:the admin password") as the apiKey, and
  * "local/manage" as the basePath.
  */

@@ -31,8 +31,8 @@ public class TokenAuthenticationInterceptorTest extends LoggingObject {
 		mockWebServer = new MockWebServer();
 		fakeTokenGenerator = new FakeTokenGenerator();
 
-		MarkLogicCloudAuthenticationConfigurer.TokenAuthenticationInterceptor interceptor =
-			new MarkLogicCloudAuthenticationConfigurer.TokenAuthenticationInterceptor(fakeTokenGenerator);
+		ProgressDataCloudAuthenticationConfigurer.TokenAuthenticationInterceptor interceptor =
+			new ProgressDataCloudAuthenticationConfigurer.TokenAuthenticationInterceptor(fakeTokenGenerator);
 		assertEquals(1, fakeTokenGenerator.timesInvoked,
 			"When the interceptor is created, it should immediately generate a token so that when multiple threads " +
 				"are using the DatabaseClient, they will all use the same token.");
@@ -137,7 +137,7 @@ public class TokenAuthenticationInterceptorTest extends LoggingObject {
 	 * Fake token generator that allows us to assert on how many times it's invoked, which ensures that new tokens are
 	 * or are not being generated when required.
 	 */
-	private static class FakeTokenGenerator implements MarkLogicCloudAuthenticationConfigurer.TokenGenerator {
+	private static class FakeTokenGenerator implements ProgressDataCloudAuthenticationConfigurer.TokenGenerator {
 		int timesInvoked;
 
 		@Override

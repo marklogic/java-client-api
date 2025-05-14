@@ -225,8 +225,8 @@ public class DatabaseClientBuilderTest {
 			.withCloudAuth("my-key", "/my/path")
 			.buildBean();
 
-		DatabaseClientFactory.MarkLogicCloudAuthContext context =
-			(DatabaseClientFactory.MarkLogicCloudAuthContext) bean.getSecurityContext();
+		DatabaseClientFactory.ProgressDataCloudAuthContext context =
+			(DatabaseClientFactory.ProgressDataCloudAuthContext) bean.getSecurityContext();
 		assertEquals("my-key", context.getApiKey());
 		assertEquals("/my/path", bean.getBasePath());
 
@@ -243,8 +243,8 @@ public class DatabaseClientBuilderTest {
 	@Test
 	void cloudWithDuration() {
 		bean = Common.newClientBuilder().withCloudAuth("abc123", "/my/path", 10).buildBean();
-		DatabaseClientFactory.MarkLogicCloudAuthContext context =
-			(DatabaseClientFactory.MarkLogicCloudAuthContext) bean.getSecurityContext();
+		DatabaseClientFactory.ProgressDataCloudAuthContext context =
+			(DatabaseClientFactory.ProgressDataCloudAuthContext) bean.getSecurityContext();
 		assertEquals("abc123", context.getApiKey());
 		assertEquals("/my/path", bean.getBasePath());
 		assertEquals(10, context.getTokenDuration());
