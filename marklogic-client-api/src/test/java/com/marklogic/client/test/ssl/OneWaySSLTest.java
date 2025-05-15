@@ -4,6 +4,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.impl.SSLUtil;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.test.MarkLogicVersion;
 import com.marklogic.client.test.junit5.DisabledWhenUsingReverseProxyServer;
@@ -65,7 +66,7 @@ class OneWaySSLTest {
 	 */
 	@Test
 	void trustAllManager() throws Exception {
-		SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+		SSLContext sslContext = SSLContext.getInstance(SSLUtil.DEFAULT_PROTOCOL);
 		sslContext.init(null, new TrustManager[]{Common.TRUST_ALL_MANAGER}, null);
 
 		DatabaseClient client = Common.newClientBuilder()
@@ -87,7 +88,7 @@ class OneWaySSLTest {
 	@Test
 	void trustManagerThatOnlyTrustsTheCertificateFromTheCertificateTemplate() {
 		DatabaseClient client = Common.newClientBuilder()
-			.withSSLProtocol("TLSv1.2")
+			.withSSLProtocol(SSLUtil.DEFAULT_PROTOCOL)
 			.withTrustManager(RequireSSLExtension.newSecureTrustManager())
 			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
 			.build();
@@ -113,7 +114,7 @@ class OneWaySSLTest {
 
 	@ExtendWith(RequiresML11OrLower.class)
 	@Test
-	void noSslContext() throws Exception {
+	void noSslContext() {
 		DatabaseClient client = Common.newClientBuilder().build();
 
 		DatabaseClient.ConnectionResult result = client.checkConnection();
@@ -132,12 +133,9 @@ class OneWaySSLTest {
 		);
 	}
 
-	// The TLS tests are failing on Java 8, because TLSv1.3 is disabled with our version of Java 8.
-	// There may be a way to configure Java 8 to use TLSv1.3, but it is not currently working.
-	@DisabledOnJre(JRE.JAVA_8)
 	@Test
-	void tLS13ClientWithTLS12Server() throws Exception {
-		DatabaseClient client = buildTrustAllClientWithSSLProtocol("TLSv1.3");
+	void tLS13ClientWithTLS12Server() {
+		DatabaseClient client = buildTrustAllClientWithSSLProtocol(SSLUtil.DEFAULT_PROTOCOL);
 		DatabaseClient.ConnectionResult result = client.checkConnection();
 		assertEquals(0, result.getStatusCode(), "A value of zero implies that a connection was successfully made, " +
 			"which should happen since a 'trust all' manager is being used");
@@ -145,9 +143,11 @@ class OneWaySSLTest {
 	}
 
 	@ExtendWith(RequiresML12.class)
+	// The TLSv1.3 tests are failing on Java 8, because TLSv1.3 is disabled with our version of Java 8.
+	// There may be a way to configure Java 8 to use TLSv1.3, but it is not currently working.
 	@DisabledOnJre(JRE.JAVA_8)
 	@Test
-	void tLS13ClientWithTLS13Server() throws Exception {
+	void tLS13ClientWithTLS13Server() {
 		setAppServerMinimumTLSVersion("TLSv1.3");
 
 		DatabaseClient client = buildTrustAllClientWithSSLProtocol("TLSv1.3");
@@ -160,7 +160,7 @@ class OneWaySSLTest {
 	@ExtendWith(RequiresML12.class)
 	@DisabledOnJre(JRE.JAVA_8)
 	@Test
-	void tLS12ClientWithTLS13ServerShouldFail() throws Exception {
+	void tLS12ClientWithTLS13ServerShouldFail() {
 		setAppServerMinimumTLSVersion("TLSv1.3");
 
 		DatabaseClient client = buildTrustAllClientWithSSLProtocol("TLSv1.2");

@@ -22,6 +22,10 @@ public abstract class SSLUtil {
 
 	private final static Logger LOGGER = LoggerFactory.getLogger("com.marklogic.client.security");
 
+	// Added in 7.2.0 so that clients using MarkLogic 12 will default to TLSv1.3, while clients using MarkLogic 11
+	// or older will default to TLSv1.2.
+	public static final String DEFAULT_PROTOCOL = "TLS";
+
 	/**
 	 * Included to satisfy Polaris, which requires that security-related exceptions be logged, in addition to being
 	 * thrown. This is logged at the debug level to avoid cluttering logs in an application that is likely already

@@ -7,6 +7,7 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.eval.EvalResultIterator;
+import com.marklogic.client.impl.SSLUtil;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.DisabledWhenUsingReverseProxyServer;
@@ -42,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.*;
 	DisabledWhenUsingReverseProxyServer.class,
 	RequireSSLExtension.class
 })
-public class TwoWaySSLTest {
+class TwoWaySSLTest {
 
 	private static final String TEST_DOCUMENT_URI = "/optic/test/musician1.json";
 	private static final String KEYSTORE_PASSWORD = "password";
@@ -64,7 +65,7 @@ public class TwoWaySSLTest {
 		// talks to the Security database.
 		securityClient = Common.newClientBuilder()
 			.withUsername(Common.SERVER_ADMIN_USER).withPassword(Common.SERVER_ADMIN_PASS)
-			.withSSLProtocol("TLSv1.2")
+			.withSSLProtocol(SSLUtil.DEFAULT_PROTOCOL)
 			.withTrustManager(Common.TRUST_ALL_MANAGER)
 			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
 			.withDatabase("Security").build();
@@ -101,7 +102,7 @@ public class TwoWaySSLTest {
 	 */
 	@ExtendWith(RequiresML11OrLower.class)
 	@Test
-	void digestAuthentication() throws NoSuchAlgorithmException, KeyManagementException {
+	void digestAuthentication() {
 		// This client uses our Java KeyStore file with a client certificate in it, so it should work.
 		DatabaseClient clientWithCert = Common.newClientBuilder()
 			.withKeyStorePath(keyStoreFile.getAbsolutePath())
@@ -122,7 +123,7 @@ public class TwoWaySSLTest {
 		// This client uses a new SSL context without the client certificate, so it should fail.
 		DatabaseClient clientWithoutCert = Common.newClientBuilder()
 			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
-			.withSSLProtocol("TLSv1.2")
+			.withSSLProtocol(SSLUtil.DEFAULT_PROTOCOL)
 			.withTrustManager(RequireSSLExtension.newSecureTrustManager())
 			.build();
 
@@ -261,7 +262,7 @@ public class TwoWaySSLTest {
 		keyStore.load(new FileInputStream(keystoreFile), KEYSTORE_PASSWORD.toCharArray());
 		KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
 		keyManagerFactory.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
-		SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+		SSLContext sslContext = SSLContext.getInstance(SSLUtil.DEFAULT_PROTOCOL);
 		sslContext.init(
 			keyManagerFactory.getKeyManagers(),
 			new X509TrustManager[]{RequireSSLExtension.newSecureTrustManager()},

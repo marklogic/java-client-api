@@ -14,6 +14,7 @@ import com.marklogic.client.DatabaseClient.ConnectionType;
 import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.impl.SSLUtil;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.query.QueryManager;
@@ -800,7 +801,7 @@ public abstract class ConnectedRESTQA {
 		KeyManager[] keyMgr = keyManagerFactory.getKeyManagers();
 
 		// create an SSL context
-		SSLContext mlsslContext = SSLContext.getInstance("TLSv1.2");
+		SSLContext mlsslContext = SSLContext.getInstance(SSLUtil.DEFAULT_PROTOCOL);
 		mlsslContext.init(keyMgr, new TrustManager[] { tm }, null);
 
 		return mlsslContext;
