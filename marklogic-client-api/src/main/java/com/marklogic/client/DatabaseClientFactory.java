@@ -969,7 +969,6 @@ public class DatabaseClientFactory {
   }
 
   public static class CertificateAuthContext extends AuthContext {
-	  private static final String DEFAULT_SSL_PROTOCOL = "TLSv1.2";
 	  String certFile;
 	  String certPassword;
 
@@ -1087,7 +1086,7 @@ public class DatabaseClientFactory {
         this.certFile = certFile;
         this.certPassword = certPassword;
         this.trustManager = trustManager;
-        this.sslContext = createSSLContext(DEFAULT_SSL_PROTOCOL);
+        this.sslContext = createSSLContext(SSLUtil.DEFAULT_PROTOCOL);
 	}
 
 	  /**
@@ -1148,11 +1147,9 @@ public class DatabaseClientFactory {
         }
         keyManagerFactory.init(keyStore, certPassword.toCharArray());
         keyMgr = keyManagerFactory.getKeyManagers();
-		if (sslProtocol == null) {
-			sslContext = SSLContext.getInstance(DEFAULT_SSL_PROTOCOL);
-		} else {
-			sslContext = SSLContext.getInstance(sslProtocol);
-		}
+		sslContext = sslProtocol == null ?
+			SSLContext.getInstance(SSLUtil.DEFAULT_PROTOCOL) :
+			SSLContext.getInstance(sslProtocol);
       } catch (NoSuchAlgorithmException | KeyStoreException e) {
 		  SSLUtil.logSecurityRelatedException(e);
         throw new IllegalStateException("The certificate algorithm used or the Key store "

@@ -4,6 +4,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.ext.modulesloader.ssl.SimpleX509TrustManager;
+import com.marklogic.client.impl.SSLUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -343,7 +344,7 @@ public class DatabaseClientBuilderTest {
 	@Test
 	void sslProtocol() {
 		bean = Common.newClientBuilder()
-			.withSSLProtocol("TLSv1.2")
+			.withSSLProtocol(SSLUtil.DEFAULT_PROTOCOL)
 			.buildBean();
 
 		assertNotNull(bean.getSecurityContext().getSSLContext());
@@ -390,7 +391,7 @@ public class DatabaseClientBuilderTest {
 	@Test
 	void sslProtocolAndTrustManager() {
 		bean = Common.newClientBuilder()
-			.withSSLProtocol("TLSv1.2")
+			.withSSLProtocol(SSLUtil.DEFAULT_PROTOCOL)
 			.withTrustManager(Common.TRUST_ALL_MANAGER)
 			.buildBean();
 
@@ -409,7 +410,7 @@ public class DatabaseClientBuilderTest {
 	@Test
 	void sslProtocolAndTrustManagerAndHostnameVerifier() {
 		bean = Common.newClientBuilder()
-			.withSSLProtocol("TLSv1.2")
+			.withSSLProtocol(SSLUtil.DEFAULT_PROTOCOL)
 			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.COMMON)
 			.withTrustManager(Common.TRUST_ALL_MANAGER)
 			.buildBean();

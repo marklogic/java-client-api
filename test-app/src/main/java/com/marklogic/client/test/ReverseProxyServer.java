@@ -205,7 +205,8 @@ public class ReverseProxyServer {
 		}
 		kmf.init(keyStore, keyStorePassword.toCharArray());
 
-		SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+		// Using TLS to support MarkLogic 12
+		SSLContext sslContext = SSLContext.getInstance("TLS");
 		// Use a "trust-everything" approach for now; the client doesn't have to do this, but we don't have a use case
 		// yet for having our reverse proxy server validate certificates.
 		sslContext.init(kmf.getKeyManagers(), new TrustManager[]{new SimpleX509TrustManager()}, null);

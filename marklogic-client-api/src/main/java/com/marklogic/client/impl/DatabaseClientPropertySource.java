@@ -411,7 +411,7 @@ public class DatabaseClientPropertySource {
 		final String keyStoreType = getNullableStringValue("ssl.keystore.type", "JKS");
 		final String algorithm = getNullableStringValue("ssl.keystore.algorithm", "SunX509");
 		final char[] charPassword = password != null ? password.toCharArray() : null;
-		final String sslProtocol = getNullableStringValue("sslProtocol", "TLSv1.2");
+		final String sslProtocol = getNullableStringValue("sslProtocol", SSLUtil.DEFAULT_PROTOCOL);
 		return SSLUtil.createSSLContextFromKeyStore(keyStorePath, charPassword, keyStoreType, algorithm, sslProtocol, userTrustManager);
 	}
 

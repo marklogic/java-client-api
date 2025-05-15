@@ -30,16 +30,14 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.*;
 import java.security.KeyManagementException;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static junit.framework.Assert.assertFalse;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -88,49 +86,36 @@ public class TestDatabaseClientConnection extends AbstractFunctionalTest {
     client.release();
   }
 
-  // To test getters of SecurityContext
-  @Test
-  public void testDatabaseClientGetters() throws KeyManagementException, NoSuchAlgorithmException, IOException
-  {
-    System.out.println("Running testDatabaseClientGetters");
-
-    DatabaseClient client = null;
-	SSLContext sslcontext = null;
-	SecurityContext secContext = newSecurityContext("rest-reader", "x");
-
-		try {
-			sslcontext = getSslContext();
-		} catch (UnrecoverableKeyException | KeyStoreException | CertificateException e) {
-			e.printStackTrace();
-		}
+	@Test
+	public void testDatabaseClientGetters() throws Exception {
+		SecurityContext secContext = newSecurityContext("rest-reader", "x");
+		SSLContext sslcontext = getSslContext();
 
 		secContext.withSSLContext(sslcontext, new X509TrustManager() {
-			public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
-				// nothing to do
-			}
+				public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
+					// nothing to do
+				}
 
-			public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
-				// nothing to do
-			}
+				public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
+					// nothing to do
+				}
 
-			public X509Certificate[] getAcceptedIssuers() {
-				return new X509Certificate[0];
-			}
-		})
-		.withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
+				public X509Certificate[] getAcceptedIssuers() {
+					return new X509Certificate[0];
+				}
+			})
+			.withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
 
-		client = newDatabaseClientBuilder().withSecurityContext(secContext).build();
-	SecurityContext readSecContext = client.getSecurityContext();
-	String verifier = readSecContext.getSSLHostnameVerifier().toString();
-	String protocol = readSecContext.getSSLContext().getProtocol();
-	boolean needClient = readSecContext.getSSLContext().getSupportedSSLParameters().getNeedClientAuth();
-
-    assertTrue(verifier.contains("Builtin"));
-    assertTrue(protocol.contains("TLSv1.2"));
-    assertTrue(needClient == false);
-    // release client
-    client.release();
-  }
+		try (DatabaseClient client = newDatabaseClientBuilder().withSecurityContext(secContext).build()) {
+			SecurityContext readSecContext = client.getSecurityContext();
+			String verifier = readSecContext.getSSLHostnameVerifier().toString();
+			String protocol = readSecContext.getSSLContext().getProtocol();
+			boolean needClient = readSecContext.getSSLContext().getSupportedSSLParameters().getNeedClientAuth();
+			assertTrue(verifier.contains("Builtin"));
+			assertTrue(protocol.contains("TLS"));
+			assertFalse(needClient);
+		}
+	}
 
 
 	@Test
