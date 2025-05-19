@@ -8,7 +8,6 @@ import com.marklogic.client.row.RowManager;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.RequiresML11;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -16,8 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(RequiresML11.class)
-@Disabled("Disabled on 12-nightly until the GraphQL modules are fixed.")
-public class GraphQLTest extends AbstractOpticUpdateTest {
+class GraphQLTest extends AbstractOpticUpdateTest {
 
 	private final static String QUERY = "query myQuery { opticUnitTest_musician {firstName lastName}}";
 
