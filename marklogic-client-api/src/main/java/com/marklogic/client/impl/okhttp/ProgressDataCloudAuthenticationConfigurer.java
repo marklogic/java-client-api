@@ -6,6 +6,7 @@ package com.marklogic.client.impl.okhttp;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.ProgressDataCloudException;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +84,7 @@ class ProgressDataCloudAuthenticationConfigurer implements AuthenticationConfigu
 			try {
 				return call.execute();
 			} catch (IOException e) {
-				throw new RuntimeException(String.format("Unable to call token endpoint at %s; cause: %s",
+				throw new ProgressDataCloudException(String.format("Unable to call token endpoint at %s; cause: %s",
 					tokenUrl, e.getMessage(), e));
 			}
 		}
@@ -118,10 +119,10 @@ class ProgressDataCloudAuthenticationConfigurer implements AuthenticationConfigu
 				responseBody = response.body().string();
 				payload = new ObjectMapper().readTree(responseBody);
 			} catch (IOException ex) {
-				throw new RuntimeException("Unable to get access token; response: " + responseBody, ex);
+				throw new ProgressDataCloudException("Unable to get access token; response: " + responseBody, ex);
 			}
 			if (!payload.has("access_token")) {
-				throw new RuntimeException("Unable to get access token; unexpected JSON response: " + payload);
+				throw new ProgressDataCloudException("Unable to get access token; unexpected JSON response: " + payload);
 			}
 			return payload.get("access_token").asText();
 		}
