@@ -987,9 +987,9 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
 	  @Override
-	  public ModifyPlan annTopK(int k, PlanColumn vectorColumn, ServerExpression queryVector, PlanColumn distanceColumn, float queryTolerance) {
+	  public ModifyPlan annTopK(int k, PlanColumn vectorColumn, ServerExpression queryVector, PlanColumn distanceColumn, Map<String, Object> options) {
 		  return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "annTopK", new Object[]{
-			  k, vectorColumn, queryVector, distanceColumn, queryTolerance
+			  k, vectorColumn, queryVector, distanceColumn, new BaseTypeImpl.BaseMapImpl(options)
 		  });
 	  }
 
@@ -1029,7 +1029,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
     @Override
     public ModifyPlan facetBy(PlanNamedGroupSeq keys, String countCol) {
-      return facetBy(keys, (countCol == null) ? (PlanExprCol) null : exprCol(countCol));
+      return facetBy(keys, (countCol == null) ? null : exprCol(countCol));
     }
     @Override
     public ModifyPlan facetBy(PlanNamedGroupSeq keys, PlanExprCol countCol) {
@@ -1100,7 +1100,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
     static class TemporalRemoval implements BaseArgImpl {
-        private String template;
+        private final String template;
 
         public TemporalRemoval(PlanColumn temporalCollection, PlanColumn uriColumn) {
             this.template = String.format("{\"temporalCollection\":%s, \"uri\": %s}",

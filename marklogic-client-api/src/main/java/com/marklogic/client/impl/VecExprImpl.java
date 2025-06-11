@@ -58,14 +58,14 @@ class VecExprImpl implements VecExpr {
 
 
   @Override
-  public ServerExpression cosineSimilarity(ServerExpression vector1, ServerExpression vector2) {
+  public ServerExpression cosine(ServerExpression vector1, ServerExpression vector2) {
     if (vector1 == null) {
-      throw new IllegalArgumentException("vector1 parameter for cosineSimilarity() cannot be null");
+      throw new IllegalArgumentException("vector1 parameter for cosine() cannot be null");
     }
     if (vector2 == null) {
-      throw new IllegalArgumentException("vector2 parameter for cosineSimilarity() cannot be null");
+      throw new IllegalArgumentException("vector2 parameter for cosine() cannot be null");
     }
-    return new XsExprImpl.DoubleCallImpl("vec", "cosine-similarity", new Object[]{ vector1, vector2 });
+    return new XsExprImpl.DoubleCallImpl("vec", "cosine", new Object[]{ vector1, vector2 });
   }
 
 
