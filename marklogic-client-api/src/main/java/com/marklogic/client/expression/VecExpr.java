@@ -4,13 +4,6 @@
 
 package com.marklogic.client.expression;
 
-import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
-import com.marklogic.client.type.XsDoubleVal;
-import com.marklogic.client.type.XsFloatVal;
-import com.marklogic.client.type.XsStringVal;
-import com.marklogic.client.type.XsUnsignedIntVal;
-import com.marklogic.client.type.XsUnsignedLongVal;
-
 import com.marklogic.client.type.ServerExpression;
 
 // IMPORTANT: Do not edit. This file is generated.
@@ -59,15 +52,15 @@ public interface VecExpr {
 /**
   * Returns the cosine similarity between two vectors. The vectors must be of the same dimension.
   *
-  * <a name="ml-server-type-cosine-similarity"></a>
+  * <a name="ml-server-type-cosine"></a>
 
   * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/vec:cosine-similarity" target="mlserverdoc">vec:cosine-similarity</a> server function.
+  * Provides a client interface to the <a href="http://docs.marklogic.com/vec:cosine" target="mlserverdoc">vec:cosine</a> server function.
   * @param vector1  The vector from which to calculate the cosine similarity with vector2.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
   * @param vector2  The vector from which to calculate the cosine similarity with vector1.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public ServerExpression cosineSimilarity(ServerExpression vector1, ServerExpression vector2);
+  public ServerExpression cosine(ServerExpression vector1, ServerExpression vector2);
 /**
   * Returns the dimension of the vector passed in.
   *
@@ -187,7 +180,7 @@ public interface VecExpr {
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/vec:vector-score" target="mlserverdoc">vec:vector-score</a> server function.
   * @param score  The cts:score of the matching document.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
-  * @param similarity  The similarity between the vector in the matching document and the query vector. The result of a call to ovec:cosine-similarity(). In the case that the vectors are normalized, pass ovec:dot-product(). Note that vec:euclidean-distance() should not be used here.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param similarity  The similarity between the vector in the matching document and the query vector. The result of a call to ovec:cosine(). In the case that the vectors are normalized, pass ovec:dot-product(). Note that vec:euclidean-distance() should not be used here.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
   public ServerExpression vectorScore(ServerExpression score, double similarity);
@@ -199,7 +192,7 @@ public interface VecExpr {
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/vec:vector-score" target="mlserverdoc">vec:vector-score</a> server function.
   * @param score  The cts:score of the matching document.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
-  * @param similarity  The similarity between the vector in the matching document and the query vector. The result of a call to ovec:cosine-similarity(). In the case that the vectors are normalized, pass ovec:dot-product(). Note that vec:euclidean-distance() should not be used here.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param similarity  The similarity between the vector in the matching document and the query vector. The result of a call to ovec:cosine(). In the case that the vectors are normalized, pass ovec:dot-product(). Note that vec:euclidean-distance() should not be used here.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
   public ServerExpression vectorScore(ServerExpression score, ServerExpression similarity);
@@ -208,7 +201,7 @@ public interface VecExpr {
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/vec:vector-score" target="mlserverdoc">vec:vector-score</a> server function.
   * @param score  The cts:score of the matching document.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
-  * @param similarity  The similarity between the vector in the matching document and the query vector. The result of a call to ovec:cosine-similarity(). In the case that the vectors are normalized, pass ovec:dot-product(). Note that vec:euclidean-distance() should not be used here.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param similarity  The similarity between the vector in the matching document and the query vector. The result of a call to ovec:cosine(). In the case that the vectors are normalized, pass ovec:dot-product(). Note that vec:euclidean-distance() should not be used here.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @param similarityWeight  The weight of the vector similarity on the score. The default value is 0.1. If 0.0 is passed in, vector similarity has no effect. If passed a value less than 0.0 or greater than 1.0, throw VEC-VECTORSCORE.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
@@ -218,7 +211,7 @@ public interface VecExpr {
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/vec:vector-score" target="mlserverdoc">vec:vector-score</a> server function.
   * @param score  The cts:score of the matching document.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
-  * @param similarity  The similarity between the vector in the matching document and the query vector. The result of a call to ovec:cosine-similarity(). In the case that the vectors are normalized, pass ovec:dot-product(). Note that vec:euclidean-distance() should not be used here.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param similarity  The similarity between the vector in the matching document and the query vector. The result of a call to ovec:cosine(). In the case that the vectors are normalized, pass ovec:dot-product(). Note that vec:euclidean-distance() should not be used here.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @param similarityWeight  The weight of the vector similarity on the score. The default value is 0.1. If 0.0 is passed in, vector similarity has no effect. If passed a value less than 0.0 or greater than 1.0, throw VEC-VECTORSCORE.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
