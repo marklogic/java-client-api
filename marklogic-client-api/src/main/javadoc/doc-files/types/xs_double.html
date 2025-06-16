@@ -209,7 +209,7 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	  </tr>
 <tr class="altColor">
 	    <td class="colFirst"><a href="cts_point.html">cts:point</a></td>
-	    <td class="colLast"><span class="memberNameLink">cts:point</span>(<span>xs:double <i>latitude</i></span>, <span>xs:double <i>longitude</i></span>)</td>
+	    <td class="colLast"><span class="memberNameLink">cts:point</span>(<span>xs:double <i>latitude-or-wkt</i></span>, <span>xs:double <i>longitude</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-point">java</a></td>
 	    <td><a href="http://docs.marklogic.com/cts:point" target="mlserverdoc">server</a></td>
 	  </tr>
@@ -436,8 +436,8 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td><a href="http://docs.marklogic.com/math:variance-p" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="altColor">
-	    <td class="colFirst"><a href="xs_unsignedLong.html">xs:unsignedLong</a></td>
-	    <td class="colLast"><span class="memberNameLink">vec:vector-score</span>(<span><a href="xs_unsignedInt.html">xs:unsignedInt</a> <i>score</i></span>, <span>xs:double <i>similarity</i></span>, <span>xs:double <i>similarityWeight</i>?</span>)</td>
+	    <td class="colFirst"><a href="xs_unsignedLong.html">xs:unsignedLong</a>?</td>
+	    <td class="colLast"><span class="memberNameLink">vec:vector-score</span>(<span><a href="xs_unsignedInt.html">xs:unsignedInt</a> <i>score</i>?</span>, <span>xs:double <i>similarity</i>?</span>, <span>xs:double <i>similarityWeight</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/VecExpr.html#ml-server-type-vector-score">java</a></td>
 	    <td><a href="http://docs.marklogic.com/vec:vector-score" target="mlserverdoc">server</a></td>
 	  </tr>
@@ -718,26 +718,32 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td><a href="http://docs.marklogic.com/sem:random" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="rowColor">
-	    <td class="colFirst">xs:double</td>
-	    <td class="colLast"><span class="memberNameLink">vec:cosine-similarity</span>(<span><a href="vec_vector.html">vec:vector</a> <i>vector1</i></span>, <span><a href="vec_vector.html">vec:vector</a> <i>vector2</i></span>)</td>
-	    <td><a href="../../com/marklogic/client/expression/VecExpr.html#ml-server-type-cosine-similarity">java</a></td>
-	    <td><a href="http://docs.marklogic.com/vec:cosine-similarity" target="mlserverdoc">server</a></td>
+	    <td class="colFirst">xs:double?</td>
+	    <td class="colLast"><span class="memberNameLink">vec:cosine-distance</span>(<span><a href="vec_vector.html">vec:vector</a> <i>arg1</i>?</span>, <span><a href="vec_vector.html">vec:vector</a> <i>arg2</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/VecExpr.html#ml-server-type-cosine-distance">java</a></td>
+	    <td><a href="http://docs.marklogic.com/vec:cosine-distance" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="altColor">
-	    <td class="colFirst">xs:double</td>
-	    <td class="colLast"><span class="memberNameLink">vec:dot-product</span>(<span><a href="vec_vector.html">vec:vector</a> <i>vector1</i></span>, <span><a href="vec_vector.html">vec:vector</a> <i>vector2</i></span>)</td>
+	    <td class="colFirst">xs:double?</td>
+	    <td class="colLast"><span class="memberNameLink">vec:cosine</span>(<span><a href="vec_vector.html">vec:vector</a> <i>arg1</i>?</span>, <span><a href="vec_vector.html">vec:vector</a> <i>arg2</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/VecExpr.html#ml-server-type-cosine">java</a></td>
+	    <td><a href="http://docs.marklogic.com/vec:cosine" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">xs:double?</td>
+	    <td class="colLast"><span class="memberNameLink">vec:dot-product</span>(<span><a href="vec_vector.html">vec:vector</a> <i>vector1</i>?</span>, <span><a href="vec_vector.html">vec:vector</a> <i>vector2</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/VecExpr.html#ml-server-type-dot-product">java</a></td>
 	    <td><a href="http://docs.marklogic.com/vec:dot-product" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="rowColor">
-	    <td class="colFirst">xs:double</td>
-	    <td class="colLast"><span class="memberNameLink">vec:euclidean-distance</span>(<span><a href="vec_vector.html">vec:vector</a> <i>vector1</i></span>, <span><a href="vec_vector.html">vec:vector</a> <i>vector2</i></span>)</td>
+<tr class="altColor">
+	    <td class="colFirst">xs:double?</td>
+	    <td class="colLast"><span class="memberNameLink">vec:euclidean-distance</span>(<span><a href="vec_vector.html">vec:vector</a> <i>vector1</i>?</span>, <span><a href="vec_vector.html">vec:vector</a> <i>vector2</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/VecExpr.html#ml-server-type-euclidean-distance">java</a></td>
 	    <td><a href="http://docs.marklogic.com/vec:euclidean-distance" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="altColor">
-	    <td class="colFirst">xs:double</td>
-	    <td class="colLast"><span class="memberNameLink">vec:magnitude</span>(<span><a href="vec_vector.html">vec:vector</a> <i>vector1</i></span>)</td>
+<tr class="rowColor">
+	    <td class="colFirst">xs:double?</td>
+	    <td class="colLast"><span class="memberNameLink">vec:magnitude</span>(<span><a href="vec_vector.html">vec:vector</a> <i>vector1</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/VecExpr.html#ml-server-type-magnitude">java</a></td>
 	    <td><a href="http://docs.marklogic.com/vec:magnitude" target="mlserverdoc">server</a></td>
 	  </tr>

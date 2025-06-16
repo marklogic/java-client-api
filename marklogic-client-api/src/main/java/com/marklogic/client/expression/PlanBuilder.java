@@ -204,10 +204,10 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression not(ServerExpression operand);
   /**
-  * This function returns true if the specified expressions all return true. Otherwise, it returns false.
+  * This function returns true if any of the specified boolean expressions return true. Otherwise, it returns false.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:or" target="mlserverdoc">op:or</a> server function.
-  * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param left  The left value expression. See Boolean Expression Functions for the list of functions used to build boolean expressions.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
   public abstract ServerExpression or(ServerExpression... left);
@@ -264,13 +264,13 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public abstract PlanParamExpr param(XsStringVal name);
   /**
   * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist).
-  * @param column  the column  value.
+  * @param column  The name of the column.
   * @return  a PlanColumn object
   */
   public abstract PlanColumn col(String column);
   /**
   * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist).
-  * @param column  the column  value.
+  * @param column  The name of the column.
   * @return  a PlanColumn object
   */
   public abstract PlanColumn col(XsStringVal column);
@@ -789,7 +789,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function averages the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column to be aggregated. See {@link PlanBuilder#col(XsStringVal)}
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to average the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol avg(String name, String column, PlanValueOption option);
@@ -797,7 +797,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function averages the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column to be aggregated. See {@link PlanBuilder#col(XsStringVal)}
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to average the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol avg(PlanColumn name, PlanExprCol column, PlanValueOption option);
@@ -819,7 +819,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function constructs an array whose items are the result of evaluating the column for each row in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The columns to be aggregated. See {@link PlanBuilder#col(XsStringVal)}
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to aggregate the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol arrayAggregate(String name, String column, PlanValueOption option);
@@ -827,7 +827,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function constructs an array whose items are the result of evaluating the column for each row in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The columns to be aggregated. See {@link PlanBuilder#col(XsStringVal)}
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to aggregate the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol arrayAggregate(PlanColumn name, PlanExprCol column, PlanValueOption option);
@@ -907,7 +907,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function gets the largest non-null value of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the largest value. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The group or row set. See {@link PlanBuilder#col(XsStringVal)}
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  the option  value.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol max(String name, String column, PlanValueOption option);
@@ -915,7 +915,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function gets the largest non-null value of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the largest value. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The group or row set. See {@link PlanBuilder#col(XsStringVal)}
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  the option  value.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol max(PlanColumn name, PlanExprCol column, PlanValueOption option);
@@ -937,7 +937,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function gets the smallest non-null value of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the smallest value. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The group or row set. See {@link PlanBuilder#col(XsStringVal)}
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  the option  value.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol min(String name, String column, PlanValueOption option);
@@ -945,7 +945,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function gets the smallest non-null value of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the smallest value. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The group or row set. See {@link PlanBuilder#col(XsStringVal)}
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  the option  value.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol min(PlanColumn name, PlanExprCol column, PlanValueOption option);
@@ -981,7 +981,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This call constructs a sequence whose items are the values of a column for each row in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column with the values to aggregate. See {@link PlanBuilder#col(XsStringVal)}
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to aggregate the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol sequenceAggregate(String name, String column, PlanValueOption option);
@@ -989,7 +989,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This call constructs a sequence whose items are the values of a column for each row in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column with the values to aggregate. See {@link PlanBuilder#col(XsStringVal)}
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to aggregate the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol sequenceAggregate(PlanColumn name, PlanExprCol column, PlanValueOption option);
@@ -1011,7 +1011,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column with the values to add. See {@link PlanBuilder#col(XsStringVal)}
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to sum the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol sum(String name, String column, PlanValueOption option);
@@ -1019,7 +1019,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The column with the values to add. See {@link PlanBuilder#col(XsStringVal)}
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to sum the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol sum(PlanColumn name, PlanExprCol column, PlanValueOption option);
@@ -1047,7 +1047,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param column  The column with the values to aggregate. See {@link PlanBuilder#col(XsStringVal)}
   * @param module  The path to the installed plugin module.
   * @param function  The name of the UDF function.
-  * @param arg  The options can take a values key with a distinct value to average the distinct values of the column and an arg key specifying an argument for the user-defined aggregate. The value can be a string or placeholder parameter.
+  * @param arg  The options can take a values key with a 'distinct' value to aggregate the distinct values of the column and an arg key specifying an argument for the user-defined aggregate. The value can be a string or placeholder parameter.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol uda(String name, String column, String module, String function, String arg);
@@ -1057,7 +1057,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param column  The column with the values to aggregate. See {@link PlanBuilder#col(XsStringVal)}
   * @param module  The path to the installed plugin module.
   * @param function  The name of the UDF function.
-  * @param arg  The options can take a values key with a distinct value to average the distinct values of the column and an arg key specifying an argument for the user-defined aggregate. The value can be a string or placeholder parameter.
+  * @param arg  The options can take a values key with a 'distinct' value to aggregate the distinct values of the column and an arg key specifying an argument for the user-defined aggregate. The value can be a string or placeholder parameter.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol uda(PlanColumn name, PlanExprCol column, XsStringVal module, XsStringVal function, XsAnyAtomicTypeVal arg);
@@ -1440,13 +1440,13 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public interface AccessPlan extends ModifyPlan, PlanBuilderBase.AccessPlanBase {
 /**
   * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist).
-  * @param column  the column  value.
+  * @param column  The name of the column.
   * @return  a PlanColumn object
   */
   public abstract PlanColumn col(String column);
 /**
   * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist).
-  * @param column  the column  value.
+  * @param column  The name of the column.
   * @return  a PlanColumn object
   */
   public abstract PlanColumn col(XsStringVal column);
@@ -1507,7 +1507,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
 	 * @param vectorColumn The column representing the vector ann-indexed column to perform the index lookup against.
 	 * @param queryVector Specifies the query vector to perform the index lookup with.
 	 * @param distanceColumn Optional output column that captures the values of the distance metric of the vectors retrieved from the index associated with vectorColumn and the queryVector.
-	 * @param options Optional sequence of strings or a map containing keys and values for the options to this operator. 
+	 * @param options Optional sequence of strings or a map containing keys and values for the options to this operator.
 	 * @return
 	 * @since 7.2.0
 	 */
@@ -1528,30 +1528,30 @@ public abstract class PlanBuilder implements PlanBuilderBase {
 /**
   * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan existsJoin(ModifyPlan right, PlanJoinKey... keys);
 /**
   * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan existsJoin(ModifyPlan right, PlanJoinKeySeq keys);
 /**
   * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
-  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param condition  A boolean expression used to compare the left and right rows. See Boolean Expression Functions for the list of functions used to build boolean expressions.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan existsJoin(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
 /**
   * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
-  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param condition  A boolean expression used to compare the left and right rows. See Boolean Expression Functions for the list of functions used to build boolean expressions.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan existsJoin(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
@@ -1647,30 +1647,30 @@ public abstract class PlanBuilder implements PlanBuilderBase {
 /**
   * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKey... keys);
 /**
   * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys);
 /**
   * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
-  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param condition  A boolean expression used to compare the left and right rows. See Boolean Expression Functions for the list of functions used to build boolean expressions.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
 /**
   * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
-  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param condition  A boolean expression used to compare the left and right rows. See Boolean Expression Functions for the list of functions used to build boolean expressions.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
@@ -1683,30 +1683,30 @@ public abstract class PlanBuilder implements PlanBuilderBase {
 /**
   * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKey... keys);
 /**
   * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys);
 /**
   * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
-  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param condition  A boolean expression used to compare the left and right rows. See Boolean Expression Functions for the list of functions used to build boolean expressions.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
 /**
   * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
-  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param condition  A boolean expression used to compare the left and right rows. See Boolean Expression Functions for the list of functions used to build boolean expressions.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
@@ -1719,30 +1719,30 @@ public abstract class PlanBuilder implements PlanBuilderBase {
 /**
   * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKey... keys);
 /**
   * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys);
 /**
   * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
-  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param condition  A boolean expression used to compare the left and right rows. See Boolean Expression Functions for the list of functions used to build boolean expressions.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
 /**
   * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
-  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param condition  A boolean expression used to compare the left and right rows. See Boolean Expression Functions for the list of functions used to build boolean expressions.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
@@ -1755,30 +1755,30 @@ public abstract class PlanBuilder implements PlanBuilderBase {
 /**
   * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan notExistsJoin(ModifyPlan right, PlanJoinKey... keys);
 /**
   * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan notExistsJoin(ModifyPlan right, PlanJoinKeySeq keys);
 /**
   * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
-  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param condition  A boolean expression used to compare the left and right rows. See Boolean Expression Functions for the list of functions used to build boolean expressions.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan notExistsJoin(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
 /**
   * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns.
   * @param right  The row set from the right view.
-  * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
-  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @param keys  Equality condition(s) expressed using one or more calls to the function op:on. These conditions are used to compare the left and right rows. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
+  * @param condition  A boolean expression used to compare the left and right rows. See Boolean Expression Functions for the list of functions used to build boolean expressions.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan notExistsJoin(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
@@ -2030,6 +2030,28 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @since 7.1.0; requires MarkLogic 12
   */
   public abstract ModifyPlan shortestPath(PlanExprCol start, PlanExprCol end, PlanExprCol path, PlanExprCol length);
+/**
+  * This method can be used to find the shortest path between two nodes in a given graph.
+  * @param start  The column representing the input starting subject of the shortest path search. The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
+  * @param end  The column representing the input ending object of the shortest path search. The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
+  * @param path  The column is the output column representing the actual shortest path(s) taken from start to end. Values are not returned for this column if this is the empty sequence.The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
+  * @param length  The column is the output column representing the length of the shortest path. Value is not returned for this column if this is the empty sequence.The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
+  * @param weight  the weight  value. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  * @since 7.2.0; requires MarkLogic 12
+  */
+  public abstract ModifyPlan shortestPath(String start, String end, String path, String length, String weight);
+/**
+  * This method can be used to find the shortest path between two nodes in a given graph.
+  * @param start  The column representing the input starting subject of the shortest path search. The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
+  * @param end  The column representing the input ending object of the shortest path search. The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
+  * @param path  The column is the output column representing the actual shortest path(s) taken from start to end. Values are not returned for this column if this is the empty sequence.The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
+  * @param length  The column is the output column representing the length of the shortest path. Value is not returned for this column if this is the empty sequence.The columns can be named with a string or a column parameter function such as op:col. See {@link PlanBuilder#col(XsStringVal)}
+  * @param weight  the weight  value. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  * @since 7.2.0; requires MarkLogic 12
+  */
+  public abstract ModifyPlan shortestPath(PlanExprCol start, PlanExprCol end, PlanExprCol path, PlanExprCol length, PlanExprCol weight);
   }
 
 

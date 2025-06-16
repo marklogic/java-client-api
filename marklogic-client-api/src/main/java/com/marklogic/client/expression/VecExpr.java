@@ -1,8 +1,27 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright (c) 2025 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.marklogic.client.expression;
+
+import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
+import com.marklogic.client.type.XsDoubleVal;
+import com.marklogic.client.type.XsFloatVal;
+import com.marklogic.client.type.XsStringVal;
+import com.marklogic.client.type.XsUnsignedIntVal;
+import com.marklogic.client.type.XsUnsignedLongVal;
 
 import com.marklogic.client.type.ServerExpression;
 
@@ -49,18 +68,32 @@ public interface VecExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
   public ServerExpression base64Encode(ServerExpression vector1);
-/**
-  * Returns the cosine similarity between two vectors. The vectors must be of the same dimension.
-  *
-  * <a name="ml-server-type-cosine"></a>
 
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/vec:cosine" target="mlserverdoc">vec:cosine</a> server function.
-  * @param vector1  The vector from which to calculate the cosine similarity with vector2.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
-  * @param vector2  The vector from which to calculate the cosine similarity with vector1.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
-  */
-  public ServerExpression cosine(ServerExpression vector1, ServerExpression vector2);
+	/**
+	 * Returns the cosine similarity between two vectors. The vectors must be of the same dimension.
+	 *
+	 * <a name="ml-server-type-cosine"></a>
+	 *
+	 * <p>
+	 * Provides a client interface to the <a href="http://docs.marklogic.com/vec:cosine" target="mlserverdoc">vec:cosine</a> server function.
+	 *
+	 * @param vector1 The vector from which to calculate the cosine similarity with vector2.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
+	 * @param vector2 The vector from which to calculate the cosine similarity with vector1.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
+	 * @return a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
+	 * @since 7.2.0
+	 */
+	public ServerExpression cosine(ServerExpression vector1, ServerExpression vector2);
+
+	/**
+	 * Return the distance between two vectors. The vectors must be of the same dimension.
+	 *
+	 * @param vector1 The vector from which to calculate the cosine distance with vector2.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
+	 * @param vector2 The vector from which to calculate the cosine distance with vector1.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
+	 * @return a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
+	 * @since 7.2.0
+	 */
+	public ServerExpression cosineDistance(ServerExpression vector1, ServerExpression vector2);
+
 /**
   * Returns the dimension of the vector passed in.
   *
