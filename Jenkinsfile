@@ -180,6 +180,7 @@ pipeline{
       }
 			post {
 				always {
+					updateWorkspacePermissions()
 					tearDownDocker()
 				}
 			}
@@ -216,6 +217,7 @@ pipeline{
 			}
 			post {
 				always {
+					updateWorkspacePermissions()
 					tearDownDocker()
 				}
 			}
@@ -234,6 +236,7 @@ pipeline{
 			}
 			post {
 				always {
+					updateWorkspacePermissions()
 					tearDownDocker()
 				}
 			}
@@ -252,6 +255,7 @@ pipeline{
 			}
 			post {
 				always {
+					updateWorkspacePermissions()
 					tearDownDocker()
 				}
 			}
@@ -270,6 +274,7 @@ pipeline{
 			}
 			post {
 				always {
+					updateWorkspacePermissions()
 					tearDownDocker()
 				}
 			}
