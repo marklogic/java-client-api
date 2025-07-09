@@ -13,7 +13,10 @@ import com.marklogic.client.test.junit5.RequiresML11OrLower;
 import com.marklogic.client.test.junit5.RequiresML12;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnJre;
 import org.junit.jupiter.api.condition.JRE;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -119,7 +122,9 @@ class OneWaySSLTest {
 
 		DatabaseClient.ConnectionResult result = client.checkConnection();
 		assertEquals("Forbidden", result.getErrorMessage(), "MarkLogic is expected to return a 403 Forbidden when the " +
-			"user tries to access an HTTPS app server using HTTP");
+			"user tries to access an HTTPS app server using HTTP. This behavior changes in MarkLogic 12, and it may " +
+			"be considered a bit surprising with MarkLogic 11 and earlier - that is, the user probably shouldn't get " +
+			"any response back since a connection cannot be made without using SSL.");
 		assertEquals(403, result.getStatusCode());
 
 		ForbiddenUserException ex = assertThrows(ForbiddenUserException.class,
@@ -131,6 +136,17 @@ class OneWaySSLTest {
 			"The user should get a clear message on why the connection failed as opposed to the previous error " +
 				"message of 'Server (not a REST instance?)'."
 		);
+	}
+
+	@ExtendWith(RequiresML12.class)
+	@Test
+	void noSslContextWithMarkLogic12() {
+		DatabaseClient client = Common.newClientBuilder().build();
+
+		MarkLogicIOException ex = assertThrows(MarkLogicIOException.class, () -> client.checkConnection());
+		assertTrue(ex.getMessage().contains("unexpected end of stream"), "Per MLE-17505, a change in the openssl " +
+			"library used by the server results in an IO exception when the client tries to connect to an " +
+			"app server that requires SSL, but the client does not use SSL. Actual message: " + ex.getMessage());
 	}
 
 	@Test
