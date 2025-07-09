@@ -11,6 +11,7 @@ import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.expression.PlanBuilder;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.*;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
@@ -1790,7 +1791,7 @@ public class RowManagerTest {
   private String nodeToString(Node node) throws TransformerException, TransformerFactoryConfigurationError
   {
     StringWriter sw = new StringWriter();
-    Transformer  tf = TransformerFactory.newInstance().newTransformer();
+    Transformer  tf = XmlFactories.makeNewTransformerFactory().newTransformer();
     tf.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
     tf.transform(
       new DOMSource(node), new StreamResult(sw)

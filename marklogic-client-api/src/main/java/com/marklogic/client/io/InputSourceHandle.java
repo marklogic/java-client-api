@@ -3,34 +3,24 @@
  */
 package com.marklogic.client.io;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.validation.Schema;
-
+import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.marker.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.*;
 
-import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.MarkLogicInternalException;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.validation.Schema;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * <p>An Input Source Handle represents XML content as an input source for reading or writing.
@@ -413,12 +403,12 @@ public class InputSourceHandle
   }
   protected OutputStreamSender sendContent(InputSource content) {
     return (content == null) ? null :
-            new OutputStreamSenderImpl(makeTransformer(), makeReader(true), content);
+            new OutputStreamSenderImpl(makeTransformerFactory(), makeReader(true), content);
   }
   @Override
   public void write(OutputStream out) throws IOException {
     try {
-      makeTransformer().newTransformer().transform(
+      makeTransformerFactory().newTransformer().transform(
         new SAXSource(makeReader(true), content),
         new StreamResult(new OutputStreamWriter(out, StandardCharsets.UTF_8))
       );
@@ -427,20 +417,8 @@ public class InputSourceHandle
       throw new MarkLogicIOException(e);
     }
   }
-  private TransformerFactory makeTransformer() {
-    TransformerFactory factory = TransformerFactory.newInstance();
-    // default to best practices for conservative security including recommendations per
-    // https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
-    try {
-      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-    } catch (TransformerConfigurationException e) {}
-    try {
-      factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-    } catch (IllegalArgumentException e) {}
-    try {
-      factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
-    } catch (IllegalArgumentException e) {}
-    return factory;
+  private TransformerFactory makeTransformerFactory() {
+    return XmlFactories.makeNewTransformerFactory();
   }
 
   /**

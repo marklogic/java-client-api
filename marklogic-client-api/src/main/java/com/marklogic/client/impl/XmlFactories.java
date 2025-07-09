@@ -3,16 +3,20 @@
  */
 package com.marklogic.client.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.xml.XMLConstants;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import java.lang.ref.SoftReference;
 
 public final class XmlFactories {
+
+	private static final Logger logger = LoggerFactory.getLogger(XmlFactories.class);
 
   private static final CachedInstancePerThreadSupplier<XMLOutputFactory> cachedOutputFactory =
     new CachedInstancePerThreadSupplier<XMLOutputFactory>(new Supplier<XMLOutputFactory>() {
@@ -51,13 +55,25 @@ public final class XmlFactories {
 		return factory;
 	}
 
-	public static TransformerFactory makeNewTransformerFactory() throws TransformerConfigurationException {
+	public static TransformerFactory makeNewTransformerFactory() {
 		TransformerFactory factory = TransformerFactory.newInstance();
 		// Avoids Polaris warning related to https://cwe.mitre.org/data/definitions/611.html .
 		// From https://stackoverflow.com/questions/32178558/how-to-prevent-xml-external-entity-injection-on-transformerfactory .
-		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+		try {
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		} catch (TransformerConfigurationException e) {
+			logger.warn("Unable to set {} on TransformerFactory; cause: {}", XMLConstants.FEATURE_SECURE_PROCESSING, e.getMessage());
+		}
+		try {
+			factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+		} catch (IllegalArgumentException e) {
+			logger.warn("Unable to set {} on TransformerFactory; cause: {}", XMLConstants.ACCESS_EXTERNAL_DTD, e.getMessage());
+		}
+		try {
+			factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+		} catch (IllegalArgumentException e) {
+			logger.warn("Unable to set {} on TransformerFactory; cause: {}", XMLConstants.ACCESS_EXTERNAL_STYLESHEET, e.getMessage());
+		}
 		return factory;
 	}
 

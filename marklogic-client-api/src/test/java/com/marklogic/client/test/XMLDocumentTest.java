@@ -11,6 +11,7 @@ import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.DocumentPatchBuilder.Position;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager.DocumentRepair;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.util.EditableNamespaceContext;
@@ -36,7 +37,6 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -107,7 +107,7 @@ public class XMLDocumentTest {
 
     String docId2 = "/test/testWrite2.xml";
 
-    Transformer transformer = TransformerFactory.newInstance().newTransformer();
+    Transformer transformer = XmlFactories.makeNewTransformerFactory().newTransformer();
     SourceHandle sourceHandle = new SourceHandle();
     sourceHandle.setTransformer(transformer);
     docMgr.write(docId2, docMgr.read(docId, sourceHandle));
