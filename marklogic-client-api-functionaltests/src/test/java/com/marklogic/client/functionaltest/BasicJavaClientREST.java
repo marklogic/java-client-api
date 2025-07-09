@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
@@ -1476,7 +1477,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    */
   public String convertXMLDocumentToString(Document readContent) throws TransformerException
   {
-    TransformerFactory tf = TransformerFactory.newInstance();
+    TransformerFactory tf = XmlFactories.makeNewTransformerFactory();
     Transformer transformer = tf.newTransformer();
     transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
     StringWriter writer = new StringWriter();
@@ -1514,10 +1515,10 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @throws IOException
    * @throws TransformerException
    */
-  public String convertInputSourceToString(InputSource fileRead) throws IOException, TransformerException
+  public String convertInputSourceToString(InputSource fileRead) throws TransformerException
   {
     Source saxsrc = new SAXSource(fileRead);
-    TransformerFactory tf = TransformerFactory.newInstance();
+    TransformerFactory tf = XmlFactories.makeNewTransformerFactory();
     Transformer transformer = tf.newTransformer();
     transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
     StringWriter writer = new StringWriter();
@@ -1538,7 +1539,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
   {
     StringWriter stringWriter = new StringWriter();
     Result result = new StreamResult(stringWriter);
-    TransformerFactory factory = TransformerFactory.newInstance();
+    TransformerFactory factory = XmlFactories.makeNewTransformerFactory();
     Transformer transformer = factory.newTransformer();
     transformer.transform(reader, result);
     String str = stringWriter.getBuffer().toString();

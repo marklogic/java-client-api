@@ -8,6 +8,7 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.document.*;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.SourceHandle;
@@ -74,8 +75,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     // get the xslt
     Source xsl = new StreamSource("src/test/java/com/marklogic/client/functionaltest/data/employee-stylesheet.xsl");
 
-    // create transformer
-    TransformerFactory factory = TransformerFactory.newInstance();
+    TransformerFactory factory = XmlFactories.makeNewTransformerFactory();
     Transformer transformer = factory.newTransformer(xsl);
     transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
