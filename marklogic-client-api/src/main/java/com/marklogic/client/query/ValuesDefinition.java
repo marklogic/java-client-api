@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.query;
 
@@ -117,4 +117,3 @@ public interface ValuesDefinition {
    */
   void setFrequency(Frequency freq);
 }
-
