@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ */
 /**
  * The package provides classes for sending plan requests to and
  * processing row responses from the REST server.

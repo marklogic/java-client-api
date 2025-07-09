@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ */
 /**
  * The package provides the handle classes with different representations for document content
  * when you read documents from the database or write documents to the database.  Some

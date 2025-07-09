@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ */
 package com.marklogic.client.test.datamovement;
 
 import com.marklogic.client.DatabaseClient;
@@ -111,4 +114,3 @@ public class ConcurrencyTest {
         //assertTrue(maxAfter.get() <= forest_count * docToUriBatchRatio);
     }
 }
-
