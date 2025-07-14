@@ -13,7 +13,7 @@ dependencies {
 	api 'com.squareup.okhttp3:okhttp:4.12.0'
 	api 'io.github.rburgst:okhttp-digest:2.7'
 	api 'org.slf4j:slf4j-api:2.0.17'
-	api "com.fasterxml.jackson.core:jackson-databind:2.17.2"
+	api "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
 
 	api 'org.jdom:jdom2:2.0.6.1'
 	api 'org.dom4j:dom4j:2.1.4'
