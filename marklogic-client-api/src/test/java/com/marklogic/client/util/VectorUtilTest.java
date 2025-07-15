@@ -6,10 +6,13 @@ package com.marklogic.client.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML12;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@ExtendWith(RequiresML12.class)
 class VectorUtilTest {
 
 	private final float[] VECTOR = new float[]{3.14f, 1.59f, 2.65f};
@@ -33,7 +36,7 @@ class VectorUtilTest {
 		assertEquals("AAAAAAMAAADD9UhAH4XLP5qZKUA=", encoded);
 
 		ArrayNode decoded = (ArrayNode) Common.newEvalClient().newServerEval()
-			.xquery("vec:base64-decode('%s')".formatted(encoded))
+			.xquery(String.format("vec:base64-decode('%s')", encoded))
 			.evalAs(JsonNode.class);
 
 		assertEquals(3, decoded.size());
