@@ -70,15 +70,15 @@ public class HandleAsTest {
     String binDocId = "/test/testAs1.bin";
     BinaryDocumentManager binMgr = Common.client.newBinaryDocumentManager();
 
-    byte[] beforeBytes = beforeText.getBytes("UTF-8");
+    byte[] beforeBytes = beforeText.getBytes(java.nio.charset.StandardCharsets.UTF_8);
 
     binMgr.writeAs(binDocId, beforeBytes);
-    afterText = new String(binMgr.readAs(binDocId, byte[].class), "UTF-8");
+    afterText = new String(binMgr.readAs(binDocId, byte[].class), java.nio.charset.StandardCharsets.UTF_8);
     binMgr.delete(binDocId);
     assertEquals(beforeText, afterText);
 
     binMgr.writeAs(binDocId, new ByteArrayInputStream(beforeBytes));
-    try ( Reader reader = new InputStreamReader( binMgr.readAs(binDocId, InputStream.class), "UTF-8") ) {
+    try ( Reader reader = new InputStreamReader( binMgr.readAs(binDocId, InputStream.class), java.nio.charset.StandardCharsets.UTF_8) ) {
       cnum = reader.read(cbuf);
       binMgr.delete(binDocId);
       assertEquals(beforeText.length(), cnum);
@@ -341,7 +341,7 @@ public class HandleAsTest {
 
 		boolean threwError = false;
 		try {
-			textMgr.writeAs(textDocId, new Integer(5));
+			textMgr.writeAs(textDocId, 5);
 		} catch(Exception e) {
 			threwError = true;
 		}

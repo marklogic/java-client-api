@@ -69,7 +69,7 @@ public class BasicPage<T> implements Page<T> {
   }
 
   public BasicPage<T> setSize(long size) {
-    this.size = new Long(size);
+    this.size = Long.valueOf(size);
     return this;
   }
 
