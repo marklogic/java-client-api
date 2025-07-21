@@ -170,7 +170,7 @@ publishing {
                     password mavenPassword
                 }
             }
-            url publishUrl
+            url = publishUrl
         }
     }
 }
@@ -203,7 +203,7 @@ task testRows(type: Test) {
 
 task debugCloudAuth(type: JavaExec) {
 	description = "Test program for manual testing of cloud-based authentication against a Progress Data Cloud instance"
-	main = 'com.marklogic.client.test.MarkLogicCloudAuthenticationDebugger'
+	mainClass = 'com.marklogic.client.test.MarkLogicCloudAuthenticationDebugger'
 	classpath = sourceSets.test.runtimeClasspath
 	args = [cloudHost, cloudKey, cloudBasePath]
 }
