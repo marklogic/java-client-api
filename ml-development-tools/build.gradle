@@ -5,13 +5,13 @@ plugins {
 	id 'maven-publish'
 	id "com.gradle.plugin-publish" version "1.2.1"
 	id "java-gradle-plugin"
-	id 'org.jetbrains.kotlin.jvm' version '1.8.22'
+	id 'org.jetbrains.kotlin.jvm' version '1.9.24'
 }
 
 dependencies {
 	compileOnly gradleApi()
 	implementation project(':marklogic-client-api')
-	implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.24'
 	implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
 	implementation 'com.networknt:json-schema-validator:1.0.88'
 
@@ -37,7 +37,7 @@ tasks.processResources {
 
 tasks.register("mlDevelopmentToolsJar", Jar) {
 	dependsOn classes
-	archivesBaseName = 'ml-development-tools'
+	archiveBaseName = 'ml-development-tools'
 }
 
 gradlePlugin {
@@ -68,7 +68,7 @@ publishing {
 					password mavenPassword
 				}
 			}
-			url publishUrl
+			url = publishUrl
 		}
 	}
 }
