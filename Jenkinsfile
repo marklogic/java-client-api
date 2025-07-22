@@ -132,7 +132,7 @@ def postProcessTestResults() {
 
 def tearDownDocker() {
 	sh label:'tearDownDocker', script: '''#!/bin/bash
-		cd java-client-api/test-app
+		cd java-client-api
 		docker compose down -v || true
 		docker volume prune -f
 	'''
@@ -167,7 +167,7 @@ pipeline{
         }
       }
       steps {
-	      setupDockerMarkLogic("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-12")
+	      setupDockerMarkLogic("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi-rootless:12.0.0-ubi-rootless-2.2.0")
         sh label:'run marklogic-client-api tests', script: '''#!/bin/bash
           export JAVA_HOME=$JAVA_HOME_DIR
           export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
@@ -250,7 +250,7 @@ pipeline{
 				}
 			}
 			steps {
-				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-12")
+				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi-rootless:12.0.0-ubi-rootless-2.2.0")
 				junit '**/build/**/TEST*.xml'
 			}
 			post {
