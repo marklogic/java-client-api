@@ -116,10 +116,10 @@ public class SSLTest {
     // if the entry is 2 it's a DNS or 7 then it's an IP address
     // according to https://docs.oracle.com/javase/8/docs/api/java/security/cert/X509Certificate.html#getSubjectAlternativeNames--
     Collection<List<?>> listSas = new ArrayList<>();
-    listSas.add(Arrays.asList(new Object[] {new Integer(type_dnsName), passedSas[0]}));
-    listSas.add(Arrays.asList(new Object[] {new Integer(type_ipAddress), passedSas[1]}));
-    listSas.add(Arrays.asList(new Object[] {new Integer(type_dnsName), passedSas[2]}));
-    listSas.add(Arrays.asList(new Object[] {new Integer(type_dnsName), passedSas[3]}));
+    listSas.add(Arrays.asList(new Object[] { type_dnsName, passedSas[0] }));
+    listSas.add(Arrays.asList(new Object[] { type_ipAddress, passedSas[1] }));
+    listSas.add(Arrays.asList(new Object[] { type_dnsName, passedSas[2] }));
+    listSas.add(Arrays.asList(new Object[] { type_dnsName, passedSas[3] }));
     when(cert.getSubjectAlternativeNames()).thenReturn(listSas);
 
     // now that we have the cert all mocked with common names and subject alts, call the

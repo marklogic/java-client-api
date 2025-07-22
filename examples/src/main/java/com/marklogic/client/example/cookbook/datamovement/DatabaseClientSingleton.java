@@ -38,7 +38,9 @@ public class DatabaseClientSingleton {
     } catch (JAXBException e) {
       throw new IllegalStateException(e);
     }
-    ObjectMapper mapper = new JacksonDatabindHandle(null).getMapper();
+
+	@SuppressWarnings("unchecked")
+	ObjectMapper mapper = new JacksonDatabindHandle(null).getMapper();
     // we do the next three lines so dates are written in xs:dateTime format
     // which makes them ready for range indexes in MarkLogic Server
     String ISO_8601_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";

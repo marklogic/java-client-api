@@ -667,9 +667,9 @@ ${funcDecls}
         } else {
           """return BaseProxy.${typeConverter(returnType)}.to${
           if (returnMapped.contains("."))
-            returnMapped.substringAfterLast(".").capitalize()
+            returnMapped.substringAfterLast(".").replaceFirstChar { it.uppercase() }
           else
-            returnMapped.capitalize()
+            returnMapped.replaceFirstChar { it.uppercase() }
           }(
                 ${callImpl}
                 );"""
@@ -757,7 +757,7 @@ ${funcDecls}
                 private ${className}(${paramSig}) {${
         paramNames.map{paramName ->
             """
-                    set${paramName.capitalize()}(${paramName});"""
+                    set${paramName.replaceFirstChar { it.uppercase() }}(${paramName});"""
             }.joinToString("")}
                 }"""
     return constructor
@@ -795,10 +795,10 @@ ${funcDecls}
             val mappedType   = getJavaDataType(paramType, paramMapping, paramKind, isMultiple)
             val sigType      = getSigDataType(mappedType, isMultiple)
             """
-                ${getterAccess}${sigType} get${paramName.capitalize()}(){
+                ${getterAccess}${sigType} get${paramName.replaceFirstChar { it.uppercase() }}(){
                     return arg_${paramName};
                 }
-                private void set${paramName.capitalize()}(${sigType} value){
+                private void set${paramName.replaceFirstChar { it.uppercase() }}(${sigType} value){
                     this.arg_${paramName} = value;
                 }"""
             }.joinToString("")
@@ -809,9 +809,9 @@ ${funcDecls}
         if (paramType == "anyDocument") paramName
         else """BaseProxy.${typeConverter(paramType)}.from${
           if (mappedType.contains("."))
-            mappedType.substringAfterLast(".").capitalize()
+            mappedType.substringAfterLast(".").replaceFirstChar { it.uppercase() }
           else
-            mappedType.capitalize()
+            mappedType.replaceFirstChar { it.uppercase() }
           }(${paramName})"""
     val converter =
           """BaseProxy.${paramKind}Param("${paramName}", ${isNullable}, ${convertExpr})"""
@@ -821,14 +821,14 @@ ${funcDecls}
     val converter =
         if (datatype == "int")                "Integer"
         else if (datatype == "unsignedInt")   "UnsignedInteger"
-        else                                   datatype.capitalize()
+        else                                   datatype.replaceFirstChar { it.uppercase() }
     return converter+"Type"
   }
   fun typeFormat(documentType: String) : String {
     val format =
         if (documentType == "array" || documentType == "object") "Format.JSON"
         else if (documentType == "anyDocument")                  "Format.UNKNOWN"
-        else "Format."+documentType.substringBefore("Document").toUpperCase()
+        else "Format."+documentType.substringBefore("Document").uppercase()
     return format
   }
   fun paramKindCardinality(currCardinality: ValueCardinality, param: ObjectNode): ValueCardinality {
@@ -953,7 +953,7 @@ declare option xdmp:mapping "false";
           when (paramType) {
             "array","object" ->
               if (moduleExtension == "mjs" || moduleExtension == "sjs")
-                paramType.capitalize()+"Node"
+                paramType.replaceFirstChar { it.uppercase() }+"Node"
               else
                 paramType+"-node()"
             else ->
@@ -1104,7 +1104,8 @@ ${errorReport}"""
     return rootPath+appendSuffix
   }
   fun checkObjectsEqual(errors: MutableList<String>, parentKey: String, customObj: ObjectNode, baseObj: ObjectNode) {
-    customObj.fields().forEach{(key, customVal) ->
+    customObj.fieldNames().forEach { key ->
+      val customVal = customObj.get(key)
       if (key.startsWith("$")) {
       } else if (!baseObj.has(key)) {
         errors.add("${key} property of ${parentKey} exists in custom service but not base service")
@@ -1112,7 +1113,7 @@ ${errorReport}"""
         checkValuesEqual(errors, key, customVal, baseObj.get(key))
       }
     }
-    baseObj.fields().forEach{(key, _) ->
+    baseObj.fieldNames().forEach { key ->
       if (!customObj.has(key)) {
         errors.add("${key} property of ${parentKey} exists in base service but not custom service")
       }

@@ -3580,10 +3580,10 @@ public class OkHttpServices implements RESTServices {
 			String value = getString();
 			if (value == null) return null;
 			if (getType() == EvalResult.Type.DECIMAL) return new BigDecimal(value);
-			else if (getType() == EvalResult.Type.DOUBLE) return new Double(value);
-			else if (getType() == EvalResult.Type.FLOAT) return new Float(value);
+			else if (getType() == EvalResult.Type.DOUBLE) return Double.valueOf(value);
+			else if (getType() == EvalResult.Type.FLOAT) return Float.valueOf(value);
 				// MarkLogic integers can be much larger than Java integers, so we'll use Long instead
-			else if (getType() == EvalResult.Type.INTEGER) return new Long(value);
+			else if (getType() == EvalResult.Type.INTEGER) return Long.valueOf(value);
 			else return new BigDecimal(value);
 		}
 
