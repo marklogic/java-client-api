@@ -1,14 +1,10 @@
 @Library('shared-libraries') _
 
 def getJava(){
-	if(env.JAVA_VERSION=="JAVA17"){
-		return "/home/builder/java/jdk-17.0.2"
-	}else if(env.JAVA_VERSION=="JAVA11"){
-		return "/home/builder/java/jdk-11.0.2"
-	}else if(env.JAVA_VERSION=="JAVA21"){
+	if (env.JAVA_VERSION == "JAVA21") {
 		return "/home/builder/java/jdk-21.0.1"
-	}else{
-		return "/home/builder/java/openjdk-1.8.0-262"
+	} else {
+		return "/home/builder/java/jdk-17.0.2"
 	}
 }
 
