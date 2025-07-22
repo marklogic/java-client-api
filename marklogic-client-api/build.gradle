@@ -62,6 +62,11 @@ dependencies {
 	testImplementation 'org.apache.commons:commons-lang3:3.17.0'
 	testImplementation 'com.opencsv:opencsv:5.10'
 	testImplementation 'org.skyscreamer:jsonassert:1.5.3'
+
+    // Automatic loading of test framework implementation dependencies is deprecated.
+    // https://docs.gradle.org/current/userguide/upgrading_version_8.html#test_framework_implementation_dependencies
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
+
 }
 
 // Ensure that mlHost and mlPassword can override the defaults of localhost/admin if they've been modified
