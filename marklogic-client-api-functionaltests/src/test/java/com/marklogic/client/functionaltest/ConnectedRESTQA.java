@@ -17,7 +17,6 @@ import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.impl.SSLUtil;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
-import com.marklogic.client.query.QueryManager;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.ManageConfig;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
@@ -54,15 +53,12 @@ public abstract class ConnectedRESTQA {
 	protected static String http_port = null;
 	protected static String fast_http_port = null;
 	protected static String basePath = null;
-	private static String admin_port = null;
 	// This needs to be a FQDN when SSL is enabled. Else localhost
 	private static String host_name = null;
 	// This needs to be a FQDN when SSL is enabled. Else localhost
 	private static String ssl_host_name = null;
 	private static String admin_user = null;
 	private static String admin_password = null;
-	private static String mlRestReadUser = null;
-	private static String mlRestReadPassword = null;
 	private static String ml_certificate_password = null;
 	private static String ml_certificate_file = null;
 	private static String mlDataConfigDirPath = null;
@@ -317,7 +313,11 @@ public abstract class ConnectedRESTQA {
 	}
 
 	public static void clearDB(int port) {
-		try (DatabaseClient client = newDatabaseClientBuilder().withPort(port).build()) {
+		DatabaseClientBuilder builder = newDatabaseClientBuilder()
+			.withDigestAuth(admin_user, admin_password)
+			.withPort(port);
+
+		try (DatabaseClient client = builder.build()) {
 			// Trying an eval instead of a "DELETE v1/search", which leads to intermittent errors on Jenkins involving
 			// a "clear" operation on a forest failing.
 			String count = client.newServerEval()
@@ -848,15 +848,6 @@ public abstract class ConnectedRESTQA {
 		}
 	}
 
-	//Configure a SSL or non SSL enabled REST Server based on the build.gradle
-	public static void configureRESTServer(String dbName, String[] fNames, boolean bAssociateDB) throws Exception {
-		loadGradleProperties();
-		if (IsSecurityEnabled())
-			setupJavaRESTServer(dbName, fNames[0], restSslServerName, getRestServerPort(), bAssociateDB);
-		else
-			setupJavaRESTServer(dbName, fNames[0], restServerName, getRestServerPort(), bAssociateDB);
-	}
-
 	// Removes the database and forest from a REST server.
 	public static void cleanupRESTServer(String dbName) {
 		if (IsSecurityEnabled())
@@ -980,7 +971,6 @@ public abstract class ConnectedRESTQA {
 		https_port = properties.getProperty("httpsPort");
 		http_port = properties.getProperty("httpPort");
 		fast_http_port = properties.getProperty("marklogic.client.port");
-		admin_port = "8002"; // No need yet for a property for this
 		basePath = properties.getProperty("marklogic.client.basePath");
 
 		// Machine names where ML Server runs
@@ -990,9 +980,6 @@ public abstract class ConnectedRESTQA {
 		// Users
 		admin_user = properties.getProperty("mlAdminUser");
 		admin_password = properties.getProperty("mlAdminPassword");
-
-		mlRestReadUser = properties.getProperty("mlRestReadUser");
-		mlRestReadPassword = properties.getProperty("mlRestReadPassword");
 
 		// Security and Certificate properties.
 		ssl_enabled = properties.getProperty("restSSLset");
@@ -1025,14 +1012,6 @@ public abstract class ConnectedRESTQA {
 		return admin_password;
 	}
 
-	public static String getRestReaderUser() {
-		return mlRestReadUser;
-	}
-
-	public static String getRestReaderPassword() {
-		return mlRestReadPassword;
-	}
-
 	public static String getSslEnabled() {
 		return ssl_enabled;
 	}
@@ -1061,10 +1040,6 @@ public abstract class ConnectedRESTQA {
 
 	private static int getHttpPort() {
 		return (Integer.parseInt(http_port));
-	}
-
-	public static int getAdminPort() {
-		return (Integer.parseInt(admin_port));
 	}
 
 	/*
