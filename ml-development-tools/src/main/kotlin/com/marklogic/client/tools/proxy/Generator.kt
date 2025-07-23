@@ -393,7 +393,10 @@ ${validations.joinToString("\n"){validation -> validation.message}}""")
     val classDesc   = servdef.get("desc")?.asText() ?:
         "Provides a set of operations on the database server"
 
-    val classSrc  = """package ${packageName};
+    val classSrc  = """/*
+ * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ */
+package ${packageName};
 
 // IMPORTANT: Do not edit. This file is generated.
 
