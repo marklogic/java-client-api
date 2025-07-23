@@ -13,6 +13,7 @@ def getJava(){
 }
 
 def setupDockerMarkLogic(String image){
+	cleanupDocker()
 	sh label:'mlsetup', script: '''#!/bin/bash
 	echo "Removing any running MarkLogic server and clean up MarkLogic data directory"
     sudo /usr/local/sbin/mladmin remove
@@ -136,6 +137,7 @@ def tearDownDocker() {
 		docker compose down -v || true
 		docker volume prune -f
 	'''
+	cleanupDocker()
 }
 
 pipeline{
