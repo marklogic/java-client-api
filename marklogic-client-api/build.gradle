@@ -39,7 +39,8 @@ dependencies {
 	compileOnly 'org.dom4j:dom4j:2.1.4'
 	compileOnly 'com.google.code.gson:gson:2.10.1'
 
-	testImplementation 'org.junit.jupiter:junit-jupiter:5.11.1'
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+
 	// Forcing junit version to avoid vulnerability with older version in xmlunit
 	testImplementation 'junit:junit:4.13.2'
 	testImplementation 'org.xmlunit:xmlunit-legacy:2.10.0'
@@ -64,17 +65,18 @@ dependencies {
 	// Using this to avoid a schema validation issue with the regular xercesImpl
 	testImplementation 'org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115'
 
-	testImplementation ('com.opencsv:opencsv:5.11.2') {
+	testImplementation('com.opencsv:opencsv:5.11.2') {
 		// Excluding this due to a security vulnerability, and the test for the example that uses this library
 		// passes without this on the classpath.
 		exclude module: "commons-beanutils"
 	}
 	testImplementation 'org.skyscreamer:jsonassert:1.5.3'
 
-	// Commenting out for now as it prevents tests from being runnable in Intellij.
 	// Automatic loading of test framework implementation dependencies is deprecated.
 	// https://docs.gradle.org/current/userguide/upgrading_version_8.html#test_framework_implementation_dependencies
-	//    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
+	// Without this, once using JUnit 5.12 or higher, Gradle will not find any tests and report an error of:
+	// org.junit.platform.commons.JUnitException: TestEngine with ID 'junit-jupiter' failed to discover tests
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.13.4"
 }
 
 // Ensure that mlHost and mlPassword can override the defaults of localhost/admin if they've been modified

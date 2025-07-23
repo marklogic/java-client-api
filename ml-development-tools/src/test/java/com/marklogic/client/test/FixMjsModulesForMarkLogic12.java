@@ -12,7 +12,6 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.test.dbfunction.DBFunctionTestUtil;
-import com.marklogic.junit5.MarkLogicVersion;
 import com.networknt.schema.utils.StringUtils;
 
 /**
@@ -31,7 +30,7 @@ public class FixMjsModulesForMarkLogic12 {
     public static void main(String[] args) {
         try (DatabaseClient client = DBFunctionTestUtil.makeAdminClient("java-unittest-modules")) {
             String version = client.newServerEval().javascript("xdmp.version()").evalAs(String.class);
-            if (new MarkLogicVersion(version).getMajor() < 12) {
+            if (new ClonedMarkLogicVersion(version).getMajor() < 12) {
                 return;
             }
 
