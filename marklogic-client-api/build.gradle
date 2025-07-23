@@ -1,4 +1,6 @@
-// Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+/*
+ * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ */
 
 plugins {
 	id 'java-library'
@@ -44,7 +46,6 @@ dependencies {
 	testImplementation project(':examples')
 
 	testImplementation 'org.apache.commons:commons-lang3:3.18.0'
-
 	// Allows talking to the Manage API.
 	testImplementation ("com.marklogic:ml-app-deployer:5.0.0") {
 		exclude module: "marklogic-client-api"

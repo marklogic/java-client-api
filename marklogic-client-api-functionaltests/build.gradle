@@ -1,43 +1,43 @@
-// Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+/*
+ * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ */
 
 test {
 	useJUnitPlatform()
   testLogging{
     events 'started','passed', 'skipped'
   }
-  /* For use in testing TestDatabaseClientKerberosFromFile */
+  // For use in testing TestDatabaseClientKerberosFromFile
   systemProperty "keytabFile", System.getProperty("keytabFile")
   systemProperty "principal", System.getProperty("principal")
 
 	systemProperty "TEST_USE_REVERSE_PROXY_SERVER", testUseReverseProxyServer
 }
 
-/* The minimal number of tests that run in a sandbox environment */
-
-task testSandbox(type:Test) {
-  include 'com/marklogic/client/functionaltest/TestSandBox.class'
-}
-
 dependencies {
-  implementation project (':marklogic-client-api')
-  implementation 'org.skyscreamer:jsonassert:1.5.3'
-  implementation 'org.slf4j:slf4j-api:2.0.17'
-  implementation 'commons-io:commons-io:2.17.0'
-  implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-  implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
-  implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-  implementation "org.jdom:jdom2:2.0.6.1"
-  implementation ("com.marklogic:ml-app-deployer:5.0.0") {
+	testImplementation project(':marklogic-client-api')
+	testImplementation 'org.skyscreamer:jsonassert:1.5.3'
+	testImplementation 'org.slf4j:slf4j-api:2.0.17'
+	testImplementation 'commons-io:commons-io:2.17.0'
+	testImplementation 'com.squareup.okhttp3:okhttp:4.12.0'
+	testImplementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+	testImplementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+	testImplementation "org.jdom:jdom2:2.0.6.1"
+
+	testImplementation 'org.apache.commons:commons-lang3:3.18.0'
+	// Allows talking to the Manage API.
+	testImplementation("com.marklogic:ml-app-deployer:5.0.0") {
 		exclude module: "marklogic-client-api"
+		// Use the commons-lang3 declared above to keep Black Duck happy.
+		exclude module: "commons-lang3"
 	}
 
-  testImplementation 'ch.qos.logback:logback-classic:1.3.15'
+	testImplementation 'ch.qos.logback:logback-classic:1.3.15'
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.11.1'
 	testImplementation 'org.xmlunit:xmlunit-legacy:2.10.0'
-	testImplementation 'org.apache.commons:commons-lang3:3.17.0'
 }
 
-task runFragileTests(type: Test) {
+tasks.register("runFragileTests", Test) {
 	useJUnitPlatform()
   description = "These are called 'fragile' because they'll pass when run by themselves, but when run as part of the " +
           "full suite, there seem to be one or more other fast functional tests that run before them and cause some of " +
@@ -48,7 +48,7 @@ task runFragileTests(type: Test) {
   include "com/marklogic/client/fastfunctest/TestRawStructuredQuery.class"
 }
 
-task runFastFunctionalTests(type: Test) {
+tasks.register("runFastFunctionalTests", Test) {
 	useJUnitPlatform()
   description = "Run all fast functional tests that don't setup/teardown custom app servers / databases"
   include "com/marklogic/client/fastfunctest/**"
@@ -58,14 +58,14 @@ task runFastFunctionalTests(type: Test) {
   exclude "com/marklogic/client/fastfunctest/TestRawStructuredQuery.class"
 }
 
-task runSlowFunctionalTests(type: Test) {
+tasks.register("runSlowFunctionalTests", Test) {
 	useJUnitPlatform()
   description = "Run slow functional tests; i.e. those that setup/teardown custom app servers / databases"
   include "com/marklogic/client/datamovement/functionaltests/**"
   include "com/marklogic/client/functionaltest/**"
 }
 
-task runFunctionalTests {
+tasks.register("runFunctionalTests") {
   dependsOn(runFragileTests, runFastFunctionalTests, runSlowFunctionalTests)
 }
 runFastFunctionalTests.mustRunAfter runFragileTests
