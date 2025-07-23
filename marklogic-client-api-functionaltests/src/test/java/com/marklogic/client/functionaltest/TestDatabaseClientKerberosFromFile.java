@@ -137,7 +137,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     System.out.println("In tear down");
     deleteUserRole("test-evalKer");
     deleteRESTUser("builder");
-    tearDownJavaRESTServer(dbName, fNames, appServerName);
+    tearDownJavaRESTServer(dbName, appServerName);
   }
 
   @BeforeEach

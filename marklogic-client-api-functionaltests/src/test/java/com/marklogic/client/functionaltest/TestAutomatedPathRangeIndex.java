@@ -55,7 +55,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
   @AfterAll
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
-    cleanupRESTServer(dbName, fNames);
+    cleanupRESTServer(dbName);
   }
 
   @BeforeEach
