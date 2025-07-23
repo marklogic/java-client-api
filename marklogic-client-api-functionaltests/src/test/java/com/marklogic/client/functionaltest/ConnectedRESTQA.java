@@ -30,6 +30,7 @@ import com.marklogic.mgmt.resource.security.UserManager;
 import com.marklogic.mgmt.resource.temporal.TemporalAxesManager;
 import com.marklogic.mgmt.resource.temporal.TemporalCollectionLSQTManager;
 import com.marklogic.mgmt.resource.temporal.TemporalCollectionManager;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.*;
 import java.io.IOException;
@@ -317,12 +318,20 @@ public abstract class ConnectedRESTQA {
 
 	public static void clearDB(int port) {
 		try (DatabaseClient client = newDatabaseClientBuilder().withPort(port).build()) {
-			QueryManager mgr = client.newQueryManager();
-			mgr.delete(mgr.newDeleteDefinition());
+			// Trying an eval instead of a "DELETE v1/search", which leads to intermittent errors on Jenkins involving
+			// a "clear" operation on a forest failing.
+			String count = client.newServerEval()
+				.xquery("let $uris := " +
+					"	for $uri in cts:uris((), (), cts:true-query()) " +
+					"	let $_ := xdmp:document-delete($uri) " +
+					"	return $uri " +
+					"return fn:count($uris)")
+				.evalAs(String.class);
+			LoggerFactory.getLogger(ConnectedRESTQA.class).info("Cleared database, deleting {} URIs", count);
 		}
 	}
 
-	public static void tearDownJavaRESTServer(String dbName, String[] fNames, String restServerName) {
+	public static void tearDownJavaRESTServer(String dbName, String restServerName) {
 		associateRESTServerWithDB(restServerName, "Documents");
 		deleteDB(dbName);
 	}
@@ -849,11 +858,11 @@ public abstract class ConnectedRESTQA {
 	}
 
 	// Removes the database and forest from a REST server.
-	public static void cleanupRESTServer(String dbName, String[] fNames) throws Exception {
+	public static void cleanupRESTServer(String dbName) {
 		if (IsSecurityEnabled())
-			tearDownJavaRESTServer(dbName, fNames, restSslServerName);
+			tearDownJavaRESTServer(dbName, restSslServerName);
 		else
-			tearDownJavaRESTServer(dbName, fNames, restServerName);
+			tearDownJavaRESTServer(dbName, restServerName);
 	}
 
 	// Returns true or false based security (ssl) is enabled or disabled.

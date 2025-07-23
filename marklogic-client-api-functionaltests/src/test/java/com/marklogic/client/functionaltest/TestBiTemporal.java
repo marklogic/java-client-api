@@ -112,7 +112,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     System.out.println("In tear down");
 
     // Delete database first. Otherwise axis and collection cannot be deleted
-    cleanupRESTServer(dbName, fNames);
+    cleanupRESTServer(dbName);
     deleteRESTUser("eval-user");
     deleteUserRole("test-eval");
     deleteDB(schemadbName);

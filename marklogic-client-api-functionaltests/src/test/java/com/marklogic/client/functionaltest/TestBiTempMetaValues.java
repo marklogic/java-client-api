@@ -109,7 +109,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
 
-    cleanupRESTServer(dbName, fNames);
+    cleanupRESTServer(dbName);
     deleteRESTUser("eval-bitemp-meta-user");
     deleteRESTUser("eval-readeruser");
     deleteUserRole("test-eval-bitemp");
