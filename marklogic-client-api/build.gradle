@@ -43,9 +43,13 @@ dependencies {
 	testImplementation 'org.xmlunit:xmlunit-legacy:2.10.0'
 	testImplementation project(':examples')
 
+	testImplementation 'org.apache.commons:commons-lang3:3.18.0'
+
 	// Allows talking to the Manage API.
 	testImplementation ("com.marklogic:ml-app-deployer:5.0.0") {
 		exclude module: "marklogic-client-api"
+		// Use the commons-lang3 declared above to keep Black Duck happy.
+		exclude module: "commons-lang3"
 	}
 
 	// Starting with mockito 5.x, Java 11 is required, so sticking with 4.x as we have to support Java 8.
@@ -59,14 +63,17 @@ dependencies {
 	// Using this to avoid a schema validation issue with the regular xercesImpl
 	testImplementation 'org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115'
 
-	testImplementation 'org.apache.commons:commons-lang3:3.17.0'
-	testImplementation 'com.opencsv:opencsv:5.10'
+	testImplementation ('com.opencsv:opencsv:5.11.2') {
+		// Excluding this due to a security vulnerability, and the test for the example that uses this library
+		// passes without this on the classpath.
+		exclude module: "commons-beanutils"
+	}
 	testImplementation 'org.skyscreamer:jsonassert:1.5.3'
 
-    // Automatic loading of test framework implementation dependencies is deprecated.
-    // https://docs.gradle.org/current/userguide/upgrading_version_8.html#test_framework_implementation_dependencies
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
-
+	// Commenting out for now as it prevents tests from being runnable in Intellij.
+	// Automatic loading of test framework implementation dependencies is deprecated.
+	// https://docs.gradle.org/current/userguide/upgrading_version_8.html#test_framework_implementation_dependencies
+	//    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
 }
 
 // Ensure that mlHost and mlPassword can override the defaults of localhost/admin if they've been modified
