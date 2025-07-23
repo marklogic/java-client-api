@@ -25,9 +25,10 @@ dependencies {
 
 	testImplementation 'com.squareup.okhttp3:okhttp:4.12.0'
 
-	// Needed for MarkLogicVersion class
+	// We need the MarkLogicVersion class, but that has no dependencies and so we exclude all dependencies from
+	// this, in particular to avoid vulnerabilities on Spring 5.x libraries.
 	testImplementation ("com.marklogic:marklogic-junit5:1.5.0") {
-		exclude module: "marklogic-client-api"
+		transitive = false
 	}
 }
 
