@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -42,7 +43,7 @@ public class JacksonDatabindTest {
     // demonstrate our ability to set advanced configuration on a mapper
     ObjectMapper mapper = new ObjectMapper();
     // in this case, we're saying wrap our serialization with the name of the pojo class
-    mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT);
+    mapper.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT);
     // register a JacksonDatabindHandleFactory ready to marshall any City object to/from json
     // this enables the writeAs method below
     DatabaseClientFactory.getHandleRegistry().register(
@@ -108,7 +109,7 @@ public class JacksonDatabindTest {
     @Override
     public void addCity(City city) {
       if ( numCities >= MAX_TO_WRITE ) return;
-      JacksonDatabindHandle handle = new JacksonDatabindHandle(city);
+      JacksonDatabindHandle<City> handle = new JacksonDatabindHandle<>(city);
       // NOTICE: We've set the mapper to an XmlMapper, showing the versitility of Jackson
       handle.setMapper(mapper);
       handle.setFormat(Format.XML);
@@ -179,16 +180,16 @@ public class JacksonDatabindTest {
 		.addColumn("lastModified")
 		.build();
     CsvMapper mapper = new CsvMapper();
-    mapper.addMixInAnnotations(Toponym.class, ToponymMixIn1.class);
-    ObjectReader reader = mapper.reader(Toponym.class).with(schema);
+    mapper.addMixIn(Toponym.class, ToponymMixIn1.class);
+    ObjectReader reader = mapper.readerFor(Toponym.class).with(schema);
     try (BufferedReader cityReader = new BufferedReader(Common.testFileToReader(CITIES_FILE))) {
       GenericDocumentManager docMgr = client.newDocumentManager();
       DocumentWriteSet set = docMgr.newWriteSet();
       String line;
       for (int numWritten = 0; numWritten < MAX_TO_WRITE && (line = cityReader.readLine()) != null; numWritten++ ) {
         Toponym city = reader.readValue(line);
-        JacksonDatabindHandle handle = new JacksonDatabindHandle(city);
-        handle.getMapper().addMixInAnnotations(Toponym.class, ToponymMixIn2.class);
+        JacksonDatabindHandle<Toponym> handle = new JacksonDatabindHandle<>(city);
+        handle.getMapper().addMixIn(Toponym.class, ToponymMixIn2.class);
         set.add(DIRECTORY + "/thirdPartyJsonCities/" + city.geoNameId + ".json", handle);
       }   docMgr.write(set);
       // we can add assertions later, for now this test just serves as example code and

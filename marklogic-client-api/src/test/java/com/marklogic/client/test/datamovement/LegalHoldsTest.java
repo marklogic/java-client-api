@@ -29,8 +29,8 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Calendar;
-import java.util.Hashtable;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -107,7 +107,7 @@ public class LegalHoldsTest {
     // walk through all batches of docs matching our query
     DataMovementManager moveMgr = evalClient.newDataMovementManager();
     StringBuilder anyFailure = new StringBuilder();
-    Hashtable<String,AtomicInteger> urisDeleted = new Hashtable<>();
+    ConcurrentHashMap<String,AtomicInteger> urisDeleted = new ConcurrentHashMap<>();
     QueryBatcher batcher = moveMgr.newQueryBatcher(query)
       .withBatchSize(1)
       .withConsistentSnapshot()

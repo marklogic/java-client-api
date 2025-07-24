@@ -1375,15 +1375,6 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression xmlPi(ServerExpression name, ServerExpression value);
   /**
-  * Constructs a sequence from multiple attribute values to pass as a parameter to an operation.
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-attribute-seq" target="mlserverdoc">op:xml-attribute-seq</a> server function.
-  * @param attribute  the attribute values for the sequence
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/attribute-node.html">attribute-node</a> server data type
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
-  */
-  public abstract ServerExpression xmlAttributeSeq(ServerExpression... attribute);
-  /**
   * Specifies a JavaScript or XQuery function installed on the server for use in post-processing in a map() or reduce() operation.
   * @param functionName  the name of the function installed on the server
   * @param modulePath  the path on the server for the library module providing the function

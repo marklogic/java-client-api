@@ -386,7 +386,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
                     switch (currentToken) {
                         case FIELD_NAME:
                             key.pop();
-                            key.push(jsonParser.getCurrentName());
+                            key.push(jsonParser.currentName());
                             break;
 
                         case START_OBJECT:
@@ -557,7 +557,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
             }
 
             maintainDepth();
-            return super.getCurrentToken();
+            return super.currentToken();
         }
 
         @Override

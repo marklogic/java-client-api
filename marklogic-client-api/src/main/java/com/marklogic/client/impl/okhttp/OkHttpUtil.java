@@ -38,7 +38,7 @@ public abstract class OkHttpUtil {
 
 	final private static ConnectionPool connectionPool = new ConnectionPool();
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked", "deprecation"})
 	public static OkHttpClient.Builder newOkHttpClientBuilder(String host, DatabaseClientFactory.SecurityContext securityContext) {
 		OkHttpClient.Builder clientBuilder = OkHttpUtil.newClientBuilder();
 		AuthenticationConfigurer authenticationConfigurer = null;
@@ -56,6 +56,7 @@ public abstract class OkHttpUtil {
 		} else if (securityContext instanceof DatabaseClientFactory.SAMLAuthContext) {
 			configureSAMLAuth((DatabaseClientFactory.SAMLAuthContext) securityContext, clientBuilder);
 		} else if (securityContext instanceof DatabaseClientFactory.ProgressDataCloudAuthContext ||
+			// It's fine to refer to this deprecated class as it needs to be supported until Java Client 8.
 			securityContext instanceof DatabaseClientFactory.MarkLogicCloudAuthContext) {
 			authenticationConfigurer = new ProgressDataCloudAuthenticationConfigurer(host);
 		} else if (securityContext instanceof DatabaseClientFactory.OAuthContext) {

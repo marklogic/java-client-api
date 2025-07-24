@@ -20,7 +20,7 @@ subprojects {
 
 	tasks.withType(JavaCompile) {
 		options.encoding = 'UTF-8'
-		options.compilerArgs += ["-Xlint:unchecked"]
+		options.compilerArgs += ["-Xlint:unchecked", "-Xlint:deprecation"]
 	}
 
 	// To ensure that the Java Client continues to support Java 8, both source and target compatibility are set to 1.8.

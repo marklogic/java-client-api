@@ -612,11 +612,6 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
-  public ServerExpression xmlAttributeSeq(ServerExpression... attributes) {
-    return new XmlAttributeSeqListImpl(attributes);
-  }
-
-  @Override
   public PlanGroupSeq groupSeq(PlanGroup... groups) {
     return new GroupSeqListImpl(groups);
   }
@@ -1319,32 +1314,6 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   static class JsonArrayCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements JsonContentCallImpl {
     JsonArrayCallImpl(Object[] args) {
       super("op", "json-array", args);
-    }
-  }
-
-  static class XmlAttributeSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl {
-    XmlAttributeSeqListImpl(ServerExpression[] items) {
-      super(Arrays.copyOf(items, items.length, XmlAttributeCallImpl[].class));
-    }
-  }
-
-  static interface XmlContentCallImpl  extends BaseTypeImpl.BaseArgImpl {}
-  static class XmlContentSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl {
-    XmlContentSeqListImpl(ServerExpression[] items) {
-      super(Arrays.copyOf(items, items.length, BaseTypeImpl.NodeCallImpl[].class));
-    }
-  }
-
-/* TODO: DELETE
-  static class XmlElementCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements ElementNodeExpr, XmlContentCallImpl {
-    XmlElementCallImpl(Object[] args) {
-      super("op", "xml-element", args);
-    }
-  }
- */
-  static class XmlAttributeCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
-    XmlAttributeCallImpl(Object[] args) {
-      super("op", "xml-attribute", args);
     }
   }
 

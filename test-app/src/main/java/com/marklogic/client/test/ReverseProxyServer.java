@@ -89,7 +89,7 @@ public class ReverseProxyServer {
 					serverPort = Integer.parseInt(args[2]);
 					if (args.length > 3) {
 						secureServerPort = Integer.parseInt(args[3]);
-						if (args.length > 4 && args[4].trim().length() > 0) {
+						if (args.length > 4 && !args[4].trim().isEmpty()) {
 							customMappings = Arrays.asList(args[4].split(","));
 						}
 					}

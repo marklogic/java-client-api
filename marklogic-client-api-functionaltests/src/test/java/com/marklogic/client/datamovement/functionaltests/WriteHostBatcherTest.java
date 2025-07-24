@@ -1697,7 +1697,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 							if (!threadMap.containsKey(poolname)) {
 								threadMap.put(poolname, 1);
 							} else {
-								threadMap.put(poolname, new Integer(threadMap.get(poolname) + 1));
+								threadMap.put(poolname, threadMap.get(poolname) + 1);
 							}
 						}
 					}
