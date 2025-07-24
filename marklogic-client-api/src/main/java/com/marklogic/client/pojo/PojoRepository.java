@@ -227,6 +227,7 @@ public interface PojoRepository<T, ID extends Serializable> {
   /** Deletes from the database the persisted pojo instances with the corresponding ids
    * @param ids the ids for the pojo instances to delete from the server
    */
+  @SuppressWarnings("unchecked")
   void delete(ID... ids)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 

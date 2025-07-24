@@ -154,6 +154,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
      *                  files.The splitFilename could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation to write to database
      */
+	@SuppressWarnings("unchecked")
     public Stream<DocumentWriteOperation> splitWriteOperations(JsonParser input, String splitFilename) {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
@@ -161,7 +162,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
         count = 0;
 
         this.splitFilename = splitFilename;
-        JSONSplitter.DocumentWriteOperationSpliterator spliterator =
+        JSONSplitter.DocumentWriteOperationSpliterator<T> spliterator =
                 new JSONSplitter.DocumentWriteOperationSpliterator<>(this, input);
         return StreamSupport.stream(spliterator, true);
     }

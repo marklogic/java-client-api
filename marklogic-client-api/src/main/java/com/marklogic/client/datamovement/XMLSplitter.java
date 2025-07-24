@@ -483,6 +483,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
             super(xmlSplitter, input);
         }
         @Override
+		@SuppressWarnings("unchecked")
         public boolean tryAdvance(Consumer<? super DocumentWriteOperation> action) {
 
             T handle = (T) getNextHandle();

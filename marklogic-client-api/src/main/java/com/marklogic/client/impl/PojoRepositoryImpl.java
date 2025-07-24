@@ -215,7 +215,8 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
   }
 
   @Override
-  public void delete(ID... ids) {
+  @SafeVarargs
+  public final void delete(ID... ids) {
     delete(ids, null);
   }
 

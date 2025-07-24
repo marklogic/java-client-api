@@ -151,7 +151,8 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
-  public AccessPlan fromLiterals(@SuppressWarnings("unchecked") Map<String, Object>... rows) {
+  @SafeVarargs
+  public final AccessPlan fromLiterals(Map<String, Object>... rows) {
     return new AccessPlanSubImpl(this, "op", "from-literals", new Object[]{ literal(rows) });
   }
 

@@ -38,6 +38,7 @@ public abstract class OkHttpUtil {
 
 	final private static ConnectionPool connectionPool = new ConnectionPool();
 
+	@SuppressWarnings("unchecked")
 	public static OkHttpClient.Builder newOkHttpClientBuilder(String host, DatabaseClientFactory.SecurityContext securityContext) {
 		OkHttpClient.Builder clientBuilder = OkHttpUtil.newClientBuilder();
 		AuthenticationConfigurer authenticationConfigurer = null;

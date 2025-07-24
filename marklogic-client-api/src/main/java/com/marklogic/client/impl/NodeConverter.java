@@ -128,7 +128,8 @@ public class NodeConverter {
       }
       return handle;
    }
-   static public <T extends AbstractWriteHandle> Stream<T> streamWithFormat(Stream<T> handles, Format format) {
+	@SuppressWarnings("unchecked")
+	static public <T extends AbstractWriteHandle> Stream<T> streamWithFormat(Stream<T> handles, Format format) {
       if (handles == null || format == null) {
          return handles;
       }
@@ -417,7 +418,8 @@ public class NodeConverter {
       }
    }
 
-   static public <T extends JSONReadHandle> T jsonNodeToHandle(JsonNode node, T handle) {
+	@SuppressWarnings("unchecked")
+	static public <T extends JSONReadHandle> T jsonNodeToHandle(JsonNode node, T handle) {
       if (node == null) {
          return null;
       } else if (handle == null) {

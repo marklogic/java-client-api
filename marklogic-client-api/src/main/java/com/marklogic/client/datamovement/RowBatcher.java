@@ -218,7 +218,8 @@ public interface RowBatcher<T> extends Batcher {
      * rows when more than one callback function is needed.
      * @param listeners the success listeners
      */
-    void setSuccessListeners(RowBatchSuccessListener<T>... listeners);
+	@SuppressWarnings("unchecked")
+	void setSuccessListeners(RowBatchSuccessListener<T>... listeners);
     /**
      * Specifies the callback functions for errors when more than
      * one callback function is needed.

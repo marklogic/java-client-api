@@ -104,6 +104,7 @@ public class PathSplitter {
         return paths.flatMap(this::flatMapDocumentWriteOperations);
     }
 
+	@SuppressWarnings("unchecked")
     private Stream<? extends AbstractWriteHandle> flatMapHandles(Path path) {
         String extension = getExtension(path);
         Splitter splitter = lookupSplitter(extension);
@@ -119,6 +120,7 @@ public class PathSplitter {
         }
     }
 
+	@SuppressWarnings("unchecked")
     private Stream<DocumentWriteOperation> flatMapDocumentWriteOperations(Path path)  {
         String extension = getExtension(path);
         Splitter splitter = lookupSplitter(extension);
@@ -153,6 +155,7 @@ public class PathSplitter {
         return matcher.group(1);
     }
 
+	@SuppressWarnings("unchecked")
     private Splitter<? extends AbstractWriteHandle> lookupSplitter(String extension) {
         Splitter splitter = splitterMap.get(extension);
         if (splitter == null && splitterMap.get(DEFAULT_SPLITTER_KEY) != null) {
