@@ -61,7 +61,7 @@ public class JacksonCSVSplitterTest {
 
         for(int i=0; i<result.length; i++) {
             assertNotNull(result[i].get());
-            assertNotNull(result[i].get().fields());
+            assertNotNull(result[i].get().properties());
             for(int j=0; j<headerValues.length;j++) {
                 assertNotNull(result[i].get().findValue(headerValues[j]));
             }

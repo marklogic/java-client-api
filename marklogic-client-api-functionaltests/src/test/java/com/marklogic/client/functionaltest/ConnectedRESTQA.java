@@ -368,7 +368,7 @@ public abstract class ConnectedRESTQA {
 		} else {
 			if (!jnode.path(propName).isArray()) {
 				System.out.println("property is not array");
-				((ObjectNode) jnode).putAll(objNode);
+				((ObjectNode) jnode).setAll(objNode);
 			} else {
 				JsonNode member = jnode.withArray(propName);
 				if (objNode.path(propName).isArray()) {
@@ -894,7 +894,6 @@ public abstract class ConnectedRESTQA {
 	/**
 	 * Only use this in "slow" functional tests until they're converted over to fast.
 	 */
-	@Deprecated
 	public static DatabaseClient getDatabaseClientOnDatabase(String hostName, int port, String databaseName,
 			String user, String password, ConnectionType connType) {
 		return newDatabaseClientBuilder()

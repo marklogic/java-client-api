@@ -46,8 +46,8 @@ public class JacksonHandleTest {
     childArray.add("item1");
     childArray.add("item2");
     ObjectNode writeRoot = mapper.createObjectNode();
-    writeRoot.put("object", childObj);
-    writeRoot.put("array",  childArray);
+    writeRoot.set("object", childObj);
+    writeRoot.set("array",  childArray);
 
     // create a handle for the JSON structure
     JacksonHandle writeHandle = new JacksonHandle(writeRoot);

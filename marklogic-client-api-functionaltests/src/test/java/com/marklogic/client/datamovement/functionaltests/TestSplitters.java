@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("unchecked")
 public class TestSplitters  extends BasicJavaClientREST {
     private static String dbName = "TestSplittersDB";
     private static String[] fNames = {"TestSplittersDB-1"};
@@ -1050,6 +1051,7 @@ class SplitRunnable implements Runnable {
     }
 
     @Override
+	@SuppressWarnings("unchecked")
     public void run() {
         Stream<StringHandle> contentStream = null;
         Charset cs = Charset.forName("UTF-8");

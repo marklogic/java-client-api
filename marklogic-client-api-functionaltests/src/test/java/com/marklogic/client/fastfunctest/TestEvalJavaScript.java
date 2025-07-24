@@ -515,7 +515,7 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
       DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
       metadataHandle.getPermissions().add("test-js-eval",
           Capability.UPDATE, Capability.READ, Capability.EXECUTE);
-      DocumentManager dm = moduleClient.newDocumentManager();
+      TextDocumentManager dm = moduleClient.newTextDocumentManager();
       dm.write("/data/javascriptQueries.sjs", metadataHandle, ish);
       /*DocumentBuilder db = DocumentBuilderFactory.newInstance()
           .newDocumentBuilder();*/
@@ -648,7 +648,7 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
 			  mjsString + "export default output;" :
 			  mjsString + "output";
 
-		  DocumentManager dm = moduleClient.newDocumentManager();
+		  TextDocumentManager dm = moduleClient.newTextDocumentManager();
 		  DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
 		  metadataHandle.getPermissions().add("test-js-eval",
 				  Capability.UPDATE, Capability.READ, Capability.EXECUTE);

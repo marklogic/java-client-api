@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.*;
 
+import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -183,7 +184,7 @@ public class ExportListenerTest extends AbstractFunctionalTest {
             System.out.println("Batch Numer is " + batch.getJobBatchNumber());
             if (batch.getJobBatchNumber() == 1) {
               // Attempt to read firstName11 from database
-              DocumentManager docMgr = dbClient.newJSONDocumentManager();
+              JSONDocumentManager docMgr = dbClient.newJSONDocumentManager();
               JacksonHandle jacksonhandle = new JacksonHandle();
               docMgr.read("firstName11.json", jacksonhandle);
               JsonNode node = jacksonhandle.get();
@@ -307,7 +308,7 @@ public class ExportListenerTest extends AbstractFunctionalTest {
             System.out.println("Batch Numer is " + batch.getJobBatchNumber());
             if (batch.getJobBatchNumber() == 1) {
               // Attempt to read firstName11 from database
-              DocumentManager docMgr = dbClient.newJSONDocumentManager();
+				JSONDocumentManager docMgr = dbClient.newJSONDocumentManager();
               JacksonHandle jacksonhandle = new JacksonHandle();
               docMgr.read("firstName11.json", jacksonhandle);
               JsonNode node = jacksonhandle.get();

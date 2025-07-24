@@ -33,8 +33,7 @@ public class JSONSplitterTest {
 
     @Test
     public void testJSONSplitterArray() throws Exception {
-
-        JSONSplitter splitter = JSONSplitter.makeArraySplitter();
+        JSONSplitter<StringHandle> splitter = JSONSplitter.makeArraySplitter();
         FileInputStream fileInputStream = new FileInputStream(new File(jsonArrayFile));
         Stream<StringHandle> contentStream = splitter.split(fileInputStream);
         assertNotNull(contentStream);
@@ -53,8 +52,8 @@ public class JSONSplitterTest {
     @Test
     public void testJSONSplitterObject() throws Exception {
 
-        JSONSplitter splitter = JSONSplitter.makeArraySplitter();
-        FileInputStream fileInputStream = new FileInputStream(new File(jsonObjectFile));
+        JSONSplitter<StringHandle> splitter = JSONSplitter.makeArraySplitter();
+        FileInputStream fileInputStream = new FileInputStream(jsonObjectFile);
         Stream<StringHandle> contentStream = splitter.split(fileInputStream);
         assertNotNull(contentStream);
 
@@ -72,8 +71,8 @@ public class JSONSplitterTest {
     @Test
     public void testJSONSplitterMultiArray() throws Exception {
 
-        JSONSplitter splitter = JSONSplitter.makeArraySplitter();
-        FileInputStream fileInputStream = new FileInputStream(new File(jsonMultiArrayFile));
+        JSONSplitter<StringHandle> splitter = JSONSplitter.makeArraySplitter();
+        FileInputStream fileInputStream = new FileInputStream(jsonMultiArrayFile);
         Stream<StringHandle> contentStream = splitter.split(fileInputStream);
         assertNotNull(contentStream);
 
@@ -103,8 +102,8 @@ public class JSONSplitterTest {
                 "/SystemPath/NewTestJson4_abcd.json",
                 "/SystemPath/NewTestJson5_abcd.json"
         };
-        JSONSplitter splitter = JSONSplitter.makeArraySplitter();
-        FileInputStream fileInputStream = new FileInputStream(new File(jsonArrayFile));
+        JSONSplitter<StringHandle> splitter = JSONSplitter.makeArraySplitter();
+        FileInputStream fileInputStream = new FileInputStream(jsonArrayFile);
         JSONSplitter.UriMaker uriMaker = new UriMakerTest();
         uriMaker.setInputAfter("/SystemPath/");
         uriMaker.setSplitFilename("NewTestJson");
@@ -173,8 +172,8 @@ public class JSONSplitterTest {
     @Test
     public void testJSONSplitterWriteWithInputName() throws Exception {
 
-        JSONSplitter splitter = JSONSplitter.makeArraySplitter();
-        FileInputStream fileInputStream = new FileInputStream(new File(jsonArrayFile));
+        JSONSplitter<StringHandle> splitter = JSONSplitter.makeArraySplitter();
+        FileInputStream fileInputStream = new FileInputStream(jsonArrayFile);
         Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream, "TestJson.json");
         assertNotNull(contentStream);
 
@@ -200,8 +199,8 @@ public class JSONSplitterTest {
     @Test
     public void testJSONSplitterWriteWithoutInputName() throws Exception {
 
-        JSONSplitter splitter = JSONSplitter.makeArraySplitter();
-        FileInputStream fileInputStream = new FileInputStream(new File(jsonArrayFile));
+        JSONSplitter<StringHandle> splitter = JSONSplitter.makeArraySplitter();
+        FileInputStream fileInputStream = new FileInputStream(jsonArrayFile);
         Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream);
         assertNotNull(contentStream);
 
@@ -228,8 +227,8 @@ public class JSONSplitterTest {
     public void testCustomMultiArray() throws Exception {
 
         MultiArrayVisitor visitor = new MultiArrayVisitor();
-        JSONSplitter splitter = new JSONSplitter(visitor);
-        FileInputStream fileInputStream = new FileInputStream(new File(jsonCustMultiArrayFile));
+        JSONSplitter<StringHandle> splitter = new JSONSplitter<>(visitor);
+        FileInputStream fileInputStream = new FileInputStream(jsonCustMultiArrayFile);
         Stream<StringHandle> contentStream = splitter.split(fileInputStream);
         assertNotNull(contentStream);
 
@@ -262,8 +261,8 @@ public class JSONSplitterTest {
     public void testCustomKey() throws Exception {
 
         KeyVisitor visitor = new KeyVisitor("context2");
-        JSONSplitter splitter = new JSONSplitter(visitor);
-        FileInputStream fileInputStream = new FileInputStream(new File(jsonObjectFile));
+        JSONSplitter<StringHandle> splitter = new JSONSplitter<>(visitor);
+        FileInputStream fileInputStream = new FileInputStream(jsonObjectFile);
         Stream<StringHandle> contentStream = splitter.split(fileInputStream);
         assertNotNull(contentStream);
 
