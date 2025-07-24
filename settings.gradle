@@ -1,8 +1,4 @@
-plugins {
-	// Allows for downloading a JDK based on Gradle toolchain configuration.
-	// Using a version prior to 1.0, which requires Java 17, and Jenkins is using Java 8.
-	id "org.gradle.toolchains.foojay-resolver-convention" version "0.10.0"
-}
+
 
 rootProject.name = 'marklogic-client-api-parent'
 include ':marklogic-client-api'
