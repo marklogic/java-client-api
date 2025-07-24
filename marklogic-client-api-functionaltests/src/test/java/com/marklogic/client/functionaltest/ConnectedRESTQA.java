@@ -17,6 +17,7 @@ import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.impl.SSLUtil;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
+import com.marklogic.client.query.QueryManager;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.ManageConfig;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
@@ -313,21 +314,13 @@ public abstract class ConnectedRESTQA {
 	}
 
 	public static void clearDB(int port) {
-		DatabaseClientBuilder builder = newDatabaseClientBuilder()
-			.withDigestAuth(admin_user, admin_password)
-			.withPort(port);
-
-		try (DatabaseClient client = builder.build()) {
-			// Trying an eval instead of a "DELETE v1/search", which leads to intermittent errors on Jenkins involving
-			// a "clear" operation on a forest failing.
-			String count = client.newServerEval()
-				.xquery("let $uris := " +
-					"	for $uri in cts:uris((), (), cts:true-query()) " +
-					"	let $_ := xdmp:document-delete($uri) " +
-					"	return $uri " +
-					"return fn:count($uris)")
-				.evalAs(String.class);
-			LoggerFactory.getLogger(ConnectedRESTQA.class).info("Cleared database, deleting {} URIs", count);
+		try (DatabaseClient client = newDatabaseClientBuilder().withPort(port).build()) {
+			QueryManager mgr = client.newQueryManager();
+			mgr.delete(mgr.newDeleteDefinition());
+			// Clearing the database occasionally causes a forest to not be available for a moment or two when the tests
+			// are running on Jenkins. This leads to intermittent failures. Waiting is not guaranteed to avoid the
+			// error but simply hopes to minimize the chance of an intermittent failure.
+			waitFor(2000);
 		}
 	}
 
