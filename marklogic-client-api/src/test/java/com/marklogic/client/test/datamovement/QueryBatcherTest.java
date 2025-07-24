@@ -749,6 +749,7 @@ public class QueryBatcherTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testIssue658() throws Exception{
     QueryBatcher batcher =
       moveMgr.newQueryBatcher(new StructuredQueryBuilder().collection(qhbTestCollection))
@@ -759,7 +760,7 @@ public class QueryBatcherTest {
     AtomicInteger successCount = new AtomicInteger(0);
     AtomicReference<JobTicket> queryTicket = new AtomicReference<>(null);
 
-    Set uris = Collections.synchronizedSet(new HashSet());
+    Set<String> uris = Collections.synchronizedSet(new HashSet<>());
 
     batcher.onUrisReady(batch->{
       uris.addAll(Arrays.asList(batch.getItems()));

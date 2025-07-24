@@ -55,7 +55,7 @@ public class GSONHandleExample {
     String docId = "/example/"+filename;
 
     // parse the example file with GSON
-    JsonElement writeDocument = new JsonParser().parse(
+    JsonElement writeDocument = JsonParser.parseReader(
       new InputStreamReader(docStream, "UTF-8"));
 
     // write the document
@@ -99,7 +99,7 @@ public class GSONHandleExample {
     GSONHandle writeHandle = new GSONHandle();
 
     // parse the example file with GSON
-    JsonElement writeDocument = writeHandle.getParser().parse(
+    JsonElement writeDocument = JsonParser.parseReader(
       new InputStreamReader(docStream, "UTF-8"));
     writeHandle.set(writeDocument);
 

@@ -167,7 +167,7 @@ public class ApplyTransformTest {
     uris.add(collection + "/test3.txt");
 
     ServerTransform transform = new ServerTransform(transformName1);
-    List skippedUris = new ArrayList<>();
+    List<String> skippedUris = new ArrayList<>();
     StringBuilder failures = new StringBuilder();
     QueryBatcher batcher = moveMgr.newQueryBatcher(uris.iterator())
       .withBatchSize(1)

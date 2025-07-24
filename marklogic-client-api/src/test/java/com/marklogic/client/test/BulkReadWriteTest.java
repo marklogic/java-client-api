@@ -18,7 +18,9 @@ import org.w3c.dom.Document;
 import jakarta.xml.bind.JAXBException;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -735,6 +737,7 @@ public class BulkReadWriteTest {
     test_issue_623_body( Common.client.newJSONDocumentManager(), uris, "[\"$0\"]" );
   }
 
+	@SuppressWarnings("unchecked")
   private void test_issue_623_body(DocumentManager docMgr, List<String> uris, String regex) {
     // test with 0 args
     boolean writeSuccess = false;
@@ -750,9 +753,14 @@ public class BulkReadWriteTest {
     assertTrue(deleteSuccess);
 
     for ( String uri : uris ) {
-      String contents = URLEncoder.encode(uri).replaceFirst(".*", regex);
+		String contents;
+		try {
+			contents = URLEncoder.encode(uri, "UTF-8").replaceFirst(".*", regex);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 
-      // test with 1 arg
+		// test with 1 arg
       docMgr.write(uri, new StringHandle(contents));
       assertEquals(contents, docMgr.read(uri).nextContent(new StringHandle()).get());
       docMgr.delete(uri);
@@ -774,16 +782,17 @@ public class BulkReadWriteTest {
 
   @Test
   // https://github.com/marklogic/java-client-api/issues/759
-  public void test_issue_759() throws Exception {
+  public void test_issue_759() {
     DocumentManager docMgr = Common.client.newDocumentManager();
     String[] uris = new String[150];
     for ( int i=0; i < 102; i++ ) {
-      String mapDocId = "/" + Integer.toString(i);
+      String mapDocId = "/" + i;
       uris[i] = mapDocId;
     }
     docMgr.read(uris);
   }
 
+	@SuppressWarnings("unchecked")
   private void verifyDeleted(DocumentManager docMgr, String uri) {
     try {
       docMgr.read(uri, new StringHandle());

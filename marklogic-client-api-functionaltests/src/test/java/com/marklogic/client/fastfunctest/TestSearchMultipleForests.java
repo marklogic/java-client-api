@@ -7,6 +7,7 @@ package com.marklogic.client.fastfunctest;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
@@ -25,13 +26,13 @@ public class TestSearchMultipleForests extends AbstractFunctionalTest {
   private static String[] fNames = { "java-functest-1", "java-functest-2" };
 
   @Test
-  public void testSearchMultipleForest() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  public void testSearchMultipleForest()
   {
     System.out.println("Running testSearchMultipleForest");
     // connect the client
     DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
-    DocumentManager docMgr = client.newDocumentManager();
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
     StringHandle writeHandle1 = new StringHandle();
     for (int a = 1; a <= 10; a++) {
       writeHandle1.set("<root>hello</root>");

@@ -66,7 +66,7 @@ public class TestPointInTimeQuery extends AbstractFunctionalTest {
 		for (String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
 		}
-		DocumentManager docMgrIns = client.newJSONDocumentManager();
+		JSONDocumentManager docMgrIns = client.newJSONDocumentManager();
 		// create handle
 		JacksonHandle jacksonHandle = new JacksonHandle();
 

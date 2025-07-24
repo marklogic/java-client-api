@@ -94,6 +94,7 @@ public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
     assertTrue( art.getInventory() > 1000);
   }
 
+	@SuppressWarnings("unchecked")
   public void loadSimplePojos(PojoRepository products) {
     for (int i = 1; i < 111; i++) {
       if (i % 2 == 0) {

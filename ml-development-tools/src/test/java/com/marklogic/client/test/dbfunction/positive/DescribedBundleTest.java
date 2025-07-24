@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.assertTrue;
 
@@ -43,7 +42,7 @@ public class DescribedBundleTest {
 
       // the default doclet path doesn't seem to have the standard doclet from tools.jar in Java 8
       if (javaMajorVersion < 9) {
-         List<File> toolClassPath = getClassPath(ToolProvider.getSystemToolClassLoader());
+         List<File> toolClassPath = getClassPath(ClassLoader.getSystemClassLoader());
          List<File> docletClassPath = toList(fileManager.getLocation(DocumentationTool.Location.DOCLET_PATH));
          if (docletClassPath != null) {
             if (toolClassPath != null) {

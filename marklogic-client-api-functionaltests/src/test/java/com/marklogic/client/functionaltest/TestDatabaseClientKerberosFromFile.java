@@ -266,6 +266,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     assertTrue(art.getInventory() > 1000);
   }
 
+	@SuppressWarnings("unchecked")
   public void loadSimplePojos(PojoRepository products) {
     for (int i = 1; i < 111; i++) {
       if (i % 2 == 0) {
@@ -480,6 +481,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
   // This test is to verify GeoPair query works fine,
   // searching for lattitude and longitude of Reno
   @Test
+  @SuppressWarnings("unchecked")
   public void testPOJOGeoQuerySearchWithGeoPair() {
     System.out.println("Running testPOJOGeoQuerySearchWithGeoPair method");
 
@@ -682,6 +684,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testRollbackDeleteDocument() throws KeyManagementException, NoSuchAlgorithmException, ParserConfigurationException, SAXException, IOException
   {
     System.out.println("Running testRollbackDeleteDocument");

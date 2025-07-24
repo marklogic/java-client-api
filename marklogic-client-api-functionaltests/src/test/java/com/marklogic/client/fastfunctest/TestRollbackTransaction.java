@@ -27,7 +27,7 @@ import java.security.NoSuchAlgorithmException;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
-
+@SuppressWarnings("unchecked")
 public class TestRollbackTransaction extends AbstractFunctionalTest {
 
   @Test

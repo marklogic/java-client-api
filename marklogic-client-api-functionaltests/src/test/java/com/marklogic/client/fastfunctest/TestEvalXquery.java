@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResult.Type;
 import com.marklogic.client.eval.EvalResultIterator;
@@ -413,7 +414,7 @@ public class TestEvalXquery extends AbstractFunctionalTest {
       ish.set(inputStream);
       DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
       metadataHandle.getPermissions().add("test-eval", Capability.UPDATE, Capability.READ, Capability.EXECUTE);
-      DocumentManager dm = moduleClient.newDocumentManager();
+      TextDocumentManager dm = moduleClient.newTextDocumentManager();
       dm.write("/data/xquery-modules-with-diff-variable-types.xqy", metadataHandle, ish);
       DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
       InputSource is = new InputSource();

@@ -26,9 +26,7 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-
-
-
+@SuppressWarnings("unchecked")
 public class TestDocumentFormat extends AbstractFunctionalTest {
 
   @BeforeAll

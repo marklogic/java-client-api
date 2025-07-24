@@ -34,9 +34,10 @@ public class PlanExpressionTest {
         rowMgr = null;
    }
 
+	@SuppressWarnings("unchecked")
    private RowRecord redactTest(String testName, Map<String,Object> testRow, PlanExprCol... cols) {
        PlanBuilder.ModifyPlan plan =
-               p.fromLiterals(new Map[]{testRow})
+               p.fromLiterals(testRow)
                 .bind(p.colSeq(cols));
 
        RowSet<RowRecord> rowSet = rowMgr.resultRows(plan);

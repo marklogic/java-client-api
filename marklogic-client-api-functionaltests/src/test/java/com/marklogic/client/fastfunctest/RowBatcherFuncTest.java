@@ -68,8 +68,8 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
         PlanBuilder p = rowMgr.newPlanBuilder();
         PlanBuilder.ModifyPlan plan = p.fromView("opticFunctionalTest", "detail");
         rowsBatcherOfJsonObj.withBatchView(plan);
-        ArrayList<Double> exptdAmt = new ArrayList(Arrays.asList(10.01,20.02,30.03,40.04,50.05,60.06));
-        ArrayList<Double> resultAmt = new ArrayList<>();
+        List<Double> exptdAmt = Arrays.asList(10.01,20.02,30.03,40.04,50.05,60.06);
+        List<Double> resultAmt = new ArrayList<>();
 
         rowsBatcherOfJsonObj.onSuccess(e ->{
             JsonNode resDoc = e.getRowsDoc().get("rows");
@@ -117,8 +117,8 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
                         p.col( "color")
                 );
         rowsBatcherOfJsonObj.withBatchView(plan3);
-        ArrayList<Double> exptdAmt = new ArrayList(Arrays.asList(10.01,20.02,30.03,40.04,50.05,60.06));
-        ArrayList<Double> resultAmt = new ArrayList<>();
+        List<Double> exptdAmt = Arrays.asList(10.01,20.02,30.03,40.04,50.05,60.06);
+        List<Double> resultAmt = new ArrayList<>();
 
         rowsBatcherOfJsonObj.onSuccess(e ->{
             JsonNode resDoc = e.getRowsDoc().get("rows");
@@ -168,8 +168,8 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
                         p.as("divided", p.divide(p.col("amount"), p.multiply(p.col("amount"), p.viewCol("detail", "id"))))
                 );
         rowsBatcherOfJsonObj.withBatchView(plan3);
-        ArrayList<Double> exptdAmt = new ArrayList(Arrays.asList(11.01, 22.02, 31.03, 42.04, 51.05, 62.06));
-        ArrayList<Double> resultAmt = new ArrayList<>();
+        List<Double> exptdAmt = Arrays.asList(11.01, 22.02, 31.03, 42.04, 51.05, 62.06);
+		List<Double> resultAmt = new ArrayList<>();
 
         rowsBatcherOfJsonObj.onSuccess(e -> {
             JsonNode resDoc = e.getRowsDoc().get("rows");
@@ -259,9 +259,9 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
         PlanBuilder p = rowMgr.newPlanBuilder();
         PlanBuilder.ModifyPlan plan = p.fromView("opticFunctionalTest", "detail");
         rowsBatcherOfJsonObj.withBatchView(plan);
-        ArrayList<Double> exptdAmt = new ArrayList(Arrays.asList(10.01,20.02,30.03,40.04,50.05,60.06));
-        ArrayList<Double> resultAmt1 = new ArrayList<>();
-        ArrayList<Double> resultAmt2 = new ArrayList<>();
+        List<Double> exptdAmt = Arrays.asList(10.01,20.02,30.03,40.04,50.05,60.06);
+		List<Double> resultAmt1 = new ArrayList<>();
+		List<Double> resultAmt2 = new ArrayList<>();
         rowsBatcherOfJsonObj.onSuccess(e ->{
             JsonNode resDoc = e.getRowsDoc().get("rows");
 
@@ -364,8 +364,8 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
         PlanBuilder p = rowMgr.newPlanBuilder();
         PlanBuilder.ModifyPlan plan = p.fromView("opticFunctionalTest", "detail");
         rowsBatcherOfJsonObj.withBatchView(plan);
-        ArrayList<Double> exptdAmt = new ArrayList(Arrays.asList(10.01, 20.02, 30.03, 40.04, 50.05, 60.06));
-        ArrayList<Double> resultAmt1 = new ArrayList<>();
+        List<Double> exptdAmt = Arrays.asList(10.01, 20.02, 30.03, 40.04, 50.05, 60.06);
+		List<Double> resultAmt1 = new ArrayList<>();
 
         rowsBatcherOfJsonObj.onSuccess(e -> {
                 JsonNode resDoc = e.getRowsDoc().get("rows");
