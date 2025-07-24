@@ -19,7 +19,7 @@ dependencies {
 	testImplementation 'org.skyscreamer:jsonassert:1.5.3'
 	testImplementation 'org.slf4j:slf4j-api:2.0.17'
 	testImplementation 'commons-io:commons-io:2.17.0'
-	testImplementation 'com.squareup.okhttp3:okhttp:4.12.0'
+	testImplementation 'com.squareup.okhttp3:okhttp:5.1.0'
 	testImplementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
 	testImplementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
 	testImplementation "org.jdom:jdom2:2.0.6.1"
@@ -32,7 +32,7 @@ dependencies {
 		exclude module: "commons-lang3"
 	}
 
-	testImplementation 'ch.qos.logback:logback-classic:1.3.15'
+	testImplementation 'ch.qos.logback:logback-classic:1.5.18'
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
 	testImplementation 'org.xmlunit:xmlunit-legacy:2.10.0'
 
