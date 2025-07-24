@@ -743,7 +743,7 @@ public class QueryBatcherTest {
     qb.awaitCompletion();
     moveMgr.stopJob(qb);
 
-    assertTrue("".equals(errors.toString()));
+    assertTrue(errors.toString().isEmpty());
     assertEquals(uris.size(), deletedCount.get());
     assertEquals(0, queryMgr.search(collectionQuery, new SearchHandle()).getTotalResults());
   }
@@ -790,8 +790,8 @@ public class QueryBatcherTest {
   @Test
   public void maxUrisTestWithIteratorTask() {
       DataMovementManager dmManager = client.newDataMovementManager();
-      List<String> uris = new ArrayList<String>();
-      List<String> outputUris = Collections.synchronizedList(new ArrayList<String>());
+      List<String> uris = new ArrayList<>();
+      List<String> outputUris = Collections.synchronizedList(new ArrayList<>());
 
       class Output {
           AtomicInteger counter = new AtomicInteger(0);

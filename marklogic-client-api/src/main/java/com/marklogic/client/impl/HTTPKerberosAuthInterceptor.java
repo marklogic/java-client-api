@@ -130,6 +130,7 @@ public class HTTPKerberosAuthInterceptor implements Interceptor {
    *            need to authenticate
    * @return the HTTP Authorization header token
    */
+  @SuppressWarnings("unchecked")
   private String buildAuthorizationHeader(String serverPrincipalName) throws LoginException
   {
     /*

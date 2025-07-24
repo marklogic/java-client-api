@@ -1096,13 +1096,6 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
   }
 
-  protected void finalize() {
-    if (!isStoppedTrue()) {
-      logger.warn("QueryBatcher instance \"{}\" was never cleanly stopped.  You should call dataMovementManager.stopJob.",
-        getJobName());
-    }
-  }
-
   /**
    * A handler for rejected tasks that waits for the work queue to
    * become empty and then submits the rejected task

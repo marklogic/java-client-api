@@ -550,7 +550,7 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		assertFalse(isFailureCalled.get());
 		assertTrue(flag.get());
 
-		Set<String> urisList = Collections.synchronizedSet(new HashSet<String>());
+		Set<String> urisList = Collections.synchronizedSet(new HashSet<>());
 
 		assertTrue(urisList.isEmpty());
 		QueryBatcher queryBatcher = dmManager.newQueryBatcher(new StructuredQueryBuilder()
@@ -622,7 +622,7 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		Set<String> successUris = Collections.synchronizedSet(new HashSet<>());
 		Set<String> failedUris = Collections.synchronizedSet(new HashSet<>());
 
-		List<Throwable> failures = new Vector<>();
+		List<Throwable> failures = Collections.synchronizedList(new ArrayList<>());
 
 		ApplyTransformListener listener = new ApplyTransformListener()
 			.withTransform(transform)

@@ -53,6 +53,7 @@ public interface InputOutputCaller<I,O> extends IOEndpoint {
      * @param <O> the output handle
      * @return the InputOutputCaller instance for calling the endpoint.
      */
+	@SuppressWarnings("unchecked")
     static <IC,IR,OC,OR,I extends BufferableContentHandle<IC,IR>,O extends BufferableContentHandle<OC,OR>> InputOutputCaller<I,O> onHandles(
             DatabaseClient client, JSONWriteHandle apiDecl,
             I inputHandle, O outputHandle

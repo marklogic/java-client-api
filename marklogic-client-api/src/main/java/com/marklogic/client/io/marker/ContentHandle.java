@@ -35,6 +35,7 @@ public interface ContentHandle<C>
    *
    * @return  the class for the handled content
    */
+  @SuppressWarnings("unchecked")
   default Class<C> getContentClass() {
     C value = get();
     if (value != null)
@@ -46,6 +47,7 @@ public interface ContentHandle<C>
    * initializing the new handle with the same format and mime type.
    * @return  the new handle
    */
+  @SuppressWarnings("unchecked")
   default ContentHandle<C> newHandle() {
     ContentHandle<C> newHandle = null;
 
@@ -56,7 +58,7 @@ public interface ContentHandle<C>
       }
 
       if (newHandle == null) {
-        newHandle = getClass().newInstance();
+        newHandle = getClass().getDeclaredConstructor().newInstance();
       }
     } catch (Exception e) {
       throw new RuntimeException(

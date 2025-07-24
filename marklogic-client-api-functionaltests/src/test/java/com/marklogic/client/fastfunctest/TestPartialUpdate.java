@@ -96,7 +96,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     // Flip the boolean values for both screen types
     patchBldrBool.replaceValue("/resources/screen[@name=\"screen_small\"]", false);
-    patchBldrBool.replaceValue("/resources/screen[@name=\"adjust_view_bounds\"]", new Boolean(true));
+    patchBldrBool.replaceValue("/resources/screen[@name=\"adjust_view_bounds\"]", true);
 
     DocumentPatchHandle patchHandleBool = patchBldrBool.build();
     docMgr.patch(xmlDocId, patchHandleBool);
@@ -174,7 +174,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     // Replace original to false and modified to true.
     patchBldrBool.replaceValue("$.employees[5].original", false);
-    patchBldrBool.replaceValue("$.employees[1].modified", new Boolean(true));
+    patchBldrBool.replaceValue("$.employees[1].modified", true);
 
     DocumentPatchHandle patchHandleBool = patchBldrBool.build();
     docMgr.patch(docId, patchHandleBool);

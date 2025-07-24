@@ -157,6 +157,7 @@ public class JAXBHandle<C>
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Class<C> getContentClass() {
     if (contentClass != null)
       return contentClass;
@@ -164,10 +165,13 @@ public class JAXBHandle<C>
       return (Class<C>) content.getClass();
     return null;
   }
+
   @Override
   public JAXBHandle<C> newHandle() {
     return new JAXBHandle<>(context, getContentClass()).withMimetype(getMimetype());
   }
+
+	@SuppressWarnings("unchecked")
   @Override
   public JAXBHandle<C>[] newHandleArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);

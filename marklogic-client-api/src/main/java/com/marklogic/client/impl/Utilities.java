@@ -291,6 +291,8 @@ public final class Utilities {
 
     return buf.toString();
   }
+
+	@SuppressWarnings("unchecked")
   static public void setHandleContent(ContentHandle handle, Object content) {
     if (handle == null) {
       return;
@@ -413,6 +415,7 @@ public final class Utilities {
     return (value == null || value.isEmpty()) ? defaultValue : Long.parseLong(value);
   }
 
+	@SuppressWarnings("unchecked")
   public static void setHandleToString(AbstractReadHandle handle, String content) {
     if (!(handle instanceof BaseHandle)) {
       throw new IllegalArgumentException("cannot export with handle that doesn't extend base");

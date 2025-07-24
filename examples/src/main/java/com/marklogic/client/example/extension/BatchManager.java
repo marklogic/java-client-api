@@ -142,11 +142,6 @@ public class BatchManager extends ResourceManager {
       }
       items = null;
     }
-    @Override
-    protected void finalize() throws Throwable {
-      close();
-      super.finalize();
-    }
   }
 
   class InputItem {

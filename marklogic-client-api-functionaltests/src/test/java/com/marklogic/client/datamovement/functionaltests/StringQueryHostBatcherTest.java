@@ -255,7 +255,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         qb.awaitCompletion();
       } catch (Exception ex) {
         batchIllegalState.append(ex.getMessage());
-        System.out.println("Exceptions buffer from empty withCriteria : " + batchIllegalState.toString());
+        System.out.println("Exceptions buffer from empty withCriteria : " + batchIllegalState);
         assertTrue( batchIllegalState.toString().contains("Criteria cannot be an empty string"));
       }
       } catch (Exception e) {
@@ -649,7 +649,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       dmManager.startJob(queryBatcher1);
       queryBatcher1.awaitCompletion(1, TimeUnit.MINUTES);
 
-      System.out.println("Batch Results are : " + batchResults.toString());
+      System.out.println("Batch Results are : " + batchResults);
       System.out.println("File name is : " + filenames[4]);
       assertTrue( batchResults.toString().contains("cts-" + filenames[4]));
 
@@ -827,7 +827,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		  if (!batchFailResults.toString().isEmpty() && batchFailResults.toString().contains("Exceptions")) {
 		    // Write out and assert on query failures.
 		    System.out.println("Exception Buffer contents on Query Exceptions received from callback onQueryFailure");
-		    System.out.println(batchFailResults.toString());
+		    System.out.println(batchFailResults);
 		    // Remove this failure once there are no NPEs and doa asserts on various
 		    // counters in failure scenario.
 		    fail("Test failed due to exceptions");
@@ -873,7 +873,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
 		// Flush
 		batcher.flushAndWait();
-		StringBuffer batchFailResults = new StringBuffer();
+		StringBuilder batchFailResults = new StringBuilder();
 		String expectedStr = "Vannevar Bush wrote an article for The Atlantic Monthly";
 
 		QueryManager queryMgr = client.newQueryManager();
@@ -1905,7 +1905,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StructuredQueryDefinition queryRangedef = qb.range(qb.element("popularity"), "xs:int", Operator.GE, 4);
       QueryBatcher queryBatcher2 = dmManagerTmp.newQueryBatcher(queryRangedef);
       // StringBuilder batchRangeResults = new StringBuilder();
-      List<String> batchRangeResults = new ArrayList<String>();
+      List<String> batchRangeResults = new ArrayList<>();
       StringBuilder batchRangeFailResults = new StringBuilder();
 
       queryBatcher2.onUrisReady(batch -> {
@@ -1938,7 +1938,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       StructuredQueryDefinition valuequeyDef = qb.value(qb.elementAttribute(qb.element(new QName("http://cloudbank.com", "price")), qb.attribute("amt")), "0.1");
       QueryBatcher queryBatcher3 = dmManagerTmp.newQueryBatcher(valuequeyDef);
-      List<String> batchValueResults = new ArrayList<String>();
+      List<String> batchValueResults = new ArrayList<>();
       StringBuilder batchvalueFailResults = new StringBuilder();
 
       queryBatcher3.onUrisReady(batch -> {

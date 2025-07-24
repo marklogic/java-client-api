@@ -7,13 +7,13 @@ plugins {
 	id 'maven-publish'
 	id "com.gradle.plugin-publish" version "1.2.1"
 	id "java-gradle-plugin"
-	id 'org.jetbrains.kotlin.jvm' version '1.9.24'
+	id 'org.jetbrains.kotlin.jvm' version '2.1.0'
 }
 
 dependencies {
 	compileOnly gradleApi()
 	implementation project(':marklogic-client-api')
-	implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.24'
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.0'
 	implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
 	implementation 'com.networknt:json-schema-validator:1.0.88'
 

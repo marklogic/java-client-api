@@ -333,7 +333,7 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		querydef.setCriteria("k and v");
 
 		AtomicInteger successDocs = new AtomicInteger();
-		StringBuffer failures = new StringBuffer();
+		StringBuilder failures = new StringBuilder();
 
 		QueryBatcher deleteBatcher = dmManager.newQueryBatcher(querydef)
 				.withBatchSize(5)

@@ -103,6 +103,7 @@ abstract class IOEndpointImpl<I,O> implements IOEndpoint {
         return new CallContextImpl<>(this, legacyContext);
     }
 
+	@SuppressWarnings("unchecked")
     CallContextImpl<I,O>[] checkAllowedArgs(IOEndpoint.CallContext[] callCtxts) {
         if (callCtxts == null || callCtxts.length ==0)
             throw new IllegalArgumentException("null or empty contexts for call");
@@ -112,6 +113,8 @@ abstract class IOEndpointImpl<I,O> implements IOEndpoint {
         }
         return contexts;
     }
+
+	@SuppressWarnings("unchecked")
     CallContextImpl<I,O> checkAllowedArgs(CallContext callCtxt) {
         if (!(callCtxt instanceof CallContextImpl)) {
             throw new IllegalArgumentException("Unknown implementation of call context");
