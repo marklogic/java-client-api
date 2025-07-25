@@ -1220,7 +1220,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   }
 
   @Test
-  public void testServerXQueryTransform() throws IOException, ParserConfigurationException, SAXException, TransformerException, InterruptedException, XPathExpressionException
+  public void testServerXQueryTransform() throws InterruptedException, XPathExpressionException
   {
     System.out.println("Running testServerXQueryTransform");
     try {
@@ -1272,8 +1272,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		batcher.flushAndWait();
 		dmManager.stopJob(batcher);
 
-		StringBuffer batchResults = new StringBuffer();
-		StringBuffer batchFailResults = new StringBuffer();
+		List<String> uris = new ArrayList<>();
 
 		// create query def
 		QueryManager queryMgr = client.newQueryManager();
@@ -1285,56 +1284,34 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		queryBatcher1.withBatchSize(5);
 
 		queryBatcher1.onUrisReady(batch -> {
-		  for (String str : batch.getItems()) {
-		    batchResults.append(str);
-		    batchResults.append("|");
+		  for (String item : batch.getItems()) {
+			  uris.add(item);
 		  }
 		});
-		queryBatcher1.onQueryFailure(throwable -> {
-		  System.out.println("Exceptions thrown from callback onQueryFailure");
-		  throwable.printStackTrace();
-		  batchFailResults.append("Test has Exceptions");
-		});
 		dmManager.startJob(queryBatcher1);
-		queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);
-        while (!queryBatcher1.isStopped()) {
-        // Do nothing. Wait for batcher to complete.
-        }
+		queryBatcher1.awaitCompletion();
 
-		if (queryBatcher1.isStopped()) {
-		  // Verify the batch results now.
-		  String[] res = batchResults.toString().split("\\|");
-		  assertEquals(res.length, 20);
+	  // Verify the batch results now.
+		assertEquals(20, uris.size());
 
-		  // Get a random URI, since the URIs returned are not ordered. Get the 3rd
-		  // URI.
-		  assertTrue( res[2].contains("foo") || res[2].contains("bar"));
+	  // Get a random URI, since the URIs returned are not ordered. Get the 3rd
+	  // URI.
+		String thirdUri = uris.get(2);
+	  assertTrue( thirdUri.contains("foo") || thirdUri.contains("bar"), "Unexpected URI: " + thirdUri);
 
-		  // do a lookup with the first URI using the client to verify transforms
-		  // are done.
-		  DOMHandle readHandle = readDocumentUsingDOMHandle(client, res[0], "XML");
-		  String contents = readHandle.evaluateXPath("/foo/text()", String.class);
-		  String attribute = readHandle.evaluateXPath("/foo/@Lang", String.class);
-		  // Verify that the contents are of xmlStr1 or xmlStr2.
-
-		  System.out.println("Contents are : " + contents);
-		  System.out.println("Contents are : " + attribute);
-		  assertTrue( xmlStr1.contains(contents) || xmlStr2.contains(contents));
-		  assertTrue( attribute.equalsIgnoreCase("English"));
-		}
-		else {
-			fail("testServerXQueryTransform method failed");
-		}
-	} catch (Exception e) {
-		e.printStackTrace();
-		fail("testServerXQueryTransform method failed");
+	  // do a lookup with the first URI using the client to verify transforms
+	  // are done.
+	  DOMHandle readHandle = readDocumentUsingDOMHandle(client, uris.get(0), "XML");
+	  String contents = readHandle.evaluateXPath("/foo/text()", String.class);
+	  String attribute = readHandle.evaluateXPath("/foo/@Lang", String.class);
+	  // Verify that the contents are of xmlStr1 or xmlStr2.
+	  System.out.println("Contents are : " + contents);
+	  System.out.println("Contents are : " + attribute);
+	  assertTrue( xmlStr1.contains(contents) || xmlStr2.contains(contents));
+	  assertTrue( attribute.equalsIgnoreCase("English"));
 	}
     finally {
-    	try {
-			clearDB();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		clearDB();
     }
   }
 
