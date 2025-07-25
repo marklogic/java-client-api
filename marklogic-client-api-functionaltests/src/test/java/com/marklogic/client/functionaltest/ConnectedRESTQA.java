@@ -13,6 +13,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClient.ConnectionType;
 import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.impl.SSLUtil;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -317,10 +318,15 @@ public abstract class ConnectedRESTQA {
 		try (DatabaseClient client = newDatabaseClientBuilder().withPort(port).build()) {
 			QueryManager mgr = client.newQueryManager();
 			mgr.delete(mgr.newDeleteDefinition());
-			// Clearing the database occasionally causes a forest to not be available for a moment or two when the tests
-			// are running on Jenkins. This leads to intermittent failures. Waiting is not guaranteed to avoid the
-			// error but simply hopes to minimize the chance of an intermittent failure.
-			waitFor(2000);
+		} catch (FailedRequestException ex) {
+			LoggerFactory.getLogger(ConnectedRESTQA.class).warn("Unable to clear database. This intermittently " +
+				"happens while running tests on Jenkins, typically with a server error message such as: " +
+				"XDMP-FORESTNOT: Forest StringQueryHostBatcherDB-1 not available: XDMP-FORESTERR: " +
+				"Error in clear of forest StringQueryHostBatcherDB-1: SVC-FILREN: File rename error: " +
+				"rename '/var/opt/MarkLogic/TmpForests/StringQueryHostBatcherDB-1/Journals to " +
+				"/var/opt/MarkLogic/Forests/StringQueryHostBatcherDB-1/Journals': No such file or directory. " +
+				"This error is caught and logged in the hopes that proceeding tests will succeed even though " +
+				"this clearDB call failed.", ex);
 		}
 	}
 
@@ -814,7 +820,7 @@ public abstract class ConnectedRESTQA {
 	 * Server.
 	 * @throws Exception
 	 */
-	public static void clearDB() throws Exception {
+	public static void clearDB() {
 		clearDB(getRestServerPort());
 	}
 
