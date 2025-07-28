@@ -4,7 +4,7 @@ buildscript {
 		mavenCentral()
 	}
 	dependencies {
-		classpath "com.marklogic:ml-development-tools:7.1.0"
+		classpath "com.marklogic:ml-development-tools:7.2.0"
 	}
 }
 
@@ -23,7 +23,7 @@ repositories {
 }
 
 dependencies {
-	implementation 'com.marklogic:marklogic-client-api:7.1.0'
+	implementation 'com.marklogic:marklogic-client-api:7.2.0'
 }
 
 tasks.register("testFullPath", com.marklogic.client.tools.gradle.EndpointProxiesGenTask) {
