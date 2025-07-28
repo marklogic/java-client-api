@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ */
 /**
  * The goal of this package (sometimes referred to as "the pojo facade" is to simplify working
  * with custom Plain Old Java Objects (pojos) without hassling with persistence details.
