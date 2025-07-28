@@ -3,7 +3,6 @@
  */
 package com.marklogic.client.test;
 
-import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.*;
@@ -12,10 +11,12 @@ import com.marklogic.client.io.*;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
+import com.marklogic.client.test.junit5.RequiresML12;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -184,6 +185,8 @@ public class GenericDocumentTest {
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @Test
+  // Requires MarkLogic 12 now that 12 nightly has been fixed to allow for spaces in URIs.
+  @ExtendWith(RequiresML12.class)
   public void testUrisWithSpaces() {
     DocumentManager docMgr = Common.client.newDocumentManager();
 
@@ -204,25 +207,17 @@ public class GenericDocumentTest {
 
     }
 
-    String[] urisWithSpaces = new String[] { "/a b", "/uri with spaces" };
-    for (String testUri : urisWithSpaces) {
-      try {
-        StringHandle result = new StringHandle();   // should be able to read these, with 404
-        docMgr.read(testUri, result);
-      } catch (ResourceNotFoundException e) {
-        //pass
-      }
-      try {
-        String contents = "<a>" + testUri + "</a>";
-        docMgr.write(testUri, new StringHandle(contents));
-        fail("Server accepted URI with a space in it");
-      } catch (FailedRequestException e) {
-        // pass   cannot write to uris with spaces.
-      }
-    }
-    for (String testUri : urisWithSpaces) {
-      docMgr.delete(testUri);		// can delete with 204.
-    }
+	  final String[] urisWithSpaces = new String[]{"/a b", "/uri with spaces"};
+	  for (String testUri : urisWithSpaces) {
+		  String contents = "<a>" + testUri + "</a>";
+		  docMgr.write(testUri, new StringHandle(contents));
+		  DocumentDescriptor descriptor = docMgr.exists(testUri);
+		  assertEquals(testUri, descriptor.getUri(), "MarkLogic 12 now allows for URIs to have spaces in them.");
+	  }
+
+	  for (String testUri : urisWithSpaces) {
+		  docMgr.delete(testUri);
+	  }
   }
 
 

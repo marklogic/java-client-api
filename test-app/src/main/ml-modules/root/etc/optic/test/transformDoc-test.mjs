@@ -5,4 +5,4 @@ const result = {
     "yourColumnValue": external.myColumnParam,
     "theDoc": external.doc
 }
-result
+result;

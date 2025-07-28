@@ -1,26 +1,25 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.example.cookbook.datamovement;
+
+import com.fasterxml.jackson.core.JsonParser.Feature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.ExtractRowsViaTemplateListener;
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.example.cookbook.datamovement.Employee.Gender;
+import com.marklogic.client.example.cookbook.datamovement.Employee.Salary;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
-
-import com.fasterxml.jackson.core.JsonParser.Feature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.marklogic.client.datamovement.ExtractRowsViaTemplateListener;
-import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.example.cookbook.datamovement.Employee.Gender;
-import com.marklogic.client.example.cookbook.datamovement.Employee.Salary;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
 
 /**
  * This cook book example queries the Marklogic database for documents in the
@@ -38,12 +37,8 @@ public class ExtractRowsViaTemplate {
   private String templateUri = "employees.tde";
   private static DatabaseClient client = DatabaseClientSingleton.get();
 
-  public static final JSONDocumentManager docMgr =
-      client.newJSONDocumentManager();
-  public static final DataMovementManager moveMgr =
-      client.newDataMovementManager();
-  private static final SimpleDateFormat df =
-    new SimpleDateFormat("yyyy-MM-dd");
+  public static final JSONDocumentManager docMgr = client.newJSONDocumentManager();
+  public static final DataMovementManager moveMgr = client.newDataMovementManager();
 
   public static void main(String[] args) throws ParseException, IOException {
     new ExtractRowsViaTemplate().run();
@@ -118,7 +113,7 @@ public class ExtractRowsViaTemplate {
       Employee newEmployee = new Employee();
       newEmployee.setEmployeeId(Integer.parseInt(employee[0]));
       GregorianCalendar bday = new GregorianCalendar();
-      bday.setTime(df.parse(employee[1]));
+      bday.setTime(new SimpleDateFormat("yyyy-MM-dd").parse(employee[1]));
       newEmployee.setBirthDate(bday);
       newEmployee.setFirstName(employee[2]);
       newEmployee.setLastName(employee[3]);

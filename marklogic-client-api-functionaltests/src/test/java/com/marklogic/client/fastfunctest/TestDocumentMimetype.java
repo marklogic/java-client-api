@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
+@SuppressWarnings("unchecked")
 public class TestDocumentMimetype extends AbstractFunctionalTest {
 
   @Test

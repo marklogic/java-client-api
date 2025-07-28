@@ -1,6 +1,6 @@
 MarkLogic® for Java Client
 
-Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
+Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 
 To the extent required by the applicable open-source license, a complete machine-readable copy of the source code
 corresponding to such code is available upon request. This offer is valid to anyone in receipt of this information and
@@ -10,8 +10,8 @@ product and version for which you are requesting source code.
 
 Third Party Notices
 
-jackson-databind 2.17.2 (Apache-2.0)
-jackson-dataformat-csv 2.17.2 (Apache-2.0)
+jackson-databind 2.19.0 (Apache-2.0)
+jackson-dataformat-csv 2.19.0 (Apache-2.0)
 okhttp 4.12.0 (Apache-2.0)
 logging-interceptor 4.12.0 (Apache-2.0)
 jakarta.mail 2.0.1 (EPL-1.0)
@@ -19,23 +19,23 @@ okhttp-digest 2.7 (Apache-2.0)
 jakarta.xml.bind-api 3.0.1 (EPL-1.0)
 javax.ws.rs-api 2.1.1 (CDDL-1.1)
 jaxb-runtime 3.0.2 (CDDL-1.1)
-slf4j-api 2.0.16 (Apache-2.0)
+slf4j-api 2.0.17 (Apache-2.0)
 
 Common Licenses
 
 Apache License 2.0 (Apache-2.0)
-Common Development and Distribution License 1.1  (CDDL-1.1)
-Eclipse Public License 1.0  (EPL-1.0)
+Common Development and Distribution License 1.1 (CDDL-1.1)
+Eclipse Public License 1.0 (EPL-1.0)
 
 Third-Party Components
 
-The following is a list of the third-party components used by the MarkLogic® for Java Client 7.1.0 (last updated January 6, 2025):
+The following is a list of the third-party components used by the MarkLogic® for Java Client 7.2.0 (last updated July 21, 2025):
 
-jackson-databind 2.17.2 (Apache-2.0)
+jackson-databind 2.19.0 (Apache-2.0)
 https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/
 For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-jackson-dataformat-csv 2.17.2 (Apache-2.0)
+jackson-dataformat-csv 2.19.0 (Apache-2.0)
 https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-csv/
 For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
@@ -67,13 +67,13 @@ jaxb-runtime 3.0.2 (Apache-2.0)
 https://repo1.maven.org/maven2/org/glassfish/jaxb/jaxb-runtime/
 For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-slf4j-api 2.0.16 (Apache-2.0)
+slf4j-api 2.0.17 (Apache-2.0)
 https://repo1.maven.org/maven2/org/slf4j/slf4j-api/
 For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
 Common Licenses
 
-The following is a list of the third-party components used by the MarkLogic® for Java Client 7.1.0 (last updated January 6, 2025):
+The following is a list of the third-party components used by the MarkLogic® for Java Client 7.2.0 (last updated July 21, 2025):
 
 Apache License 2.0 (Apache-2.0)
 https://spdx.org/licenses/Apache-2.0.html

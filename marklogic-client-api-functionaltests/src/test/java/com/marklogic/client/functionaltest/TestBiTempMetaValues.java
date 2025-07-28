@@ -109,27 +109,12 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
 
-    // Delete database first. Otherwise axis and collection cannot be deleted
-    cleanupRESTServer(dbName, fNames);
+    cleanupRESTServer(dbName);
     deleteRESTUser("eval-bitemp-meta-user");
     deleteRESTUser("eval-readeruser");
     deleteUserRole("test-eval-bitemp");
     deleteUserRole("replaceRoleTest");
-
-    // Temporal collection needs to be deleted before temporal axis associated
-    // with it can be deleted
-    ConnectedRESTQA.deleteElementRangeIndexTemporalCollection(dbName,
-        temporalLsqtCollectionName);
-    ConnectedRESTQA.deleteElementRangeIndexTemporalCollection(dbName,
-        temporalCollectionName);
-    ConnectedRESTQA.deleteElementRangeIndexTemporalCollection(dbName,
-        bulktemporalCollectionName);
-    /*ConnectedRESTQA.deleteElementRangeIndexTemporalAxis(dbName,
-        axisValidName);
-    ConnectedRESTQA.deleteElementRangeIndexTemporalAxis(dbName,
-        axisSystemName);*/
     deleteDB(schemadbName);
-    deleteForest(schemafNames[0]);
   }
 
   @AfterEach

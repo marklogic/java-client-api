@@ -1,20 +1,14 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.example.cookbook.datamovement;
 
-import java.util.Calendar;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import java.util.Calendar;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class Employee {
-  private static Logger logger = LoggerFactory.getLogger(Employee.class);
   private int employeeId;
   private Calendar birthDate;
   private String firstName;
@@ -92,34 +86,6 @@ public class Employee {
     this.titles = titles;
   }
 
-  public boolean equals(Employee e) {
-    if ( e == null ) return false;
-    if ( e == this ) return true;
-    return new EqualsBuilder()
-      .append(getEmployeeId(), e.getEmployeeId())
-      .append(getBirthDate(), e.getBirthDate())
-      .append(getFirstName(), e.getFirstName())
-      .append(getLastName(), e.getLastName())
-      .append(getGender(), e.getGender())
-      .append(getHireDate(), e.getHireDate())
-      .append(getSalaries(), e.getSalaries())
-      .append(getTitles(), e.getTitles())
-      .isEquals();
-  }
-
-  public int hashCode() {
-    return new HashCodeBuilder(23, 43)
-      .append(getEmployeeId())
-      .append(getBirthDate())
-      .append(getFirstName())
-      .append(getLastName())
-      .append(getGender().toString())
-      .append(getHireDate())
-      .append(getSalaries())
-      .append(getTitles())
-      .toHashCode();
-  }
-
   @JsonIgnoreProperties(ignoreUnknown=true)
   public static class Salary {
     private int salary;
@@ -148,26 +114,6 @@ public class Employee {
 
     public void setToDate(Calendar toDate) {
         this.toDate = toDate;
-    }
-
-    public boolean equals(Object obj) {
-      if ( obj == null ) return false;
-      if ( obj == this ) return true;
-      if ( ! (obj instanceof Salary) ) return false;
-      Salary s = (Salary) obj;
-      return new EqualsBuilder()
-        .append(getSalary(), s.getSalary())
-        .append(getFromDate(), s.getFromDate())
-        .append(getToDate(), s.getToDate())
-        .isEquals();
-    }
-
-    public int hashCode() {
-      return new HashCodeBuilder(19, 41)
-        .append(getSalary())
-        .append(getFromDate())
-        .append(getToDate())
-        .toHashCode();
     }
   }
 
@@ -199,26 +145,6 @@ public class Employee {
 
     public void setToDate(Calendar toDate) {
         this.toDate = toDate;
-    }
-
-    public boolean equals(Object obj) {
-      if ( obj == null ) return false;
-      if ( obj == this ) return true;
-      if ( ! (obj instanceof Title) ) return false;
-      Title t = (Title) obj;
-      return new EqualsBuilder()
-        .append(getTitle(), t.getTitle())
-        .append(getFromDate(), t.getFromDate())
-        .append(getToDate(), t.getToDate())
-        .isEquals();
-    }
-
-    public int hashCode() {
-      return new HashCodeBuilder(17, 37)
-        .append(getTitle())
-        .append(getFromDate())
-        .append(getToDate())
-        .toHashCode();
     }
   }
 }

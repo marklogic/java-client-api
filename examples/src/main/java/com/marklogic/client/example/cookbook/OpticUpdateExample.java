@@ -30,17 +30,17 @@ public class OpticUpdateExample {
         loadZipCodes(client);
 
         // Run an Optic Update plan for writing documents that contain data joined from the zip code view
-        RowSet<RowRecord> rows = runPlanToWriteDocuments(client.newRowManager());
-
-        // Print the results from the returned set of rows. Each row corresponds to a document that was written to
-        // the database associated with the DatabaseClient.
-        rows.forEach(row -> {
-            String uri = row.getString("uri");
-            JsonNode doc = row.getContainer("doc");
-            System.out.println("Wrote " + uri + ": " + doc);
-        });
-
-        client.release();
+        try (RowSet<RowRecord> rows = runPlanToWriteDocuments(client.newRowManager())) {
+			// Print the results from the returned set of rows. Each row corresponds to a document that was written to
+			// the database associated with the DatabaseClient.
+			rows.forEach(row -> {
+				String uri = row.getString("uri");
+				JsonNode doc = row.getContainer("doc");
+				System.out.println("Wrote " + uri + ": " + doc);
+			});
+		} finally {
+			client.release();
+		}
     }
 
     /**

@@ -472,6 +472,7 @@ public class TestPOJOReadWrite1 extends AbstractFunctionalTest {
     assertEquals( 1, p.getTotalPages());
   }
 
+	@SuppressWarnings("unchecked")
   public void loadSimplePojos(PojoRepository rangeQueryRepos) {
     for (int i = 1; i < 111; i++) {
       if (i % 2 == 0) {

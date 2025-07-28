@@ -11,13 +11,8 @@ import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.DefaultHttpClient;
+import com.marklogic.mgmt.ManageClient;
+import com.marklogic.mgmt.ManageConfig;
 import org.junit.jupiter.api.*;
 
 import java.io.BufferedReader;
@@ -98,14 +93,14 @@ public class WBFailover extends BasicJavaClientREST {
 				}
 				props.put("database", dbName);
 				props.put("state", "attach");
-				postRequest(null, props, "/manage/v2/forests/" + dbName + "-" + (i + 1));
+				postRequest(props, "/manage/v2/forests/" + dbName + "-" + (i + 1));
 			}
 			props = new HashMap<String, String>();
 			props.put("journaling", "strict");
 			changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
 			associateRESTServerWithDB(server, dbName);
 			if (IsSecurityEnabled()) {
-				enableSecurityOnRESTServer(server, dbName);
+				enableSecurityOnRESTServer(server);
 			}
 			// StringHandle
 			stringTriple = "<top-song xmlns=\"http://marklogic.com/MLU/top-songs\"> <!--Copyright (c) 2010 Mark Logic Corporation. Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.2 or any later version published bythe Free Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included in the section entitled \"GNU Free Documentation License.\" Content derived from http://en.wikipedia.org/w/index.php?title=Blue_Champagne_(song)&action=edit&redlink=1 Modified in February 2010 by Mark Logic Corporation under the terms of the GNU Free Documentation License.-->  <title href=\"http://en.wikipedia.org/w/index.php?title=Blue_Champagne_(song)&amp;action=edit&amp;redlink=1\" xmlns:ts=\"http://marklogic.com/MLU/top-songs\">Blue Champagne</title>  <artist xmlns:ts=\"http://marklogic.com/MLU/top-songs\"/>  <weeks last=\"1941-09-27\">    <week>1941-09-27</week>  </weeks>  <descr/></top-song>";
@@ -187,15 +182,6 @@ public class WBFailover extends BasicJavaClientREST {
 		// Perform the setup on multiple nodes only.
 		if (hostNames.length > 1) {
 			associateRESTServerWithDB(server, "Documents");
-			for (int i = 0; i < hostNames.length; i++) {
-				System.out.println(dbName + "-" + (i + 1));
-				detachForest(dbName, dbName + "-" + (i + 1));
-				if (i != 0) {
-					removeReplica(dbName + "-" + (i + 1));
-					deleteForest(dbName + "-" + (i + 1) + "-replica");
-				}
-				deleteForest(dbName + "-" + (i + 1));
-			}
 			deleteDB(dbName);
 		} else {
 			System.out.println("Test skipped -  tearDownAfterClass");
@@ -778,22 +764,11 @@ public class WBFailover extends BasicJavaClientREST {
 
 	private boolean isRunning(String host) {
 		try {
-
-			DefaultHttpClient client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host, 7997),
-					new UsernamePasswordCredentials("admin", "admin"));
-
-			HttpGet get = new HttpGet("http://" + host + ":7997?format=json");
-			HttpResponse response = client.execute(get);
-			ResponseHandler<String> handler = new BasicResponseHandler();
-			String body = handler.handleResponse(response);
-			if (body.contains("Healthy")) {
-				return true;
-			}
-
+			ManageClient client = new ManageClient(new ManageConfig(host, 7997, getAdminUser(), getAdminPassword()));
+			String output = client.getJson("?format=json");
+			return output.contains("healthy");
 		} catch (Exception e) {
 			return false;
 		}
-		return false;
 	}
 }

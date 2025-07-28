@@ -1,11 +1,12 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
@@ -18,7 +19,6 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.util.StreamReaderDelegate;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stax.StAXSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
@@ -94,7 +94,8 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
             throw new IllegalArgumentException("Input cannot be null");
         }
 
-        XMLStreamReader reader = XMLInputFactory.newFactory().createXMLStreamReader(input);
+		XMLInputFactory factory = XmlFactories.makeNewInputFactory();
+        XMLStreamReader reader = factory.createXMLStreamReader(input);
         return split(reader);
     }
 
@@ -123,7 +124,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
             throw new IllegalArgumentException("Input cannot be null");
         }
 
-        XMLStreamReader reader = XMLInputFactory.newFactory().createXMLStreamReader(input);
+        XMLStreamReader reader = XmlFactories.makeNewInputFactory().createXMLStreamReader(input);
         return splitWriteOperations(reader, splitFilename);
     }
 
@@ -207,7 +208,6 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
      * @param <T> The type of the handle used for each split
      */
     static public abstract class Visitor<T extends XMLWriteHandle>   {
-        private TransformerFactory transformerFactory = TransformerFactory.newInstance();
         private Transformer transformer;
 
         /**
@@ -266,7 +266,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
 
             try {
                 if (transformer == null) {
-                    transformer = transformerFactory.newTransformer();
+                    transformer = XmlFactories.makeNewTransformerFactory().newTransformer();
                 }
 
                 StAXSource stAXSrouce = new StAXSource(reader);
@@ -483,6 +483,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
             super(xmlSplitter, input);
         }
         @Override
+		@SuppressWarnings("unchecked")
         public boolean tryAdvance(Consumer<? super DocumentWriteOperation> action) {
 
             T handle = (T) getNextHandle();

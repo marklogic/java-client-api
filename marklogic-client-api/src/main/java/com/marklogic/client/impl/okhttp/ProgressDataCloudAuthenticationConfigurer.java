@@ -5,29 +5,24 @@ package com.marklogic.client.impl.okhttp;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marklogic.client.DatabaseClientFactory.MarkLogicCloudAuthContext;
-import okhttp3.Call;
-import okhttp3.FormBody;
-import okhttp3.HttpUrl;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.ProgressDataCloudException;
+import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer<MarkLogicCloudAuthContext> {
+class ProgressDataCloudAuthenticationConfigurer implements AuthenticationConfigurer<DatabaseClientFactory.ProgressDataCloudAuthContext> {
 
-	private String host;
+	private final String host;
 
-	MarkLogicCloudAuthenticationConfigurer(String host) {
+	ProgressDataCloudAuthenticationConfigurer(String host) {
 		this.host = host;
 	}
 
 	@Override
-	public void configureAuthentication(OkHttpClient.Builder clientBuilder, MarkLogicCloudAuthContext securityContext) {
+	public void configureAuthentication(OkHttpClient.Builder clientBuilder, DatabaseClientFactory.ProgressDataCloudAuthContext securityContext) {
 		final String apiKey = securityContext.getApiKey();
 		if (apiKey == null || apiKey.trim().length() < 1) {
 			throw new IllegalArgumentException("No API key provided");
@@ -44,16 +39,16 @@ class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer
 	}
 
 	/**
-	 * Knows how to call the "/token" endpoint in MarkLogic Cloud to generate a new token based on the
+	 * Knows how to call the "/token" endpoint in Progress Data Cloud to generate a new token based on the
 	 * user-provided API key.
 	 */
 	static class DefaultTokenGenerator implements TokenGenerator {
 
 		private final static Logger logger = LoggerFactory.getLogger(DefaultTokenGenerator.class);
-		private String host;
-		private MarkLogicCloudAuthContext securityContext;
+		private final String host;
+		private final DatabaseClientFactory.ProgressDataCloudAuthContext securityContext;
 
-		public DefaultTokenGenerator(String host, MarkLogicCloudAuthContext securityContext) {
+		public DefaultTokenGenerator(String host, DatabaseClientFactory.ProgressDataCloudAuthContext securityContext) {
 			this.host = host;
 			this.securityContext = securityContext;
 		}
@@ -71,7 +66,7 @@ class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer
 			final HttpUrl tokenUrl = buildTokenUrl();
 			OkHttpClient.Builder clientBuilder = OkHttpUtil.newClientBuilder();
 			// Current assumption is that the SSL config provided for connecting to MarkLogic should also be applicable
-			// for connecting to MarkLogic Cloud's "/token" endpoint.
+			// for connecting to Progress Data Cloud's "/token" endpoint.
 			OkHttpUtil.configureSocketFactory(clientBuilder, securityContext.getSSLContext(), securityContext.getTrustManager());
 			OkHttpUtil.configureHostnameVerifier(clientBuilder, securityContext.getSSLHostnameVerifier());
 
@@ -89,13 +84,13 @@ class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer
 			try {
 				return call.execute();
 			} catch (IOException e) {
-				throw new RuntimeException(String.format("Unable to call token endpoint at %s; cause: %s",
+				throw new ProgressDataCloudException(String.format("Unable to call token endpoint at %s; cause: %s",
 					tokenUrl, e.getMessage(), e));
 			}
 		}
 
 		protected HttpUrl buildTokenUrl() {
-			// For the near future, it's guaranteed that https and 443 will be required for connecting to MarkLogic Cloud,
+			// For the near future, it's guaranteed that https and 443 will be required for connecting to Progress Data Cloud,
 			// so providing the ability to customize this would be misleading.
 			HttpUrl.Builder builder = new HttpUrl.Builder()
 				.scheme("https")
@@ -124,10 +119,10 @@ class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer
 				responseBody = response.body().string();
 				payload = new ObjectMapper().readTree(responseBody);
 			} catch (IOException ex) {
-				throw new RuntimeException("Unable to get access token; response: " + responseBody, ex);
+				throw new ProgressDataCloudException("Unable to get access token; response: " + responseBody, ex);
 			}
 			if (!payload.has("access_token")) {
-				throw new RuntimeException("Unable to get access token; unexpected JSON response: " + payload);
+				throw new ProgressDataCloudException("Unable to get access token; unexpected JSON response: " + payload);
 			}
 			return payload.get("access_token").asText();
 		}
@@ -140,7 +135,7 @@ class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer
 
 		private final static Logger logger = LoggerFactory.getLogger(TokenAuthenticationInterceptor.class);
 
-		private TokenGenerator tokenGenerator;
+		private final TokenGenerator tokenGenerator;
 		private String token;
 
 		public TokenAuthenticationInterceptor(TokenGenerator tokenGenerator) {
@@ -150,13 +145,18 @@ class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer
 
 		@Override
 		public Response intercept(Chain chain) throws IOException {
-			Response response = chain.proceed(addTokenToRequest(chain));
+			Request.Builder builder = chain.request().newBuilder();
+			addTokenToRequest(builder);
+			Response response = chain.proceed(builder.build());
 			if (response.code() == 401) {
 				logger.info("Received 401; will generate new token if necessary and retry request");
 				response.close();
 				final String currentToken = this.token;
 				generateNewTokenIfNecessary(currentToken);
-				response = chain.proceed(addTokenToRequest(chain));
+
+				builder = chain.request().newBuilder();
+				addTokenToRequest(builder);
+				response = chain.proceed(builder.build());
 			}
 			return response;
 		}
@@ -183,10 +183,8 @@ class MarkLogicCloudAuthenticationConfigurer implements AuthenticationConfigurer
 			}
 		}
 
-		private Request addTokenToRequest(Chain chain) {
-			return chain.request().newBuilder()
-				.header("Authorization", "Bearer " + token)
-				.build();
+		private synchronized Request.Builder addTokenToRequest(Request.Builder builder) {
+			return builder.header("Authorization", String.format("Bearer %s", this.token));
 		}
 	}
 }

@@ -10,7 +10,10 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.MarkLogicVersion;
 import com.marklogic.client.test.junit5.RequiresML11;
+import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -24,6 +27,21 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(RequiresML11.class)
 public class TransformDocTest extends AbstractOpticUpdateTest {
 
+	private String transformDocModule;
+	private String transformMultipleDocsModule;
+
+	@BeforeEach
+	void beforeEach() {
+		boolean is12OrHigher = Common.getMarkLogicVersion().getMajor() >= 12;
+		if (is12OrHigher) {
+			transformDocModule = "/etc/optic/test/transformDoc-test-12.mjs";
+			transformMultipleDocsModule = "/etc/optic/test/transformDoc-multipleRows-12.mjs";
+		} else {
+			transformDocModule = "/etc/optic/test/transformDoc-test.mjs";
+			transformMultipleDocsModule = "/etc/optic/test/transformDoc-multipleRows.mjs";
+		}
+	}
+
     @Test
     public void mjsTransformWithParam() {
         ArrayNode rows = mapper.createArrayNode();
@@ -32,7 +50,7 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
         ModifyPlan plan = op
             .fromParam("myDocs", "", op.colTypes(op.colType("doc", "none")))
             .transformDoc(op.col("doc"),
-                op.transformDef("/etc/optic/test/transformDoc-test.mjs")
+                op.transformDef(transformDocModule)
                     .withParam("myParam", "my value"));
 
         List<RowRecord> results = resultRows(plan.bindParam("myDocs", new JacksonHandle(rows)));
@@ -53,7 +71,7 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
             .joinDoc(op.col("doc"), op.col("uri"))
             .transformDoc(
                 op.col("doc"),
-                op.transformDef("/etc/optic/test/transformDoc-test.mjs")
+                op.transformDef(transformDocModule)
                     .withParam("myColumnParam", op.col("uri"))
                     .withParam("myParam", "test value")
             );
@@ -76,7 +94,7 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
             .joinDoc(op.col("doc"), op.viewCol(qualifier, "uri"))
             .transformDoc(
                 op.col("doc"),
-                op.transformDef("/etc/optic/test/transformDoc-test.mjs").withParam("myParam", op.viewCol(qualifier, "uri"))
+                op.transformDef(transformDocModule).withParam("myParam", op.viewCol(qualifier, "uri"))
             );
 
         List<RowRecord> rows = resultRows(plan);
@@ -96,7 +114,7 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
         ModifyPlan plan = op
             .fromParam("myDocs", "", op.colTypes(op.colType("doc", "none")))
             .transformDoc(op.col("doc"),
-                op.transformDef("/etc/optic/test/transformDoc-test.mjs").withKind("mjs"));
+                op.transformDef(transformDocModule).withKind("mjs"));
 
         List<RowRecord> results = resultRows(plan.bindParam("myDocs", new JacksonHandle(rows)));
         assertEquals(1, results.size());
@@ -113,7 +131,7 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
             .fromDocDescriptors(
                 op.docDescriptor(newWriteOp("will-be-replaced", mapper.createObjectNode().put("hello", "there")))
             )
-            .transformDoc(op.col("doc"), op.transformDef("/etc/optic/test/transformDoc-multipleRows.mjs"))
+            .transformDoc(op.col("doc"), op.transformDef(transformMultipleDocsModule))
             .bind(op.as("uri", op.fn.concat(
                 op.xs.string("/acme/"),
                 op.xdmp.random(),
@@ -152,7 +170,7 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
             .fromDocUris("/optic/test/musician1.json", "/optic/test/musician2.json")
             .joinDoc(op.col("doc"), op.col("uri"))
             .transformDoc(op.col("doc"),
-                op.transformDef("/etc/optic/test/transformDoc-test.mjs").withParam("myParam",
+                op.transformDef(transformDocModule).withParam("myParam",
                     "my value"));
 
         List<RowRecord> results = resultRows(plan);

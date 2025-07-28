@@ -1,15 +1,15 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.document;
-
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /** A reflection of the write operations queued by calls to add,
  * {@link DocumentWriteSet#add add}, {@link DocumentWriteSet#addDefault addDefault}, or
@@ -80,60 +80,38 @@ public interface DocumentWriteOperation extends Comparable<DocumentWriteOperatio
    */
   String getTemporalDocumentURI();
 
-  /**
-   * The from method prepares each content object for writing as a document including generating a URI by inserting a UUID.
-   * @param content a subclass of AbstractWriteHandle
-   * @param uriMaker DocumentUriMaker which internally accepts an AbstractWriteHandle and returns a String
-   * @return a stream of DocumentWriteOperation to be written in the database.
-   */
-    public static Stream<DocumentWriteOperation> from(Stream<? extends AbstractWriteHandle> content,
-            final DocumentUriMaker uriMaker) {
-        if(content == null || uriMaker == null)
-            throw new IllegalArgumentException("Content and/or Uri maker cannot be null");
+	/**
+	 * The from method prepares each content object for writing as a document including generating a URI by inserting a UUID.
+	 *
+	 * @param content  a subclass of AbstractWriteHandle
+	 * @param uriMaker DocumentUriMaker which internally accepts an AbstractWriteHandle and returns a String
+	 * @return a stream of DocumentWriteOperation to be written in the database.
+	 */
+	static Stream<DocumentWriteOperation> from(Stream<? extends AbstractWriteHandle> content,
+											   final DocumentUriMaker uriMaker) {
+		if (content == null || uriMaker == null) {
+			throw new IllegalArgumentException("Content and/or Uri maker cannot be null");
+		}
 
-        final class WrapperImpl {
-            private DocumentUriMaker docUriMaker;
-            WrapperImpl(DocumentUriMaker uriMaker){
-                this.docUriMaker = uriMaker;
-            }
-            DocumentWriteOperation mapper(AbstractWriteHandle content) {
-                String uri = docUriMaker.apply(content);
-                return new DocumentWriteOperationImpl(uri, content);
-            }
-
-        }
-        WrapperImpl wrapperImpl = new WrapperImpl(uriMaker);
-        return content.map(wrapperImpl::mapper);
-
-    }
+		return content.map(handle -> {
+			String uri = uriMaker.apply(handle);
+			return new DocumentWriteOperationImpl(uri, handle);
+		});
+	}
 
     /**
      * The uriMaker method creates a uri for each document written in the database
      * @param format refers to the pattern passed.
      * @return DocumentUriMaker which contains the formatted uri for the new document.
      */
-    public static DocumentUriMaker uriMaker(String format) throws IllegalArgumentException{
-
-        if(format == null || format.length() == 0)
-            throw new IllegalArgumentException("Format cannot be null or empty");
-
-        final class FormatUriMaker {
-            private String uriFormat;
-
-            FormatUriMaker(String format) {
-                this.uriFormat = format;
-            }
-
-            String makeUri(AbstractWriteHandle content) {
-                return String.format(uriFormat, UUID.randomUUID());
-            }
-        }
-        FormatUriMaker formatUriMaker = new FormatUriMaker(format);
-
-        return formatUriMaker::makeUri;
-    }
+	static DocumentUriMaker uriMaker(String format) throws IllegalArgumentException {
+		if (format == null || format.length() == 0) {
+			throw new IllegalArgumentException("Format cannot be null or empty");
+		}
+		return content -> String.format(format, UUID.randomUUID());
+	}
 
     @FunctionalInterface
-    public interface DocumentUriMaker extends Function<AbstractWriteHandle, String> {
+    interface DocumentUriMaker extends Function<AbstractWriteHandle, String> {
     }
 }

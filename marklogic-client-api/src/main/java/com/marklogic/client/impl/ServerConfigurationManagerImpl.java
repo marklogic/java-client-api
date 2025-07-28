@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -57,7 +57,7 @@ class ServerConfigurationManagerImpl
       if (stream == null)
         return;
 
-      XMLInputFactory factory = XMLInputFactory.newFactory();
+		XMLInputFactory factory = XmlFactories.makeNewInputFactory();
       factory.setProperty("javax.xml.stream.isNamespaceAware", true);
       factory.setProperty("javax.xml.stream.isValidating",     false);
 

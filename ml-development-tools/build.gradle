@@ -1,18 +1,20 @@
-// Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+/*
+ * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ */
 
 plugins {
 	id "groovy"
 	id 'maven-publish'
 	id "com.gradle.plugin-publish" version "1.2.1"
 	id "java-gradle-plugin"
-	id 'org.jetbrains.kotlin.jvm' version '1.8.22'
+	id 'org.jetbrains.kotlin.jvm' version '2.1.0'
 }
 
 dependencies {
 	compileOnly gradleApi()
 	implementation project(':marklogic-client-api')
-	implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-	implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2"
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.0'
+	implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
 	implementation 'com.networknt:json-schema-validator:1.0.88'
 
 	// Not yet migrating this project to JUnit 5. Will reconsider it once we have a reason to enhance
@@ -30,8 +32,9 @@ tasks.processResources {
 	duplicatesStrategy = "exclude"
 }
 
-task mlDevelopmentToolsJar(type: Jar, dependsOn: classes) {
-	archivesBaseName = 'ml-development-tools'
+tasks.register("mlDevelopmentToolsJar", Jar) {
+	dependsOn classes
+	archiveBaseName = 'ml-development-tools'
 }
 
 gradlePlugin {
@@ -62,7 +65,7 @@ publishing {
 					password mavenPassword
 				}
 			}
-			url publishUrl
+			url = publishUrl
 		}
 	}
 }
@@ -74,11 +77,17 @@ compileTestKotlin {
 	kotlinOptions.jvmTarget = '1.8'
 }
 
-task generateTests(type: JavaExec) {
+tasks.register("generateTests", JavaExec) {
 	classpath = sourceSets.test.runtimeClasspath
-	main = 'com.marklogic.client.test.dbfunction.FntestgenKt'
+	mainClass = 'com.marklogic.client.test.dbfunction.FntestgenKt'
 	args = ['./src/test/', 'latest']
 }
 
+tasks.register("fixMjsModulesForMarkLogic12", JavaExec) {
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass = 'com.marklogic.client.test.FixMjsModulesForMarkLogic12'
+}
+
 // Allows running "./gradlew test" without having to remember to generate the tests first.
-test.dependsOn generateTests
+test.dependsOn generateTests, fixMjsModulesForMarkLogic12
+fixMjsModulesForMarkLogic12.mustRunAfter generateTests

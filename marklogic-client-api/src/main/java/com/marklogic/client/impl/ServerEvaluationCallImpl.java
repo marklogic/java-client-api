@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -134,16 +134,13 @@ public class ServerEvaluationCallImpl
     return readHandle.get();
   }
 
-  @Override
-  public <H extends AbstractReadHandle> H eval(H responseHandle)
-    throws ForbiddenUserException, FailedRequestException
-  {
-    EvalResultIterator iterator = eval();
-    try {
-      if ( iterator == null || iterator.hasNext() == false ) return null;
-      return iterator.next().get(responseHandle);
-    } finally { iterator.close(); }
-  }
+	@Override
+	public <H extends AbstractReadHandle> H eval(H responseHandle) throws ForbiddenUserException, FailedRequestException {
+		try (EvalResultIterator iterator = eval()) {
+			if (iterator == null || iterator.hasNext() == false) return null;
+			return iterator.next().get(responseHandle);
+		}
+	}
 
   @Override
   public EvalResultIterator eval()

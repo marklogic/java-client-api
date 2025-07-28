@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.example.cookbook.datamovement;
 
@@ -38,7 +38,9 @@ public class DatabaseClientSingleton {
     } catch (JAXBException e) {
       throw new IllegalStateException(e);
     }
-    ObjectMapper mapper = new JacksonDatabindHandle(null).getMapper();
+
+	@SuppressWarnings("unchecked")
+	ObjectMapper mapper = new JacksonDatabindHandle(null).getMapper();
     // we do the next three lines so dates are written in xs:dateTime format
     // which makes them ready for range indexes in MarkLogic Server
     String ISO_8601_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
@@ -51,7 +53,7 @@ public class DatabaseClientSingleton {
     handlesRegistered = true;
   }
 
-  public static DatabaseClient get() {
+  public static synchronized DatabaseClient get() {
     if(client == null) {
       registerHandlers();
       client = DatabaseClientFactory.newClient(properties.host, properties.port,
@@ -60,7 +62,7 @@ public class DatabaseClientSingleton {
     return client;
   }
 
-  public static DatabaseClient getAdmin() {
+  public static synchronized DatabaseClient getAdmin() {
     if (client == null) {
       registerHandlers();
       client = DatabaseClientFactory.newClient(properties.host, properties.port,
@@ -87,7 +89,7 @@ public class DatabaseClientSingleton {
     return dbSpecificClients.get(database);
   }
 
-  public static DatabaseClient getRestAdmin() {
+  public static synchronized DatabaseClient getRestAdmin() {
     if(restAdminClient == null) {
       restAdminClient = DatabaseClientFactory.newClient(properties.host, properties.port,
         new DigestAuthContext(properties.adminUser, properties.adminPassword));

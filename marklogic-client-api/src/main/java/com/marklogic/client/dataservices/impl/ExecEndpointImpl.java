@@ -105,8 +105,7 @@ public class ExecEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements ExecCa
             else if(getCallContextQueue() != null && !getCallContextQueue().isEmpty()){
                 try {
                     for (int i = 0; i < getThreadCount(); i++) {
-                        BulkCallableImpl<I,O> bulkCallableImpl = new BulkCallableImpl(this);
-                        submitTask(bulkCallableImpl);
+						submitNewTask();
                     }
                     if(getCallerThreadPoolExecutor() != null)
                         getCallerThreadPoolExecutor().awaitTermination();
@@ -118,6 +117,12 @@ public class ExecEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements ExecCa
                 throw new IllegalArgumentException("Cannot process output without Callcontext.");
             }
         }
+
+		@SuppressWarnings("unchecked")
+		private void submitNewTask() {
+			BulkCallableImpl<I,O> bulkCallableImpl = new BulkCallableImpl(this);
+			submitTask(bulkCallableImpl);
+		}
 
         @Override
         public void setErrorListener(ErrorListener errorListener) {

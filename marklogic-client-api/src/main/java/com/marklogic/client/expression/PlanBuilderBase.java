@@ -141,7 +141,8 @@ public interface PlanBuilderBase {
     * @param rows  This parameter provides any number of objects in which the key is a column name string identifying the column and the value is a literal with the value of the column.
     * @return  an AccessPlan object
     */
-    PlanBuilder.AccessPlan fromLiterals(@SuppressWarnings("unchecked") Map<String,Object>... rows);
+	@SuppressWarnings("unchecked")
+    PlanBuilder.AccessPlan fromLiterals(Map<String,Object>... rows);
     /**
      * Constructs a literal row set as in the SQL VALUES or SPARQL VALUES statements. When specifying rows with arrays, values are mapped to column names by position.
      * @param rows  This parameter is either an array of object literals or sem:binding objects in which the key is a column name string identifying the column and the value is a literal with the value of the column, or this parameter is an object with a columnNames key having a value of an array of column names and a rowValues key having a value of an array of arrays with literal values.

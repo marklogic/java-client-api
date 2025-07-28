@@ -15,14 +15,9 @@ import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.io.*;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.mgmt.ManageClient;
+import com.marklogic.mgmt.ManageConfig;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.junit.jupiter.api.*;
 import org.w3c.dom.Node;
 
@@ -110,14 +105,14 @@ public class QBFailover extends BasicJavaClientREST {
 				}
 				props.put("database", dbName);
 				props.put("state", "attach");
-				postRequest(null, props, "/manage/v2/forests/" + dbName + "-" + (i + 1));
+				postRequest(props, "/manage/v2/forests/" + dbName + "-" + (i + 1));
 			}
 			props = new HashMap<>();
 			props.put("journaling", "strict");
 			changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
 			associateRESTServerWithDB(server, dbName);
 			if (IsSecurityEnabled()) {
-				enableSecurityOnRESTServer(server, dbName);
+				enableSecurityOnRESTServer(server);
 			}
 			// StringHandle
 			stringTriple = "<?xml  version=\"1.0\" encoding=\"UTF-8\"?><foo>This is so foo</foo>";
@@ -215,15 +210,6 @@ public class QBFailover extends BasicJavaClientREST {
 		// Perform the setup on multiple nodes only.
 		if (hostNames.length > 1) {
 			associateRESTServerWithDB(server, "Documents");
-			for (int i = 0; i < hostNames.length; i++) {
-				System.out.println(dbName + "-" + (i + 1));
-				detachForest(dbName, dbName + "-" + (i + 1));
-				if (i != 0) {
-					removeReplica(dbName + "-" + (i + 1));
-					deleteForest(dbName + "-" + (i + 1) + "-replica");
-				}
-				deleteForest(dbName + "-" + (i + 1));
-			}
 			deleteDB(dbName);
 		} else {
 			System.out.println("Test skipped -  tearDownAfterClass");
@@ -1062,21 +1048,9 @@ public class QBFailover extends BasicJavaClientREST {
 
 	private boolean isRunning(String host) {
 		try {
-
-			DefaultHttpClient client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host, 7997),
-					new UsernamePasswordCredentials("admin", "admin"));
-
-			HttpGet get = new HttpGet("http://" + host + ":7997?format=json");
-			HttpResponse response = client.execute(get);
-			ResponseHandler<String> handler = new BasicResponseHandler();
-			String body = handler.handleResponse(response);
-			if (body.toLowerCase().contains("healthy")) {
-				return true;
-			} else {
-				return false;
-			}
-
+			ManageClient client = new ManageClient(new ManageConfig(host, 7997, getAdminUser(), getAdminPassword()));
+			String output = client.getJson("?format=json");
+			return output.contains("healthy");
 		} catch (Exception e) {
 			return false;
 		}

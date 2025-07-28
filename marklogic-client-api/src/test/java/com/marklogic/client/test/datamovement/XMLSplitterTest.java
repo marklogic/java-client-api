@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class XMLSplitterTest {
+class XMLSplitterTest {
 
     static final private String xmlFile = "src/test/resources/data" + File.separator + "pathSplitter/people.xml";
     static final private String[] expected = new String[]{
@@ -54,8 +54,8 @@ public class XMLSplitterTest {
     @Test
     public void testXMLSplitter() throws Exception {
 
-        XMLSplitter splitter = XMLSplitter.makeSplitter("http://www.marklogic.com/people/", "person");
-        FileInputStream fileInputStream = new FileInputStream(new File(xmlFile));
+        XMLSplitter<StringHandle> splitter = XMLSplitter.makeSplitter("http://www.marklogic.com/people/", "person");
+        FileInputStream fileInputStream = new FileInputStream(xmlFile);
         Stream<StringHandle> contentStream = splitter.split(fileInputStream);
         assertNotNull(contentStream);
 
@@ -79,7 +79,7 @@ public class XMLSplitterTest {
                 "president",
                 "yes");
 
-        XMLSplitter splitter = new XMLSplitter(visitor);
+        XMLSplitter<StringHandle> splitter = new XMLSplitter<>(visitor);
 
         Stream<StringHandle> contentStream = splitter.split(fileInputStream);
         assertNotNull(contentStream);
@@ -106,7 +106,7 @@ public class XMLSplitterTest {
                 "president",
                 "no");
 
-        XMLSplitter splitter = new XMLSplitter(visitor);
+        XMLSplitter<StringHandle> splitter = new XMLSplitter<>(visitor);
         XMLSplitter.UriMaker uriMaker = new UriMakerTest();
         uriMaker.setInputAfter("/SystemPath/");
         uriMaker.setSplitFilename("NewPeople");
@@ -182,7 +182,7 @@ public class XMLSplitterTest {
                 "president",
                 "no");
 
-        XMLSplitter splitter = new XMLSplitter(visitor);
+        XMLSplitter<StringHandle> splitter = new XMLSplitter<>(visitor);
 
         Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream);
         assertNotNull(contentStream);
@@ -213,7 +213,7 @@ public class XMLSplitterTest {
                 "president",
                 "no");
 
-        XMLSplitter splitter = new XMLSplitter(visitor);
+        XMLSplitter<StringHandle> splitter = new XMLSplitter<>(visitor);
 
         Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream, "TestSplitter.xml");
         assertNotNull(contentStream);

@@ -52,13 +52,13 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
   @AfterAll
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
-    cleanupRESTServer(dbName, fNames);
+    cleanupRESTServer(dbName);
     deleteRESTUser("eval-user");
     deleteUserRole("test-eval");
   }
 
   @BeforeEach
-  public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void setUp() {
     client = getDatabaseClient("eval-user", "x", getConnType());
   }
 
@@ -198,7 +198,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
         t1.rollback();
         client2.release();
       }
-      cleanupRESTServer(dbNameTmp, fNamesTmp);
+      cleanupRESTServer(dbNameTmp);
       associateRESTServerWithDB(getRestServerName(), "Documents");
     }
   }

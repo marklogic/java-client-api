@@ -165,8 +165,8 @@ public class WriteBatcherTest {
     meta = new DocumentMetadataHandle().withCollections(collection, whbTestCollection);
     batcher.add(uri4, meta, new JacksonHandle(doc4));
     batcher.flushAndWait();
-    assertEquals( "true", successListenerWasRun.toString());
-    assertEquals( "true", failListenerWasRun.toString());
+    assertEquals("true", successListenerWasRun.toString());
+    assertEquals("true", failListenerWasRun.toString());
 
     StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collection);
     try ( DocumentPage docs = docMgr.search(query, 1) ) {

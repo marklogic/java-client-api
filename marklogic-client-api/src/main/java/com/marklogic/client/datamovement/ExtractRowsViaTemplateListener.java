@@ -193,7 +193,7 @@ public class ExtractRowsViaTemplateListener implements QueryBatchListener, AutoC
     jp.nextToken();
     if ( jp.currentToken() == JsonToken.END_OBJECT) {
       logger.warn("No documents found for this batch");
-      return new ArrayList<TypedRow>();
+      return new ArrayList<>();
     } else {
       return new Iterable<TypedRow>() {
         public Iterator<TypedRow> iterator() {
@@ -242,7 +242,7 @@ public class ExtractRowsViaTemplateListener implements QueryBatchListener, AutoC
                     if ( jp.currentToken() != JsonToken.FIELD_NAME ) {
                       throw new MarkLogicIOException("Expected a uri for next template result");
                     }
-                    uri = jp.getCurrentName();
+                    uri = jp.currentName();
                     if ( jp.nextToken() != JsonToken.START_ARRAY ) {
                       throw new MarkLogicIOException("Expected an array of rows");
                     }
@@ -268,7 +268,7 @@ public class ExtractRowsViaTemplateListener implements QueryBatchListener, AutoC
                   if ( "triple".equals(jp.nextFieldName()) ) {
                     throw new MarkLogicIOException("Expected a row but we got a triple. We don't support triples");
                   }
-                  if ( !"row".equals(jp.getCurrentName()) || jp.nextToken() != JsonToken.START_OBJECT ) {
+                  if ( !"row".equals(jp.currentName()) || jp.nextToken() != JsonToken.START_OBJECT ) {
                     throw new MarkLogicIOException("Expected row to start");
                   }
                   while (!"data".equals(jp.nextFieldName())) {
@@ -281,18 +281,18 @@ public class ExtractRowsViaTemplateListener implements QueryBatchListener, AutoC
                   while (jp.nextToken() == JsonToken.FIELD_NAME) {
                     JsonToken valueType = jp.nextToken();
                     if ( valueType == JsonToken.VALUE_STRING ) {
-                      row.put(jp.getCurrentName(), pb.xs.string(jp.getText()));
+                      row.put(jp.currentName(), pb.xs.string(jp.getText()));
                     } else if ( valueType == JsonToken.VALUE_NUMBER_INT ) {
-                      row.put(jp.getCurrentName(), pb.xs.integer(jp.getIntValue()));
+                      row.put(jp.currentName(), pb.xs.integer(jp.getIntValue()));
                     } else if ( valueType == JsonToken.VALUE_NUMBER_FLOAT ) {
-                      row.put(jp.getCurrentName(), pb.xs.floatVal(jp.getFloatValue()));
+                      row.put(jp.currentName(), pb.xs.floatVal(jp.getFloatValue()));
                     } else if ( valueType == JsonToken.VALUE_TRUE || valueType == JsonToken.VALUE_FALSE ) {
-                      row.put(jp.getCurrentName(), pb.xs.booleanVal(jp.getBooleanValue()));
+                      row.put(jp.currentName(), pb.xs.booleanVal(jp.getBooleanValue()));
                     } else if ( valueType == JsonToken.VALUE_NULL ) {
-                      row.put(jp.getCurrentName(), null);
+                      row.put(jp.currentName(), null);
                     } else {
                       throw new MarkLogicIOException(
-                          "Unexpected value type for column \"" + jp.getCurrentName() + "\"");
+                          "Unexpected value type for column \"" + jp.currentName() + "\"");
                     }
                   }
                   if ( jp.currentToken() != JsonToken.END_OBJECT || jp.nextToken() != JsonToken.END_OBJECT

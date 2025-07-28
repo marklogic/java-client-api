@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 class PatchBuilderImpl extends BaseTypeImpl.BaseCallImpl implements PatchBuilder, BaseTypeImpl.BaseArgImpl {
 
 	PatchBuilderImpl(XsStringVal contextPath) {

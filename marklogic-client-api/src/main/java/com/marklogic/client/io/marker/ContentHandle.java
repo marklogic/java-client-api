@@ -7,6 +7,7 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.io.BaseHandle;
 
 import java.lang.reflect.Array;
+import java.util.Objects;
 
 /**
  * A Content Handle provides get / set access to a representation
@@ -34,6 +35,7 @@ public interface ContentHandle<C>
    *
    * @return  the class for the handled content
    */
+  @SuppressWarnings("unchecked")
   default Class<C> getContentClass() {
     C value = get();
     if (value != null)
@@ -45,6 +47,7 @@ public interface ContentHandle<C>
    * initializing the new handle with the same format and mime type.
    * @return  the new handle
    */
+  @SuppressWarnings("unchecked")
   default ContentHandle<C> newHandle() {
     ContentHandle<C> newHandle = null;
 
@@ -55,7 +58,7 @@ public interface ContentHandle<C>
       }
 
       if (newHandle == null) {
-        newHandle = getClass().newInstance();
+        newHandle = getClass().getDeclaredConstructor().newInstance();
       }
     } catch (Exception e) {
       throw new RuntimeException(
@@ -101,6 +104,8 @@ public interface ContentHandle<C>
   @SuppressWarnings("unchecked")
   default C[] newArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
-    return (C[]) Array.newInstance(getContentClass(), length);
+	Class<C> clazz = getContentClass();
+	  Objects.requireNonNull(clazz);
+    return (C[]) Array.newInstance(clazz, length);
   }
 }

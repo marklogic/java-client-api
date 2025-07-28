@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class DatabaseClientPropertySourceTest {
 
-	private Map<String, Object> props;
+	private Map<String, Object> props = new HashMap<>();
 	private DatabaseClientFactory.Bean bean;
 	private static final String PREFIX = DatabaseClientBuilder.PREFIX;
 	private static final String VERIFIER_PROPERTY = PREFIX + "sslHostnameVerifier";
@@ -26,11 +26,9 @@ public class DatabaseClientPropertySourceTest {
 
 	@BeforeEach
 	void beforeEach() {
-		props = new HashMap() {{
-			put(PREFIX + "authType", "digest");
-			put(PREFIX + "username", "someuser");
-			put(PREFIX + "password", "someword");
-		}};
+		props.put(PREFIX + "authType", "digest");
+		props.put(PREFIX + "username", "someuser");
+		props.put(PREFIX + "password", "someword");
 	}
 
 	@Test
@@ -81,9 +79,9 @@ public class DatabaseClientPropertySourceTest {
 		bean = buildBean();
 
 		assertEquals("/my/path", bean.getBasePath());
-		assertTrue(bean.getSecurityContext() instanceof DatabaseClientFactory.MarkLogicCloudAuthContext);
+		assertTrue(bean.getSecurityContext() instanceof DatabaseClientFactory.ProgressDataCloudAuthContext);
 
-		DatabaseClientFactory.MarkLogicCloudAuthContext context = (DatabaseClientFactory.MarkLogicCloudAuthContext) bean.getSecurityContext();
+		DatabaseClientFactory.ProgressDataCloudAuthContext context = (DatabaseClientFactory.ProgressDataCloudAuthContext) bean.getSecurityContext();
 		assertEquals("abc123", context.getApiKey());
 
 		assertNotNull(context.getSSLContext(), "If cloud is chosen with no SSL protocol or context, the default JVM " +
@@ -198,10 +196,8 @@ public class DatabaseClientPropertySourceTest {
 
 	@Test
 	void hostTakesPrecedence() {
-		props = new HashMap() {{
-			put(PREFIX + "host", "somehost");
-			put(PREFIX + "connectionString", "user:password@localhost:8000/Documents");
-		}};
+		props.put(PREFIX + "host", "somehost");
+		props.put(PREFIX + "connectionString", "user:password@localhost:8000/Documents");
 
 		DatabaseClientFactory.Bean bean = buildBean();
 		assertEquals("somehost", bean.getHost(), "This allows a user to use a connection string as a starting " +
@@ -210,9 +206,7 @@ public class DatabaseClientPropertySourceTest {
 	}
 
 	private void useConnectionString(String connectionString) {
-		props = new HashMap() {{
-			put(PREFIX + "connectionString", connectionString);
-		}};
+		props.put(PREFIX + "connectionString", connectionString);
 	}
 
 	private DatabaseClientFactory.Bean buildBean() {

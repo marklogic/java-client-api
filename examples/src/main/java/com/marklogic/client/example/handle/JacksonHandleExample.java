@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 
 /**
  * JacksonHandleExample illustrates writing and reading content as a JSON structure
@@ -47,37 +48,34 @@ public class JacksonHandleExample {
     JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
     // read the example file
-    InputStream docStream = Util.openStream("data"+File.separator+filename);
-    if (docStream == null)
-      throw new IOException("Could not read document example");
-
     // create an identifier for the document
     String docId = "/example/"+filename;
 
-    // parse the example file with Jackson
-    JsonNode writeDocument = new ObjectMapper().readValue(
-      new InputStreamReader(docStream, "UTF-8"), JsonNode.class);
+	try (InputStream docStream = Util.openStream("data"+File.separator+filename)) {
+		// parse the example file with Jackson
+		JsonNode writeDocument = new ObjectMapper().readValue(docStream, JsonNode.class);
 
-    // write the document
-    docMgr.writeAs(docId, writeDocument);
+		// write the document
+		docMgr.writeAs(docId, writeDocument);
 
-    // ... at some other time ...
+		// ... at some other time ...
 
-    // read the document content
-    JsonNode readDocument = docMgr.readAs(docId, JsonNode.class);
+		// read the document content
+		JsonNode readDocument = docMgr.readAs(docId, JsonNode.class);
 
-    // access the document content
-    String aRootField = readDocument.fieldNames().next();
+		// access the document content
+		String aRootField = readDocument.fieldNames().next();
 
-    // delete the document
-    docMgr.delete(docId);
+		// delete the document
+		docMgr.delete(docId);
 
-    System.out.println("(Shortcut) Wrote and read /example/"+filename+
-      " content with a root field name of "+aRootField+" using Jackson");
-
-    // release the client
-    client.release();
+		System.out.println("(Shortcut) Wrote and read /example/"+filename+
+			" content with a root field name of "+aRootField+" using Jackson");
+	} finally {
+		client.release();
+	}
   }
+
   public static void runStrongTyped(ExampleProperties props) throws IOException {
     String filename = "flipper.json";
 

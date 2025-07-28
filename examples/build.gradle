@@ -1,4 +1,4 @@
-// Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+// Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
 
 plugins {
 	id "java-library"
@@ -7,27 +7,22 @@ plugins {
 dependencies {
 	implementation project(':marklogic-client-api')
 
-	// Forcing usage of 3.4.0 instead of 3.2.0 to address vulnerability - https://security.snyk.io/vuln/SNYK-JAVA-COMSQUAREUPOKIO-5820002
-	implementation 'com.squareup.okio:okio:3.4.0'
-
 	// The 'api' configuration is used so that the test configuration in marklogic-client-api doesn't have to declare
 	// all of these dependencies. This library project won't otherwise be depended on by anything else as it's not
 	// setup for publishing.
 	api 'com.squareup.okhttp3:okhttp:4.12.0'
 	api 'io.github.rburgst:okhttp-digest:2.7'
-	api 'org.slf4j:slf4j-api:2.0.16'
-	api "com.fasterxml.jackson.core:jackson-databind:2.17.2"
-
-	// hsqldb < 2.7 has a High CVE - https://nvd.nist.gov/vuln/detail/CVE-2022-41853 .
-	// And hsqldb 2.6+ requires Java 11+. So this is ignored, along with the associated test,
-	// until the Java Client can drop Java 8 support.
-	// api 'org.hsqldb:hsqldb:2.7.1'
+	api 'org.slf4j:slf4j-api:2.0.17'
+	api "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
 
 	api 'org.jdom:jdom2:2.0.6.1'
 	api 'org.dom4j:dom4j:2.1.4'
 	api 'com.google.code.gson:gson:2.10.1'
 	api 'net.sourceforge.htmlcleaner:htmlcleaner:2.29'
-	api 'com.opencsv:opencsv:4.6'
-	api 'org.springframework:spring-jdbc:5.3.39'
-	api 'org.apache.commons:commons-lang3:3.12.0'
+	api ('com.opencsv:opencsv:5.11.2') {
+		// Excluding this due to a security vulnerability, and the test for the example that uses this library
+		// passes without this on the classpath.
+		exclude module: "commons-beanutils"
+	}
+	api 'org.apache.commons:commons-lang3:3.18.0'
 }

@@ -146,21 +146,11 @@ public class SearchResponseTransform {
     throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
-
-    InputStreamHandle contentHandle = new InputStreamHandle();
-
     for (String filename: filenames) {
       try ( InputStream docStream = Util.openStream("data"+File.separator+filename) ) {
-        if (docStream == null)
-          throw new IOException("Could not read document example");
-
-        contentHandle.set(docStream);
-
-        docMgr.write("/example/"+filename, contentHandle);
+        docMgr.write("/example/"+filename, new InputStreamHandle(docStream));
       }
     }
-
-
   }
 
   // clean up by deleting the documents and query options used in the example query

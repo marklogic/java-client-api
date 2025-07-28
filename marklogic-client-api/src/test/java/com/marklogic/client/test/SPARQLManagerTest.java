@@ -424,7 +424,7 @@ public class SPARQLManagerTest {
   }
 
   private MappingIterator<Map<String,String>> parseCsv(String csv) throws JsonProcessingException, IOException {
-    return new CsvMapper().reader(Map.class)
+    return new CsvMapper().readerFor(Map.class)
       .with(CsvSchema.emptySchema().withHeader()) // use first row as header
       .readValues(csv);
   }

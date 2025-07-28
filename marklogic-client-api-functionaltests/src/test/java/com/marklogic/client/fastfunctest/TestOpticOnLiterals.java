@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 public class TestOpticOnLiterals extends AbstractFunctionalTest {
 
   private static Map<String, Object>[] literals1 = new HashMap[5];

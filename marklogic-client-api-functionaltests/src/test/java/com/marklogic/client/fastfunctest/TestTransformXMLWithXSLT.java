@@ -6,16 +6,18 @@ package com.marklogic.client.fastfunctest;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.SourceHandle;
-import org.junit.jupiter.api.*;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 
@@ -31,8 +33,7 @@ public class TestTransformXMLWithXSLT extends AbstractFunctionalTest {
         // get the xslt
         Source xsl = new StreamSource("src/test/java/com/marklogic/client/functionaltest/data/employee-stylesheet.xsl");
 
-        // create transformer
-        TransformerFactory factory = TransformerFactory.newInstance();
+        TransformerFactory factory = XmlFactories.makeNewTransformerFactory();
         Transformer transformer = factory.newTransformer(xsl);
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 

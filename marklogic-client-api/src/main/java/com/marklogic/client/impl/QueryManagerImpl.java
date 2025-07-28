@@ -5,6 +5,7 @@ package com.marklogic.client.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.xml.namespace.QName;
 
@@ -296,6 +297,7 @@ public class QueryManagerImpl
   public <T extends QueryOptionsListReadHandle> T optionsList(T optionsHandle, Transaction transaction) {
     @SuppressWarnings("rawtypes")
     HandleImplementation optionsBase = HandleAccessor.checkHandle(optionsHandle, "optionslist");
+	  Objects.requireNonNull(optionsBase);
 
     Format optionsFormat = optionsBase.getFormat();
     switch(optionsFormat) {
@@ -311,8 +313,8 @@ public class QueryManagerImpl
 
     String mimetype = optionsFormat.getDefaultMimetype();
 
-    String tid = transaction == null ? null : transaction.getTransactionId();
-    optionsBase.receiveContent(services.optionsList(optionsBase.receiveAs(), mimetype, transaction));
+	Object content = services.optionsList(optionsBase.receiveAs(), mimetype, transaction);
+	optionsBase.receiveContent(content);
     return optionsHandle;
   }
 

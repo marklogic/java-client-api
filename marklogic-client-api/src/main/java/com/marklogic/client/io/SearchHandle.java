@@ -1,18 +1,21 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.io;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
+import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.impl.HandleAccessor;
+import com.marklogic.client.impl.Utilities;
+import com.marklogic.client.impl.XmlFactories;
+import com.marklogic.client.io.marker.*;
+import com.marklogic.client.query.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -25,26 +28,9 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
-
-import com.marklogic.client.query.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
-import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.impl.HandleAccessor;
-import com.marklogic.client.impl.Utilities;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.OperationNotSupported;
-import com.marklogic.client.io.marker.SearchReadHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-
-import java.util.Map;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * A SearchHandle represents a set of search results returned by the server.
@@ -127,10 +113,10 @@ public class SearchHandle
   @Override
   protected void receiveContent(InputStream content) {
     try {
-      XMLInputFactory factory = XMLInputFactory.newFactory();
-      factory.setProperty("javax.xml.stream.isNamespaceAware", true);
-      factory.setProperty("javax.xml.stream.isValidating",     false);
-      factory.setProperty("javax.xml.stream.isCoalescing",     true);
+		XMLInputFactory factory = XmlFactories.makeNewInputFactory();
+		factory.setProperty("javax.xml.stream.isNamespaceAware", true);
+		factory.setProperty("javax.xml.stream.isValidating", false);
+		factory.setProperty("javax.xml.stream.isCoalescing", true);
 
       XMLEventReader reader = factory.createXMLEventReader(content, "UTF-8");
       SearchResponseImpl response = new SearchResponseImpl();

@@ -5,8 +5,6 @@ package com.marklogic.client.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.ext.helper.LoggingObject;
-import com.marklogic.client.ext.modulesloader.ssl.SimpleX509TrustManager;
 import io.undertow.Undertow;
 import io.undertow.client.ClientCallback;
 import io.undertow.client.ClientConnection;
@@ -22,23 +20,23 @@ import io.undertow.server.handlers.proxy.ProxyConnection;
 import io.undertow.server.handlers.proxy.ProxyHandler;
 import io.undertow.util.Headers;
 import okhttp3.Credentials;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.security.KeyStore;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.security.cert.X509Certificate;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,12 +50,14 @@ import java.util.concurrent.TimeUnit;
  * authentication is required by MarkLogic. But you'll need to ensure that any MarkLogic app server you proxy is using
  * either basic or digestbasic authentication.
  * <p>
- * As of 2023-01-26, this can now emulate MarkLogic Cloud. It exposes a "/token" endpoint that proxies to port 8022,
+ * As of 2023-01-26, this can now emulate Progress Data Cloud. It exposes a "/token" endpoint that proxies to port 8022,
  * which this server listens to as well (currently hardcoded). A fake access token is returned. Subsequent requests
  * convert that fake access token into a basic authentication value that is included in the proxied request to
  * MarkLogic.
  */
-public class ReverseProxyServer extends LoggingObject {
+public class ReverseProxyServer {
+
+	private static final Logger logger = LoggerFactory.getLogger(ReverseProxyServer.class);
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 	private static final String FAKE_ACCESS_TOKEN_INDICATOR = "FAKE_RPS_TOKEN:";
@@ -67,7 +67,7 @@ public class ReverseProxyServer extends LoggingObject {
 	 * 3) the port for this server; 4) the port for the secure (HTTPS) server. For current use cases though, including
 	 * Jenkins, localhost should suffice for both hostnames and 8020 should suffice as the port.
 	 * <p>
-	 * If you wish to enable a secure server on port 443 - i.e. you're looking to emulate MarkLogic Cloud - you'll
+	 * If you wish to enable a secure server on port 443 - i.e. you're looking to emulate Progress Data Cloud - you'll
 	 * need to run this program as root. Check the build.gradle file for this project to see an example of how to do
 	 * that via Gradle.
 	 *
@@ -89,7 +89,7 @@ public class ReverseProxyServer extends LoggingObject {
 					serverPort = Integer.parseInt(args[2]);
 					if (args.length > 3) {
 						secureServerPort = Integer.parseInt(args[3]);
-						if (args.length > 4 && StringUtils.hasText(args[4])) {
+						if (args.length > 4 && !args[4].trim().isEmpty()) {
 							customMappings = Arrays.asList(args[4].split(","));
 						}
 					}
@@ -129,7 +129,7 @@ public class ReverseProxyServer extends LoggingObject {
 		mapping.put("/mlxprs/rest", new URI(String.format("http://%s:8055", markLogicHost)));
 		mapping.put("/mlxprs/test", new URI(String.format("http://%s:8054", markLogicHost)));
 
-		// Emulate MarkLogic Cloud "/token" requests by mapping to the handler defined below that can respond to
+		// Emulate Progress Data Cloud "/token" requests by mapping to the handler defined below that can respond to
 		// these requests in a suitable fashion for manual testing.
 		mapping.put("/token", new URI(String.format("http://%s:8022", serverHost)));
 
@@ -166,7 +166,7 @@ public class ReverseProxyServer extends LoggingObject {
 	}
 
 	/**
-	 * This emulates how MarkLogic Cloud works with a twist - it expects the user's API key to match the pattern
+	 * This emulates how Progress Data Cloud works with a twist - it expects the user's API key to match the pattern
 	 * "username:password". It then generates a basic authentication value for this username/password and returns that
 	 * as the access token. The replaceFakeMarkLogicCloudHeaderIfNecessary method in ReverseProxyClient will then
 	 * replace this fake access token with an appropriate basic authentication header value.
@@ -175,7 +175,7 @@ public class ReverseProxyServer extends LoggingObject {
 	 */
 	private void handleMarkLogicCloudTokenRequest(HttpServerExchange exchange) {
 		try {
-			logger.info("Emulating MarkLogic Cloud and handling /token request");
+			logger.info("Emulating Progress Data Cloud and handling /token request");
 			FormData formData = FormParserFactory.builder().build().createParser(exchange).parseBlocking();
 			String apiKey = formData.getFirst("key").getValue();
 			String[] tokens = apiKey.split(":");
@@ -184,7 +184,7 @@ public class ReverseProxyServer extends LoggingObject {
 			exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
 			exchange.getResponseSender().send(response.toPrettyString());
 		} catch (Exception ex) {
-			System.err.println("Unable to process MarkLogic Cloud token request: " + ex.getMessage());
+			System.err.println("Unable to process Progress Data Cloud token request: " + ex.getMessage());
 		}
 	}
 
@@ -200,17 +200,35 @@ public class ReverseProxyServer extends LoggingObject {
 		final String keyStorePassword = "password";
 		KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-		keyStore.load(new ClassPathResource("selfsigned.jks").getInputStream(), keyStorePassword.toCharArray());
+		try (InputStream inputStream = new FileInputStream("src/main/resources/selfsigned.jks")) {
+			keyStore.load(inputStream, keyStorePassword.toCharArray());
+		}
 		kmf.init(keyStore, keyStorePassword.toCharArray());
 
-		SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+		// Using TLS to support MarkLogic 12
+		SSLContext sslContext = SSLContext.getInstance("TLS");
 		// Use a "trust-everything" approach for now; the client doesn't have to do this, but we don't have a use case
 		// yet for having our reverse proxy server validate certificates.
 		sslContext.init(kmf.getKeyManagers(), new TrustManager[]{new SimpleX509TrustManager()}, null);
 		return sslContext;
 	}
 
-	private static class ReverseProxyClient extends LoggingObject implements ProxyClient {
+	private static class SimpleX509TrustManager implements X509TrustManager {
+		@Override
+		public void checkClientTrusted(X509Certificate[] chain, String authType) {
+		}
+
+		@Override
+		public void checkServerTrusted(X509Certificate[] chain, String authType) {
+		}
+
+		@Override
+		public X509Certificate[] getAcceptedIssuers() {
+			return new X509Certificate[0];
+		}
+	}
+
+	private static class ReverseProxyClient implements ProxyClient {
 		private static final ProxyTarget TARGET = new ProxyTarget() {
 		};
 
@@ -257,7 +275,7 @@ public class ReverseProxyServer extends LoggingObject {
 		}
 
 		/**
-		 * Checks to see if the request has the fake MarkLogic Cloud authentication token in it, which is inserted
+		 * Checks to see if the request has the fake Progress Data Cloud authentication token in it, which is inserted
 		 * by the "/token" handler. If so, that token is replaced with a basic authentication value, which requires that
 		 * the MarkLogic server use basic or digestbasic authentication.
 		 *
@@ -268,7 +286,7 @@ public class ReverseProxyServer extends LoggingObject {
 			final String fakeBearerIndicator = "BEARER " + FAKE_ACCESS_TOKEN_INDICATOR;
 			if (auth != null && auth.toUpperCase().startsWith(fakeBearerIndicator)) {
 				String basicAuthValue = auth.substring(fakeBearerIndicator.length());
-				logger.info("Replacing fake MarkLogic Cloud Authorization header with a basic Authorization header: " + basicAuthValue);
+				logger.info("Replacing fake Progress Data Cloud Authorization header with a basic Authorization header: " + basicAuthValue);
 				exchange.getRequestHeaders().put(Headers.AUTHORIZATION, basicAuthValue);
 			}
 		}

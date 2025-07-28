@@ -14,7 +14,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -37,8 +39,10 @@ class VectorTest extends AbstractOpticUpdateTest {
 	void vectorFunctionsHappyPath() {
 		PlanBuilder.ModifyPlan plan =
 			op.fromView("vectors", "persons")
+				.limit(1)
 				.bind(op.as("sampleVector", op.vec.vector(sampleVector)))
-				.bind(op.as("cosineSimilarity", op.vec.cosineSimilarity(op.col("embedding"), op.col("sampleVector"))))
+				.bind(op.as("cosine", op.vec.cosine(op.col("embedding"), op.col("sampleVector"))))
+				.bind(op.as("cosineDistance", op.vec.cosineDistance(op.col("sampleVector"), op.col("sampleVector"))))
 				.bind(op.as("dotProduct", op.vec.dotProduct(op.col("embedding"), op.col("sampleVector"))))
 				.bind(op.as("euclideanDistance", op.vec.euclideanDistance(op.col("embedding"), op.col("sampleVector"))))
 				.bind(op.as("dimension", op.vec.dimension(op.col("sampleVector"))))
@@ -51,46 +55,58 @@ class VectorTest extends AbstractOpticUpdateTest {
 				.bind(op.as("base64Decode", op.vec.base64Decode(op.col("base64Encode"))))
 				.bind(op.as("subVector", op.vec.subvector(op.col("sampleVector"), op.xs.integer(1), op.xs.integer(1))))
 				.bind(op.as("vectorScore", op.vec.vectorScore(op.xs.unsignedInt(1), op.xs.doubleVal(0.5))))
-				.select(
-					op.col("cosineSimilarity"), op.col("dotProduct"), op.col("euclideanDistance"),
-					op.col("name"), op.col("dimension"), op.col("normalize"),
-					op.col("magnitude"), op.col("get"), op.col("add"), op.col("subtract"),
-					op.col("base64Encode"), op.col("base64Decode"), op.col("subVector"), op.col("vectorScore")
-				)
-				.limit(5);
-		List<RowRecord> rows = resultRows(plan);
-		assertEquals(2, rows.size());
+				.bind(op.as("simpleVectorScore", op.vec.vectorScore(op.xs.unsignedInt(1), 0.5, 1)))
+				.bind(op.as("simplestVectorScore", op.vec.vectorScore(op.xs.unsignedInt(1), 0.5)));
 
-		rows.forEach(row -> {
-//			 Simple a sanity checks to verify that the functions ran. Very little concern about the actual return values.
-			double cosineSimilarity = row.getDouble("cosineSimilarity");
-			assertTrue((cosineSimilarity > 0) && (cosineSimilarity < 1), "Unexpected value: " + cosineSimilarity);
-			double dotProduct = row.getDouble("dotProduct");
-			Assertions.assertTrue(dotProduct > 0, "Unexpected value: " + dotProduct);
-			double euclideanDistance = row.getDouble("euclideanDistance");
-			Assertions.assertTrue(euclideanDistance > 0, "Unexpected value: " + euclideanDistance);
-			assertEquals(3, row.getInt("dimension"));
-			assertEquals(3, ((ArrayNode) row.get("normalize")).size());
-			double magnitude = row.getDouble("magnitude");
-			assertTrue(magnitude > 0, "Unexpected value: " + magnitude);
-			assertEquals(3, ((ArrayNode) row.get("add")).size());
-			assertEquals(3, ((ArrayNode) row.get("subtract")).size());
-			assertFalse(row.getString("base64Encode").isEmpty());
-			assertEquals(3, ((ArrayNode) row.get("base64Decode")).size());
-			assertEquals(5.6, row.getDouble("get"));
-			assertEquals(1, ((ArrayNode) row.get("subVector")).size());
-			double vectorScore = row.getDouble("vectorScore");
-			assertTrue(vectorScore > 0, "Unexpected value: " + vectorScore);
-		});
+		List<RowRecord> rows = resultRows(plan);
+		assertEquals(1, rows.size());
+		RowRecord row = rows.get(0);
+
+		// Simple sanity checks to verify that the functions ran.
+		double cosine = row.getDouble("cosine");
+		assertTrue((cosine > 0) && (cosine < 1), "Unexpected value: " + cosine);
+		double dotProduct = row.getDouble("dotProduct");
+		Assertions.assertTrue(dotProduct > 0, "Unexpected value: " + dotProduct);
+		double euclideanDistance = row.getDouble("euclideanDistance");
+		Assertions.assertTrue(euclideanDistance > 0, "Unexpected value: " + euclideanDistance);
+		assertEquals(3, row.getInt("dimension"));
+		assertEquals(3, ((ArrayNode) row.get("normalize")).size());
+		double magnitude = row.getDouble("magnitude");
+		assertTrue(magnitude > 0, "Unexpected value: " + magnitude);
+		assertEquals(3, ((ArrayNode) row.get("add")).size());
+		assertEquals(3, ((ArrayNode) row.get("subtract")).size());
+		assertFalse(row.getString("base64Encode").isEmpty());
+		assertEquals(3, ((ArrayNode) row.get("base64Decode")).size());
+		assertEquals(5.6, row.getDouble("get"));
+		assertEquals(1, ((ArrayNode) row.get("subVector")).size());
+		assertEquals(333333.0, row.getDouble("vectorScore"));
+		assertEquals(666666.0, row.getDouble("simpleVectorScore"));
+		assertEquals(333333.0, row.getDouble("simplestVectorScore"));
+	}
+
+	/**
+	 * Vector data was copied from a test in the qa repo.
+	 */
+	@Test
+	void cosineDistance() {
+		PlanBuilder.ModifyPlan plan = op.fromView("vectors", "persons")
+			.limit(1)
+			.bind(op.as("vector1", op.vec.vector(op.xs.doubleSeq(0.000000000001, 0.000000000002, -0.425769090652466, -0.0558725222945213, 0.466461688280106, -0.488394349813461))))
+			.bind(op.as("vector2", op.vec.vector(op.xs.doubleSeq(0.000000000002, -0.425769090652466, -0.0558725222945213, 0.466461688280106, -0.488394349813461, -0.0558725222945213))))
+			.bind(op.as("cosineDistance", op.vec.cosineDistance(op.col("vector1"), op.col("vector2"))));
+
+		List<RowRecord> rows = resultRows(plan);
+		assertEquals(1, rows.size());
+		assertEquals(1.31585550308228, rows.get(0).getDouble("cosineDistance"), 0.1);
 	}
 
 	@Test
-	void cosineSimilarity_DimensionMismatch() {
+	void cosine_DimensionMismatch() {
 		PlanBuilder.ModifyPlan plan =
 			op.fromView("vectors", "persons")
 				.bind(op.as("sampleVector", op.vec.vector(twoDimensionalVector)))
-				.bind(op.as("cosineSimilarity", op.vec.cosineSimilarity(op.col("embedding"), op.col("sampleVector"))))
-				.select(op.col("name"), op.col("summary"), op.col("cosineSimilarity"));
+				.bind(op.as("cosine", op.vec.cosine(op.col("embedding"), op.col("sampleVector"))))
+				.select(op.col("name"), op.col("summary"), op.col("cosine"));
 		Exception exception = assertThrows(FailedRequestException.class, () -> resultRows(plan));
 		String actualMessage = exception.getMessage();
 		assertTrue(actualMessage.contains("Server Message: VEC-DIMMISMATCH"), "Unexpected message: " + actualMessage);
@@ -98,12 +114,12 @@ class VectorTest extends AbstractOpticUpdateTest {
 	}
 
 	@Test
-	void cosineSimilarity_InvalidVector() {
+	void cosine_InvalidVector() {
 		PlanBuilder.ModifyPlan plan =
 			op.fromView("vectors", "persons")
 				.bind(op.as("sampleVector", invalidVector))
-				.bind(op.as("cosineSimilarity", op.vec.cosineSimilarity(op.col("embedding"), op.col("sampleVector"))))
-				.select(op.col("name"), op.col("summary"), op.col("cosineSimilarity"));
+				.bind(op.as("cosine", op.vec.cosine(op.col("embedding"), op.col("sampleVector"))))
+				.select(op.col("name"), op.col("summary"), op.col("cosine"));
 		Exception exception = assertThrows(FailedRequestException.class, () -> resultRows(plan));
 		String actualMessage = exception.getMessage();
 		assertTrue(actualMessage.contains("Server Message: XDMP-ARGTYPE"), "Unexpected message: " + actualMessage);
@@ -111,9 +127,6 @@ class VectorTest extends AbstractOpticUpdateTest {
 	}
 
 	@Test
-		// As of 07/26/24, this test will fail with the ML12 develop branch.
-		// However, it will succeed with the 12ea1 build.
-		// See https://progresssoftware.atlassian.net/browse/MLE-15707
 	void bindVectorFromDocs() {
 		PlanBuilder.ModifyPlan plan =
 			op.fromSearchDocs(
@@ -129,8 +142,6 @@ class VectorTest extends AbstractOpticUpdateTest {
 		assertEquals(1, rows.size());
 	}
 
-	// This is passing locally when running 12-nightly on Docker, but has been failing on Jenkins since it was
-	// introduced on Nov 5th. Created https://progresssoftware.atlassian.net/browse/MLE-17964 to track it.
 	@Test
 	void vecVectorWithCol() {
 		String query = "op.fromView('vectors', 'persons').limit(2).bind(op.as('summaryCosineSim', op.vec.vector(op.col('embedding'))))";
@@ -139,10 +150,16 @@ class VectorTest extends AbstractOpticUpdateTest {
 		assertEquals(2, rows.size());
 	}
 
+	/**
+	 * Updated after 2025-06-06, when the vector functions were updated. That includes annTopK being modified to accept
+	 * an options map as its 5th argument instead of a single query tolerance value.
+	 */
 	@Test
-	void annTopK() {
+	void annTopKWithOptionsMap() {
+		Map<String, Object> options = new HashMap<>();
+		options.put("distance", "cosine");
 		PlanBuilder.ModifyPlan plan = op.fromView("vectors", "persons")
-			.annTopK(10, op.col("embedding"), op.vec.vector(sampleVector), op.col("distance"), 0.5f);
+			.annTopK(10, op.col("embedding"), op.vec.vector(sampleVector), op.col("distance"), options);
 
 		List<RowRecord> rows = resultRows(plan);
 		assertEquals(2, rows.size(), "Verifying that annTopK worked and returned both rows from the view.");
@@ -158,7 +175,7 @@ class VectorTest extends AbstractOpticUpdateTest {
 		String query = "const qualityVector = vec.vector([ 1.1, 2.2, 3.3 ]);\n" +
 			"op.fromView('vectors', 'persons')\n" +
 			"  .bind(op.as('myVector', op.vec.vector(op.col('embedding'))))\n" +
-			"  .annTopK(2, op.col('myVector'), qualityVector, op.col('distance'), 0.5)";
+			"  .annTopK(2, op.col('myVector'), qualityVector, op.col('distance'), {'distance':'cosine'})";
 
 		RawQueryDSLPlan plan = rowManager.newRawQueryDSLPlan(new StringHandle(query));
 		List<RowRecord> rows = resultRows(plan);

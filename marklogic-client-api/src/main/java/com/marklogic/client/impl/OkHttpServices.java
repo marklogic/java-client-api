@@ -3,6 +3,7 @@
  */
 package com.marklogic.client.impl;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -399,6 +400,7 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doDeleteFunction, null);
+		Objects.requireNonNull(response);
 		int status = response.code();
 
 		if (status == STATUS_NOT_FOUND) {
@@ -539,7 +541,7 @@ public class OkHttpServices implements RESTServices {
 			response = doFunction.apply(requestBldr);
 			if (response == null) {
 				throw new MarkLogicInternalException(
-					"null response for: " + requestBldr.build().url().toString()
+					"null response for: " + requestBldr.build().url()
 				);
 			}
 			status = response.code();
@@ -671,7 +673,8 @@ public class OkHttpServices implements RESTServices {
 			closeResponse(response);
 		}
 
-		handleBase.receiveContent((reqlog != null) ? reqlog.copyContent(entity) : entity);
+		Object content = reqlog != null ? reqlog.copyContent(entity) : entity;
+		handleBase.receiveContent(content);
 
 		return true;
 	}
@@ -879,8 +882,8 @@ public class OkHttpServices implements RESTServices {
 				"Document read for document identifier without uri");
 		}
 
-		assert metadataHandle != null : "metadataHandle is null";
-		assert contentHandle != null : "contentHandle is null";
+		Objects.requireNonNull(metadataHandle);
+		Objects.requireNonNull(contentHandle);
 
 		logger.debug("Getting multipart for {} in transaction {}", uri, getTransactionId(transaction));
 
@@ -1019,6 +1022,7 @@ public class OkHttpServices implements RESTServices {
 	private Response headImpl(RequestLogger reqlog, String uri,
 							  Transaction transaction, Request.Builder requestBldr) {
 		Response response = headImplExec(reqlog, uri, transaction, requestBldr);
+		Objects.requireNonNull(response);
 		int status = response.code();
 		if (status != STATUS_OK) {
 			if (status == STATUS_NOT_FOUND) {
@@ -1567,6 +1571,7 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, false, doPostFunction, null);
+		Objects.requireNonNull(response);
 		int status = response.code();
 
 		if (status == STATUS_FORBIDDEN) {
@@ -1912,9 +1917,7 @@ public class OkHttpServices implements RESTServices {
 		}
 
 		String mimetype = searchFormat.getDefaultMimetype();
-
 		OkHttpSearchRequest request = generateSearchRequest(reqlog, queryDef, mimetype, transaction, null, params, forestName);
-
 		Response response = request.getResponse();
 		if (response == null) return null;
 
@@ -2208,6 +2211,7 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doDeleteFunction, null);
+		Objects.requireNonNull(response);
 		int status = response.code();
 		if (status == STATUS_FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to delete",
@@ -2376,6 +2380,7 @@ public class OkHttpServices implements RESTServices {
 			};
 
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doFunction, null);
+		Objects.requireNonNull(response);
 		int status = response.code();
 
 		if (status == STATUS_FORBIDDEN) {
@@ -2424,6 +2429,7 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
+		Objects.requireNonNull(response);
 		int status = response.code();
 
 		if (status == STATUS_FORBIDDEN) {
@@ -2466,6 +2472,7 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
+		Objects.requireNonNull(response);
 		int status = response.code();
 
 		if (status == STATUS_FORBIDDEN) {
@@ -2510,6 +2517,7 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
+		Objects.requireNonNull(response);
 		int status = response.code();
 
 		if (status != STATUS_OK) {
@@ -2990,14 +2998,14 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
+		Objects.requireNonNull(response);
 		int status = response.code();
 		checkStatus(response, status, "read", "resource", path,
 			ResponseStatus.OK_OR_NO_CONTENT);
 
 		updateDescriptor(outputBase, response.headers());
 		if (as != null) {
-			outputBase.receiveContent(makeResult(reqlog, "read", "resource",
-				response, as));
+			outputBase.receiveContent(makeResult(reqlog, "read", "resource", response, as));
 		} else {
 			closeResponse(response);
 		}
@@ -3030,10 +3038,9 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
+		Objects.requireNonNull(response);
 		int status = response.code();
-		checkStatus(response, status, "read", "resource", path,
-			ResponseStatus.OK_OR_NO_CONTENT);
-
+		checkStatus(response, status, "read", "resource", path, ResponseStatus.OK_OR_NO_CONTENT);
 		return makeResults(constructor, reqlog, "read", "resource", response);
 	}
 
@@ -3076,14 +3083,14 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPutFunction, resendableConsumer);
+		Objects.requireNonNull(response);
 		int status = response.code();
 
 		checkStatus(response, status, "write", "resource", path,
 			ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
 		if (as != null) {
-			outputBase.receiveContent(makeResult(reqlog, "write", "resource",
-				response, as));
+			outputBase.receiveContent(makeResult(reqlog, "write", "resource", response, as));
 		} else {
 			closeResponse(response);
 		}
@@ -3162,8 +3169,8 @@ public class OkHttpServices implements RESTServices {
 			ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
 		if (as != null) {
-			outputBase.receiveContent(makeResult(reqlog, "write", "resource",
-				response, as));
+			Object content = makeResult(reqlog, "write", "resource", response, as);
+			outputBase.receiveContent(content);
 		} else {
 			closeResponse(response);
 		}
@@ -3251,8 +3258,8 @@ public class OkHttpServices implements RESTServices {
 		}
 
 		if (as != null) {
-			outputBase.receiveContent(makeResult(reqlog, operation, "resource",
-				response, as));
+			Object content = makeResult(reqlog, operation, "resource", response, as);
+			outputBase.receiveContent(content);
 		} else {
 			closeResponse(response);
 		}
@@ -3335,8 +3342,8 @@ public class OkHttpServices implements RESTServices {
 			ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
 		if (as != null) {
-			outputBase.receiveContent(makeResult(reqlog, "apply", "resource",
-				response, as));
+			Object content = makeResult(reqlog, "apply", "resource", response, as);
+			outputBase.receiveContent(content);
 		} else {
 			closeResponse(response);
 		}
@@ -3573,10 +3580,10 @@ public class OkHttpServices implements RESTServices {
 			String value = getString();
 			if (value == null) return null;
 			if (getType() == EvalResult.Type.DECIMAL) return new BigDecimal(value);
-			else if (getType() == EvalResult.Type.DOUBLE) return new Double(value);
-			else if (getType() == EvalResult.Type.FLOAT) return new Float(value);
+			else if (getType() == EvalResult.Type.DOUBLE) return Double.valueOf(value);
+			else if (getType() == EvalResult.Type.FLOAT) return Float.valueOf(value);
 				// MarkLogic integers can be much larger than Java integers, so we'll use Long instead
-			else if (getType() == EvalResult.Type.INTEGER) return new Long(value);
+			else if (getType() == EvalResult.Type.INTEGER) return Long.valueOf(value);
 			else return new BigDecimal(value);
 		}
 
@@ -3640,14 +3647,16 @@ public class OkHttpServices implements RESTServices {
 					if (valueObject == null) {
 						value = "null";
 						type = "null-node()";
-					} else if (valueObject instanceof JacksonHandle ||
-						valueObject instanceof JacksonParserHandle) {
-						JsonNode jsonNode = null;
+					} else if (valueObject instanceof JacksonHandle || valueObject instanceof JacksonParserHandle) {
+						JsonNode jsonNode;
 						if (valueObject instanceof JacksonHandle) {
 							jsonNode = ((JacksonHandle) valueObject).get();
-						} else if (valueObject instanceof JacksonParserHandle) {
-							jsonNode = ((JacksonParserHandle) valueObject).get().readValueAs(JsonNode.class);
+						} else {
+							JsonParser jsonParser = ((JacksonParserHandle) valueObject).get();
+							Objects.requireNonNull(jsonParser);
+							jsonNode = jsonParser.readValueAs(JsonNode.class);
 						}
+						Objects.requireNonNull(jsonNode);
 						value = jsonNode.toString();
 						type = getJsonType(jsonNode);
 					} else if (valueObject instanceof AbstractWriteHandle) {
@@ -3690,7 +3699,7 @@ public class OkHttpServices implements RESTServices {
 
 					// set the variable value
 					sb.append("&evv" + i + "=");
-					sb.append(URLEncoder.encode(value, "UTF-8"));
+					sb.append(value != null ? URLEncoder.encode(value, "UTF-8") : value);
 					// set the variable type
 					sb.append("&evt" + i + "=" + type);
 					i++;
@@ -3973,13 +3982,13 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doDeleteFunction, null);
+		Objects.requireNonNull(response);
 		int status = response.code();
 		checkStatus(response, status, "delete", "resource", path,
 			ResponseStatus.OK_OR_NO_CONTENT);
 
 		if (as != null) {
-			outputBase.receiveContent(makeResult(reqlog, "delete", "resource",
-				response, as));
+			outputBase.receiveContent(makeResult(reqlog, "delete", "resource", response, as));
 		} else {
 			closeResponse(response);
 		}
@@ -5491,6 +5500,8 @@ public class OkHttpServices implements RESTServices {
 		@Override
 		public void writeTo(BufferedSink sink) throws IOException {
 			if (obj instanceof InputStream) {
+				// Polaris logged a warning for this, where the InputStream is not closed. But closing it causes digest
+				// authentication to fail. Oddly, only a test that uses an invalid user fails.
 				sink.writeAll(Okio.source((InputStream) obj));
 			} else if (obj instanceof File) {
 				try (Source source = Okio.source((File) obj)) {

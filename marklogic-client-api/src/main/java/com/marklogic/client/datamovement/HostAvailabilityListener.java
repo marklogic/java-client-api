@@ -141,7 +141,8 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
    *
    * @return this instance (for method chaining)
    */
-  public HostAvailabilityListener withHostUnavailableExceptions(Class<Throwable>... exceptionTypes) {
+  @SafeVarargs
+  public final HostAvailabilityListener withHostUnavailableExceptions(Class<Throwable>... exceptionTypes) {
     hostUnavailableExceptions = new ArrayList<>();
     for ( Class<Throwable> exception : exceptionTypes ) {
       hostUnavailableExceptions.add(exception);

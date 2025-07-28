@@ -20,6 +20,25 @@ import java.security.NoSuchAlgorithmException;
  */
 public abstract class SSLUtil {
 
+	private final static Logger LOGGER = LoggerFactory.getLogger("com.marklogic.client.security");
+
+	// Added in 7.2.0 so that clients using MarkLogic 12 will default to TLSv1.3, while clients using MarkLogic 11
+	// or older will default to TLSv1.2.
+	public static final String DEFAULT_PROTOCOL = "TLS";
+
+	/**
+	 * Included to satisfy Polaris, which requires that security-related exceptions be logged, in addition to being
+	 * thrown. This is logged at the debug level to avoid cluttering logs in an application that is likely already
+	 * to log these exceptions.
+	 *
+	 * @param ex
+	 */
+	public static void logSecurityRelatedException(Exception ex) {
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(ex.getMessage(), ex);
+		}
+	}
+
 	/**
 	 * @return an X509TrustManager based on the JVM's default trust manager algorithm. How this is constructed can vary
 	 * based on the JVM type and version. One common approach is for the JVM to constructs this based on its
@@ -55,6 +74,7 @@ public abstract class SSLUtil {
 		try {
 			trustManagerFactory = TrustManagerFactory.getInstance(trustManagerAlgorithm);
 		} catch (NoSuchAlgorithmException e) {
+			SSLUtil.logSecurityRelatedException(e);
 			throw new RuntimeException(
 				"Unable to obtain trust manager factory using algorithm: " + trustManagerAlgorithm, e);
 		}
@@ -62,6 +82,7 @@ public abstract class SSLUtil {
 		try {
 			trustManagerFactory.init(optionalKeyStore);
 		} catch (KeyStoreException e) {
+			SSLUtil.logSecurityRelatedException(e);
 			throw new RuntimeException(String.format(
 				"Unable to initialize trust manager factory obtained using algorithm: %s; cause: %s",
 				trustManagerAlgorithm, e.getMessage()), e);
@@ -104,6 +125,7 @@ public abstract class SSLUtil {
 		try {
 			sslContext.init(keyManagerFactory.getKeyManagers(), trustManagers, null);
 		} catch (KeyManagementException ex) {
+			SSLUtil.logSecurityRelatedException(ex);
 			throw new RuntimeException("Unable to initialize SSL context", ex);
 		}
 
@@ -118,6 +140,7 @@ public abstract class SSLUtil {
 		try {
 			keyStore = KeyStore.getInstance(keyStoreType);
 		} catch (KeyStoreException ex) {
+			SSLUtil.logSecurityRelatedException(ex);
 			throw new RuntimeException("Unable to get instance of key store with type: " + keyStoreType, ex);
 		}
 
@@ -125,6 +148,7 @@ public abstract class SSLUtil {
 			keyStore.load(inputStream, keyStorePassword);
 			return keyStore;
 		} catch (Exception ex) {
+			SSLUtil.logSecurityRelatedException(ex);
 			throw new RuntimeException("Unable to read from key store at path: " + keyStorePath, ex);
 		}
 	}
@@ -134,12 +158,14 @@ public abstract class SSLUtil {
 		try {
 			keyManagerFactory = KeyManagerFactory.getInstance(algorithm);
 		} catch (NoSuchAlgorithmException ex) {
+			SSLUtil.logSecurityRelatedException(ex);
 			throw new RuntimeException("Unable to create key manager factory with algorithm: " + algorithm, ex);
 		}
 
 		try {
 			keyManagerFactory.init(keyStore, keyStorePassword);
 		} catch (Exception ex) {
+			SSLUtil.logSecurityRelatedException(ex);
 			throw new RuntimeException("Unable to initialize key manager factory", ex);
 		}
 		return keyManagerFactory;
@@ -149,6 +175,7 @@ public abstract class SSLUtil {
 		try {
 			return SSLContext.getInstance(sslProtocol);
 		} catch (Exception ex) {
+			SSLUtil.logSecurityRelatedException(ex);
 			throw new RuntimeException("Unable to create SSL context using protocol: " + sslProtocol, ex);
 		}
 	}

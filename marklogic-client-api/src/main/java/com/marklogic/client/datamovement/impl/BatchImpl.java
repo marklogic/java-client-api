@@ -24,6 +24,7 @@ public class BatchImpl<T> extends BatchEventImpl implements Batch<T> {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public T[] getItems() {
     if (items == null) {
       return (T[]) Array.newInstance(as, 0);
@@ -35,15 +36,22 @@ public class BatchImpl<T> extends BatchEventImpl implements Batch<T> {
     return this;
   }
 
+	@SuppressWarnings("unchecked")
   public BatchImpl<T> withClient(DatabaseClient client) {
     return (BatchImpl<T>) super.withClient(client);
   }
+
+	@SuppressWarnings("unchecked")
   public BatchImpl<T> withTimestamp(Calendar timestamp) {
     return (BatchImpl<T>) super.withTimestamp(timestamp);
   }
+
+	@SuppressWarnings("unchecked")
   public BatchImpl<T> withJobTicket(JobTicket jobTicket) {
     return (BatchImpl<T>) super.withJobTicket(jobTicket);
   }
+
+	@SuppressWarnings("unchecked")
   public BatchImpl<T> withJobBatchNumber(long jobBatchNumber) {
     return (BatchImpl<T>) super.withJobBatchNumber(jobBatchNumber);
   }

@@ -68,6 +68,7 @@ public class JacksonDatabindHandle<T>
    * Provides a handle on POJO content.
    * @param content    the POJO which should be serialized
    */
+  @SuppressWarnings("unchecked")
   public JacksonDatabindHandle(T content) {
     this((Class<T>) content.getClass());
     set(content);
@@ -130,6 +131,8 @@ public class JacksonDatabindHandle<T>
   public JacksonDatabindHandle<T> newHandle() {
     return new JacksonDatabindHandle<>(getContentClass()).withFormat(getFormat()).withMimetype(getMimetype());
   }
+
+	@SuppressWarnings("unchecked")
   @Override
   public JacksonDatabindHandle<T>[] newHandleArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);

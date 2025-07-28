@@ -6,10 +6,10 @@ package com.marklogic.client.fastfunctest;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.StringHandle;
-import org.junit.jupiter.api.*;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -50,7 +50,7 @@ public class TestDocumentEncoding extends AbstractFunctionalTest
 
     // transform the Document into a String
     Source domSource = new DOMSource(doc);
-    TransformerFactory tf = TransformerFactory.newInstance();
+    TransformerFactory tf = XmlFactories.makeNewTransformerFactory();
     Transformer transformer = tf.newTransformer();
     transformer.setOutputProperty(OutputKeys.METHOD, "xml");
     transformer.setOutputProperty(OutputKeys.ENCODING, "Cp1252");
@@ -88,7 +88,7 @@ public class TestDocumentEncoding extends AbstractFunctionalTest
     x2.appendChild(text2);
 
     Source domSource2 = new DOMSource(doc2);
-    TransformerFactory tf2 = TransformerFactory.newInstance();
+    TransformerFactory tf2 = XmlFactories.makeNewTransformerFactory();
     Transformer transformer2 = tf2.newTransformer();
     transformer2.setOutputProperty(OutputKeys.METHOD, "xml");
     transformer2.setOutputProperty(OutputKeys.ENCODING, "UTF-8");

@@ -22,16 +22,10 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.mgmt.ManageClient;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.*;
+import org.springframework.http.ResponseEntity;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -87,7 +81,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	private static JsonNode jsonNode;
 	private static JobTicket writeTicket;
 	private static JobTicket testBatchJobTicket;
-	private static int forestCount = 1;
+	private static final int forestCount = 3;
 
 	@BeforeAll
 	public static void setUpBeforeClass() throws Exception {
@@ -100,22 +94,13 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		hostNames = getHosts();
 
 		createDB(dbName);
-		Thread.currentThread().sleep(500L);
-		//Ensure db has atleast one forest
-		createForestonHost(dbName + "-" + forestCount, dbName, hostNames[0]);
-		forestCount++;
-		for (String forestHost : hostNames) {
-			for(int i = 0; i < new Random().nextInt(3); i++) {
-				createForestonHost(dbName + "-" + forestCount, dbName, forestHost);
-				forestCount++;
-			}
-			Thread.currentThread().sleep(500L);
+		for (int i = 1; i <= forestCount; i++) {
+			createForest(dbName + "-" + i, dbName);
 		}
-		// Create App Server if needed.
 		createRESTServerWithDB(server, port);
 		assocRESTServer(server, dbName, port);
 		if (IsSecurityEnabled()) {
-			enableSecurityOnRESTServer(server, dbName);
+			enableSecurityOnRESTServer(server);
 		}
 
 		dbClient = getDatabaseClient(user, password, getConnType());
@@ -157,12 +142,6 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	@AfterAll
 	public static void tearDownAfterClass() throws Exception {
 		associateRESTServerWithDB(server, "Documents");
-		for (int i = 0; i < forestCount -1 ; i++) {
-			System.out.println(dbName + "-" + (i + 1));
-			detachForest(dbName, dbName + "-" + (i + 1));
-			deleteForest(dbName + "-" + (i + 1));
-		}
-
 		deleteDB(dbName);
 	}
 
@@ -482,17 +461,17 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		ihb3.flushAndWait();
 		System.out.println("Size is " + dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4);
+		assertEquals(4, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 
 		DocumentMetadataHandle mHandle2 = readMetadataFromDocument(dbClient, "/doc/reader_xml", "XML");
 		assertEquals(1, mHandle2.getQuality());
 		assertEquals("Sample Collection 1", mHandle2.getCollections().iterator().next());
-		assertTrue(mHandle2.getCollections().size() == 1);
+		assertEquals(1, mHandle2.getCollections().size());
 
 		DocumentMetadataHandle mHandle3 = readMetadataFromDocument(dbClient, "/doc/jackson", "XML");
 		assertEquals(0, mHandle3.getQuality());
 		assertEquals("Sample Collection 2", mHandle3.getCollections().iterator().next());
-		assertTrue(mHandle3.getCollections().size() == 1);
+		assertEquals(1, mHandle3.getCollections().size());
 
 		assertTrue(uriExists(successBatch.toString(), "/doc/string"));
 
@@ -948,7 +927,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	}
 
 	@Test
-	public void testflushAsync() throws Exception {
+	public void testflushAsync() {
 		System.out.println("In testflushAsync method");
 
 		final String query1 = "fn:count(fn:doc())";
@@ -982,51 +961,48 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	}
 
 	@Test
-	public void testInsertoReadOnlyForest() throws Exception {
-		System.out.println("In testInsertoReadOnlyForest method");
+	public void testInsertoReadOnlyForest() {
+		try {
+			Map<String, String> properties = new HashMap<>();
+			properties.put("updates-allowed", "read-only");
+			for (int i = 1; i <= forestCount; i++) {
+				changeProperty(properties, "/manage/v2/forests/" + dbName + "-" + i + "/properties");
+			}
+			final String query1 = "fn:count(fn:doc())";
 
-		Map<String, String> properties = new HashMap<>();
-		properties.put("updates-allowed", "read-only");
-		for (int i = 0; i < forestCount; i++)
-			changeProperty(properties, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
-		final String query1 = "fn:count(fn:doc())";
+			final AtomicInteger successCount = new AtomicInteger(0);
 
-		final AtomicInteger successCount = new AtomicInteger(0);
+			final AtomicBoolean failState = new AtomicBoolean(false);
+			final AtomicInteger failCount = new AtomicInteger(0);
 
-		final AtomicBoolean failState = new AtomicBoolean(false);
-		final AtomicInteger failCount = new AtomicInteger(0);
+			WriteBatcher ihb2 = dmManager.newWriteBatcher();
+			ihb2.withBatchSize(25);
+			ihb2.onBatchSuccess(batch -> {
+				successCount.addAndGet(batch.getItems().length);
+			}).onBatchFailure((batch, throwable) -> {
+				failState.set(true);
+				failCount.addAndGet(batch.getItems().length);
+			});
 
-		for (int i = 0; i < forestCount; i++)
-			changeProperty(properties, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
+			dmManager.startJob(ihb2);
+			for (int j = 0; j < 20; j++) {
+				String uri = "/local/json-" + j;
+				ihb2.addAs(uri, stringHandle);
+			}
 
-		WriteBatcher ihb2 = dmManager.newWriteBatcher();
-		ihb2.withBatchSize(25);
-		ihb2.onBatchSuccess(batch -> {
+			ihb2.flushAndWait();
 
-			successCount.addAndGet(batch.getItems().length);
-		}).onBatchFailure((batch, throwable) -> {
-			failState.set(true);
-			failCount.addAndGet(batch.getItems().length);
-		});
-
-		dmManager.startJob(ihb2);
-		for (int j = 0; j < 20; j++) {
-			String uri = "/local/json-" + j;
-			ihb2.addAs(uri, stringHandle);
+			assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+			assertTrue(failState.get());
+			assertEquals(0, successCount.intValue());
+			assertEquals(20, failCount.intValue());
+		} finally {
+			Map<String, String> properties = new HashMap<>();
+			properties.put("updates-allowed", "all");
+			for (int i = 1; i <= forestCount; i++) {
+				changeProperty(properties, "/manage/v2/forests/" + dbName + "-" + i + "/properties");
+			}
 		}
-
-		ihb2.flushAndWait();
-
-		properties.put("updates-allowed", "all");
-		for (int i = 0; i < forestCount; i++)
-			changeProperty(properties, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
-
-		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
-
-		assertTrue(failState.get());
-
-		assertTrue(successCount.intValue() == 0);
-		assertTrue(failCount.intValue() == 20);
 	}
 
 	@Test
@@ -1071,10 +1047,10 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		System.out.println("Success : " + successCount.intValue());
 		System.out.println("Count : " + dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 
-		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 		assertTrue(failState.get());
 
-		assertTrue(failCount.intValue() == 20);
+		assertEquals(20, failCount.intValue());
 	}
 
 	@Test
@@ -1721,7 +1697,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 							if (!threadMap.containsKey(poolname)) {
 								threadMap.put(poolname, 1);
 							} else {
-								threadMap.put(poolname, new Integer(threadMap.get(poolname) + 1));
+								threadMap.put(poolname, threadMap.get(poolname) + 1);
 							}
 						}
 					}
@@ -1857,7 +1833,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	}
 
 	@Test
-	public void testEmptyFlush() throws Exception {
+	public void testEmptyFlush() {
 		System.out.println("In testEmptyFlush method");
 
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
@@ -1881,7 +1857,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		ihb2.add("/new", fileHandle);
 		dmManager.stopJob(job);
 		final String query1 = "fn:count(fn:doc())";
-		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 	}
 
 	@Test
@@ -2706,24 +2682,11 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 			}
 			xmlBuff.append('}');
-			DefaultHttpClient client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host, 8002),
-					new UsernamePasswordCredentials("admin", "admin"));
 
-			HttpPost post = new HttpPost("http://" + host + ":8002" + endpoint);
-			post.addHeader("Content-type", "application/json");
-			post.setEntity(new StringEntity(xmlBuff.toString()));
-
-			HttpResponse response = client.execute(post);
-			HttpEntity respEntity = response.getEntity();
-
-			if (respEntity != null) {
-				// EntityUtils to get the response content
-				String content = EntityUtils.toString(respEntity);
-				System.out.println(content);
-			}
+			ManageClient manageClient = newManageClient();
+			ResponseEntity<String> response = manageClient.postXml(endpoint, xmlBuff.toString());
+			System.out.println("Response: " + response.getBody());
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		}
 	}

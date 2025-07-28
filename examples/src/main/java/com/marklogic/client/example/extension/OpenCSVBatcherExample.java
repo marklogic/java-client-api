@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.example.extension;
 
@@ -16,6 +16,7 @@ import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
+import com.opencsv.exceptions.CsvValidationException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
@@ -30,14 +31,14 @@ import java.io.InputStreamReader;
  */
 public class OpenCSVBatcherExample {
   public static void main(String[] args)
-    throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+    throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, CsvValidationException
   {
     run(Util.loadProperties());
   }
 
   // install and then use the resource extension
   public static void run(ExampleProperties props)
-    throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+    throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, CsvValidationException
   {
     System.out.println("example: "+OpenCSVBatcherExample.class.getName());
     installResourceExtension(props);
@@ -83,7 +84,7 @@ public class OpenCSVBatcherExample {
 
   // use the resource manager
   public static void useResource(ExampleProperties props)
-    throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+    throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, CsvValidationException
   {
 	  DatabaseClient client = Util.newClient(props);
 

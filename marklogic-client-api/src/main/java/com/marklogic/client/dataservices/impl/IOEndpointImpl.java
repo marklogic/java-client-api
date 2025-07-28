@@ -103,6 +103,7 @@ abstract class IOEndpointImpl<I,O> implements IOEndpoint {
         return new CallContextImpl<>(this, legacyContext);
     }
 
+	@SuppressWarnings("unchecked")
     CallContextImpl<I,O>[] checkAllowedArgs(IOEndpoint.CallContext[] callCtxts) {
         if (callCtxts == null || callCtxts.length ==0)
             throw new IllegalArgumentException("null or empty contexts for call");
@@ -112,6 +113,8 @@ abstract class IOEndpointImpl<I,O> implements IOEndpoint {
         }
         return contexts;
     }
+
+	@SuppressWarnings("unchecked")
     CallContextImpl<I,O> checkAllowedArgs(CallContext callCtxt) {
         if (!(callCtxt instanceof CallContextImpl)) {
             throw new IllegalArgumentException("Unknown implementation of call context");
@@ -300,9 +303,6 @@ abstract class IOEndpointImpl<I,O> implements IOEndpoint {
                 this.bulkIOEndpointCaller = bulkIOEndpointCaller;
             }
 
-            Boolean isAwaitingTermination() {
-                return this.awaitingTermination;
-            }
             synchronized void awaitTermination() throws InterruptedException {
                 if (bulkIOEndpointCaller.getCallContextQueue().isEmpty() && getActiveCount()<=1) {
                     shutdown();

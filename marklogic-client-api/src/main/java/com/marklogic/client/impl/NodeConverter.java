@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -26,10 +26,10 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -62,7 +62,7 @@ public class NodeConverter {
    static private XMLInputFactory getXMLInputFactory() {
       // okay if one thread overwrites another during lazy initialization
       if (xmlInputFactory == null) {
-         xmlInputFactory = XMLInputFactory.newFactory();
+         xmlInputFactory = XmlFactories.makeNewInputFactory();
       }
       return xmlInputFactory;
    }
@@ -128,7 +128,8 @@ public class NodeConverter {
       }
       return handle;
    }
-   static public <T extends AbstractWriteHandle> Stream<T> streamWithFormat(Stream<T> handles, Format format) {
+	@SuppressWarnings("unchecked")
+	static public <T extends AbstractWriteHandle> Stream<T> streamWithFormat(Stream<T> handles, Format format) {
       if (handles == null || format == null) {
          return handles;
       }
@@ -143,7 +144,7 @@ public class NodeConverter {
        return handles;
     }
    static private class Formatter<T extends AbstractWriteHandle> implements Function<T,T> {
-      private Format format;
+      private final Format format;
       Formatter(Format format) {
          this.format = format;
       }
@@ -151,93 +152,6 @@ public class NodeConverter {
       public T apply(T handle) {
          return NodeConverter.withFormat(handle, format);
       }
-   }
-
-   static public AbstractWriteHandle ObjectToHandle(Object value, Format format) {
-      if (value == null) {
-        return null;
-      } else if (value instanceof byte[]) {
-        return BytesObjectToHandle(value, format);
-      } else if (value instanceof File) {
-        return FileObjectToHandle(value, format);
-      } else if (value instanceof InputStream) {
-        return InputStreamObjectToHandle(value, format);
-      } else if (value instanceof Reader) {
-        return ReaderObjectToHandle(value, format);
-      } else if (value instanceof String) {
-        return StringObjectToHandle(value, format);
-      }
-      throw new IllegalArgumentException(
-          "unsupported value argument "+value.getClass().getCanonicalName()+
-          ", expected byte[], File, InputStream, Reader, or String"
-      );
-   }
-   static private BytesHandle BytesObjectToHandle(Object value, Format format) {
-     return BytesToHandle((byte[]) value).withFormat(format);
-   }
-   static private FileHandle FileObjectToHandle(Object value, Format format) {
-     return FileToHandle((File) value).withFormat(format);
-   }
-   static private InputStreamHandle InputStreamObjectToHandle(Object value, Format format) {
-     return InputStreamToHandle((InputStream) value).withFormat(format);
-   }
-   static private ReaderHandle ReaderObjectToHandle(Object value, Format format) {
-     return ReaderToHandle((Reader) value).withFormat(format);
-   }
-   static private StringHandle StringObjectToHandle(Object value, Format format) {
-     return StringToHandle((String) value).withFormat(format);
-   }
-
-   static public Stream<? extends AbstractWriteHandle> ObjectToHandle(Stream<?> values, Format format) {
-     if (values == null) {
-       return null;
-     }
-     final ObjectHandler handler = new ObjectHandler(format);
-     return values.map(handler::toHandle);
-   }
-   static private class ObjectHandler {
-     private Format format;
-     private BiFunction<Object, Format, ? extends AbstractWriteHandle> toHandler = null;
-     private Class<?> itemType = null;
-     ObjectHandler(Format format) {
-       this.format = format;
-     }
-     AbstractWriteHandle toHandle(Object value) {
-       if (value == null) {
-         return null;
-       } else if (toHandler == null || itemType == null) {
-         init(value);
-       } else if (!itemType.isInstance(value)) {
-         throw new IllegalArgumentException(
-             "inconsistent stream - expected instance of "+itemType.getSimpleName()+
-             " but received "+value.getClass().getCanonicalName()
-         );
-       }
-       return toHandler.apply(value, format);
-     }
-     private synchronized void init(Object value) {
-       if (value instanceof byte[]) {
-         toHandler = NodeConverter::BytesObjectToHandle;
-         itemType  = byte[].class;
-       } else if (value instanceof File) {
-         toHandler = NodeConverter::FileObjectToHandle;
-         itemType  = File.class;
-       } else if (value instanceof InputStream) {
-         toHandler = NodeConverter::InputStreamObjectToHandle;
-         itemType  = InputStream.class;
-       } else if (value instanceof Reader) {
-         toHandler = NodeConverter::ReaderObjectToHandle;
-         itemType  = Reader.class;
-       } else if (value instanceof String) {
-         toHandler = NodeConverter::StringObjectToHandle;
-         itemType  = String.class;
-       } else {
-         throw new IllegalArgumentException(
-            "unsupported stream item argument "+value.getClass().getCanonicalName()+
-            ", expected byte[], File, InputStream, Reader, or String"
-         );
-       }
-     }
    }
 
    static public BytesHandle BytesToHandle(byte[] value) {
@@ -249,9 +163,6 @@ public class NodeConverter {
    static public BytesHandle[] BytesToHandle(byte[][] values) {
       return (values == null) ? null : convert(values, new BytesHandle[values.length], NodeConverter::BytesToHandle);
    }
-   static public BufferableHandle[] BytesToBufferableHandle(byte[][] values) {
-      return convert(values, NodeConverter::BytesToHandle);
-   }
    static public DOMHandle DocumentToHandle(Document value) {
       return (value == null) ? null : new DOMHandle(value);
    }
@@ -261,9 +172,6 @@ public class NodeConverter {
    static public DOMHandle[] DocumentToHandle(Document[] values) {
       return (values == null) ? null : convert(values, new DOMHandle[values.length], NodeConverter::DocumentToHandle);
    }
-   static public BufferableHandle[] DocumentToBufferableHandle(Document[] values) {
-       return convert(values, NodeConverter::DocumentToHandle);
-    }
    static public FileHandle FileToHandle(File value) {
       return (value == null) ? null : new FileHandle(value);
    }
@@ -272,9 +180,6 @@ public class NodeConverter {
    }
    static public FileHandle[] FileToHandle(File[] values) {
       return (values == null) ? null : convert(values, new FileHandle[values.length], NodeConverter::FileToHandle);
-   }
-   static public BufferableHandle[] FileToBufferableHandle(File[] values) {
-       return convert(values, NodeConverter::FileToHandle);
    }
    static public InputStreamHandle InputStreamToHandle(InputStream value) {
       return (value == null) ? null : new InputStreamHandle(value);
@@ -285,9 +190,6 @@ public class NodeConverter {
    static public InputStreamHandle[] InputStreamToHandle(InputStream[] values) {
       return (values == null) ? null : convert(values, new InputStreamHandle[values.length], NodeConverter::InputStreamToHandle);
    }
-   static public BufferableHandle[] InputStreamToBufferableHandle(InputStream[] values) {
-       return convert(values, NodeConverter::InputStreamToHandle);
-   }
    static public InputSourceHandle InputSourceToHandle(InputSource value) {
       return (value == null) ? null : new InputSourceHandle(value);
    }
@@ -297,9 +199,6 @@ public class NodeConverter {
    static public InputSourceHandle[] InputSourceToHandle(InputSource[] values) {
       return (values == null) ? null : convert(values, new InputSourceHandle[values.length], NodeConverter::InputSourceToHandle);
    }
-   static public BufferableHandle[] InputSourceToBufferableHandle(InputSource[] values) {
-       return convert(values, NodeConverter::InputSourceToHandle);
-   }
    static public JacksonHandle JsonNodeToHandle(JsonNode value) {
       return (value == null) ? null : new JacksonHandle(value);
    }
@@ -308,9 +207,6 @@ public class NodeConverter {
    }
    static public JacksonHandle[] JsonNodeToHandle(JsonNode[] values) {
       return (values == null) ? null : convert(values, new JacksonHandle[values.length], NodeConverter::JsonNodeToHandle);
-   }
-   static public BufferableHandle[] JsonNodeToBufferableHandle(JsonNode[] values) {
-       return convert(values, NodeConverter::JsonNodeToHandle);
    }
    static public JacksonParserHandle JsonParserToHandle(JsonParser value) {
       if (value == null) {
@@ -326,9 +222,6 @@ public class NodeConverter {
    static public JacksonParserHandle[] JsonParserToHandle(JsonParser[] values) {
       return (values == null) ? null : convert(values, new JacksonParserHandle[values.length], NodeConverter::JsonParserToHandle);
    }
-   static public BufferableHandle[] JsonParserToBufferableHandle(JsonParser[] values) {
-       return convert(values, NodeConverter::JsonParserToHandle);
-   }
    static public ArrayNode ReaderToArrayNode(Reader value) {
       try {
          return (value == null) ? null : getMapper().readValue(value, ArrayNode.class);
@@ -338,9 +231,6 @@ public class NodeConverter {
    }
    static public Stream<ArrayNode> ReaderToArrayNode(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToArrayNode);
-   }
-   static public ArrayNode[] ReaderToArrayNode(Reader[] values) {
-       return (values == null) ? null : convert(values, new ArrayNode[values.length], NodeConverter::ReaderToArrayNode);
    }
    static public JsonNode ReaderToJsonNode(Reader value) {
       try {
@@ -352,9 +242,6 @@ public class NodeConverter {
    static public Stream<JsonNode> ReaderToJsonNode(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToJsonNode);
    }
-   static public JsonNode[] ReaderToJsonNode(Reader[] values) {
-       return (values == null) ? null : convert(values, new JsonNode[values.length], NodeConverter::ReaderToJsonNode);
-   }
    static public ObjectNode ReaderToObjectNode(Reader value) {
       try {
          return (value == null) ? null : getMapper().readValue(value, ObjectNode.class);
@@ -364,9 +251,6 @@ public class NodeConverter {
    }
    static public Stream<ObjectNode> ReaderToObjectNode(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToObjectNode);
-   }
-   static public ObjectNode[] ReaderToObjectNode(Reader[] values) {
-       return (values == null) ? null : convert(values, new ObjectNode[values.length], NodeConverter::ReaderToObjectNode);
    }
    static public JsonParser ReaderToJsonParser(Reader value) {
       try {
@@ -378,26 +262,16 @@ public class NodeConverter {
    static public Stream<JsonParser> ReaderToJsonParser(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToJsonParser);
    }
-   static public JsonParser[] ReaderToJsonParser(Reader[] values) {
-       return (values == null) ? null : convert(values, new JsonParser[values.length], NodeConverter::ReaderToJsonParser);
-   }
 
    static public Document InputStreamToDocument(InputStream inputStream) {
       try {
          return (inputStream == null) ? null : getDocumentBuilderFactory().newDocumentBuilder().parse(inputStream);
-      } catch(SAXException e) {
-         throw new RuntimeException(e);
-      } catch(IOException e) {
-         throw new RuntimeException(e);
-      } catch (ParserConfigurationException e) {
+      } catch(SAXException | IOException | ParserConfigurationException e) {
          throw new RuntimeException(e);
       }
    }
    static public Stream<Document> InputStreamToDocument(Stream<? extends InputStream> values) {
       return (values == null) ? null : values.map(NodeConverter::InputStreamToDocument);
-   }
-   static public Document[] InputStreamToDocument(InputStream[] values) {
-       return (values == null) ? null : convert(values, new Document[values.length], NodeConverter::InputStreamToDocument);
    }
    static public File InputStreamToFile(InputStream inputStream) {
       if (inputStream == null) {
@@ -411,20 +285,11 @@ public class NodeConverter {
          throw new RuntimeException(e);
       }
    }
-   static public Stream<File> InputStreamToFile(Stream<? extends InputStream> values) {
-      return (values == null) ? null : values.map(NodeConverter::InputStreamToFile);
-   }
-   static public File[] InputStreamToFile(InputStream[] values) {
-       return (values == null) ? null : convert(values, new File[values.length], NodeConverter::InputStreamToFile);
-   }
    static public InputSource ReaderToInputSource(Reader reader) {
       return (reader == null) ? null : new InputSource(reader);
    }
    static public Stream<InputSource> ReaderToInputSource(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToInputSource);
-   }
-   static public InputSource[] ReaderToInputSource(Reader[] values) {
-       return (values == null) ? null : convert(values, new InputSource[values.length], NodeConverter::ReaderToInputSource);
    }
    static public Source ReaderToSource(Reader reader) {
       return (reader == null) ? null : new StreamSource(reader);
@@ -432,38 +297,25 @@ public class NodeConverter {
    static public Stream<Source> ReaderToSource(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToSource);
    }
-   static public Source[] ReaderToSource(Reader[] values) {
-       return (values == null) ? null : convert(values, new Source[values.length], NodeConverter::ReaderToSource);
-   }
    static public XMLEventReader ReaderToXMLEventReader(Reader reader) {
       try {
          return (reader == null) ? null : getXMLInputFactory().createXMLEventReader(reader);
-      } catch(XMLStreamException e) {
-         throw new RuntimeException(e);
-      } catch(FactoryConfigurationError e) {
+      } catch(XMLStreamException | FactoryConfigurationError e) {
          throw new RuntimeException(e);
       }
    }
    static public Stream<XMLEventReader> ReaderToXMLEventReader(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToXMLEventReader);
    }
-   static public XMLEventReader[] ReaderToXMLEventReader(Reader[] values) {
-       return (values == null) ? null : convert(values, new XMLEventReader[values.length], NodeConverter::ReaderToXMLEventReader);
-   }
    static public XMLStreamReader ReaderToXMLStreamReader(Reader reader) {
       try {
          return (reader == null) ? null : getXMLInputFactory().createXMLStreamReader(reader);
-      } catch(XMLStreamException e) {
-         throw new RuntimeException(e);
-      } catch(FactoryConfigurationError e) {
+      } catch(XMLStreamException | FactoryConfigurationError e) {
          throw new RuntimeException(e);
       }
    }
    static public Stream<XMLStreamReader> ReaderToXMLStreamReader(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToXMLStreamReader);
-   }
-   static public XMLStreamReader[] ReaderToXMLStreamReader(Reader[] values) {
-       return (values == null) ? null : convert(values, new XMLStreamReader[values.length], NodeConverter::ReaderToXMLStreamReader);
    }
 
    static public OutputStreamHandle OutputStreamSenderToHandle(OutputStreamSender value) {
@@ -484,9 +336,6 @@ public class NodeConverter {
    static public ReaderHandle[] ReaderToHandle(Reader[] values) {
       return (values == null) ? null : convert(values, new ReaderHandle[values.length], NodeConverter::ReaderToHandle);
    }
-   static public BufferableHandle[] ReaderToBufferableHandle(Reader[] values) {
-       return convert(values, NodeConverter::ReaderToHandle);
-    }
    static public StringHandle StringToHandle(String value) {
       return (value == null) ? null : new StringHandle(value);
    }
@@ -495,9 +344,6 @@ public class NodeConverter {
    }
    static public StringHandle[] StringToHandle(String[] values) {
       return (values == null) ? null : convert(values, new StringHandle[values.length], NodeConverter::StringToHandle);
-   }
-   static public BufferableHandle[] StringToBufferableHandle(String[] values) {
-       return convert(values, NodeConverter::StringToHandle);
    }
    static public SourceHandle SourceToHandle(Source value) {
       return (value == null) ? null : new SourceHandle(value);
@@ -508,9 +354,6 @@ public class NodeConverter {
    static public SourceHandle[] SourceToHandle(Source[] values) {
       return (values == null) ? null : convert(values, new SourceHandle[values.length], NodeConverter::SourceToHandle);
    }
-   static public BufferableHandle[] SourceToBufferableHandle(Source[] values) {
-       return convert(values, NodeConverter::SourceToHandle);
-   }
    static public XMLEventReaderHandle XMLEventReaderToHandle(XMLEventReader value) {
       return (value == null) ? null : new XMLEventReaderHandle(value);
    }
@@ -519,9 +362,6 @@ public class NodeConverter {
    }
    static public XMLEventReaderHandle[] XMLEventReaderToHandle(XMLEventReader[] values) {
       return (values == null) ? null : convert(values, new XMLEventReaderHandle[values.length], NodeConverter::XMLEventReaderToHandle);
-   }
-   static public BufferableHandle[] XMLEventReaderToBufferableHandle(XMLEventReader[] values) {
-       return convert(values, NodeConverter::XMLEventReaderToHandle);
    }
    static public XMLStreamReaderHandle XMLStreamReaderToHandle(XMLStreamReader value) {
       return (value == null) ? null : new XMLStreamReaderHandle(value);
@@ -532,9 +372,6 @@ public class NodeConverter {
    static public XMLStreamReaderHandle[] XMLStreamReaderToHandle(XMLStreamReader[] values) {
       return (values == null) ? null : convert(values, new XMLStreamReaderHandle[values.length], NodeConverter::XMLStreamReaderToHandle);
    }
-   static public BufferableHandle[] XMLStreamReaderToBufferableHandle(XMLStreamReader[] values) {
-       return convert(values, NodeConverter::XMLStreamReaderToHandle);
-   }
 
    static public byte[] InputStreamToBytes(InputStream inputStream) {
       try {
@@ -544,7 +381,7 @@ public class NodeConverter {
 
          ByteArrayOutputStream out = new ByteArrayOutputStream();
          byte[] buf = new byte[8192];
-         int byteCount = -1;
+         int byteCount;
          while ((byteCount=inputStream.read(buf)) != -1) {
             out.write(buf, 0, byteCount);
          }
@@ -554,15 +391,11 @@ public class NodeConverter {
       }
    }
    static public Reader InputStreamToReader(InputStream inputStream) {
-      try {
-         if (inputStream == null) {
-            return null;
-         }
+	 if (inputStream == null) {
+		return null;
+	 }
 
-         return new InputStreamReader(inputStream, "UTF-8");
-      } catch (UnsupportedEncodingException e) {
-         throw new RuntimeException(e);
-      }
+	 return new InputStreamReader(inputStream, StandardCharsets.UTF_8);
    }
    static public String InputStreamToString(InputStream inputStream) {
       return ReaderToString(InputStreamToReader(inputStream));
@@ -575,7 +408,7 @@ public class NodeConverter {
 
          StringBuilder bldr = new StringBuilder();
          char[] buf = new char[8192];
-         int charCount = -1;
+         int charCount;
          while ((charCount=reader.read(buf)) != -1) {
             bldr.append(buf, 0, charCount);
          }
@@ -585,7 +418,8 @@ public class NodeConverter {
       }
    }
 
-   static public <T extends JSONReadHandle> T jsonNodeToHandle(JsonNode node, T handle) {
+	@SuppressWarnings("unchecked")
+	static public <T extends JSONReadHandle> T jsonNodeToHandle(JsonNode node, T handle) {
       if (node == null) {
          return null;
       } else if (handle == null) {
@@ -655,7 +489,7 @@ public class NodeConverter {
          throw new RuntimeException(e);
       }
       throw new IllegalArgumentException(
-              "Could not convert JSON of class: "+jsonTree.getClass().getCanonicalName()+"\n"+jsonTree.toString()
+              "Could not convert JSON of class: "+jsonTree.getClass().getCanonicalName()+"\n"+jsonTree
       );
    }
 

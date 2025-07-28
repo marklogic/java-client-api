@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.datamovement.impl;
 
@@ -44,7 +44,7 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     private final AtomicLong failedBatches = new AtomicLong(0);
     private final AtomicInteger runningThreads = new AtomicInteger(0);
     private RowBatchFailureListener[] failureListeners;
-    private RowBatchSuccessListener[] successListeners;
+    private RowBatchSuccessListener<T>[] successListeners;
 
     private RawPlanDefinition pagedPlan;
     private long rowCount = 0;
@@ -62,7 +62,10 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 		validateRowsHandle(rowsHandle);
         this.rowsHandle = rowsHandle;
 
-		defaultRowManager = getPrimaryClient().newRowManager();
+		DatabaseClient databaseClient = getPrimaryClient();
+		Objects.requireNonNull(databaseClient);
+		defaultRowManager = databaseClient.newRowManager();
+
         super.withBatchSize(DEFAULT_BATCH_SIZE);
         if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
             withForestConfig(moveMgr.getForestConfig());
@@ -159,6 +162,7 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     }
 
     @Override
+	@SuppressWarnings("unchecked")
     public RowBatcher<T> onSuccess(RowBatchSuccessListener listener) {
         requireNotStarted("Must set success listener before starting job");
         if (listener == null) {
@@ -209,20 +213,26 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     }
 
     @Override
-    public RowBatchSuccessListener[] getSuccessListeners() {
+	@SuppressWarnings("unchecked")
+    public RowBatchSuccessListener<T>[] getSuccessListeners() {
         return successListeners;
     }
+
     @Override
     public RowBatchFailureListener[] getFailureListeners() {
         return failureListeners;
     }
+
+	@SafeVarargs
     @Override
-    public void setSuccessListeners(RowBatchSuccessListener... listeners) {
+    public final void setSuccessListeners(RowBatchSuccessListener<T>... listeners) {
         requireNotStarted("Must set success listeners before starting job");
         this.successListeners = listeners;
     }
+
+	@SafeVarargs
     @Override
-    public void setFailureListeners(RowBatchFailureListener... listeners) {
+    public final void setFailureListeners(RowBatchFailureListener... listeners) {
         requireNotStarted("Must set failure listeners before starting job");
         this.failureListeners = listeners;
     }
@@ -230,9 +240,11 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         event.withClient(getPrimaryClient());
         event.withJobTicket(getJobTicket());
     }
+
+	@SuppressWarnings("unchecked")
     private void notifySuccess(RowBatchSuccessListener.RowBatchResponseEvent<T> event) {
         if (successListeners == null || successListeners.length == 0) return;
-        for (RowBatchSuccessListener successListener: successListeners) {
+        for (RowBatchSuccessListener<T> successListener: successListeners) {
             try {
                 successListener.processEvent(event);
             } catch(Throwable e) {
@@ -378,9 +390,9 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 		// not the same value that a user would have provided via withBatchSize. And we don't want to log it when it's
 		// -1, which will be the case for a single batch.
 		if (logger.isDebugEnabled() && this.batchSize > 0) {
-			logger.debug("batch count: {}, calculated batch size: {}", batchCount, batchSize);
+			logger.debug("batch count: {}, calculated batch size: {}", this.batchCount, this.batchSize);
 		} else {
-			logger.info("batch count: {}", batchCount);
+			logger.info("batch count: {}", this.batchCount);
 		}
 
         if (this.hostInfos != null && getMoveMgr().getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
@@ -410,6 +422,7 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         }
     }
 
+	@SuppressWarnings("unchecked")
     private boolean readRows(RowBatchCallable<T> callable) {
         // assumes a batch size of at least 2 to avoid unsigned overflow
         long currentBatch = this.batchNum.incrementAndGet();
@@ -535,9 +548,12 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         return this;
     }
 
+	@SuppressWarnings("unchecked")
     private void submit(Callable<Boolean> callable) {
         submit(new FutureTask(callable));
     }
+
+	@SuppressWarnings("unchecked")
     private void submit(FutureTask<Boolean> task) {
         threadPool.execute(task);
     }
@@ -549,10 +565,14 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
             this.rowBatcher = rowBatcher;
             this.handle = handle;
         }
+
+		@SuppressWarnings("unchecked")
         private ContentHandle<T> getHandle() {
             return handle;
         }
+
         @Override
+		@SuppressWarnings("unchecked")
         public Boolean call() {
             try {
                 return rowBatcher.readRows(this);

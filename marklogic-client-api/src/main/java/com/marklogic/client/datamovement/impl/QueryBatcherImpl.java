@@ -731,7 +731,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                 .withForest(forest);
 
         QueryManagerImpl queryMgr = (QueryManagerImpl) client.newQueryManager();
-        queryMgr.setPageLength(getBatchSize() * getDocToUriBatchRatio());
+		final long newPageLength = (long)getBatchSize() * (long)getDocToUriBatchRatio();
+        queryMgr.setPageLength(newPageLength);
         UrisHandle handle = new UrisHandle();
 
         if (consistentSnapshot == true && serverTimestamp.get() > -1) {
@@ -881,11 +882,13 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
               logger.error("Exception thrown by an onQueryFailure listener", e2);
             }
           }
-          if (retryForestMap.get(forest).get() == 0) {
-            isDone.set(true);
-          } else {
-            retryForestMap.get(forest).decrementAndGet();
-          }
+			AtomicInteger forestRetryCounter = retryForestMap.get(forest);
+			Objects.requireNonNull(forestRetryCounter);
+			if (forestRetryCounter.get() == 0) {
+				isDone.set(true);
+			} else {
+				forestRetryCounter.decrementAndGet();
+			}
         } else if (t instanceof RuntimeException) {
           throw (RuntimeException) t;
         } else {
@@ -905,7 +908,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     	  shutdownIfAllForestsAreDone();
     	  return;
       }
-      long nextStart = start + getBatchSize() * getDocToUriBatchRatio();
+	  final long interval = (long)getBatchSize() * (long)getDocToUriBatchRatio();
+      long nextStart = start + interval;
       threadPool.execute(new QueryTask(
           moveMgr, batcher, forest, QueryBatcherImpl.this.queryMethod, query, filtered, forestBatchNum + getBatchSize(), nextStart, null, nextAfterUri
       ));
@@ -1000,6 +1004,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
               }
             };
             threadPool.execute(processBatch);
+			  // Polaris warns of a race condition here, presumably based on the check on remainingCapacity. But the
+			  // cost of executing a needless IteratorTask is small enough to accept the possible race condition.
             // If the queue is almost full, stop producing and add a task to continue later
             if (isSingleThreaded && threadPool.getQueue().remainingCapacity() <= 2 && iterator.hasNext()) {
               threadPool.execute(new IteratorTask(batcher));
@@ -1087,13 +1093,6 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
           logger.error("onQueryFailure listener cannot be closed", e);
         }
       }
-    }
-  }
-
-  protected void finalize() {
-    if (!isStoppedTrue()) {
-      logger.warn("QueryBatcher instance \"{}\" was never cleanly stopped.  You should call dataMovementManager.stopJob.",
-        getJobName());
     }
   }
 

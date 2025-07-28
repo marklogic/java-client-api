@@ -4,7 +4,6 @@
 package com.marklogic.client.test;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.io.SerializedString;
@@ -112,7 +111,7 @@ public class JacksonStreamTest {
     List<OrderItem> orderItems = new ArrayList<>();
     while ( parser.nextValue() != null ) {
       if ( parser.getCurrentToken() == JsonToken.START_ARRAY &&
-        "orderItems".equals(parser.getCurrentName()) )
+        "orderItems".equals(parser.currentName()) )
       {
         while ( parser.nextValue() == JsonToken.START_OBJECT ) {
           OrderItem item = getOrderItem(parser);
@@ -124,17 +123,17 @@ public class JacksonStreamTest {
     return null;
   }
 
-  private OrderItem getOrderItem(JsonParser parser) throws JsonParseException, IOException {
+  private OrderItem getOrderItem(JsonParser parser) throws IOException {
     OrderItem item = new OrderItem();
     if ( parser.getCurrentToken() != JsonToken.START_OBJECT ) {
       throw new IllegalStateException("nextValue should have been START_OBJECT but is:[" + parser.getCurrentToken() + "]");
     }
     while ( parser.nextValue() != null ) {
-      if ( "productId".equals(parser.getCurrentName()) ) {
+      if ( "productId".equals(parser.currentName()) ) {
         item.setProductId( parser.getText() );
-      } else if ( "quantity".equals(parser.getCurrentName()) ) {
+      } else if ( "quantity".equals(parser.currentName()) ) {
         item.setQuantity( parser.getIntValue() );
-      } else if ( "itemCostUSD".equals(parser.getCurrentName()) ) {
+      } else if ( "itemCostUSD".equals(parser.currentName()) ) {
         item.setItemCostUSD( parser.getFloatValue() );
       }
       if ( parser.getCurrentToken() == JsonToken.END_OBJECT ) {

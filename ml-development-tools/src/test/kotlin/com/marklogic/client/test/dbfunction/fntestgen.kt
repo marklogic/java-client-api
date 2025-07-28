@@ -1854,6 +1854,7 @@ import static org.junit.Assert.fail;
 
 import com.marklogic.client.test.dbfunction.DBFunctionTestUtil;
 
+@SuppressWarnings("unchecked")
 public class $testingClass {
    $testedClass testObj = ${testedClass}.on(DBFunctionTestUtil.db);
 

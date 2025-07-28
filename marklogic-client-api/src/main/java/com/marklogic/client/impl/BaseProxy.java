@@ -51,6 +51,7 @@ public class BaseProxy {
          init(endpointDir);
       } else {
          JsonNode serviceDecl = NodeConverter.handleToJsonNode(serviceDeclaration);
+		 Objects.requireNonNull(serviceDecl);
 
          JsonNode endpointDirProp = serviceDecl.get("endpointDirectory");
          if (endpointDirProp == null) {

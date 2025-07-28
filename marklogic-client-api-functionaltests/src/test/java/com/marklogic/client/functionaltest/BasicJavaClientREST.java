@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
@@ -58,6 +59,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @throws FileNotFoundException
    */
+  @SuppressWarnings("unchecked")
   public void writeDocumentUsingInputStreamHandle(DatabaseClient client, String filename, String uri, String type) throws FileNotFoundException
   {
     // create doc manager
@@ -91,6 +93,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param metadataHandle
    * @throws FileNotFoundException
    */
+  @SuppressWarnings("unchecked")
   public void writeDocumentUsingInputStreamHandle(DatabaseClient client, String filename, String uri, DocumentMetadataHandle metadataHandle, String type)
       throws FileNotFoundException
   {
@@ -123,6 +126,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @return
    */
+  @SuppressWarnings("unchecked")
   public InputStreamHandle readDocumentUsingInputStreamHandle(DatabaseClient client, String uri, String type)
   {
     // create doc manager
@@ -149,7 +153,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @return
    */
-
+  @SuppressWarnings("unchecked")
   public InputSourceHandle readDocumentUsingInputSourceHandle(DatabaseClient client, String uri, String type)
   {
     // create doc manager
@@ -176,7 +180,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @return
    */
-
+  @SuppressWarnings("unchecked")
   public SourceHandle readDocumentUsingSourceHandle(DatabaseClient client, String uri, String type)
   {
     // create doc manager
@@ -204,6 +208,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @throws FileNotFoundException
    */
+  @SuppressWarnings("unchecked")
   public void updateDocumentUsingInputStreamHandle(DatabaseClient client, String filename, String uri, String type) throws FileNotFoundException
   {
     // create doc manager
@@ -236,6 +241,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @throws IOException
    */
+  @SuppressWarnings("unchecked")
   public void writeDocumentUsingBytesHandle(DatabaseClient client, String filename, String uri, String type) throws IOException
   {
     // get the content to bytes
@@ -279,6 +285,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @throws IOException
    */
+  @SuppressWarnings("unchecked")
   public void writeDocumentUsingBytesHandle(DatabaseClient client, String filename, String uri, DocumentMetadataHandle metadataHandle, String type) throws IOException
   {
     // get the content to bytes
@@ -322,6 +329,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @throws IOException
    */
+  @SuppressWarnings("unchecked")
   public void writeDocumentUsingStringHandle(DatabaseClient client, String filename, String uri, DocumentMetadataHandle metadataHandle, String type) throws IOException
   {
     // acquire the content
@@ -357,6 +365,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @throws IOException
    */
+  @SuppressWarnings("unchecked")
   public void writeDocumentUsingStringHandle(DatabaseClient client, String filename, String uri, String type) throws IOException
   {
     // acquire the content
@@ -393,6 +402,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @throws JAXBException
    */
+  @SuppressWarnings("unchecked")
   public void writeDocumentUsingJAXBHandle(DatabaseClient client, Product product, String uri, DocumentMetadataHandle metadataHandle, String type) throws JAXBException
   {
     // set jaxb context
@@ -424,6 +434,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param metadataHandle
    * @param type
    */
+  @SuppressWarnings("unchecked")
   public void writeDocumentUsingOutputStreamHandle(DatabaseClient client, final String filename, String uri, DocumentMetadataHandle metadataHandle, String type)
   {
     final int MAX_BUF = 1024;
@@ -438,6 +449,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
     OutputStreamSender sender = new OutputStreamSender() {
       // the callback receives the output stream
       @Override
+	  @SuppressWarnings("unchecked")
       public void write(OutputStream out) throws IOException {
         // acquire the content
         InputStream docStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
@@ -461,6 +473,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
     System.out.println("Write " + docId + " to the database");
   }
 
+	@SuppressWarnings("unchecked")
   public void writeDocumentUsingOutputStreamHandle(DatabaseClient client, final String filename, String uri, String type)
   {
     final int MAX_BUF = 1024;
@@ -474,6 +487,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
     // create an anonymous class with a callback method
     OutputStreamSender sender = new OutputStreamSender() {
       // the callback receives the output stream
+	  @SuppressWarnings("unchecked")
       public void write(OutputStream out) throws IOException {
         // acquire the content
         InputStream docStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
@@ -497,6 +511,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
     System.out.println("Write " + docId + " to the database");
   }
 
+	@SuppressWarnings("unchecked")
   public void updateDocumentUsingOutputStreamHandle(DatabaseClient client, final String filename, String uri, String type) throws FileNotFoundException
   {
     final int MAX_BUF = 1024;
@@ -510,6 +525,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
     // create an anonymous class with a callback method
     OutputStreamSender sender = new OutputStreamSender() {
       // the callback receives the output stream
+	  @SuppressWarnings("unchecked")
       public void write(OutputStream out) throws IOException {
         // acquire the content
         InputStream docStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
@@ -546,6 +562,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    *          : the document type (XML, Text, JSON, or Binary)
    * @throws IOException
    */
+  @SuppressWarnings("unchecked")
   public void writeDocumentReaderHandle(DatabaseClient client, String filename, String uri, String type) throws IOException
   {
     // create doc manager
@@ -579,6 +596,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @throws IOException
    */
+  @SuppressWarnings("unchecked")
   public void updateDocumentReaderHandle(DatabaseClient client, String filename, String uri, String type) throws IOException
   {
     // create doc manager
@@ -651,6 +669,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @return
    */
+  @SuppressWarnings("unchecked")
   public ReaderHandle readDocumentReaderHandle(DatabaseClient client, String uri, String type)
   {
     // create doc manager
@@ -677,6 +696,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @return
    */
+  @SuppressWarnings("unchecked")
   public XMLEventReaderHandle readDocumentUsingXMLEventReaderHandle(DatabaseClient client, String uri, String type)
   {
     // create doc manager
@@ -694,6 +714,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
     return readerHandle;
   }
 
+	@SuppressWarnings("unchecked")
   public XMLStreamReaderHandle readDocumentUsingXMLStreamReaderHandle(DatabaseClient client, String uri, String type) {
     // create doc manager
     DocumentManager docMgr = null;
@@ -721,6 +742,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @throws ParserConfigurationException
    * @throws SAXException
    */
+  @SuppressWarnings("unchecked")
   public void writeDocumentUsingDOMHandle(DatabaseClient client, String filename, String uri, String type) throws IOException, ParserConfigurationException, SAXException
   {
     // create doc manager
@@ -775,6 +797,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @throws ParserConfigurationException
    * @throws SAXException
    */
+  @SuppressWarnings("unchecked")
   public void updateDocumentUsingDOMHandle(DatabaseClient client, String filename, String uri, String type) throws IOException, ParserConfigurationException, SAXException
   {
     // create doc manager
@@ -807,6 +830,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @return
    */
+  @SuppressWarnings("unchecked")
   public DOMHandle readDocumentUsingDOMHandle(DatabaseClient client, String uri, String type)
   {
     // create doc manager
@@ -833,6 +857,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @return
    */
+  @SuppressWarnings("unchecked")
   public StringHandle readDocumentUsingStringHandle(DatabaseClient client, String uri, String type)
   {
     // create doc manager
@@ -861,6 +886,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @throws IOException
    */
+  @SuppressWarnings("unchecked")
   public void writeDocumentUsingFileHandle(DatabaseClient client, String filename, String uri, String type) throws IOException
   {
     // create doc manager
@@ -890,6 +916,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @return
    */
+  @SuppressWarnings("unchecked")
   public FileHandle readDocumentUsingFileHandle(DatabaseClient client, String uri, String type)
   {
     // create doc manager
@@ -917,6 +944,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @throws IOException
    */
+  @SuppressWarnings("unchecked")
   public void updateDocumentUsingFileHandle(DatabaseClient client, String filename, String uri, String type) throws IOException
   {
     // create doc manager
@@ -947,6 +975,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @throws IOException
    */
+  @SuppressWarnings("unchecked")
   public void updateDocumentUsingStringHandle(DatabaseClient client, String filename, String uri, String type) throws IOException
   {
     // create doc manager
@@ -982,6 +1011,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @throws IOException
    */
+  @SuppressWarnings("unchecked")
   public BytesHandle readDocumentUsingBytesHandle(DatabaseClient client, String uri, String type) throws IOException, NullPointerException
   {
     // create doc manager
@@ -1023,6 +1053,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @throws IOException
    */
+  @SuppressWarnings("unchecked")
   public void updateDocumentUsingByteHandle(DatabaseClient client, String filename, String uri, String type) throws IOException, ParserConfigurationException, SAXException
   {
     // create doc manager
@@ -1090,6 +1121,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @param type
    * @return
    */
+  @SuppressWarnings("unchecked")
   public DocumentMetadataHandle readMetadataFromDocument(DatabaseClient client, String uri, String type)
   {
     // create doc manager
@@ -1401,7 +1433,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
     // get json document for expected result
     ObjectMapper mapper = new ObjectMapper();
     JsonFactory jfactory = new JsonFactory();
-    JsonParser jParser = jfactory.createJsonParser(new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename));
+    JsonParser jParser = jfactory.createParser(new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename));
     JsonNode expectedDoc = mapper.readTree(jParser);
     return expectedDoc;
   }
@@ -1476,7 +1508,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    */
   public String convertXMLDocumentToString(Document readContent) throws TransformerException
   {
-    TransformerFactory tf = TransformerFactory.newInstance();
+    TransformerFactory tf = XmlFactories.makeNewTransformerFactory();
     Transformer transformer = tf.newTransformer();
     transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
     StringWriter writer = new StringWriter();
@@ -1514,10 +1546,10 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * @throws IOException
    * @throws TransformerException
    */
-  public String convertInputSourceToString(InputSource fileRead) throws IOException, TransformerException
+  public String convertInputSourceToString(InputSource fileRead) throws TransformerException
   {
     Source saxsrc = new SAXSource(fileRead);
-    TransformerFactory tf = TransformerFactory.newInstance();
+    TransformerFactory tf = XmlFactories.makeNewTransformerFactory();
     Transformer transformer = tf.newTransformer();
     transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
     StringWriter writer = new StringWriter();
@@ -1538,7 +1570,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
   {
     StringWriter stringWriter = new StringWriter();
     Result result = new StreamResult(stringWriter);
-    TransformerFactory factory = TransformerFactory.newInstance();
+    TransformerFactory factory = XmlFactories.makeNewTransformerFactory();
     Transformer transformer = factory.newTransformer();
     transformer.transform(reader, result);
     String str = stringWriter.getBuffer().toString();

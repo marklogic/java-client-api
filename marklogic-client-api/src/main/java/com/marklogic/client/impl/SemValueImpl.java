@@ -41,11 +41,11 @@ public class SemValueImpl implements SemValue {
   }
   @Override
   public SemStoreExpr rulesetStore(String... locations) {
-    return rulesetStore(new XsValueImpl.StringSeqValImpl(locations), (SemStoreSeqExpr) null, (String[]) null);
+    return rulesetStore(new XsValueImpl.StringSeqValImpl(locations), (SemStoreSeqExpr) null);
   }
   @Override
   public SemStoreExpr rulesetStore(XsStringSeqVal locations, SemStoreExpr... stores) {
-    return rulesetStore(locations, stores(stores), (String[]) null);
+    return rulesetStore(locations, stores(stores));
   }
   @Override
   public SemStoreExpr rulesetStore(XsStringSeqVal locations, SemStoreSeqExpr stores, String... options) {

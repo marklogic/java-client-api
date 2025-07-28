@@ -84,6 +84,7 @@ public class TestPOJOWithStringQD extends AbstractFunctionalTest {
     assertNotNull( art.getInventory() > 1000);
   }
 
+  @SuppressWarnings("unchecked")
   public void loadSimplePojos(PojoRepository products)
   {
     for (int i = 1; i < 111; i++) {

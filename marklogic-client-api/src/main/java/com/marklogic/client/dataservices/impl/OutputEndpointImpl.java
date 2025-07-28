@@ -145,8 +145,7 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
             else if(getCallContextQueue() != null && !getCallContextQueue().isEmpty()){
                 try {
                     for (int i = 0; i < getThreadCount(); i++) {
-                        BulkCallableImpl<I,O> bulkCallableImpl = new BulkCallableImpl(this);
-                        submitTask(bulkCallableImpl);
+						submitNewTask();
                     }
                     getCallerThreadPoolExecutor().awaitTermination();
                 }
@@ -158,6 +157,12 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
             }
         }
 
+		@SuppressWarnings("unchecked")
+		private void submitNewTask() {
+			BulkCallableImpl<I,O> bulkCallableImpl = new BulkCallableImpl(this);
+			submitTask(bulkCallableImpl);
+		}
+		
         private O[] getOutputStream(CallContextImpl<I,O> callContext) {
             ErrorDisposition error = ErrorDisposition.RETRY;
             O[] output = null;

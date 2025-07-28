@@ -13,21 +13,19 @@ def getJava(){
 }
 
 def setupDockerMarkLogic(String image){
+	cleanupDocker()
 	sh label:'mlsetup', script: '''#!/bin/bash
 	echo "Removing any running MarkLogic server and clean up MarkLogic data directory"
     sudo /usr/local/sbin/mladmin remove
     sudo /usr/local/sbin/mladmin cleandata
-    cd java-client-api/test-app
+    cd java-client-api
     docker compose down -v || true
     docker volume prune -f
     echo "Using image: "'''+image+'''
     docker pull '''+image+'''
     MARKLOGIC_IMAGE='''+image+''' MARKLOGIC_LOGS_VOLUME=marklogicLogs docker compose up -d --build
-	  echo "mlPassword=admin" > gradle-local.properties
     echo "Waiting for MarkLogic server to initialize."
     sleep 60s
-    cd ..
-	  echo "mlPassword=admin" > gradle-local.properties
 		export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
 		export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
 		./gradlew mlTestConnections
@@ -135,10 +133,11 @@ def postProcessTestResults() {
 
 def tearDownDocker() {
 	sh label:'tearDownDocker', script: '''#!/bin/bash
-		cd java-client-api/test-app
+		cd java-client-api
 		docker compose down -v || true
 		docker volume prune -f
 	'''
+	cleanupDocker()
 }
 
 pipeline{
@@ -170,7 +169,7 @@ pipeline{
         }
       }
       steps {
-	      setupDockerMarkLogic("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-12")
+	      setupDockerMarkLogic("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi-rootless:12.0.0-ubi-rootless-2.2.0")
         sh label:'run marklogic-client-api tests', script: '''#!/bin/bash
           export JAVA_HOME=$JAVA_HOME_DIR
           export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
@@ -183,6 +182,7 @@ pipeline{
       }
 			post {
 				always {
+					updateWorkspacePermissions()
 					tearDownDocker()
 				}
 			}
@@ -206,24 +206,6 @@ pipeline{
       }
     }
 
-		stage('regressions-11.2.0') {
-			when {
-				allOf {
-					branch 'develop'
-					expression {return params.regressions}
-				}
-			}
-			steps {
-				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:11.2.0-ubi")
-				junit '**/build/**/TEST*.xml'
-			}
-			post {
-				always {
-					tearDownDocker()
-				}
-			}
-		}
-
 		stage('regressions-11') {
 			when {
 				allOf {
@@ -237,6 +219,7 @@ pipeline{
 			}
 			post {
 				always {
+					updateWorkspacePermissions()
 					tearDownDocker()
 				}
 			}
@@ -255,6 +238,7 @@ pipeline{
 			}
 			post {
 				always {
+					updateWorkspacePermissions()
 					tearDownDocker()
 				}
 			}
@@ -268,11 +252,12 @@ pipeline{
 				}
 			}
 			steps {
-				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-12")
+				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi-rootless:12.0.0-ubi-rootless-2.2.0")
 				junit '**/build/**/TEST*.xml'
 			}
 			post {
 				always {
+					updateWorkspacePermissions()
 					tearDownDocker()
 				}
 			}
@@ -291,6 +276,7 @@ pipeline{
 			}
 			post {
 				always {
+					updateWorkspacePermissions()
 					tearDownDocker()
 				}
 			}

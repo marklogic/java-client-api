@@ -3,11 +3,30 @@
  */
 package com.marklogic.client.datamovement.functionaltests;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.admin.ExtensionMetadata;
+import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.admin.TransformExtensionsManager;
+import com.marklogic.client.datamovement.*;
+import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.document.ServerTransform;
+import com.marklogic.client.expression.CtsQueryBuilder;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
+import com.marklogic.client.io.*;
+import com.marklogic.client.query.*;
+import com.marklogic.client.query.StructuredQueryBuilder.Operator;
+import com.marklogic.client.type.CtsQueryExpr;
+import com.marklogic.client.util.EditableNamespaceContext;
+import org.junit.jupiter.api.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
+import javax.xml.namespace.QName;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,42 +35,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.xml.namespace.QName;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.xpath.XPathExpressionException;
-
-import com.marklogic.client.expression.CtsQueryBuilder;
-import com.marklogic.client.query.*;
-import com.marklogic.client.type.CtsQueryExpr;
-import com.marklogic.client.util.EditableNamespaceContext;
-import org.junit.jupiter.api.*;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.admin.ExtensionMetadata;
-import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.admin.TransformExtensionsManager;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.Forest;
-import com.marklogic.client.datamovement.HostAvailabilityListener;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.ProgressListener;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.document.ServerTransform;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.StructuredQueryBuilder.Operator;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author ageorge Purpose : Test String Queries - On multiple documents using
@@ -123,10 +107,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     associateRESTServerWithDB(restServerName, "Documents");
     deleteRESTUser("eval-user");
     deleteUserRole("test-eval");
-    detachForest(dbName, fNames[0]);
-
     deleteDB(dbName);
-    deleteForest(fNames[0]);
   }
 
   @BeforeEach
@@ -274,7 +255,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         qb.awaitCompletion();
       } catch (Exception ex) {
         batchIllegalState.append(ex.getMessage());
-        System.out.println("Exceptions buffer from empty withCriteria : " + batchIllegalState.toString());
+        System.out.println("Exceptions buffer from empty withCriteria : " + batchIllegalState);
         assertTrue( batchIllegalState.toString().contains("Criteria cannot be an empty string"));
       }
       } catch (Exception e) {
@@ -668,7 +649,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       dmManager.startJob(queryBatcher1);
       queryBatcher1.awaitCompletion(1, TimeUnit.MINUTES);
 
-      System.out.println("Batch Results are : " + batchResults.toString());
+      System.out.println("Batch Results are : " + batchResults);
       System.out.println("File name is : " + filenames[4]);
       assertTrue( batchResults.toString().contains("cts-" + filenames[4]));
 
@@ -846,7 +827,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		  if (!batchFailResults.toString().isEmpty() && batchFailResults.toString().contains("Exceptions")) {
 		    // Write out and assert on query failures.
 		    System.out.println("Exception Buffer contents on Query Exceptions received from callback onQueryFailure");
-		    System.out.println(batchFailResults.toString());
+		    System.out.println(batchFailResults);
 		    // Remove this failure once there are no NPEs and doa asserts on various
 		    // counters in failure scenario.
 		    fail("Test failed due to exceptions");
@@ -892,7 +873,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
 		// Flush
 		batcher.flushAndWait();
-		StringBuffer batchFailResults = new StringBuffer();
+		StringBuilder batchFailResults = new StringBuilder();
 		String expectedStr = "Vannevar Bush wrote an article for The Atlantic Monthly";
 
 		QueryManager queryMgr = client.newQueryManager();
@@ -1239,7 +1220,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   }
 
   @Test
-  public void testServerXQueryTransform() throws IOException, ParserConfigurationException, SAXException, TransformerException, InterruptedException, XPathExpressionException
+  public void testServerXQueryTransform() throws InterruptedException, XPathExpressionException
   {
     System.out.println("Running testServerXQueryTransform");
     try {
@@ -1291,8 +1272,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		batcher.flushAndWait();
 		dmManager.stopJob(batcher);
 
-		StringBuffer batchResults = new StringBuffer();
-		StringBuffer batchFailResults = new StringBuffer();
+		List<String> uris = new ArrayList<>();
 
 		// create query def
 		QueryManager queryMgr = client.newQueryManager();
@@ -1304,56 +1284,34 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		queryBatcher1.withBatchSize(5);
 
 		queryBatcher1.onUrisReady(batch -> {
-		  for (String str : batch.getItems()) {
-		    batchResults.append(str);
-		    batchResults.append("|");
+		  for (String item : batch.getItems()) {
+			  uris.add(item);
 		  }
 		});
-		queryBatcher1.onQueryFailure(throwable -> {
-		  System.out.println("Exceptions thrown from callback onQueryFailure");
-		  throwable.printStackTrace();
-		  batchFailResults.append("Test has Exceptions");
-		});
 		dmManager.startJob(queryBatcher1);
-		queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);
-        while (!queryBatcher1.isStopped()) {
-        // Do nothing. Wait for batcher to complete.
-        }
+		queryBatcher1.awaitCompletion();
 
-		if (queryBatcher1.isStopped()) {
-		  // Verify the batch results now.
-		  String[] res = batchResults.toString().split("\\|");
-		  assertEquals(res.length, 20);
+	  // Verify the batch results now.
+		assertEquals(20, uris.size());
 
-		  // Get a random URI, since the URIs returned are not ordered. Get the 3rd
-		  // URI.
-		  assertTrue( res[2].contains("foo") || res[2].contains("bar"));
+	  // Get a random URI, since the URIs returned are not ordered. Get the 3rd
+	  // URI.
+		String thirdUri = uris.get(2);
+	  assertTrue( thirdUri.contains("foo") || thirdUri.contains("bar"), "Unexpected URI: " + thirdUri);
 
-		  // do a lookup with the first URI using the client to verify transforms
-		  // are done.
-		  DOMHandle readHandle = readDocumentUsingDOMHandle(client, res[0], "XML");
-		  String contents = readHandle.evaluateXPath("/foo/text()", String.class);
-		  String attribute = readHandle.evaluateXPath("/foo/@Lang", String.class);
-		  // Verify that the contents are of xmlStr1 or xmlStr2.
-
-		  System.out.println("Contents are : " + contents);
-		  System.out.println("Contents are : " + attribute);
-		  assertTrue( xmlStr1.contains(contents) || xmlStr2.contains(contents));
-		  assertTrue( attribute.equalsIgnoreCase("English"));
-		}
-		else {
-			fail("testServerXQueryTransform method failed");
-		}
-	} catch (Exception e) {
-		e.printStackTrace();
-		fail("testServerXQueryTransform method failed");
+	  // do a lookup with the first URI using the client to verify transforms
+	  // are done.
+	  DOMHandle readHandle = readDocumentUsingDOMHandle(client, uris.get(0), "XML");
+	  String contents = readHandle.evaluateXPath("/foo/text()", String.class);
+	  String attribute = readHandle.evaluateXPath("/foo/@Lang", String.class);
+	  // Verify that the contents are of xmlStr1 or xmlStr2.
+	  System.out.println("Contents are : " + contents);
+	  System.out.println("Contents are : " + attribute);
+	  assertTrue( xmlStr1.contains(contents) || xmlStr2.contains(contents));
+	  assertTrue( attribute.equalsIgnoreCase("English"));
 	}
     finally {
-    	try {
-			clearDB();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		clearDB();
     }
   }
 
@@ -1366,7 +1324,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * @throws InterruptedException
    */
   @Test
-  public void testQueryBatcherWithForestRemoveAndAdd() throws IOException, InterruptedException
+  public void testQueryBatcherWithForestRemoveAndAdd() throws InterruptedException
   {
     System.out.println("Running testQueryBatcherWithForestRemoveAndAdd");
     String testMultipleDB = "QBMultipleForestDB";
@@ -1495,29 +1453,10 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
           assertTrue( batchFailResultsRem.toString().contains("Test has Exceptions"));
         }
       }
-    } catch (Exception e) {
-      System.out.print(e.getMessage());
-      fail("testQueryBatcherWithForestRemoveAndAdd method failed");
-    }
-
-    finally {
-      // Associate back the original DB.
-      try {
-        associateRESTServerWithDB(restServerName, dbName);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-      detachForest(testMultipleDB, testMultipleForest[0]);
-      detachForest(testMultipleDB, testMultipleForest[1]);
-      // In case something asserts
-      detachForest(testMultipleDB, testMultipleForest[2]);
-      deleteDB(testMultipleDB);
-
-      deleteForest(testMultipleForest[0]);
-      deleteForest(testMultipleForest[1]);
-      deleteForest(testMultipleForest[2]);
-      Thread.sleep(10000);
-    }
+    } finally {
+		associateRESTServerWithDB(restServerName, dbName);
+		deleteDB(testMultipleDB);
+	}
   }
 
   /*
@@ -1530,9 +1469,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * @throws InterruptedException
    */
   @Test
-  public void testBatchClientLookupTimeout() throws IOException, InterruptedException
-  {
-    System.out.println("Running testBatchClientLookupTimeout");
+  public void testBatchClientLookupTimeout() throws InterruptedException{
     String testMultipleDB = "QBMultipleForestDB";
     String[] testMultipleForest = { "QBMultipleForestDB-1" };
 
@@ -1622,20 +1559,9 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         }
       }
       assertTrue( batchResults.toString().isEmpty());
-    } catch (Exception e) {
-      System.out.print(e.getMessage());
-      fail("testBatchClientLookupTimeout method failed");
     } finally {
-      // Associate back the original DB.
-      try {
         associateRESTServerWithDB(restServerName, dbName);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-      detachForest(testMultipleDB, testMultipleForest[0]);
       deleteDB(testMultipleDB);
-      deleteForest(testMultipleForest[0]);
-      Thread.sleep(10000);
     }
   }
 
@@ -1956,7 +1882,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StructuredQueryDefinition queryRangedef = qb.range(qb.element("popularity"), "xs:int", Operator.GE, 4);
       QueryBatcher queryBatcher2 = dmManagerTmp.newQueryBatcher(queryRangedef);
       // StringBuilder batchRangeResults = new StringBuilder();
-      List<String> batchRangeResults = new ArrayList<String>();
+      List<String> batchRangeResults = new ArrayList<>();
       StringBuilder batchRangeFailResults = new StringBuilder();
 
       queryBatcher2.onUrisReady(batch -> {
@@ -1989,7 +1915,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       StructuredQueryDefinition valuequeyDef = qb.value(qb.elementAttribute(qb.element(new QName("http://cloudbank.com", "price")), qb.attribute("amt")), "0.1");
       QueryBatcher queryBatcher3 = dmManagerTmp.newQueryBatcher(valuequeyDef);
-      List<String> batchValueResults = new ArrayList<String>();
+      List<String> batchValueResults = new ArrayList<>();
       StringBuilder batchvalueFailResults = new StringBuilder();
 
       queryBatcher3.onUrisReady(batch -> {

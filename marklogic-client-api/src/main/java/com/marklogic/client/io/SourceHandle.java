@@ -3,27 +3,17 @@
  */
 package com.marklogic.client.io;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-
-import javax.xml.XMLConstants;
-import javax.xml.transform.*;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
+import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.marker.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.MarkLogicIOException;
+import javax.xml.transform.*;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * <p>A Source Handle represents XML content as a transform source for reading
@@ -177,7 +167,7 @@ public class SourceHandle
       } else {
         if (logger.isWarnEnabled())
           logger.warn("No transformer, so using identity transform");
-        transformer = makeTransformer().newTransformer();
+        transformer = makeTransformerFactory().newTransformer();
       }
 
       transformer.transform(content, result);
@@ -186,20 +176,8 @@ public class SourceHandle
       throw new MarkLogicIOException(e);
     }
   }
-  private TransformerFactory makeTransformer() {
-    TransformerFactory factory = TransformerFactory.newInstance();
-    // default to best practices for conservative security including recommendations per
-    // https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
-    try {
-      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-    } catch (TransformerConfigurationException e) {}
-    try {
-      factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-    } catch (IllegalArgumentException e) {}
-    try {
-      factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
-    } catch (IllegalArgumentException e) {}
-    return factory;
+  private TransformerFactory makeTransformerFactory() {
+	  return XmlFactories.makeNewTransformerFactory();
   }
 
   /**
@@ -260,7 +238,7 @@ public class SourceHandle
     if (content == null) return null;
     try {
       ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-      makeTransformer().newTransformer().transform(content,
+      makeTransformerFactory().newTransformer().transform(content,
               new StreamResult(new OutputStreamWriter(buffer, StandardCharsets.UTF_8)));
       return buffer.toByteArray();
     } catch (TransformerException e) {

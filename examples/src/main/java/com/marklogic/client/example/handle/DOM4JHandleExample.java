@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.example.handle;
 
@@ -62,6 +62,9 @@ public class DOM4JHandleExample {
 
     // parse the example file with dom4j
     SAXReader reader = new SAXReader();
+	reader.setIncludeExternalDTDDeclarations(false);
+	reader.setIncludeInternalDTDDeclarations(false);
+	reader.setEntityResolver(null);
     reader.setValidation(false);
     Document writeDocument =
       reader.read(new InputStreamReader(docStream, "UTF-8"));

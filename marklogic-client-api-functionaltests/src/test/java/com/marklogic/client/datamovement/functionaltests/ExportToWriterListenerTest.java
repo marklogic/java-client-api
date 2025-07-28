@@ -81,7 +81,7 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
  	createRESTServerWithDB(server, port);
     assocRESTServer(server, dbName, port);
     if (IsSecurityEnabled()) {
-		enableSecurityOnRESTServer(server, dbName);
+		enableSecurityOnRESTServer(server);
 	}
 
     dbClient = getDatabaseClient(user, password, getConnType());
@@ -137,11 +137,6 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
   @AfterAll
   public static void tearDownAfterClass() throws Exception {
     associateRESTServerWithDB(server, "Documents");
-    for (int i = 0; i < hostNames.length; i++) {
-      System.out.println(dbName + "-" + (i + 1));
-      detachForest(dbName, dbName + "-" + (i + 1));
-      deleteForest(dbName + "-" + (i + 1));
-    }
     deleteDB(dbName);
 
     // Delete the output file

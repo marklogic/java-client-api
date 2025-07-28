@@ -81,6 +81,7 @@ public class TestPOJOQueryBuilderContainerQuery extends AbstractFunctionalTest {
     assertTrue( art.getInventory() > 1000);
   }
 
+	@SuppressWarnings("unchecked")
   public void loadSimplePojos(PojoRepository products)
   {
     for (int i = 1; i < 111; i++) {
@@ -133,6 +134,7 @@ public class TestPOJOQueryBuilderContainerQuery extends AbstractFunctionalTest {
   // Below scenario is to test container query builder with wild card options in
   // word query
   @Test
+  @SuppressWarnings("unchecked")
   public void testPOJOwordSearchWithContainerQueryBuilder() {
     PojoRepository<Artifact, Long> products = client.newPojoRepository(Artifact.class, Long.class);
     PojoPage<Artifact> p;
@@ -240,7 +242,8 @@ public class TestPOJOQueryBuilderContainerQuery extends AbstractFunctionalTest {
   // Below scenario is verifying and query with all pojo builder methods
 
   @Test
-  public void testPOJOWordSearchWithOptions() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  @SuppressWarnings("unchecked")
+  public void testPOJOWordSearchWithOptions() {
     PojoRepository<Artifact, Long> products = client.newPojoRepository(Artifact.class, Long.class);
     PojoPage<Artifact> p;
     this.loadSimplePojos(products);

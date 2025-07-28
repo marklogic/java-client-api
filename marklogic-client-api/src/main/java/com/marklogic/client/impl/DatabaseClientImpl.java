@@ -209,12 +209,6 @@ public class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
-  protected void finalize() throws Throwable {
-    release();
-    super.finalize();
-  }
-
-  @Override
   public Object getClientImplementation() {
     if (services == null)
       return null;

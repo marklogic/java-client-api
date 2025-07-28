@@ -48,6 +48,7 @@ public class HTTPKerberosAuthInterceptor implements Interceptor {
     try {
       buildSubjectCredentials();
     } catch (LoginException e) {
+		SSLUtil.logSecurityRelatedException(e);
       throw new FailedRequestException(e.getMessage(), e);
     }
   }
@@ -129,6 +130,7 @@ public class HTTPKerberosAuthInterceptor implements Interceptor {
    *            need to authenticate
    * @return the HTTP Authorization header token
    */
+  @SuppressWarnings("unchecked")
   private String buildAuthorizationHeader(String serverPrincipalName) throws LoginException
   {
     /*

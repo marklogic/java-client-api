@@ -85,7 +85,7 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 
 		associateRESTServerWithDB(server, dbName);
 		if (IsSecurityEnabled()) {
-			enableSecurityOnRESTServer(server, dbName);
+			enableSecurityOnRESTServer(server);
 		}
 
 		dbClient = getDatabaseClient(user, password, getConnType());
@@ -127,12 +127,6 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 	@AfterAll
 	public static void tearDownAfterClass() throws Exception {
 		associateRESTServerWithDB(server, "Documents");
-		for (int i = 0; i < hostNames.length; i++) {
-			System.out.println(dbName + "-" + (i + 1));
-			detachForest(dbName, dbName + "-" + (i + 1));
-			deleteForest(dbName + "-" + (i + 1));
-		}
-
 		deleteDB(dbName);
 	}
 
@@ -339,7 +333,7 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		querydef.setCriteria("k and v");
 
 		AtomicInteger successDocs = new AtomicInteger();
-		StringBuffer failures = new StringBuffer();
+		StringBuilder failures = new StringBuilder();
 
 		QueryBatcher deleteBatcher = dmManager.newQueryBatcher(querydef)
 				.withBatchSize(5)

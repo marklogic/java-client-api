@@ -55,6 +55,7 @@ public class ProgressListener implements QueryBatchListener {
 	 * Use this constructor for when the total number of results isn't known ahead of time.
 	 * @param consumers one or more callbacks for progress updates
 	 */
+	@SafeVarargs
 	public ProgressListener(Consumer<ProgressUpdate>... consumers) {
 		this(0, consumers);
 	}
@@ -65,6 +66,7 @@ public class ProgressListener implements QueryBatchListener {
 	 * @param totalResults the total number of results that is the processing goal
 	 * @param consumers one or more callbacks for progress updates
 	 */
+	@SafeVarargs
 	public ProgressListener(long totalResults, Consumer<ProgressUpdate>... consumers) {
 		this.totalResults = totalResults;
 		for (Consumer<ProgressUpdate> consumer : consumers) {

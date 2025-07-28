@@ -25,6 +25,7 @@ public interface InputCaller<I> extends IOEndpoint {
 	 * @param <I>  the input content representation (such as String)
 	 * @return  the InputCaller instance for calling the endpoint.
 	 */
+	@SuppressWarnings("unchecked")
 	static <I> InputCaller<I> on(DatabaseClient client, JSONWriteHandle apiDecl, BufferableContentHandle<I,?> inputHandle) {
 		return new InputEndpointImpl(client, apiDecl, new HandleProvider.ContentHandleProvider<>(inputHandle,null));
 	}
@@ -40,6 +41,7 @@ public interface InputCaller<I> extends IOEndpoint {
 	 * @param <I> the input handle
 	 * @return the InputOutputCaller instance for calling the endpoint.
 	 */
+	@SuppressWarnings("unchecked")
 	static <IC,IR,I extends BufferableContentHandle<IC,IR>> InputCaller<I> onHandles(
 			DatabaseClient client, JSONWriteHandle apiDecl, I inputHandle
 	) {

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -18,7 +18,9 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.BeanDescription;
@@ -28,6 +30,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
@@ -88,16 +92,12 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     // which makes them ready for range indexes in MarkLogic Server
     .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
     .setDateFormat(simpleDateFormat8601)
-    // enableDefaultTyping just means include types in the serialized output
-    // we need this to do strongly-typed queries
-    .enableDefaultTyping(
-      // ObjectMapper.DefaultTyping.NON_FINAL means that typing in serialized output
-      // for all non-final types except the "natural" types (String, Boolean, Integer, Double),
-      // which can be correctly inferred from JSON; as well as for all arrays of non-final types.
-      ObjectMapper.DefaultTyping.NON_FINAL,
-      // JsonTypeInfo.As.WRAPPER_OBJECT means add a type wrapper around the data so then
-      // our strongly-typed queries can use parent-child scoped queries or path index queries
-      JsonTypeInfo.As.WRAPPER_OBJECT);
+
+	  // This previously used enableDefaultTyping, but Jackson deprecated that several years ago - https://github.com/FasterXML/jackson-databind/issues/2428 .
+	  // Polaris also flagged it as a high vulnerability related to https://cwe.mitre.org/data/definitions/502.html .
+	  // The below is from https://stackoverflow.com/questions/69705476/enabledefaulttypingcom-fasterxml-jackson-databind-objectmapper-defaulttyping .
+	  .activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT);
+
   PojoRepositoryImpl(DatabaseClient client, Class<T> entityClass) {
     this.client = client;
     this.entityClass = entityClass;
@@ -215,7 +215,8 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
   }
 
   @Override
-  public void delete(ID... ids) {
+  @SafeVarargs
+  public final void delete(ID... ids) {
     delete(ids, null);
   }
 
@@ -412,24 +413,24 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
             break;
           }
         }
-        if ( property.hasGetter() ) {
-          Method getter = property.getGetter().getAnnotated();
-          if ( getter.getAnnotation(Id.class) != null ) {
-            idPropertyName = property.getName();
-            idMethod = getter;
-            break;
-          }
-          if ( property.hasSetter() ) {
-            Method setter = property.getSetter().getAnnotated();
-            if ( setter.getAnnotation(Id.class) != null ) {
-              idPropertyName = property.getName();
-              idMethod = getter;
-              break;
-            }
-          }
-        }
-        // setter only doesn't work because it gives us no value accessor
-      }
+		  if (property.hasGetter()) {
+			  Method getter = property.getGetter().getAnnotated();
+			  if (getter.getAnnotation(Id.class) != null) {
+				  idPropertyName = property.getName();
+				  idMethod = getter;
+			  }
+			  else if (property.hasSetter()) {
+				  Method setter = property.getSetter().getAnnotated();
+				  if (setter.getAnnotation(Id.class) != null) {
+					  idPropertyName = property.getName();
+					  // Polaris thinks this might be a copy/paste issue, but based on the tests -
+					  // TestPOJOMissingIdGetSetMethod - it appears to be correct.
+					  idMethod = getter;
+				  }
+			  }
+		  }
+		  // setter only doesn't work because it gives us no value accessor
+	  }
     }
     // Jackson's introspect approach should find it, but our old approach below
     // gives some helpful errors

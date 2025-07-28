@@ -1,8 +1,32 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.alerting;
 
+import com.marklogic.client.MarkLogicBindingException;
+import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.RequestConstants;
+import com.marklogic.client.impl.*;
+import com.marklogic.client.io.*;
+import com.marklogic.client.io.marker.RuleReadHandle;
+import com.marklogic.client.io.marker.RuleWriteHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
+import com.marklogic.client.util.NameMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import javax.xml.XMLConstants;
+import javax.xml.namespace.QName;
+import javax.xml.stream.*;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,50 +34,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.XMLConstants;
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLEventFactory;
-import javax.xml.stream.XMLEventWriter;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import com.marklogic.client.MarkLogicBindingException;
-import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.RequestConstants;
-import com.marklogic.client.impl.ClientPropertiesImpl;
-import com.marklogic.client.impl.DOMWriter;
-import com.marklogic.client.impl.HandleAccessor;
-import com.marklogic.client.impl.Utilities;
-import com.marklogic.client.impl.ValueConverter;
-import com.marklogic.client.io.BaseHandle;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.OutputStreamSender;
-import com.marklogic.client.io.marker.RuleReadHandle;
-import com.marklogic.client.io.marker.RuleWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
-import com.marklogic.client.util.NameMap;
 
 /**
  * A RuleDefinition represents a set of criteria that describe a named condition.
@@ -320,8 +300,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 
     try {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      TransformerFactory transfac = TransformerFactory.newInstance();
-      Transformer trans = transfac.newTransformer();
+      Transformer trans = XmlFactories.makeNewTransformerFactory().newTransformer();
       trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
       trans.setOutputProperty(OutputKeys.VERSION, "1.0");
       trans.setOutputProperty(OutputKeys.ENCODING, "UTF-8");

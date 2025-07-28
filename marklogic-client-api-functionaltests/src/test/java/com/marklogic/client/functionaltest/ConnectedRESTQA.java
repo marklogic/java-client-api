@@ -13,32 +13,41 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClient.ConnectionType;
 import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.impl.OkHttpServices;
-import com.marklogic.client.impl.RESTServices;
+import com.marklogic.client.impl.SSLUtil;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
+import com.marklogic.client.query.QueryManager;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.ManageConfig;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
 import com.marklogic.mgmt.resource.databases.DatabaseManager;
-import okhttp3.*;
-import org.json.JSONObject;
+import com.marklogic.mgmt.resource.forests.ForestManager;
+import com.marklogic.mgmt.resource.restapis.RestApiManager;
+import com.marklogic.mgmt.resource.security.ExternalSecurityManager;
+import com.marklogic.mgmt.resource.security.RoleManager;
+import com.marklogic.mgmt.resource.security.UserManager;
+import com.marklogic.mgmt.resource.temporal.TemporalAxesManager;
+import com.marklogic.mgmt.resource.temporal.TemporalCollectionLSQTManager;
+import com.marklogic.mgmt.resource.temporal.TemporalCollectionManager;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 public abstract class ConnectedRESTQA {
 
-	protected static Properties testProperties = null;
+	private static Properties testProperties = null;
 
-	protected static String authType;
+	private static String authType;
 	protected static String restServerName = null;
 	private static String restSslServerName = null;
 	private static String ssl_enabled = null;
@@ -46,396 +55,110 @@ public abstract class ConnectedRESTQA {
 	protected static String http_port = null;
 	protected static String fast_http_port = null;
 	protected static String basePath = null;
-	private static String admin_port = null;
 	// This needs to be a FQDN when SSL is enabled. Else localhost
 	private static String host_name = null;
 	// This needs to be a FQDN when SSL is enabled. Else localhost
 	private static String ssl_host_name = null;
 	private static String admin_user = null;
 	private static String admin_password = null;
-	private static String mlRestReadUser = null;
-	private static String mlRestReadPassword = null;
 	private static String ml_certificate_password = null;
 	private static String ml_certificate_file = null;
 	private static String mlDataConfigDirPath = null;
 	private static Boolean isLBHost = false;
 
 	private static int PROPERTY_WAIT = 0;
-	private static final int ML_RES_OK = 200;
-	private static final int ML_RES_CREATED = 201;
-	private static final int ML_RES_CHANGED = 204;
-	private static final int ML_RES_BADREQT = 400;
-	private static final int ML_RES_NOTFND = 404;
-	private static final String ML_MANAGE_DB = "App-Services";
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 
-	// Using MarkLogic client API's OKHttpClient Impl to connect to App-Services DB and use REST Manage API calls.
-	private static OkHttpClient createManageAdminClient(String username, String password) {
-		// build client with authentication information.
-		RESTServices services = new OkHttpServices();
-		// Manage API is assumed to require digest auth; if that assumption falls apart, we should add a new property
-		// for this and not assume that the authentication for the REST server will work
-		services.connect(host_name, Integer.parseInt(admin_port), null, ML_MANAGE_DB,
-			new DatabaseClientFactory.DigestAuthContext(username, password));
-		OkHttpClient okHttpClient  = (OkHttpClient) services.getClientImplementation();
-		return okHttpClient;
-	}
-
-	// Use Rest call to create a database.
 	public static void createDB(String dbName) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String JSONString = "[{\"database-name\":\"" + dbName + "\"}]";
-			String  urlStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases");
-
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(urlStr)
-					.post(RequestBody.create(JSONString, MediaType.parse("application/json")))
-					.build();
-			try (Response response = client.newCall(request).execute()) {
-				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-				else {
-					// Get response body
-					if (response.code() == ML_RES_CREATED) {
-						System.out.println("Created " + dbName + " database");
-						System.out.println(response);
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static String getBootStrapHostFromML()  {
-		OkHttpClient client;
-		StringBuilder resp = new StringBuilder();
-		try {
-			client = createManageAdminClient("admin", "admin");
-			StringBuilder strBuf = new StringBuilder();
-			String getrequest = new String(
-					"http://" + host_name + ":" + admin_port + "/manage/v2/properties?format=json");
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(getrequest)
-					.build();
-			try (Response response = client.newCall(request).execute()) {
-				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-				else {
-					// Get response body
-					if (response.code() == 200) {
-						resp.append(response.body().string());
-						System.out.println("BootStrapHostFromML : " + resp.toString());
-					}
-				}
-			}
-		 catch (Exception e) {
-			e.printStackTrace();
-		}
-			JsonNode jnode = new ObjectMapper().readTree(resp.toString());
-			String propName = "bootstrap-host";
-			if (!jnode.isNull()) {
-				if (jnode.has(propName)) {
-					System.out.println(
-							"Bootstrap Host: " + jnode.withArray(propName).get(0).get("bootstrap-host-name").asText());
-					return jnode.withArray(propName).get(0).get("bootstrap-host-name").asText();
-				} else {
-					System.out.println("Missing " + propName
-							+ " field from properties end point so sending java conanical host name\n"
-							+ jnode.toString());
-					return InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
-				}
-			} else {
-				System.out.println("Rest endpoint returns empty stream");
-				return InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return host_name;
-		}
+		new DatabaseManager(newManageClient())
+			.save(objectMapper.createObjectNode()
+				.put("database-name", dbName)
+				.toString());
 	}
 
 	public static void createForest(String fName, String dbName) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String urlStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/forests?format=json");
-			String hName = getBootStrapHostFromML();
-			String JSONString = "{\"database\":\"" + dbName + "\",\"forest-name\":\"" + fName + "\",\"host\":\"" + hName
-					+ "\"}";
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(urlStr)
-					.post(RequestBody.create(JSONString, MediaType.parse("application/json")))
-					.build();
-			try (Response response = client.newCall(request).execute()) {
-				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-				else {
-					if (response.code() == ML_RES_CREATED) {
-						System.out.println("Created forest " + fName);
-						System.out.println(response.body().string());
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		new ForestManager(newManageClient()).save(objectMapper.createObjectNode()
+			.put("database", dbName)
+			.put("forest-name", fName)
+			.toString());
 	}
 
-	// creating forests on different hosts
 	public static void createForestonHost(String fName, String dbName, String hName) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String urlStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/forests?format=json");
-			String JSONString = "{\"database\":\"" + dbName + "\",\"forest-name\":\"" + fName + "\",\"host\":\"" + hName
-					+ "\"}";
-
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(urlStr)
-					.post(RequestBody.create(JSONString, MediaType.parse("application/json")))
-					.build();
-			try (Response response = client.newCall(request).execute()) {
-				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-				else {
-					if (response.code() == ML_RES_CREATED) {
-						System.out.println("Created forest " + fName + " on host " + hName);
-						System.out.println(response.body().string());
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		new ForestManager(newManageClient()).save(objectMapper.createObjectNode()
+			.put("database", dbName)
+			.put("forest-name", fName)
+			.put("host", hName)
+			.toString());
 	}
 
-	public static void postRequest(Map<String, String> payload, Map<String, String> params, String endpoint) {
-		OkHttpClient client;
-		JSONObject JSONpayload = null;
-		try {
-			if (payload == null) {
-				JSONpayload = new JSONObject();
-			}
-			else {
-				JSONpayload = new JSONObject(payload);
-			}
-			client = createManageAdminClient("admin", "admin");
-			String postUrl = new String("http://" + host_name + ":" + admin_port + endpoint);
-			StringBuilder resp = new StringBuilder();
-			// Initialize Builder (not RequestBody)
-			FormBody.Builder builder = new FormBody.Builder();
-
-			if (params != null) {
-				for(Map.Entry<String, String> entry: params.entrySet()) {
-					builder.add(entry.getKey(), entry.getValue());
-				}
-			}
-			RequestBody formBody = builder.build();
-
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(postUrl)
-					.post(formBody)
-					.build();
-			try (Response response = client.newCall(request).execute()) {
-				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-				else  if (response.code() == ML_RES_OK) {
-					resp.append(response.body().string());
-					if (!resp.toString().isEmpty()) {
-						System.out.println("Posted params ");
-						System.out.println(resp);
-					}
-				} else {
-					System.out.println("No proper reponse from post request");
-					System.out.println(response);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	public static void postRequest(Map<String, String> params, String endpoint) {
+		List<String> paramList = new ArrayList<>();
+		params.entrySet().forEach(entry -> {
+			paramList.add(entry.getKey());
+			paramList.add(entry.getValue());
+		});
+		newManageClient().postForm(endpoint, paramList.toArray(new String[0]));
 	}
 
 	public static void assocRESTServer(String restServerName, String dbName, int restPort) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String urlStr = new String("http://" + host_name + ":" + admin_port + "/v1/rest-apis?format=json");
-			String JSONString = "{ \"rest-api\": {\"name\":\"" + restServerName + "\",\"database\":\"" + dbName
-					+ "\",\"port\":\"" + restPort + "\"}}";
+		ManageClient client = newManageClient();
+		if (new ServerManager(client).exists(restServerName)) {
+			associateRESTServerWithDB(restServerName, dbName);
+		} else {
+			ObjectNode request = objectMapper.createObjectNode();
+			request.putObject("rest-api")
+				.put("name", restServerName)
+				.put("database", dbName)
+				.put("port", restPort);
 
-			StringBuilder resp = new StringBuilder();
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(urlStr)
-					.post(RequestBody.create(JSONString, MediaType.parse("application/json")))
-					.build();
-			try (Response response = client.newCall(request).execute()) {
-				resp.append(response.body().string());
-				if (!resp.toString().isEmpty()) {
-					System.out.println("Will try to associate RESTServer with DB");
-					//System.out.println(resp);
-				}
+			new RestApiManager(client).createRestApi(restServerName, request.toString());
+			if (IsSecurityEnabled()) {
+				enableSecurityOnRESTServer(restServerName);
 			}
-			JsonNode returnResp = new ObjectMapper().readTree(resp.toString());
-			if (returnResp.get("errorResponse").get("statusCode").asInt() == ML_RES_BADREQT) {
-				System.out.println("AppServer already exist");
-				if (dbName.equals("Documents")) {
-					System.out.println("and Context database is Documents DB");
-				} else {
-					System.out.println("and changing context database to " + dbName);
-					associateRESTServerWithDB(restServerName, dbName);
-				}
-			} else if (returnResp.get("errorResponse").get("statusCode").asInt() == ML_RES_CREATED) {
-				// Enable security on new REST Http Server if SSL is turned on.
-				if (IsSecurityEnabled()) {
-					enableSecurityOnRESTServer(restServerName, dbName);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
-	public static void enableSecurityOnRESTServer(String restServerName, String dbName) throws Exception {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String body = "{\"group-name\": \"Default\",\"internal-security\":\"true\", \"ssl-certificate-template\":\"ssl1-QAXdbcServer\", \"ssl-require-client-certificate\":\"true\""
-					+ "}";
-			StringBuilder resp = new StringBuilder();
-			String put = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
-					+ "/properties?server-type=http");
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(put)
-					.put(RequestBody.create(body, MediaType.parse("application/json")))
-					.build();
-			try (Response response = client.newCall(request).execute()) {
-				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-				else {
-
-					if (response.code() == ML_RES_CHANGED) {
-						System.out.println("Enabled Security OnRESTServer " + restServerName) ;
-						System.out.println(response.body().toString());
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	public static void enableSecurityOnRESTServer(String restServerName) {
+		ObjectNode request = objectMapper.createObjectNode()
+			.put("group-name", "Default")
+			.put("server-name", restServerName)
+			.put("internal-security", true)
+			.put("ssl-certificate-template", "ssl1-QAXdbcServer")
+			.put("ssl-require-client-certificate", true);
+		new ServerManager(newManageClient()).save(request.toString());
 	}
 
-	public static void associateRESTServerWithDB(String restServerName, String dbName) throws Exception {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String body = "{\"content-database\": \"" + dbName + "\",\"group-name\": \"Default\"}";
-
-			String put = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
-					+ "/properties?server-type=http");
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(put)
-					.put(RequestBody.create(body, MediaType.parse("application/json")))
-					.build();
-			try (Response response = client.newCall(request).execute()) {
-				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-				else {
-					if (response.code() == ML_RES_CHANGED) {
-						System.out.println("Associated " + restServerName + " with database " + dbName);
-						System.out.println(response);
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	public static void associateRESTServerWithDB(String restServerName, String dbName) {
+		new ServerManager(newManageClient()).save(objectMapper.createObjectNode()
+			.put("content-database", dbName)
+			.put("server-name", restServerName)
+			.put("group-name", "Default")
+			.toString());
 	}
 
-	/*
-	 * Creating RESTServer With default content and module database
-	 */
 	public static void createRESTServerWithDB(String restServerName, int restPort) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String getrequest = new String(
-					"http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName + "?group-id=Default");
-			Request requestGet = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(getrequest)
-					.build();
-			try (Response responseGet = client.newCall(requestGet).execute()) {
-				if (responseGet.code() == ML_RES_OK) {
-						System.out.println("Rest Server already present " + restServerName);
-				}
-				else if (responseGet.code() == ML_RES_NOTFND) {
-						String post = new String("http://" + host_name + ":" + admin_port + "/v1/rest-apis?format=json");
-						String JSONString = "{ \"rest-api\": {\"name\":\"" + restServerName + "\",\"port\":\"" + restPort + "\"}}";
-
-						Request request = new Request.Builder()
-							.header("Content-type", "application/json")
-							.url(post)
-							.post(RequestBody.create(JSONString, MediaType.parse("application/json")))
-							.build();
-						try (Response response = client.newCall(request).execute()) {
-						if (!responseGet.isSuccessful()) throw new IOException("Unexpected code " + responseGet);
-
-						if (response.code() == ML_RES_CREATED) {
-							System.out.println("created REST Server " + restServerName + " With DB");
-							System.out.println(response.body().string());
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		ManageClient client = newManageClient();
+		if (!new ServerManager(client).exists(restServerName)) {
+			ObjectNode request = objectMapper.createObjectNode();
+			request.putObject("rest-api")
+				.put("name", restServerName)
+				.put("port", restPort);
+			new RestApiManager(client).createRestApi(restServerName, request.toString());
 		}
 	}
 
-	/*
-	 * This function creates database,forests and REST server independently and
-	 * attaches the database to the rest server
-	 */
-	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort)
-			throws Exception {
-		Calendar cal = Calendar.getInstance();
-		Date d = cal.getTime();
-		long beforeSetup = cal.getTimeInMillis();
-		long before = cal.getTimeInMillis();
-		//logger.info("### Starting TESTCASE SETUP." + dbName + "### " + d);
-
+	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort) {
 		createDB(dbName);
-		logTestMessages("CREATE-DB", before);
-
-		before = Calendar.getInstance().getTimeInMillis();
 		createForest(fName, dbName);
-		logTestMessages("CREATE-FOREST", before);
-
-		before = Calendar.getInstance().getTimeInMillis();
 		assocRESTServer(restServerName, dbName, restPort);
-		logTestMessages("REST-SERVER-ASSOCIATION", before);
-
-		before = Calendar.getInstance().getTimeInMillis();
 		createRESTUser("rest-admin", "x", "rest-admin");
 		createRESTUser("rest-writer", "x", "rest-writer");
 		createRESTUser("rest-reader", "x", "rest-reader");
-		logTestMessages("REST-USER-CREATION-CHK", before);
-		cal = Calendar.getInstance();
-		long after = cal.getTimeInMillis();
-		long diff = after - beforeSetup;
-
-		// String msg = "### Ending TESTCASE SETUP ###: "+diff/1000+" seconds";
-		// logger.info(msg);
 	}
 
-	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort,
-			boolean attachRestContextDB) throws Exception {
+	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort, boolean attachRestContextDB) {
 		createDB(dbName);
 		createForest(fName, dbName);
-//		Thread.sleep(1500);
 		if (attachRestContextDB) {
 			assocRESTServer(restServerName, dbName, restPort);
 		} else {
@@ -450,192 +173,78 @@ public abstract class ConnectedRESTQA {
 	 * Create a role with given privileges
 	 */
 	public static void createUserRolesWithPrevilages(String roleName, String... privNames) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/roles/" + roleName);
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(getrequest)
-					.build();
-				Response response = client.newCall(request).execute();
-				if (response.code() == ML_RES_OK) {
-					System.out.println("Role already exist");
-				} else if (response.code() == ML_RES_NOTFND) {
-					System.out.println("Role does not exist, will create now");
-					String[] roleNames = { "rest-reader", "rest-writer" };
+		ObjectNode mainNode = objectMapper.createObjectNode();
+		String[] roleNames = { "rest-reader", "rest-writer" };
 
-					ObjectMapper mapper = new ObjectMapper();
-					ObjectNode mainNode = mapper.createObjectNode();
+		ArrayNode roleArray = objectMapper.createArrayNode();
+		ArrayNode privArray = objectMapper.createArrayNode();
+		ArrayNode permArray = objectMapper.createArrayNode();
+		mainNode.put("role-name", roleName);
+		mainNode.put("description", "role discription");
 
-					ArrayNode roleArray = mapper.createArrayNode();
-					ArrayNode privArray = mapper.createArrayNode();
-					ArrayNode permArray = mapper.createArrayNode();
-					mainNode.put("role-name", roleName);
-					mainNode.put("description", "role discription");
-
-					for (String rolename : roleNames)
-						roleArray.add(rolename);
-					mainNode.withArray("role").addAll(roleArray);
-					for (String privName : privNames) {
-						ObjectNode privNode = mapper.createObjectNode();
-						privNode.put("privilege-name", privName);
-						privNode.put("action", "http://marklogic.com/xdmp/privileges/" + privName.replace(":", "-"));
-						privNode.put("kind", "execute");
-						privArray.add(privNode);
-					}
-					mainNode.withArray("privilege").addAll(privArray);
-					permArray.add(getPermissionNode(roleNames[0], Capability.READ).get("permission").get(0));
-					permArray.add(getPermissionNode(roleNames[1], Capability.READ).get("permission").get(0));
-					permArray.add(getPermissionNode(roleNames[1], Capability.EXECUTE).get("permission").get(0));
-					permArray.add(getPermissionNode(roleNames[1], Capability.UPDATE).get("permission").get(0));
-					mainNode.withArray("permission").addAll(permArray);
-					System.out.println(mainNode.toString());
-
-					String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/roles?format=json");
-					Request requestPost = new Request.Builder()
-							.header("Content-type", "application/json")
-							.url(postUrl)
-							.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
-							.build();
-					Response responsePost = client.newCall(requestPost).execute();
-					if (responsePost.code() == ML_RES_BADREQT) {
-						System.out.println("Creation of role has a problem");
-					} else if (responsePost.code() == ML_RES_CREATED && responsePost.body().string()!= null) {
-						System.out.println("Created role " + roleName + " with required privileges");
-						System.out.println(responsePost);
-					} else {
-						System.out.println("No Proper Response");
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		for (String rolename : roleNames)
+			roleArray.add(rolename);
+		mainNode.withArray("role").addAll(roleArray);
+		for (String privName : privNames) {
+			ObjectNode privNode = objectMapper.createObjectNode();
+			privNode.put("privilege-name", privName);
+			privNode.put("action", "http://marklogic.com/xdmp/privileges/" + privName.replace(":", "-"));
+			privNode.put("kind", "execute");
+			privArray.add(privNode);
 		}
-		finally {
-			client = null;
-		}
+		mainNode.withArray("privilege").addAll(privArray);
+		permArray.add(getPermissionNode(roleNames[0], Capability.READ).get("permission").get(0));
+		permArray.add(getPermissionNode(roleNames[1], Capability.READ).get("permission").get(0));
+		permArray.add(getPermissionNode(roleNames[1], Capability.EXECUTE).get("permission").get(0));
+		permArray.add(getPermissionNode(roleNames[1], Capability.UPDATE).get("permission").get(0));
+		mainNode.withArray("permission").addAll(permArray);
+
+		new RoleManager(newManageClient()).save(mainNode.toString());
 	}
 
-	/*
-	 * Create a role with given privileges. With added Node Update Capability
-	 * Similar to createUserRolesWithPrevileges method, but have Node Update.
-	 */
 	public static void createRoleWithNodeUpdate(String roleName, String... privNames) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/roles/" + roleName);
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(getrequest)
-					.build();
-			Response response = client.newCall(request).execute();
-			if (response.code() == ML_RES_OK) {
-				System.out.println("Role already exist");
-			} else if (response.code() == ML_RES_NOTFND) {
-				System.out.println("Role does not exist, will create now");
-				String[] roleNames = { "rest-reader", "rest-writer" };
+		String[] roleNames = { "rest-reader", "rest-writer" };
 
-				ObjectMapper mapper = new ObjectMapper();
-				ObjectNode mainNode = mapper.createObjectNode();
+		ObjectMapper mapper = objectMapper;
+		ObjectNode mainNode = mapper.createObjectNode();
 
-				ArrayNode roleArray = mapper.createArrayNode();
-				ArrayNode privArray = mapper.createArrayNode();
-				ArrayNode permArray = mapper.createArrayNode();
-				mainNode.put("role-name", roleName);
-				mainNode.put("description", "role discription");
+		ArrayNode roleArray = mapper.createArrayNode();
+		ArrayNode privArray = mapper.createArrayNode();
+		ArrayNode permArray = mapper.createArrayNode();
+		mainNode.put("role-name", roleName);
+		mainNode.put("description", "role discription");
 
-				for (String rolename : roleNames)
-					roleArray.add(rolename);
-				mainNode.withArray("role").addAll(roleArray);
-				for (String privName : privNames) {
-					ObjectNode privNode = mapper.createObjectNode();
-					privNode.put("privilege-name", privName);
-					privNode.put("action", "http://marklogic.com/xdmp/privileges/" + privName.replace(":", "-"));
-					privNode.put("kind", "execute");
-					privArray.add(privNode);
-				}
-				mainNode.withArray("privilege").addAll(privArray);
-				permArray.add(getPermissionNode(roleNames[0], Capability.READ).get("permission").get(0));
-				permArray.add(getPermissionNode(roleNames[1], Capability.READ).get("permission").get(0));
-				permArray.add(getPermissionNode(roleNames[1], Capability.EXECUTE).get("permission").get(0));
-				permArray.add(getPermissionNode(roleNames[1], Capability.UPDATE).get("permission").get(0));
-				permArray.add(getPermissionNode(roleNames[1], Capability.NODE_UPDATE).get("permission").get(0));
-
-				mainNode.withArray("permission").addAll(permArray);
-				System.out.println(mainNode.toString());
-				String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/roles?format=json");
-				Request requestPost = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(postUrl)
-						.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
-						.build();
-				Response responsePost = client.newCall(requestPost).execute();
-				if (responsePost.code() == ML_RES_BADREQT) {
-					System.out.println("Creation of role has a problem");
-				} else if (responsePost.code() == ML_RES_CREATED && responsePost.body().string() != null) {
-					System.out.println("Created role " + roleName + " with required privileges");
-					System.out.println(responsePost);
-				} else {
-					System.out.println("No Proper Response");
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
+		for (String rolename : roleNames)
+			roleArray.add(rolename);
+		mainNode.withArray("role").addAll(roleArray);
+		for (String privName : privNames) {
+			ObjectNode privNode = mapper.createObjectNode();
+			privNode.put("privilege-name", privName);
+			privNode.put("action", "http://marklogic.com/xdmp/privileges/" + privName.replace(":", "-"));
+			privNode.put("kind", "execute");
+			privArray.add(privNode);
 		}
+		mainNode.withArray("privilege").addAll(privArray);
+		permArray.add(getPermissionNode(roleNames[0], Capability.READ).get("permission").get(0));
+		permArray.add(getPermissionNode(roleNames[1], Capability.READ).get("permission").get(0));
+		permArray.add(getPermissionNode(roleNames[1], Capability.EXECUTE).get("permission").get(0));
+		permArray.add(getPermissionNode(roleNames[1], Capability.UPDATE).get("permission").get(0));
+		permArray.add(getPermissionNode(roleNames[1], Capability.NODE_UPDATE).get("permission").get(0));
+
+		mainNode.withArray("permission").addAll(permArray);
+
+		new RoleManager(newManageClient()).save(mainNode.toString());
 	}
 
-	// This function creates a REST user with given roles
-	public static void createRESTUser(String usrName, String pass, String... roleNames) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users/" + usrName);
-			Request request = new Request.Builder()
-				.header("Content-type", "application/json")
-				.url(getrequest)
-				.build();
-			Response response = client.newCall(request).execute();
-			if (response.code() == ML_RES_OK) {
-				System.out.println("User already exist");
-			} else {
-				System.out.println("User does not exist");
-
-				ObjectMapper mapper = new ObjectMapper();
-				ObjectNode mainNode = mapper.createObjectNode();
-
-				ArrayNode childArray = mapper.createArrayNode();
-				mainNode.put("user-name", usrName);
-				mainNode.put("description", "user discription");
-				mainNode.put("password", pass);
-				for (String rolename : roleNames)
-					childArray.add(rolename);
-				mainNode.withArray("role").addAll(childArray);
-
-				System.out.println(mainNode.toString());
-				String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users?format=json");
-				Request requestPost = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(postUrl)
-					.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
-					.build();
-				Response responsePost = client.newCall(requestPost).execute();
-				if (responsePost.code() == ML_RES_BADREQT) {
-					System.out.println("Creation of user has a problem");
-				} else if (responsePost.code() == ML_RES_CREATED && responsePost.body().string()!= null) {
-					System.out.println("Created user " + usrName + " with required roles");
-					System.out.println(responsePost);
-				} else {
-					System.out.println("No Proper Response");
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
+	public static void createRESTUser(String username, String password, String... roleNames) {
+		ObjectNode request = objectMapper.createObjectNode()
+			.put("user-name", username)
+			.put("password", password);
+		ArrayNode roles = request.putArray("role");
+		for (String roleName : roleNames) {
+			roles.add(roleName);
 		}
+		new UserManager(newManageClient()).save(request.toString());
 	}
 
 	// "permission": [ { "role-name": "dls-user", "capability": "read" }
@@ -667,314 +276,63 @@ public abstract class ConnectedRESTQA {
 	}
 
 	public static void createRESTUserWithPermissions(String usrName, String pass, ObjectNode perm,
-													 ObjectNode colections, String... roleNames) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users/" + usrName);
-			Request request = new Request.Builder()
-				.header("Content-type", "application/json")
-				.url(getrequest)
-				.build();
-			Response response = client.newCall(request).execute();
-			if (response.code() == ML_RES_OK) {
-				System.out.println("User already exist");
-			} else {
-				System.out.println("User does not exist");
+													 ObjectNode collections, String... roleNames) {
+		ObjectNode mainNode = objectMapper.createObjectNode();
+		ArrayNode childArray = objectMapper.createArrayNode();
+		mainNode.put("user-name", usrName);
+		mainNode.put("description", "user discription");
+		mainNode.put("password", pass);
+		for (String rolename : roleNames)
+			childArray.add(rolename);
+		mainNode.withArray("role").addAll(childArray);
+		mainNode.setAll(perm);
+		mainNode.setAll(collections);
 
-				ObjectMapper mapper = new ObjectMapper();
-				ObjectNode mainNode = mapper.createObjectNode();
-
-				ArrayNode childArray = mapper.createArrayNode();
-				mainNode.put("user-name", usrName);
-				mainNode.put("description", "user discription");
-				mainNode.put("password", pass);
-				for (String rolename : roleNames)
-					childArray.add(rolename);
-				mainNode.withArray("role").addAll(childArray);
-				mainNode.setAll(perm);
-				mainNode.setAll(colections);
-
-				System.out.println(mainNode.toString());
-				String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users?format=json");
-				Request requestPost = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(postUrl)
-					.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
-					.build();
-				Response responsePost = client.newCall(requestPost).execute();
-				if (responsePost.code() == ML_RES_BADREQT) {
-					System.out.println("Bad User creation request");
-				} else if (responsePost.code() == ML_RES_CREATED) {
-					System.out.println(responsePost.body().string());
-				} else {
-					System.out.println("No Proper Response");
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
+		new UserManager(newManageClient()).save(mainNode.toString());
 	}
 
-	public static void deleteRESTUser(String usrName) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String deleteUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users/" + usrName);
-			Request request = new Request.Builder()
-				.header("Content-type", "application/json")
-				.url(deleteUrl)
-				.delete()
-				.build();
-			Response response = client.newCall(request).execute();
-			if (response.code() == ML_RES_CHANGED) {
-//				Thread.sleep(3500);
-				System.out.println("User " + usrName + " deleted");
-				System.out.println(response.body().string());
-			}
-			else {
-				System.out.println("User " + usrName + " deletion has issues");
-				System.out.println("Response from user deletion is: " + response);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
+	public static void deleteRESTUser(String username) {
+		new UserManager(newManageClient()).deleteByIdField(username);
 	}
 
 	public static void deleteUserRole(String roleName) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String deleteUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/roles/" + roleName);
-
-			Request request = new Request.Builder()
-				.header("Content-type", "application/json")
-				.url(deleteUrl)
-				.delete()
-				.build();
-			Response response = client.newCall(request).execute();
-			if (response.code() == ML_RES_CHANGED) {
-//				Thread.sleep(3500);
-				System.out.println("Role " + roleName + " deleted");
-				System.out.println(response.body().string());
-			}
-			else {
-				System.out.println("Role " + roleName + " deletion has issues");
-				System.out.println("Response from role deletion is: " + response);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
+		new RoleManager(newManageClient()).deleteByIdField(roleName);
 	}
 
 	public static void detachForest(String dbName, String fName) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-
-			String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/forests/" + fName);
-			RequestBody formBody = new FormBody.Builder()
-					.add("state", "detach")
-					.add("database", dbName)
-					.build();
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(postUrl)
-					.post(formBody)
-					.build();
-			Response response = client.newCall(request).execute();
-
-			if (response.code() == ML_RES_OK) {
-				System.out.println("Forest " + fName + " has been detached from database " + dbName);
-			} else {
-				System.out.println("Forest " + fName + " detaching from database " + dbName + " ran into problems");
-				System.out.println(response);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
+		newManageClient().postForm("/manage/v2/forests/" + fName,
+			"state", "detach",
+			"database", dbName
+		);
 	}
 
-	// Deleting a forest is a HTTP Delete request
 	public static void deleteForest(String fName) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String deleteUrl = new String(
-					"http://" + host_name + ":" + admin_port + "/manage/v2/forests/" + fName + "?level=full");
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(deleteUrl)
-					.delete()
-					.build();
-			Response response = client.newCall(request).execute();
-			if (response.code() == ML_RES_CHANGED) {
-				System.out.println("Forest " + fName + " has been deleted");
-			} else {
-				System.out.println("Forest " + fName + " deletion ran into problems");
-				System.out.println(response);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
+		new ForestManager(newManageClient()).deleteByIdField(fName);
 	}
 
-	// Deleting Database
 	public static void deleteDB(String dbName) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String deleteUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName);
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(deleteUrl)
-					.delete()
-					.build();
-			Response response = client.newCall(request).execute();
-			if (response.code() == ML_RES_CHANGED) {
-				System.out.println("Database " + dbName + " has been deleted");
-			} else {
-				System.out.println("Database " + dbName + " deletion ran into problems");
-				System.out.println(response);
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
+		new DatabaseManager(newManageClient()).deleteByIdField(dbName);
 	}
 
-	//Clear the Database
 	public static void clearDB(int port) {
-		OkHttpClient client = createManageAdminClient("admin", "admin");
-		try {
-			InputStream jsonstream = null;
-			String uri = null;
-			String resGet = null;
-			JsonNode jnode = null;
-			if (/*IsSecurityEnabled()*/false) {
-				// In case of SSL use 8002 port to clear DB contents.
-				String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/"
-						+ getRestAppServerName() + "/properties?group-id=Default&format=json");
-				Request request = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(getrequest)
-						.build();
-				Response response = client.newCall(request).execute();
-
-				if (response.code() == ML_RES_OK) {
-					resGet = response.body().string();
-					System.out.println("Response from Get is " + resGet);
-				}
-				if (resGet != null && !resGet.isEmpty())
-					jnode = new ObjectMapper().readTree(resGet);
-				else throw new Exception("Unexpected error " + response);
-
-				String dbName = jnode.get("content-database").asText();
-				System.out.println("App Server's content database properties value from ClearDB is :" + dbName);
-
-				ObjectMapper mapper = new ObjectMapper();
-				ObjectNode mainNode = mapper.createObjectNode();
-
-				mainNode.put("operation", "clear-database");
-
-				String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName);
-				Request requestSSLClear = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(postUrl)
-						.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
-						.build();
-				Response responseSSLClear = client.newCall(requestSSLClear).execute();
-				if (responseSSLClear.code() == ML_RES_OK) {
-					System.out.println(dbName + " database contents cleared");
-				} else {
-					System.out.println("Database contents did not clear");
-				}
-			} else {
-				uri = "http://" + host_name + ":" + port + "/v1/search/";
-				Request requestNormClear = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(uri)
-						.delete()
-						.build();
-				Response responseNormClear = client.newCall(requestNormClear).execute();
-				if (responseNormClear.code() == ML_RES_CHANGED)
-					System.out.println("Content database cleared for App Server on port " + port);
-				else {
-					System.out.println("Content database not cleared");
-					throw new Exception("Unexpected error " + responseNormClear);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
+		try (DatabaseClient client = newDatabaseClientBuilder().withPort(port).build()) {
+			QueryManager mgr = client.newQueryManager();
+			mgr.delete(mgr.newDeleteDefinition());
+		} catch (FailedRequestException ex) {
+			LoggerFactory.getLogger(ConnectedRESTQA.class).warn("Unable to clear database. This intermittently " +
+				"happens while running tests on Jenkins, typically with a server error message such as: " +
+				"XDMP-FORESTNOT: Forest StringQueryHostBatcherDB-1 not available: XDMP-FORESTERR: " +
+				"Error in clear of forest StringQueryHostBatcherDB-1: SVC-FILREN: File rename error: " +
+				"rename '/var/opt/MarkLogic/TmpForests/StringQueryHostBatcherDB-1/Journals to " +
+				"/var/opt/MarkLogic/Forests/StringQueryHostBatcherDB-1/Journals': No such file or directory. " +
+				"This error is caught and logged in the hopes that proceeding tests will succeed even though " +
+				"this clearDB call failed.", ex);
 		}
 	}
 
-	public static void logTestMessages(String txt, long before) {
-		/*
-		 * Calendar cal = Calendar.getInstance(); long after
-		 * =cal.getTimeInMillis(); long diff = after - before; String msg =
-		 * "### "+txt+" ### "+diff/1000+" seconds"; logger.info(msg);
-		 */
-	}
-
-	/*
-	 * This function move rest server first to documents and deletes forests and
-	 * databases in separate calls
-	 */
-	public static void tearDownJavaRESTServer(String dbName, String[] fNames, String restServerName) throws Exception {
-		Calendar cal = Calendar.getInstance();
-		Date d = cal.getTime();
-		long beforeTeardown = cal.getTimeInMillis();
-		//logger.info("### StartingTestCase TEARDOWN " + dbName + " ### " + d);
-
-		long before = cal.getTimeInMillis();
-		try {
-			associateRESTServerWithDB(restServerName, "Documents");
-		} catch (Exception e) {
-			System.out.println("From Deleting Rest server called funnction is throwing an error");
-			e.printStackTrace();
-		}
-		logTestMessages("REST-SERVER-ASSOCIATION", before);
-
-		before = Calendar.getInstance().getTimeInMillis();
-		try {
-			for (int i = 0; i < fNames.length; i++) {
-				detachForest(dbName, fNames[i]);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		logTestMessages("DETACH-FOREST-FROM-DB", before);
-
-		before = Calendar.getInstance().getTimeInMillis();
-		try {
-			for (int i = 0; i < fNames.length; i++) {
-				deleteForest(fNames[i]);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		logTestMessages("DELETE-FOREST", before);
-
-		before = Calendar.getInstance().getTimeInMillis();
+	public static void tearDownJavaRESTServer(String dbName, String restServerName) {
+		associateRESTServerWithDB(restServerName, "Documents");
 		deleteDB(dbName);
-		logTestMessages("DELETE-DB", before);
-
-		logTestMessages(" Ending TESTCASE TEARDOWN ", beforeTeardown);
 	}
 
 	public static void setMergeTimestamp(String dbName, String value) {
@@ -1001,78 +359,38 @@ public abstract class ConnectedRESTQA {
 	 * root property name else if it has an existing sub property name then it
 	 * adds elements to that array
 	 */
-	public static void setDatabaseProperties(String dbName, String propName, ObjectNode objNode) throws IOException {
-		String resGet = null;
+	private static void setDatabaseProperties(String dbName, String propName, ObjectNode objNode) {
+		ManageClient client = newManageClient();
+		String databaseProperties = new DatabaseManager(client).getPropertiesAsJson(dbName);
 		JsonNode jnode = null;
-		Response responsePut = null;
-		OkHttpClient client = createManageAdminClient("admin", "admin");
 		try {
-			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-					+ "/properties?format=json");
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(getrequest)
-					.build();
-			Response response1 = client.newCall(request).execute();
-			if (response1.code() == ML_RES_OK) {
-				resGet = response1.body().string();
-				System.out.println("Response from Get is " + resGet);
-			}
-			if (resGet != null && !resGet.isEmpty())
-				jnode = new ObjectMapper().readTree(resGet);
-			else throw new Exception("Unexpected error " + response1);
-
-			if (!jnode.isNull()) {
-				if (!jnode.has(propName)) {
-					((ObjectNode) jnode).putArray(propName).addAll(objNode.withArray(propName));
-				} else {
-					if (!jnode.path(propName).isArray()) {
-						System.out.println("property is not array");
-						((ObjectNode) jnode).putAll(objNode);
-					} else {
-						JsonNode member = jnode.withArray(propName);
-						if (objNode.path(propName).isArray()) {
-							((ArrayNode) member).addAll(objNode.withArray(propName));
-						}
-					}
-				}
-				String putUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-						+ "/properties?format=json");
-
-				String putProps = jnode.toString();
-				Request requestPut = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(putUrl)
-						.put(RequestBody.create(putProps, MediaType.parse("application/json")))
-						.build();
-				responsePut = client.newCall(requestPut).execute();
-				System.out.println(responsePut);
-				if (responsePut.code() == ML_RES_CHANGED) {
-					System.out.println("Database " + dbName + ". property " + propName +" has been updated");
-				}
-			} else {
-				System.out.println("REST call for database properties update has issues");
-				System.out.println(responsePut.toString());
-				System.out.println(jnode.toString());
-			}
-		} catch (Exception e) {
-			// writing error to Log
-			e.printStackTrace();
-		} finally {
-			client = null;
+			jnode = new ObjectMapper().readTree(databaseProperties);
+		} catch (JsonProcessingException e) {
+			fail("Could not parse database-properties: " + databaseProperties + "; cause: " + e.getMessage());
 		}
+
+		if (!jnode.has(propName)) {
+			((ObjectNode) jnode).putArray(propName).addAll(objNode.withArray(propName));
+		} else {
+			if (!jnode.path(propName).isArray()) {
+				System.out.println("property is not array");
+				((ObjectNode) jnode).setAll(objNode);
+			} else {
+				JsonNode member = jnode.withArray(propName);
+				if (objNode.path(propName).isArray()) {
+					((ArrayNode) member).addAll(objNode.withArray(propName));
+				}
+			}
+		}
+
+		new DatabaseManager(client).save(jnode.toString());
 	}
 
-	public static void enableCollectionLexicon(String dbName) throws Exception {
+	public static void enableCollectionLexicon(String dbName) {
 		setDatabaseProperties(dbName, "collection-lexicon", true);
 	}
 
-	// Enable triple-Index
-	public static void enableTripleIndex(String dbName) throws Exception {
-		setDatabaseProperties(dbName, "triple-index", true);
-	}
-
-	public static void enableWordLexicon(String dbName) throws Exception {
+	public static void enableWordLexicon(String dbName) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
@@ -1081,11 +399,11 @@ public abstract class ConnectedRESTQA {
 		setDatabaseProperties(dbName, "word-lexicons", childNode);
 	}
 
-	public static void enableTrailingWildcardSearches(String dbName) throws Exception {
+	public static void enableTrailingWildcardSearches(String dbName) {
 		setDatabaseProperties(dbName, "trailing-wildcard-searches", true);
 	}
 
-	public static void setMaintainLastModified(String dbName, boolean opt) throws Exception {
+	public static void setMaintainLastModified(String dbName, boolean opt) {
 		setDatabaseProperties(dbName, "maintain-last-modified", opt);
 	}
 
@@ -1093,13 +411,11 @@ public abstract class ConnectedRESTQA {
 	 * This function constructs a range element index with default
 	 * collation,range-value-positions and invalid values
 	 */
-	public static void addRangeElementIndex(String dbName, String type, String namespace, String localname)
-			throws Exception {
+	public static void addRangeElementIndex(String dbName, String type, String namespace, String localname) {
 		addRangeElementIndex(dbName, type, namespace, localname, false);
 	}
 
-	public static void addRangeElementIndex(String dbName, String type, String namespace, String localname,
-			boolean positions) throws Exception {
+	public static void addRangeElementIndex(String dbName, String type, String namespace, String localname, boolean positions) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode mainNode = mapper.createObjectNode();
 
@@ -1117,7 +433,7 @@ public abstract class ConnectedRESTQA {
 		setDatabaseProperties(dbName, "range-element-index", mainNode);
 	}
 
-	public static void addRangeElementIndex(String dbName, String[][] rangeElements) throws Exception {
+	public static void addRangeElementIndex(String dbName, String[][] rangeElements) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode mainNode = mapper.createObjectNode();
 
@@ -1228,7 +544,7 @@ public abstract class ConnectedRESTQA {
 		setDatabaseProperties(dbName, "range-path-index", childNode);
 	}
 
-	public static void addRangePathIndex(String dbName, String[][] rangePaths) throws Exception {
+	public static void addRangePathIndex(String dbName, String[][] rangePaths) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
@@ -1283,283 +599,7 @@ public abstract class ConnectedRESTQA {
 		setDatabaseProperties(dbName, "path-namespace", childNode);
 	}
 
-	public static void addGeospatialElementIndexes(String dbName, String localname, String namespace,
-			String coordinateSystem, String pointFormat, boolean rangeValuePositions, String invalidValues)
-			throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-
-		ObjectNode childNode = mapper.createObjectNode();
-		ArrayNode childArray = mapper.createArrayNode();
-		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put("namespace-uri", namespace);
-		childNodeObject.put("localname", localname);
-		childNodeObject.put("coordinate-system", coordinateSystem);
-		childNodeObject.put("range-value-positions", false);
-		childNodeObject.put("invalid-values", invalidValues);
-		childNodeObject.put("point-format", pointFormat);
-		childArray.add(childNodeObject);
-		childNode.putArray("geospatial-element-index").addAll(childArray);
-
-		setDatabaseProperties(dbName, "geospatial-element-index", childNode);
-	}
-
-	public static void addGeoSpatialElementChildIndexes(String dbName, String parentNamespaceUri,
-			String parentLocalName, String namespace, String localname, String coordinateSystem, String pointFormat,
-			boolean rangeValuePositions, String invalidValues) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-
-		ObjectNode childNode = mapper.createObjectNode();
-		ArrayNode childArray = mapper.createArrayNode();
-		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put("parent-namespace-uri", parentNamespaceUri);
-		childNodeObject.put("parent-localname", parentLocalName);
-		childNodeObject.put("namespace-uri", namespace);
-		childNodeObject.put("localname", localname);
-		childNodeObject.put("coordinate-system", coordinateSystem);
-		childNodeObject.put("range-value-positions", false);
-		childNodeObject.put("invalid-values", invalidValues);
-		childNodeObject.put("point-format", pointFormat);
-		childArray.add(childNodeObject);
-		childNode.putArray("geospatial-element-child-index").addAll(childArray);
-
-		setDatabaseProperties(dbName, "geospatial-element-child-index", childNode);
-	}
-
-	public static void addGeospatialElementPairIndexes(String dbName, String parentNamespaceUri, String parentLocalName,
-			String latNamespace, String latLocalname, String longNamespace, String longLocalname,
-			String coordinateSystem, boolean rangeValuePositions, String invalidValues) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-
-		ObjectNode childNode = mapper.createObjectNode();
-		ArrayNode childArray = mapper.createArrayNode();
-		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put("parent-namespace-uri", parentNamespaceUri);
-		childNodeObject.put("parent-localname", parentLocalName);
-		childNodeObject.put("latitude-namespace-uri", latNamespace);
-		childNodeObject.put("latitude-localname", latLocalname);
-		childNodeObject.put("longitude-namespace-uri", latNamespace);
-		childNodeObject.put("longitude-localname", longLocalname);
-		childNodeObject.put("coordinate-system", coordinateSystem);
-		childNodeObject.put("range-value-positions", false);
-		childNodeObject.put("invalid-values", invalidValues);
-		childArray.add(childNodeObject);
-		childNode.putArray("geospatial-element-pair-index").addAll(childArray);
-
-		setDatabaseProperties(dbName, "geospatial-element-pair-index", childNode);
-	}
-
-	public static void addGeospatialElementAttributePairIndexes(String dbName, String parentNamespaceUri,
-			String parentLocalName, String latNamespace, String latLocalname, String longNamespace,
-			String longLocalname, String coordinateSystem, boolean rangeValuePositions, String invalidValues)
-			throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-
-		ObjectNode childNode = mapper.createObjectNode();
-		ArrayNode childArray = mapper.createArrayNode();
-		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put("parent-namespace-uri", parentNamespaceUri);
-		childNodeObject.put("parent-localname", parentLocalName);
-		childNodeObject.put("latitude-namespace-uri", latNamespace);
-		childNodeObject.put("latitude-localname", latLocalname);
-		childNodeObject.put("longitude-namespace-uri", latNamespace);
-		childNodeObject.put("longitude-localname", longLocalname);
-		childNodeObject.put("coordinate-system", coordinateSystem);
-		childNodeObject.put("range-value-positions", false);
-		childNodeObject.put("invalid-values", invalidValues);
-		childArray.add(childNodeObject);
-		childNode.putArray("geospatial-element-attribute-pair-index").addAll(childArray);
-
-		setDatabaseProperties(dbName, "geospatial-element-attribute-pair-index", childNode);
-	}
-
-	public static void addGeospatialPathIndexes(String dbName, String pathExpression, String coordinateSystem,
-			String pointFormat, boolean rangeValuePositions, String invalidValues) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-
-		ObjectNode childNode = mapper.createObjectNode();
-		ArrayNode childArray = mapper.createArrayNode();
-		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put("path-expression", pathExpression);
-		childNodeObject.put("coordinate-system", coordinateSystem);
-		childNodeObject.put("range-value-positions", false);
-		childNodeObject.put("invalid-values", invalidValues);
-		childNodeObject.put("point-format", pointFormat);
-		childArray.add(childNodeObject);
-		childNode.putArray("geospatial-path-index").addAll(childArray);
-
-		setDatabaseProperties(dbName, "geospatial-path-index", childNode);
-	}
-
-	/*
-	 * Add field will include root and it appends field to an existing fields
-	 * "fields":{ "field":[ { "field-name": "", "include-root": true,
-	 * "included-elements": null, "excluded-elements": null } , { "field-name":
-	 * "para", "include-root": false, "included-elements": null,
-	 * "excluded-elements": null, "tokenizer-overrides": null } ] }
-	 */
-	public static void addField(String dbName, String fieldName) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-
-		ObjectNode childNode = mapper.createObjectNode();
-		ArrayNode arrNode = mapper.createArrayNode();
-		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put("field-name", fieldName);
-		childNodeObject.put("include-root", true);
-		childNodeObject.putNull("included-elements");
-		childNodeObject.putNull("excluded-elements");
-		childNodeObject.putNull("tokenizer-overrides");
-		arrNode.add(childNodeObject);
-		childNode.putArray("field").addAll(arrNode);
-
-		setDatabaseProperties(dbName, "field", childNode);
-	}
-
-	public static void addFieldExcludeRoot(String dbName, String fieldName) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-
-		ObjectNode childNode = mapper.createObjectNode();
-		ArrayNode arrNode = mapper.createArrayNode();
-		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put("field-name", fieldName);
-		childNodeObject.put("include-root", false);
-		childNodeObject.putNull("included-elements");
-		childNodeObject.putNull("excluded-elements");
-		childNodeObject.putNull("tokenizer-overrides");
-		arrNode.add(childNodeObject);
-		childNode.putArray("field").addAll(arrNode);
-
-		setDatabaseProperties(dbName, "field", childNode);
-	}
-
-	public static void addBuiltInGeoIndex(String dbName) throws Exception {
-		addGeospatialElementIndexes(dbName, "g-elem-point", "", "wgs84", "point", false, "reject");
-		addGeoSpatialElementChildIndexes(dbName, "", "g-elem-child-parent", "", "g-elem-child-point", "wgs84", "point",
-				false, "reject");
-		addGeospatialElementPairIndexes(dbName, "", "g-elem-pair", "", "lat", "", "long", "wgs84", false, "reject");
-		addGeospatialElementAttributePairIndexes(dbName, "", "g-attr-pair", "", "lat", "", "long", "wgs84", false,
-				"reject");
-		addGeospatialPathIndexes(dbName, "/doc/g-elem-point", "wgs84", "point", false, "ignore");
-	}
-
-	/*
-	 * This method is trying to add include element or exclude elements to the
-	 * existing fields
-	 */
-	public static void setDatabaseFieldProperties(String dbName, String field_name, String propName, ObjectNode objNode)
-			throws IOException {
-		String resGet = null;
-		JsonNode jnode = null;
-		Response responsePut = null;
-		OkHttpClient client = createManageAdminClient("admin", "admin");
-		try {
-			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-					+ "/properties?format=json");
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(getrequest)
-					.build();
-			Response response1 = client.newCall(request).execute();
-			if (response1.code() == ML_RES_OK) {
-				resGet = response1.body().string();
-				System.out.println("Response from Get is " + resGet);
-			}
-			if (resGet != null && !resGet.isEmpty())
-				jnode = new ObjectMapper().readTree(resGet);
-			else throw new Exception("Unexpected error " + response1);
-
-			if (!jnode.isNull() && jnode.has("field")) {
-				JsonNode fieldNode = jnode.withArray("field");
-				Iterator<JsonNode> fnode = fieldNode.elements();
-				while (fnode.hasNext()) {
-					JsonNode fnchild = fnode.next();
-					if ((fnchild.path("field-name").asText()).equals(field_name)) {
-						if (!fnchild.has(propName)) {
-							((ObjectNode) fnchild).putArray(propName).addAll(objNode.withArray(propName));
-						} else {
-							JsonNode member = fnchild.withArray(propName);
-							((ArrayNode) member).addAll(objNode.withArray(propName));
-						}
-					}
-				}
-				String putUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-						+ "/properties?format=json");
-				String putProps = jnode.toString();
-				Request requestPut = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(putUrl)
-						.put(RequestBody.create(putProps, MediaType.parse("application/json")))
-						.build();
-				responsePut = client.newCall(requestPut).execute();
-				System.out.println(responsePut);
-				if (responsePut.code() == ML_RES_CHANGED) {
-					System.out.println("Database " + dbName + ". property " + propName +" has been updated");
-				}
-			} else {
-				System.out.println("REST call for database properties update has issues");
-				System.out.println(responsePut.toString());
-				System.out.println(jnode.toString());
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
-	}
-
-	public static void includeElementField(String dbName, String field_name, String namespace, String elementName)
-			throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode childNode = mapper.createObjectNode();
-		ArrayNode arrNode = mapper.createArrayNode();
-		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put("namespace-uri", namespace);
-		childNodeObject.put("localname", elementName);
-		childNodeObject.put("weight", 1.0);
-
-		childNodeObject.put("attribute-namespace-uri", "");
-		childNodeObject.put("attribute-localname", "");
-		childNodeObject.put("attribute-value", "");
-
-		arrNode.add(childNodeObject);
-		childNode.putArray("included-element").addAll(arrNode);
-		System.out.println(childNode.toString());
-		setDatabaseFieldProperties(dbName, field_name, "included-element", childNode);
-	}
-
-	public static void includeElementFieldWithWeight(String dbName, String field_name, String namespace,
-			String elementName, double weight, String attrNS_URI, String attr_localname, String attr_value)
-			throws Exception {
-
-		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode childNode = mapper.createObjectNode();
-		ArrayNode arrNode = mapper.createArrayNode();
-		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put("namespace-uri", namespace);
-		childNodeObject.put("localname", elementName);
-		childNodeObject.put("weight", weight);
-		// These 3 are new fields that have been added as of 8.0.2 from
-		// 03/20/2015
-		// in the Management API.
-		childNodeObject.put("attribute-namespace-uri", attrNS_URI);
-		childNodeObject.put("attribute-localname", attr_localname);
-		childNodeObject.put("attribute-value", attr_value);
-		arrNode.add(childNodeObject);
-		childNode.putArray("included-element").addAll(arrNode);
-		setDatabaseFieldProperties(dbName, field_name, "included-element", childNode);
-	}
-
-	public static void setupAppServicesGeoConstraint(String dbName) throws Exception {
-		enableCollectionLexicon(dbName);
-		addRangeElementIndex(dbName, "dateTime", "", "bday", "http://marklogic.com/collation/");
-		addRangeElementIndex(dbName, "int", "", "height1", "http://marklogic.com/collation/");
-		addRangeElementIndex(dbName, "int", "", "height2", "http://marklogic.com/collation/");
-		addRangePathIndex(dbName, "string", "/doc/name", "http://marklogic.com/collation/", "ignore");
-		addField(dbName, "description");
-		includeElementField(dbName, "description", "", "description");
-		addBuiltInGeoIndex(dbName);
-	}
-
-	public static void setupAppServicesConstraint(String dbName) throws Exception {
+	public static void setupAppServicesConstraint(String dbName) {
 		// Add new range elements into this array
 		String[][] rangeElements = {
 				// { scalar-type, namespace-uri, localname, collation,
@@ -1623,13 +663,6 @@ public abstract class ConnectedRESTQA {
 	 */
 	public static void addElementRangeIndexTemporalAxis(String dbName, String axisName, String namespaceStart,
 			String localnameStart, String namespaceEnd, String localnameEnd) throws Exception {
-		/**
-		 * { "axis-name": "eri-json-system", "axis-start": {
-		 * "element-reference": { "namespace-uri": "", "localname":
-		 * "eri-system-start", "scalar-type": "dateTime" } }, "axis-end": {
-		 * "element-reference": { "namespace-uri": "", "localname":
-		 * "eri-system-end", "scalar-type": "dateTime" } } }
-		 */
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode rootNode = mapper.createObjectNode();
 
@@ -1654,57 +687,8 @@ public abstract class ConnectedRESTQA {
 
 		axisEnd.set("element-reference", elementReferenceEnd);
 		rootNode.set("axis-end", axisEnd);
-		System.out.println(rootNode.toString());
 
-		OkHttpClient client = createManageAdminClient("admin", "admin");
-
-		String postStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-				+ "/temporal/axes?format=json");
-
-		Request request = new Request.Builder()
-				.header("Content-type", "application/json")
-				.url(postStr)
-				.post(RequestBody.create(rootNode.toString(), MediaType.parse("application/json")))
-				.build();
-		Response response = client.newCall(request).execute();
-		System.out.println(response);
-		if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-		else {
-				if (response.code() == ML_RES_CREATED) {
-					System.out.println("Temporal axis: " + axisName + " created");
-				}
-				else {
-					System.out.println("No Proper Response in Temporal axis creation");
-					System.out.println(response);
-			}
-		}
-		client = null;
-	}
-
-	public static void deleteElementRangeIndexTemporalAxis(String dbName, String axisName) throws Exception {
-		OkHttpClient client = createManageAdminClient("admin", "admin");
-
-		String delStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-				+ "/temporal/axes/" + axisName + "?format=json");
-
-		Request request = new Request.Builder()
-				.header("Content-type", "application/json")
-				.url(delStr)
-				.delete()
-				.build();
-		Response response = client.newCall(request).execute();
-
-		if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-			else {
-				if (response.code() == ML_RES_CHANGED) {
-					System.out.println(axisName + " Axis deleted " + " on database " + dbName) ;
-				}
-				else {
-					System.out.println("No Proper Response in Temporal axis deletion");
-					System.out.println(response);
-			}
-		}
-		client = null;
+		new TemporalAxesManager(newManageClient(), dbName).save(rootNode.toString());
 	}
 
 	public static void addElementRangeIndexTemporalCollection(String dbName, String collectionName,
@@ -1715,30 +699,11 @@ public abstract class ConnectedRESTQA {
 		rootNode.put("collection-name", collectionName);
 		rootNode.put("system-axis", systemAxisName);
 		rootNode.put("valid-axis", validAxisName);
-		System.out.println(rootNode.toString());
 
-		OkHttpClient client = createManageAdminClient("admin", "admin");
-		String postStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-				+ "/temporal/collections?format=json");
-
-		Request request = new Request.Builder()
-				.header("Content-type", "application/json")
-				.url(postStr)
-				.post(RequestBody.create(rootNode.toString(), MediaType.parse("application/json")))
-				.build();
-		Response response = client.newCall(request).execute();
-		if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-		else if (response.code() == ML_RES_CREATED) {
-			System.out.println("Temporal collection: " + collectionName + " created");
-		} else {
-			System.out.println("No Proper Response from Temporal collection creation");
-		}
-		client = null;
+		new TemporalCollectionManager(newManageClient(), dbName).save(rootNode.toString());
 	}
 
-	// Update temporal collection
-	public static void updateTemporalCollectionForLSQT(String dbName, String collectionName, boolean enable)
-			throws Exception {
+	public static void updateTemporalCollectionForLSQT(String dbName, String collectionName, boolean enable) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode rootNode = mapper.createObjectNode();
 		rootNode.put("lsqt-enabled", enable);
@@ -1747,79 +712,8 @@ public abstract class ConnectedRESTQA {
 		ObjectNode automation = mapper.createObjectNode();
 		automation.put("enabled", true);
 		rootNode.set("automation", automation);
-		System.out.println(rootNode.toString());
 
-		OkHttpClient client =createManageAdminClient("admin", "admin");
-
-		String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-				+ "/temporal/collections/lsqt/properties?collection=" + collectionName);
-
-		Request request = new Request.Builder()
-				.header("Content-type", "application/json")
-				.url(putStr)
-				.put(RequestBody.create(rootNode.toString(), MediaType.parse("application/json")))
-				.build();
-		Response response = client.newCall(request).execute();
-		if (response.code() == ML_RES_CHANGED) {
-			System.out.println("Temporal collection: " + collectionName + " updated");
-		} else {
-			System.out.println("No Proper Response from Temporal collection update");
-		}
-		client = null;
-	}
-
-	// Delete a temporal collection
-	public static void deleteElementRangeIndexTemporalCollection(String dbName, String collectionName)
-			throws Exception {
-		OkHttpClient client = createManageAdminClient("admin", "admin");
-
-		String del = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-				+ "/temporal/collections?collection=" + collectionName + "&format=json");
-		Request request = new Request.Builder()
-				.header("Content-type", "application/json")
-				.url(del)
-				.delete()
-				.build();
-		Response response = client.newCall(request).execute();
-		if (response.code() == ML_RES_CHANGED) {
-//			Thread.sleep(3500);
-			System.out.println("collection " + collectionName + " deleted");
-			System.out.println(response.body().string());
-		}
-		else {
-			System.out.println("collection " + collectionName + " deletion has issues");
-			System.out.println("Response from collection deletion is: " + response);
-		}
-		client = null;
-	}
-
-	public static void loadBug18993() {
-		OkHttpClient client = null;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String document = "<foo>a space b</foo>";
-			String perm = "perm:rest-writer=read&perm:rest-writer=insert&perm:rest-writer=update&perm:rest-writer=execute";
-			String putStr = new String(
-					"http://" + host_name + ":" + getRestAppServerPort() + "/v1/documents?uri=/a%20b&" + perm);
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(putStr)
-					.put(RequestBody.create(document.toLowerCase(), MediaType.parse("application/xml")))
-					.build();
-			Response response = client.newCall(request).execute();
-			if (response.code() == ML_RES_BADREQT) {
-				System.out.println(response);
-			}
-			else {
-				System.out.println("Loading documents for test 189933 has issues");
-				System.out.println(response);
-			}
-		} catch (Exception e) {
-			// writing error to Log
-			e.printStackTrace();
-		} finally {
-			client= null;
-		}
+		new TemporalCollectionLSQTManager(newManageClient(), dbName, collectionName).save(rootNode.toString());
 	}
 
 	public static ObjectNode newServerPayload(String serverName) {
@@ -1853,44 +747,17 @@ public abstract class ConnectedRESTQA {
 		}
 	}
 
-	public static void setupServerRequestLogging(DatabaseClient client, boolean flag) throws Exception {
+	public static void setupServerRequestLogging(DatabaseClient client, boolean flag) {
 		ServerConfigurationManager scm = client.newServerConfigManager();
 		scm.readConfiguration();
 		scm.setServerRequestLogging(flag);
 		scm.writeConfiguration();
 	}
 
-	/*
-	 * This method inserts a path range index, in a JsonNode object, into the
-	 * database.
-	 */
-	public static void setPathRangeIndexInDatabase(String dbName, JsonNode jnode) throws IOException {
-		OkHttpClient client = null;
-		try {
-			client = createManageAdminClient("admin", "admin");
-
-			String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-					+ "/properties?format=json");
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(putStr)
-					.put(RequestBody.create(jnode.toString(), MediaType.parse("application/json")))
-					.build();
-			Response response = client.newCall(request).execute();
-
-			if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-			else if (response.code() == ML_RES_CHANGED) {
-				System.out.println("Path index assignment successful ");
-			}
-			else {
-				System.out.println("Path index assignment ran into issues");
-				System.out.println(response);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
+	public static void setPathRangeIndexInDatabase(String dbName, JsonNode jnode) {
+		ObjectNode json = (ObjectNode) jnode;
+		json.put("database-name", dbName);
+		new DatabaseManager(newManageClient()).save(json.toString());
 	}
 
 	/*
@@ -1911,11 +778,11 @@ public abstract class ConnectedRESTQA {
 		// (note: a real application should verify certificates)
 
 		TrustManager tm = new X509TrustManager() {
-			public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+			public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
 				// nothing to do
 			}
 
-			public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+			public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
 				// nothing to do
 			}
 
@@ -1931,11 +798,6 @@ public abstract class ConnectedRESTQA {
 		KeyStore keyStore = KeyStore.getInstance("PKCS12");
 		Properties property = new Properties();
 		InputStream keyInput = property.getClass().getResourceAsStream(mlCertFile);
-//		try {
-//			Thread.sleep(2000);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
 
 		try {
 			keyStore.load(keyInput, ml_certificate_password.toCharArray());
@@ -1947,7 +809,7 @@ public abstract class ConnectedRESTQA {
 		KeyManager[] keyMgr = keyManagerFactory.getKeyManagers();
 
 		// create an SSL context
-		SSLContext mlsslContext = SSLContext.getInstance("TLSv1.2");
+		SSLContext mlsslContext = SSLContext.getInstance(SSLUtil.DEFAULT_PROTOCOL);
 		mlsslContext.init(keyMgr, new TrustManager[] { tm }, null);
 
 		return mlsslContext;
@@ -1958,7 +820,7 @@ public abstract class ConnectedRESTQA {
 	 * Server.
 	 * @throws Exception
 	 */
-	public static void clearDB() throws Exception {
+	public static void clearDB() {
 		clearDB(getRestServerPort());
 	}
 
@@ -1985,21 +847,12 @@ public abstract class ConnectedRESTQA {
 		}
 	}
 
-	//Configure a SSL or non SSL enabled REST Server based on the build.gradle
-	public static void configureRESTServer(String dbName, String[] fNames, boolean bAssociateDB) throws Exception {
-		loadGradleProperties();
-		if (IsSecurityEnabled())
-			setupJavaRESTServer(dbName, fNames[0], restSslServerName, getRestServerPort(), bAssociateDB);
-		else
-			setupJavaRESTServer(dbName, fNames[0], restServerName, getRestServerPort(), bAssociateDB);
-	}
-
 	// Removes the database and forest from a REST server.
-	public static void cleanupRESTServer(String dbName, String[] fNames) throws Exception {
+	public static void cleanupRESTServer(String dbName) {
 		if (IsSecurityEnabled())
-			tearDownJavaRESTServer(dbName, fNames, restSslServerName);
+			tearDownJavaRESTServer(dbName, restSslServerName);
 		else
-			tearDownJavaRESTServer(dbName, fNames, restServerName);
+			tearDownJavaRESTServer(dbName, restServerName);
 	}
 
 	// Returns true or false based security (ssl) is enabled or disabled.
@@ -2036,8 +889,7 @@ public abstract class ConnectedRESTQA {
 			.build();
 	}
 
-	public static DatabaseClient getDatabaseClient(String user, String password, ConnectionType connType)
-			throws KeyManagementException, NoSuchAlgorithmException, IOException {
+	public static DatabaseClient getDatabaseClient(String user, String password, ConnectionType connType) {
 		return newDatabaseClientBuilder()
 			.withUsername(user)
 			.withPassword(password)
@@ -2048,7 +900,6 @@ public abstract class ConnectedRESTQA {
 	/**
 	 * Only use this in "slow" functional tests until they're converted over to fast.
 	 */
-	@Deprecated
 	public static DatabaseClient getDatabaseClientOnDatabase(String hostName, int port, String databaseName,
 			String user, String password, ConnectionType connType) {
 		return newDatabaseClientBuilder()
@@ -2118,7 +969,6 @@ public abstract class ConnectedRESTQA {
 		https_port = properties.getProperty("httpsPort");
 		http_port = properties.getProperty("httpPort");
 		fast_http_port = properties.getProperty("marklogic.client.port");
-		admin_port = "8002"; // No need yet for a property for this
 		basePath = properties.getProperty("marklogic.client.basePath");
 
 		// Machine names where ML Server runs
@@ -2128,9 +978,6 @@ public abstract class ConnectedRESTQA {
 		// Users
 		admin_user = properties.getProperty("mlAdminUser");
 		admin_password = properties.getProperty("mlAdminPassword");
-
-		mlRestReadUser = properties.getProperty("mlRestReadUser");
-		mlRestReadPassword = properties.getProperty("mlRestReadPassword");
 
 		// Security and Certificate properties.
 		ssl_enabled = properties.getProperty("restSSLset");
@@ -2163,14 +1010,6 @@ public abstract class ConnectedRESTQA {
 		return admin_password;
 	}
 
-	public static String getRestReaderUser() {
-		return mlRestReadUser;
-	}
-
-	public static String getRestReaderPassword() {
-		return mlRestReadPassword;
-	}
-
 	public static String getSslEnabled() {
 		return ssl_enabled;
 	}
@@ -2199,10 +1038,6 @@ public abstract class ConnectedRESTQA {
 
 	private static int getHttpPort() {
 		return (Integer.parseInt(http_port));
-	}
-
-	public static int getAdminPort() {
-		return (Integer.parseInt(admin_port));
 	}
 
 	/*
@@ -2237,35 +1072,14 @@ public abstract class ConnectedRESTQA {
 		return restSslServerName;
 	}
 
-	/*
-	 * Associate REST server with External Security (Kerberos) Property changes
-	 * needed for Kerberos are:
-	 *
-	 * authentication set to "kerberos-ticket" internal security set to "false"
-	 * external security set to "$extSecurityrName"
-	 */
-	public static void associateRESTServerWithKerberosExtSecurity(String restServerName, String extSecurityrName)
-			throws Exception {
-		OkHttpClient client = createManageAdminClient("admin", "admin");
-		String body = "{\"group-name\": \"Default\", \"authentication\":\"kerberos-ticket\",\"internal-security\": \"false\",\"external-security\": \""
-				+ extSecurityrName + "\"}";
-
-		String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
-				+ "/properties?server-type=http");
-		Request request = new Request.Builder()
-				.header("Content-type", "application/json")
-				.url(putStr)
-				.put(RequestBody.create(body, MediaType.parse("application/json")))
-				.build();
-		Response response = client.newCall(request).execute();
-		if (response.code() == ML_RES_CHANGED) {
-			System.out.println("External security " + extSecurityrName + " has been associated with " + restServerName + " server");
-		}
-		else {
-			System.out.println("External security association with App server has issues");
-			System.out.println(response);
-		}
-		client = null;
+	public static void associateRESTServerWithKerberosExtSecurity(String restServerName, String extSecurityrName) {
+		ObjectNode request = objectMapper.createObjectNode()
+			.put("group-name", "Default")
+			.put("server-name", restServerName)
+			.put("authentication", "kerberos-ticket")
+			.put("internal-security", false)
+			.put("external-security", extSecurityrName);
+		new ServerManager(newManageClient()).save(request.toString());
 	}
 
 	/*
@@ -2273,298 +1087,116 @@ public abstract class ConnectedRESTQA {
 	 * are:
 	 * authentication set to "Digest" internal security set to "true"
 	 */
-	public static void associateRESTServerWithDigestAuth(String restServerName) throws Exception {
-		OkHttpClient client = createManageAdminClient("admin", "admin");
-		String extSecurityrName = "";
-		String body = "{\"group-name\": \"Default\", \"authentication\":\"Digest\",\"internal-security\": \"true\",\"external-security\": \""
-				+ extSecurityrName + "\"}";
-		String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
-				+ "/properties?server-type=http");
-		Request request = new Request.Builder()
-				.header("Content-type", "application/json")
-				.url(putStr)
-				.put(RequestBody.create(body, MediaType.parse("application/json")))
-				.build();
-		Response response = client.newCall(request).execute();
-		if (response.code() == ML_RES_CHANGED) {
-			System.out.println("Digest Auth has been associated with " + restServerName + " server");
-		}
-		else {
-			System.out.println("Digest Auth association with App server has issues");
-			System.out.println(response);
-		}
-		client = null;
+	public static void associateRESTServerWithDigestAuth(String restServerName) {
+		ObjectNode request = objectMapper.createObjectNode()
+			.put("group-name", "Default")
+			.put("server-name", restServerName)
+			.put("authentication", "digest")
+			.put("internal-security", true)
+			.put("external-security", "");
+		new ServerManager(newManageClient()).save(request.toString());
 	}
 
-	// Creates an external security name.
-	public static void createExternalSecurityForKerberos(String restServerName, String extSecurityName)
-			throws Exception {
-		OkHttpClient client = createManageAdminClient("admin", "admin");
-		String body = "{\"authentication\": \"kerberos\", \"external-security-name\":\"" + extSecurityName
-				+ "\", \"description\":\"External Kerberos Security\""
-				+ ",\"cache-timeout\":\"300\", \"authorization\":\"internal\"," + "\"ldap-server-uri\":\"\","
-				+ "\"ldap-base\":\"\"," + "\"ldap-attribute\":\"\"," + "\"ldap-default-user\":\"\","
-				+ "\"ldap-password\":\"\"," + "\"ldap-bind-method\":\"MD5\","
-				+ "\"ssl-require-client-certificate\":\"true\"" + "}";
-
-		String postStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/external-security");
-		Request request = new Request.Builder()
-				.header("Content-type", "application/json")
-				.url(postStr)
-				.post(RequestBody.create(body, MediaType.parse("application/json")))
-				.build();
-		Response response = client.newCall(request).execute();
-		if (response.code() == ML_RES_CREATED) {
-			System.out.println("External security " + extSecurityName + " created and associated with " + restServerName + " server");
-		}
-		else {
-			System.out.println("External security creation and association with App server has issues");
-			System.out.println(response);
-		}
-		client = null;
+	public static void createExternalSecurityForKerberos(String extSecurityName) {
+		ObjectNode request = objectMapper.createObjectNode()
+			.put("authentication", "kerberos")
+			.put("extenal-security-name", extSecurityName)
+			.put("description", "External Kerberos Security")
+			.put("cache-timeout", 300)
+			.put("authorization", "internal")
+			.put("ldap-server-uri", "")
+			.put("ldap-base", "")
+			.put("ldap-attribute", "")
+			.put("ldap-default-user", "")
+			.put("ldap-password", "")
+			.put("ldap-bind-method", "MD5")
+			.put("ssl-require-client-certificate", true);
+		new ExternalSecurityManager(newManageClient()).save(request.toString());
 	}
 
-	// This function creates a REST user with a Kerberos External name and given roles
-	public static void createRESTKerberosUser(String usrName, String pass, String externalName, String... roleNames) {
-		OkHttpClient client = createManageAdminClient("admin", "admin");;
-		try {
-			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users/" + usrName);
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(getrequest)
-					.build();
-			Response responseGet = client.newCall(request).execute();
-
-			if (responseGet.code() == ML_RES_OK) {
-				System.out.println("Kerberos User " + usrName + " already exist");
-			} else {
-				System.out.println("Kerberos User does exist");
-
-				ObjectMapper mapper = new ObjectMapper();
-				ObjectNode mainNode = mapper.createObjectNode();
-				// ObjectNode childNode = mapper.createObjectNode();
-				ArrayNode childArray = mapper.createArrayNode();
-				mainNode.put("user-name", usrName);
-				mainNode.put("description", "user discription");
-				mainNode.put("password", pass);
-				for (String rolename : roleNames)
-					childArray.add(rolename);
-				mainNode.withArray("role").addAll(childArray);
-
-				// Enable External Name(s)
-				ArrayNode childArrayExtNames = mapper.createArrayNode();
-				ObjectNode extNameNode = mapper.createObjectNode();
-				extNameNode.put("external-name", externalName);
-
-				childArrayExtNames.add(extNameNode);
-				mainNode.withArray("external-names").addAll(childArrayExtNames);
-
-				System.out.println(mainNode.toString());
-				String postStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users?format=json");
-				Request requestUsr = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(postStr)
-						.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
-						.build();
-				Response responseUsr = client.newCall(requestUsr).execute();
-				if (responseUsr.code() == ML_RES_BADREQT) {
-					System.out.println("Kerberos User already exist - Status Code 400");
-				} else if (responseUsr.code() == ML_RES_CREATED) {
-					System.out.println("Kerberos User " + usrName + " associated with " + externalName + " external name");
-				} else {
-					System.out.println("No Proper Response - Kerberos User");
-					System.out.println(responseUsr);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
+	public static void createRESTKerberosUser(String username, String password, String externalName, String... roleNames) {
+		ObjectNode request = objectMapper.createObjectNode()
+			.put("user-name", username)
+			.put("password", password);
+		ArrayNode roles = request.putArray("role");
+		for (String roleName : roleNames) {
+			roles.add(roleName);
 		}
+		ArrayNode externalNames = request.putArray("external-names");
+		externalNames.addObject().put("external-name", externalName);
+		new UserManager(newManageClient()).save(request.toString());
 	}
 
 	public static void changeProperty(Map<String, String> properties, String endpoint) {
-		OkHttpClient client = null;
-		try {
-			StringBuffer xmlBuff = new StringBuffer();
-			xmlBuff.append("{");
-			Iterator it = properties.entrySet().iterator();
-			int size = properties.size();
-			int j = 0;
-			while (it.hasNext()) {
-				Map.Entry pair = (Map.Entry) it.next();
-				xmlBuff.append("\"").append(pair.getKey()).append("\":");
-				if (j == (size - 1))
-					xmlBuff.append("\"").append(pair.getValue()).append("\"");
-				else
-					xmlBuff.append("\"").append(pair.getValue()).append("\",");
-				j++;
-			}
-			xmlBuff.append('}');
-			client = createManageAdminClient("admin", "admin");
+		StringBuffer json = new StringBuffer();
+		json.append("{");
+		Iterator it = properties.entrySet().iterator();
+		int size = properties.size();
+		int j = 0;
+		while (it.hasNext()) {
+			Map.Entry pair = (Map.Entry) it.next();
+			json.append("\"").append(pair.getKey()).append("\":");
+			if (j == (size - 1))
+				json.append("\"").append(pair.getValue()).append("\"");
+			else
+				json.append("\"").append(pair.getValue()).append("\",");
+			j++;
+		}
+		json.append('}');
 
-			String putStr = new String("http://" + host_name + ":" + admin_port + endpoint);
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(putStr)
-					.put(RequestBody.create(xmlBuff.toString(), MediaType.parse("application/json")))
-					.build();
+		newManageClient().putJson(endpoint, json.toString());
+	}
 
-			Response response = client.newCall(request).execute();
-			if (response.code() == ML_RES_BADREQT) {
-				System.out.println("Property change returned - Status Code 400");
-				System.out.println(response);
-			} else if (response.code() == ML_RES_CHANGED) {
-				System.out.println("Property changes successful");
+	public static JsonNode getState(Map<String, String> properties, String endpoint) throws IOException {
+		StringBuilder querystring = new StringBuilder();
+		Iterator it = properties.entrySet().iterator();
+		int size = properties.size();
+		int j = 0;
+		while (it.hasNext()) {
+			Map.Entry pair = (Map.Entry) it.next();
+			querystring.append(pair.getKey());
+			if (j == (size - 1)) {
+				querystring.append('=').append(pair.getValue());
 			} else {
-				System.out.println("No Proper Response");
-				System.out.println(response);
+				querystring.append('=').append(pair.getValue()).append('&');
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+			j++;
 		}
-		finally {
-			client = null;
-		}
+
+		String json = newManageClient().getJson(endpoint + "?format=json&" + querystring.toString());
+		return objectMapper.readTree(json);
 	}
 
-	public static JsonNode getState(Map<String, String> properties, String endpoint) {
-		try {
-			OkHttpClient client = createManageAdminClient("admin", "admin");
-
-			StringBuilder xmlBuff = new StringBuilder();
-			Iterator it = properties.entrySet().iterator();
-			int size = properties.size();
-			int j = 0;
-			while (it.hasNext()) {
-				Map.Entry pair = (Map.Entry) it.next();
-				xmlBuff.append(pair.getKey());
-				if (j == (size - 1)) {
-					xmlBuff.append('=').append(pair.getValue());
-				} else {
-					xmlBuff.append('=').append(pair.getValue()).append('&');
-				}
-				j++;
-			}
-			String getStr = new String("http://" + host_name + ":" + admin_port + endpoint + "?format=json&" + xmlBuff.toString());
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(getStr)
-					.build();
-			Response response = client.newCall(request).execute();
-			if(response.code() == ML_RES_OK) {
-				String body = response.body().string();
-				JsonNode actualObj = new ObjectMapper().readTree(body);
-				return actualObj;
-			}
-			else {
-				System.out.println("No proper response from getState");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
+	public static String[] getHosts() throws IOException{
+		String json = newManageClient().getJson("/manage/v2/hosts?format=json");
+		JsonNode actualObj = new ObjectMapper().readTree(json);
+		JsonNode nameNode = actualObj.path("host-default-list").path("list-items");
+		List<String> hosts = nameNode.findValuesAsText("nameref");
+		String[] s = new String[hosts.size()];
+		hosts.toArray(s);
+		return s;
 	}
 
-	public static String[] getHosts() {
-		String body = null;
-		try {
-			OkHttpClient client = createManageAdminClient("admin", "admin");
-			String getStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/hosts?format=json");
-
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(getStr)
-					.build();
-			Response response = client.newCall(request).execute();
-			if(response.code() != ML_RES_OK) {
-				System.out.println("No proper response from getHosts");
-				System.out.println(response);
-			}
-			else if (response.code() == ML_RES_OK) {
-				body = response.body().string();
-				JsonNode actualObj = new ObjectMapper().readTree(body);
-				JsonNode nameNode = actualObj.path("host-default-list").path("list-items");
-				List<String> hosts = nameNode.findValuesAsText("nameref");
-				String[] s = new String[hosts.size()];
-				hosts.toArray(s);
-				return s;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	// Disable automation for a LSQT enabled DB on a collection. Tests need to manually advance LSQT.
-	  public static void disableAutomationOnTemporalCollection(String dbName, String collectionName, boolean enable)
-	          throws Exception {
+	  public static void disableAutomationOnTemporalCollection(String dbName, String collectionName, boolean enable) {
 	      ObjectMapper mapper = new ObjectMapper();
 	      ObjectNode rootNode = mapper.createObjectNode();
 	      rootNode.put("lsqt-enabled", enable);
 
-	      // Set automation value to false
 	      ObjectNode automation = mapper.createObjectNode();
 	      automation.put("enabled", false);
 
 	      rootNode.set("automation", automation);
-	      System.out.println(rootNode.toString());
 
-		  OkHttpClient client = createManageAdminClient("admin", "admin");
-
-	      String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName + "/temporal/collections/lsqt/properties?collection=" + collectionName);
-
-		  Request request = new Request.Builder()
-				  .header("Content-type", "application/json")
-				  .url(putStr)
-				  .put(RequestBody.create(rootNode.toString(), MediaType.parse("application/json")))
-				  .build();
-		  Response response = client.newCall(request).execute();
-	      if (response.code() == ML_RES_BADREQT) {
-	      	System.out.println("Disable automation for a LSQT enabled DB on a collection - Failed");
-	          System.out.println(response);
-	      }
-	      else if (response.code() == ML_RES_CHANGED) {
-	          System.out.println("Disable automation for a LSQT on " + collectionName + " successful");
-	      }
-	      else {
-	          System.out.println("No Proper Response for Disable automation for a LSQT");
-	      }
-	      client = null;
+		  new TemporalCollectionLSQTManager(newManageClient(), dbName, collectionName).save(rootNode.toString());
 	  }
 
-	  public static int getDocumentCount(String dbName) throws IOException {
-	      String jsonStr = null;
-		  OkHttpClient client = null;
-	      int nCount = 0;
-	      try {
-	          client = createManageAdminClient("admin", "admin");
-	          String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-	                  + "?view=counts&format=json");
-			  Request request = new Request.Builder()
-					  .header("Content-type", "application/json")
-					  .url(getrequest)
-					  .build();
-			  Response response1 = client.newCall(request).execute();
-			  if (!response1.isSuccessful()) throw new IOException("Unexpected code " + response1);
-			  else {
-				  jsonStr = response1.body().string();
-				  JsonNode jnode = new ObjectMapper().readTree(jsonStr);
-
-				  if (!jnode.isNull()) {
-					  nCount = jnode.path("database-counts").path("count-properties").path("documents").get("value").asInt();
-					  System.out.println(jnode);
-				  } else {
-					  System.out.println("REST call for database properties returned NULL ");
-				  }
-			  }
-	      } catch (Exception e) {
-	          e.printStackTrace();
-	      } finally {
-	          client = null;
-	      }
-	      return nCount;
-	  }
+	public static int getDocumentCount(String dbName) throws IOException {
+		String jsonStr = newManageClient().getJson("/manage/v2/databases/" + dbName + "?view=counts&format=json");
+		JsonNode jnode = new ObjectMapper().readTree(jsonStr);
+		int nCount = jnode.path("database-counts").path("count-properties").path("documents").get("value").asInt();
+		System.out.println(jnode);
+		return nCount;
+	}
 
 	  // Wait for all nodes to be informed when property is updated in AWS env
 	  public static void waitForPropertyPropagate() {
@@ -2581,7 +1213,7 @@ public abstract class ConnectedRESTQA {
 		  }
 	  }
 
-	  public static void associateRESTServerWithModuleDB(String restServerName, String modulesDbName) throws Exception {
+	  public static void associateRESTServerWithModuleDB(String restServerName, String modulesDbName) {
 		  ObjectNode props = new ObjectMapper().createObjectNode();
 		  props.put("server-name", restServerName);
 		  props.put("group-name", "Default");

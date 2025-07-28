@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 
+@SuppressWarnings("unchecked")
 public class TestOpticEnhancements extends AbstractFunctionalTest {
 
   private static Map<String, Object>[] literals1 = new HashMap[10];

@@ -20,7 +20,11 @@ public class TypedRow extends LinkedHashMap<String, XsAnyAtomicTypeVal> {
   }
 
   public long getRowNum() {
-    return new Long(rowNum).longValue();
+    try {
+      return Long.valueOf(rowNum).longValue();
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid rowNum value: " + rowNum, e);
+    }
   }
 
   public XsAnyAtomicTypeVal put(String name, XsAnyAtomicTypeVal val) {

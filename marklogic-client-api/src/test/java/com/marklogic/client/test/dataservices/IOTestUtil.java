@@ -74,19 +74,14 @@ public class IOTestUtil {
         writeSet.add(scriptPath, scriptMeta, new StringHandle(scriptBody));
         modMgr.write(writeSet);
     }
+
+	@SafeVarargs
     public static <T> Set<T> setOf(T... items) {
         Set<T> set = new HashSet<>();
         for (T item: items) {
             set.add(item);
         }
         return set;
-    }
-
-    static InputStream[] asInputStreamArray(String... values) {
-        InputStream[] list = new InputStream[values.length];
-        for (int i=0; i < values.length; i++)
-            list[i] = asInputStream(values[i]);
-        return list;
     }
 
     static InputStream asInputStream(String value) {

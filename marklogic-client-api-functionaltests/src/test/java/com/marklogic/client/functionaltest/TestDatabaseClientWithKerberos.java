@@ -98,7 +98,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 
     setupAppServicesConstraint(dbName);
     // Create the External Security setting.
-    createExternalSecurityForKerberos(appServerName, extSecurityName);
+    createExternalSecurityForKerberos(extSecurityName);
     // Associate the external security with the App Server.
     associateRESTServerWithKerberosExtSecurity(appServerName, extSecurityName);
     createUserRolesWithPrevilages("test-evalKer", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
@@ -111,7 +111,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     System.out.println("In tear down");
     deleteUserRole("test-evalKer");
     deleteRESTUser("user2");
-    tearDownJavaRESTServer(dbName, fNames, appServerName);
+    tearDownJavaRESTServer(dbName, appServerName);
   }
 
   @BeforeEach
@@ -220,6 +220,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     assertTrue( art.getInventory() > 1000);
   }
 
+	@SuppressWarnings("unchecked")
   public void loadSimplePojos(PojoRepository products) {
     for (int i = 1; i < 111; i++) {
       if (i % 2 == 0) {
@@ -434,6 +435,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
   // This test is to verify GeoPair query works fine,
   // searching for lattitude and longitude of Reno
   @Test
+  @SuppressWarnings("unchecked")
   public void testPOJOGeoQuerySearchWithGeoPair() {
     System.out.println("Running testPOJOGeoQuerySearchWithGeoPair method");
     PojoRepository<GeoSpecialArtifact, Long> products = client.newPojoRepository(GeoSpecialArtifact.class, Long.class);
@@ -635,6 +637,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testRollbackDeleteDocument() throws KeyManagementException, NoSuchAlgorithmException, ParserConfigurationException, SAXException, IOException
   {
     System.out.println("Running testRollbackDeleteDocument");
@@ -1001,8 +1004,6 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     }
 
     deleteDB(UberdbName);
-    deleteForest(UberfNames[0]);
-    // release client
     clientUber.release();
   }
 

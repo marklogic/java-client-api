@@ -152,8 +152,8 @@ abstract public class RawQueryDefinitionImpl<T extends StructureWriteHandle>
     return handle;
   }
 
-  // must override with instanceof test if T is not StructureWriteHandle
   @Override
+  @SuppressWarnings("unchecked")
   public void setHandle(StructureWriteHandle handle) {
     this.handle = (T) handle;
   }

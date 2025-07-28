@@ -159,7 +159,8 @@ public class DatabaseClientPropertySource {
 		final String authType = determineAuthType(connectionString);
 
 		final SSLUtil.SSLInputs sslInputs = buildSSLInputs(authType);
-		DatabaseClientFactory.SecurityContext securityContext = newSecurityContext(authType, connectionString, sslInputs);
+		String sslProcotolForCertificateAuth = getSSLProtocol(authType);
+		DatabaseClientFactory.SecurityContext securityContext = newSecurityContext(authType, connectionString, sslInputs, sslProcotolForCertificateAuth);
 		if (sslInputs.getSslContext() != null) {
 			securityContext.withSSLContext(sslInputs.getSslContext(), sslInputs.getTrustManager());
 		}
@@ -178,7 +179,7 @@ public class DatabaseClientPropertySource {
 		return (String) value;
 	}
 
-	private DatabaseClientFactory.SecurityContext newSecurityContext(String type, ConnectionString connectionString, SSLUtil.SSLInputs sslInputs) {
+	private DatabaseClientFactory.SecurityContext newSecurityContext(String type, ConnectionString connectionString, SSLUtil.SSLInputs sslInputs, String sslProtocol) {
 		switch (type.toLowerCase()) {
 			case DatabaseClientBuilder.AUTH_TYPE_BASIC:
 				return newBasicAuthContext(connectionString);
@@ -189,7 +190,7 @@ public class DatabaseClientPropertySource {
 			case DatabaseClientBuilder.AUTH_TYPE_KERBEROS:
 				return newKerberosAuthContext();
 			case DatabaseClientBuilder.AUTH_TYPE_CERTIFICATE:
-				return newCertificateAuthContext(sslInputs);
+				return newCertificateAuthContext(sslInputs, sslProtocol);
 			case DatabaseClientBuilder.AUTH_TYPE_SAML:
 				return newSAMLAuthContext();
 			case DatabaseClientBuilder.AUTH_TYPE_OAUTH:
@@ -258,18 +259,18 @@ public class DatabaseClientPropertySource {
 				throw new IllegalArgumentException("Cloud token duration must be numeric");
 			}
 		}
-		return new DatabaseClientFactory.MarkLogicCloudAuthContext(apiKey, duration);
+		return new DatabaseClientFactory.ProgressDataCloudAuthContext(apiKey, duration);
 	}
 
-	private DatabaseClientFactory.SecurityContext newCertificateAuthContext(SSLUtil.SSLInputs sslInputs) {
+	private DatabaseClientFactory.SecurityContext newCertificateAuthContext(SSLUtil.SSLInputs sslInputs, String sslProtocol) {
 		String file = getNullableStringValue("certificate.file");
 		String password = getNullableStringValue("certificate.password");
 		if (file != null && file.trim().length() > 0) {
 			try {
 				if (password != null && password.trim().length() > 0) {
-					return new DatabaseClientFactory.CertificateAuthContext(file, password, sslInputs.getTrustManager());
+					return new DatabaseClientFactory.CertificateAuthContext(file, password, sslInputs.getTrustManager(), sslProtocol);
 				}
-				return new DatabaseClientFactory.CertificateAuthContext(file, sslInputs.getTrustManager());
+				return new DatabaseClientFactory.CertificateAuthContext(file, sslInputs.getTrustManager(), sslProtocol);
 			} catch (Exception e) {
 				throw new RuntimeException("Unable to create CertificateAuthContext; cause " + e.getMessage(), e);
 			}
@@ -314,7 +315,7 @@ public class DatabaseClientPropertySource {
 	 * Uses the given propertySource to construct the inputs pertaining to constructing an SSLContext and an
 	 * X509TrustManager.
 	 *
-	 * @param authType used for applying "default" as the SSL protocol for MarkLogic cloud authentication in
+	 * @param authType used for applying "default" as the SSL protocol for Progress Data Cloud authentication in
 	 *                 case the user does not define their own SSLContext or SSL protocol
 	 * @return
 	 */
@@ -397,8 +398,8 @@ public class DatabaseClientPropertySource {
 		if (sslProtocol != null) {
 			sslProtocol = sslProtocol.trim();
 		}
-		// For convenience for MarkLogic Cloud users, assume the JVM's default SSLContext should trust the certificate
-		// used by MarkLogic Cloud. A user can always override this default behavior by providing their own SSLContext.
+		// For convenience for Progress Data Cloud users, assume the JVM's default SSLContext should trust the certificate
+		// used by Progress Data Cloud. A user can always override this default behavior by providing their own SSLContext.
 		if ((sslProtocol == null || sslProtocol.length() == 0) && DatabaseClientBuilder.AUTH_TYPE_MARKLOGIC_CLOUD.equalsIgnoreCase(authType)) {
 			sslProtocol = "default";
 		}
@@ -410,7 +411,7 @@ public class DatabaseClientPropertySource {
 		final String keyStoreType = getNullableStringValue("ssl.keystore.type", "JKS");
 		final String algorithm = getNullableStringValue("ssl.keystore.algorithm", "SunX509");
 		final char[] charPassword = password != null ? password.toCharArray() : null;
-		final String sslProtocol = getNullableStringValue("sslProtocol", "TLSv1.2");
+		final String sslProtocol = getNullableStringValue("sslProtocol", SSLUtil.DEFAULT_PROTOCOL);
 		return SSLUtil.createSSLContextFromKeyStore(keyStorePath, charPassword, keyStoreType, algorithm, sslProtocol, userTrustManager);
 	}
 
@@ -439,6 +440,7 @@ public class DatabaseClientPropertySource {
 		try {
 			sslContext = SSLContext.getInstance(sslProtocol);
 		} catch (NoSuchAlgorithmException e) {
+			SSLUtil.logSecurityRelatedException(e);
 			throw new RuntimeException(String.format("Unable to get SSLContext instance with protocol: %s; cause: %s",
 				sslProtocol, e.getMessage()), e);
 		}
@@ -446,6 +448,7 @@ public class DatabaseClientPropertySource {
 			try {
 				sslContext.init(null, new X509TrustManager[]{userTrustManager}, null);
 			} catch (KeyManagementException e) {
+				SSLUtil.logSecurityRelatedException(e);
 				throw new RuntimeException(String.format("Unable to initialize SSLContext; protocol: %s; cause: %s",
 					sslProtocol, e.getMessage()), e);
 			}

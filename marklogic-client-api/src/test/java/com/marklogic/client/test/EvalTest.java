@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
@@ -124,6 +124,14 @@ public class EvalTest {
     StringHandle strResponse = query.eval(new StringHandle());
     assertEquals( "hello world from Mars", strResponse.get());
   }
+
+	@Test
+	void evalReturnsNull() {
+		StringHandle response = Common.evalClient.newServerEval()
+			.xquery("()")
+			.eval(new StringHandle());
+		assertNull(response);
+	}
 
   @Test
   public void evalAndInvokeJavascript() throws DatatypeConfigurationException, JsonProcessingException, IOException {

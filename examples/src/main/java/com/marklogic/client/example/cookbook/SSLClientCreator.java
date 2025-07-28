@@ -57,7 +57,7 @@ public class SSLClientCreator {
     };
 
     // create an SSL context
-    SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+    SSLContext sslContext = SSLContext.getInstance("TLSv1.3");
     /*
      * Here, we use a naive TrustManager which would accept any certificate
      * which the server produces. But in a real application, there should be a

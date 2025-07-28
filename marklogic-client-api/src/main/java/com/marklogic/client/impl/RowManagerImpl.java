@@ -3,6 +3,7 @@
  */
 package com.marklogic.client.impl;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -453,7 +454,7 @@ public class RowManagerImpl
     return handle;
   }
 
-  abstract static class RowSetBase<T> implements RowSet<T>, Iterator<T> {
+  abstract static class RowSetBase<T> implements RowSet<T>, Iterator<T>, Closeable {
     String                    rowFormat         = null;
     RESTServiceResultIterator results           = null;
     String[]                  columnNames       = null;
@@ -589,14 +590,6 @@ public class RowManagerImpl
 
     @Override
     public void close() {
-      closeImpl();
-    }
-    @Override
-    protected void finalize() throws Throwable {
-      closeImpl();
-      super.finalize();
-    }
-    private void closeImpl() {
       if (results != null) {
         results.close();
         results = null;
@@ -604,6 +597,7 @@ public class RowManagerImpl
       }
     }
   }
+
   static class RowSetRecord extends RowSetBase<RowRecord> {
     private HandleFactoryRegistry             handleRegistry  = null;
     private Map<String, RowRecord.ColumnKind> headerKinds     = null;
@@ -764,7 +758,7 @@ public class RowManagerImpl
 
             break;
           case OBJECT:
-            Iterator<Map.Entry<String,JsonNode>> fields = rowNode.fields();
+            Iterator<Map.Entry<String,JsonNode>> fields = rowNode.properties().iterator();
 
             switch(datatypeStyle) {
               case HEADER:

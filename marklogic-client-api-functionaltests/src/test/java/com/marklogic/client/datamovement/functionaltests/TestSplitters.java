@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("unchecked")
 public class TestSplitters  extends BasicJavaClientREST {
     private static String dbName = "TestSplittersDB";
     private static String[] fNames = {"TestSplittersDB-1"};
@@ -63,8 +64,6 @@ public class TestSplitters  extends BasicJavaClientREST {
     public static void testCleanUp() throws Exception {
         associateRESTServerWithDB(getRestServerName(), "Documents");
         deleteDB(dbName);
-        deleteForest(fNames[0]);
-        System.out.println("Running clear script");
     }
 
     @Test
@@ -1049,6 +1048,7 @@ class SplitRunnable implements Runnable {
     }
 
     @Override
+	@SuppressWarnings("unchecked")
     public void run() {
         Stream<StringHandle> contentStream = null;
         Charset cs = Charset.forName("UTF-8");

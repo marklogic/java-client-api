@@ -79,6 +79,7 @@ public class TestPOJOQueryBuilderGeoQueries extends AbstractFunctionalTest {
     assertTrue( art.getInventory() > 1000);
   }
 
+	@SuppressWarnings("unchecked")
   public void loadSimplePojos(PojoRepository products)
   {
     for (int i = 1; i < 111; i++) {
@@ -96,6 +97,7 @@ public class TestPOJOQueryBuilderGeoQueries extends AbstractFunctionalTest {
   // This test is to verify GeoPair query works fine,
   // searching for lattitud and longitude of Reno
   @Test
+  @SuppressWarnings("unchecked")
   public void testPOJOGeoQuerySearchWithGeoPair() {
     PojoRepository<GeoSpecialArtifact, Long> products = client.newPojoRepository(GeoSpecialArtifact.class, Long.class);
     PojoPage<GeoSpecialArtifact> p;
@@ -135,6 +137,7 @@ public class TestPOJOQueryBuilderGeoQueries extends AbstractFunctionalTest {
 
   // This test is to verify GeoProperty query works fine
   @Test
+  @SuppressWarnings("unchecked")
   public void testPOJOGeoQuerySearchWithGeoProperty() {
     PojoRepository<GeoSpecialArtifact, Long> products = client.newPojoRepository(GeoSpecialArtifact.class, Long.class);
     PojoPage<GeoSpecialArtifact> p;
@@ -170,6 +173,7 @@ public class TestPOJOQueryBuilderGeoQueries extends AbstractFunctionalTest {
   // This test is to verify GeoPath query works fine,
   // searching for lattitud and longitude of Reno
   @Test
+  @SuppressWarnings("unchecked")
   public void testPOJOGeoQuerySearchWithGeoPath() {
     PojoRepository<GeoSpecialArtifact, Long> products = client.newPojoRepository(GeoSpecialArtifact.class, Long.class);
     PojoPage<GeoSpecialArtifact> p;

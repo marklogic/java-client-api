@@ -86,7 +86,9 @@ public class GSONHandle
   /**
    * Returns the parser used to construct element objects from JSON.
    * @return	the JSON parser.
+   * @deprecated Use static methods like JsonParser.parseString() or JsonParser.parseReader() directly instead
    */
+  @Deprecated
   public JsonParser getParser() {
     if (parser == null)
       parser = new JsonParser();

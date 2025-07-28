@@ -26,6 +26,7 @@ public interface OutputCaller<O> extends IOEndpoint {
      * @param <O>  the output content representation (such as byte[])
      * @return  the OutputCaller instance for calling the endpoint.
      */
+	@SuppressWarnings("unchecked")
     static <O> OutputCaller<O> on(
             DatabaseClient client, JSONWriteHandle apiDecl, BufferableContentHandle<O,?> outputHandle
     ) {
@@ -43,6 +44,7 @@ public interface OutputCaller<O> extends IOEndpoint {
      * @param <O> the output handle
      * @return the InputOutputCaller instance for calling the endpoint.
      */
+	@SuppressWarnings("unchecked")
     static <OC,OR,O extends BufferableContentHandle<OC,OR>> OutputCaller<O> onHandles(
             DatabaseClient client, JSONWriteHandle apiDecl, O outputHandle
     ) {

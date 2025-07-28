@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.example.extension;
 
@@ -11,6 +11,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.opencsv.exceptions.CsvValidationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -47,9 +48,6 @@ public class OpenCSVBatcher
     this.batchSize = batchSize;
   }
 
-  public boolean getHasHeader() {
-    return hasHeader;
-  }
   public void setHasHeader(boolean hasHeader) {
     this.hasHeader = hasHeader;
   }
@@ -58,38 +56,13 @@ public class OpenCSVBatcher
     return new CSVReader(content);
   }
 
-  public long write(Reader content)
-    throws IOException, ParserConfigurationException
-  {
-    return write(content, null, (QName) null, (QName[]) null);
-  }
-  public long write(Reader content, String directory)
-    throws IOException, ParserConfigurationException
-  {
-    return write(content, directory, (QName) null, (QName[]) null);
-  }
-  public long write(Reader content, QName rowName)
-    throws IOException, ParserConfigurationException
-  {
-    return write(content, null, rowName, (QName[]) null);
-  }
   public long write(Reader content, String directory, String rowName)
-    throws IOException, ParserConfigurationException
+    throws IOException, ParserConfigurationException, CsvValidationException
   {
     return write(content, directory, new QName(rowName), (QName[]) null);
   }
-  public long write(Reader content, String directory, QName rowName)
-    throws IOException, ParserConfigurationException
-  {
-    return write(content, directory, rowName, (QName[]) null);
-  }
-  public long write(Reader content, String directory, String rowName, QName... colNames)
-    throws IOException, ParserConfigurationException
-  {
-    return write(content, directory, new QName(rowName), colNames);
-  }
   public long write(Reader content, String directory, QName rowName, QName... colNames)
-    throws IOException, ParserConfigurationException
+    throws IOException, ParserConfigurationException, CsvValidationException
   {
     if (rowName == null)
       rowName = new QName("row");

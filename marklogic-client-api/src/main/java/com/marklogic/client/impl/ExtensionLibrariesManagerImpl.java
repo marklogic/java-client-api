@@ -49,30 +49,31 @@ public class ExtensionLibrariesManagerImpl
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
     return list("/ext");
   }
+
   @Override
   public ExtensionLibraryDescriptor[] list(String directory)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 
-    XMLEventReaderHandle handle = services.getResource(requestLogger, directory, null, null, new XMLEventReaderHandle());
+    try (XMLEventReaderHandle handle = services.getResource(requestLogger, directory, null, null, new XMLEventReaderHandle())) {
+		XMLEventReader reader = handle.get();
+		List<ExtensionLibraryDescriptor> modules = new ArrayList<>();
+		while (reader.hasNext()) {
+			XMLEvent event;
+			try {
+				event = reader.nextEvent();
+				if (event.isCharacters()) {
+					String modulePath = event.asCharacters().getData();
+					ExtensionLibraryDescriptor module = new ExtensionLibraryDescriptor();
+					module.setPath(modulePath);
+					modules.add(module);
+				}
+			} catch (XMLStreamException e) {
+				throw new MarkLogicIOException(e);
+			}
 
-    XMLEventReader reader = handle.get();
-    List<ExtensionLibraryDescriptor> modules = new ArrayList<>();
-    while (reader.hasNext()) {
-      XMLEvent event;
-      try {
-        event = reader.nextEvent();
-        if (event.isCharacters()) {
-          String modulePath = event.asCharacters().getData();
-          ExtensionLibraryDescriptor module = new ExtensionLibraryDescriptor();
-          module.setPath(modulePath);
-          modules.add(module);
-        }
-      } catch (XMLStreamException e) {
-        throw new MarkLogicIOException(e);
-      }
-
-    }
-    return modules.toArray(new ExtensionLibraryDescriptor[] {});
+		}
+		return modules.toArray(new ExtensionLibraryDescriptor[]{});
+	}
   }
 
   @Override

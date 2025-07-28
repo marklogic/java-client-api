@@ -23,7 +23,7 @@ import java.util.Map;
 /* The tests here are for sanity checks when we have plans from different sources
  * such as fromLexicons and fromtriples.
  */
-
+@SuppressWarnings("unchecked")
 public class TestOpticOnMixedViews extends AbstractFunctionalTest {
 
   @BeforeAll

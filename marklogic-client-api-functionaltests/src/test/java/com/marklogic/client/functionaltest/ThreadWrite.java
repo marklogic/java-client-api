@@ -21,7 +21,6 @@ public class ThreadWrite extends BasicJavaClientREST implements Runnable {
   public void run()
   {
     String filename = "flipper.xml";
-    try {
 
       DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
@@ -49,9 +48,6 @@ public class ThreadWrite extends BasicJavaClientREST implements Runnable {
 
       // release client
       client.release();
-    } catch (KeyManagementException | NoSuchAlgorithmException | IOException e1) {
-      e1.printStackTrace();
-    }
   }
 
   public ThreadWrite(String mg)

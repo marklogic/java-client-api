@@ -151,7 +151,8 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
-  public AccessPlan fromLiterals(@SuppressWarnings("unchecked") Map<String, Object>... rows) {
+  @SafeVarargs
+  public final AccessPlan fromLiterals(Map<String, Object>... rows) {
     return new AccessPlanSubImpl(this, "op", "from-literals", new Object[]{ literal(rows) });
   }
 
@@ -611,11 +612,6 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
-  public ServerExpression xmlAttributeSeq(ServerExpression... attributes) {
-    return new XmlAttributeSeqListImpl(attributes);
-  }
-
-  @Override
   public PlanGroupSeq groupSeq(PlanGroup... groups) {
     return new GroupSeqListImpl(groups);
   }
@@ -987,9 +983,9 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
 	  @Override
-	  public ModifyPlan annTopK(int k, PlanColumn vectorColumn, ServerExpression queryVector, PlanColumn distanceColumn, float queryTolerance) {
+	  public ModifyPlan annTopK(int k, PlanColumn vectorColumn, ServerExpression queryVector, PlanColumn distanceColumn, Map<String, Object> options) {
 		  return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "annTopK", new Object[]{
-			  k, vectorColumn, queryVector, distanceColumn, queryTolerance
+			  k, vectorColumn, queryVector, distanceColumn, new BaseTypeImpl.BaseMapImpl(options)
 		  });
 	  }
 
@@ -1029,7 +1025,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
     @Override
     public ModifyPlan facetBy(PlanNamedGroupSeq keys, String countCol) {
-      return facetBy(keys, (countCol == null) ? (PlanExprCol) null : exprCol(countCol));
+      return facetBy(keys, (countCol == null) ? null : exprCol(countCol));
     }
     @Override
     public ModifyPlan facetBy(PlanNamedGroupSeq keys, PlanExprCol countCol) {
@@ -1100,7 +1096,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
     static class TemporalRemoval implements BaseArgImpl {
-        private String template;
+        private final String template;
 
         public TemporalRemoval(PlanColumn temporalCollection, PlanColumn uriColumn) {
             this.template = String.format("{\"temporalCollection\":%s, \"uri\": %s}",
@@ -1318,32 +1314,6 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   static class JsonArrayCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements JsonContentCallImpl {
     JsonArrayCallImpl(Object[] args) {
       super("op", "json-array", args);
-    }
-  }
-
-  static class XmlAttributeSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl {
-    XmlAttributeSeqListImpl(ServerExpression[] items) {
-      super(Arrays.copyOf(items, items.length, XmlAttributeCallImpl[].class));
-    }
-  }
-
-  static interface XmlContentCallImpl  extends BaseTypeImpl.BaseArgImpl {}
-  static class XmlContentSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl {
-    XmlContentSeqListImpl(ServerExpression[] items) {
-      super(Arrays.copyOf(items, items.length, BaseTypeImpl.NodeCallImpl[].class));
-    }
-  }
-
-/* TODO: DELETE
-  static class XmlElementCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements ElementNodeExpr, XmlContentCallImpl {
-    XmlElementCallImpl(Object[] args) {
-      super("op", "xml-element", args);
-    }
-  }
- */
-  static class XmlAttributeCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
-    XmlAttributeCallImpl(Object[] args) {
-      super("op", "xml-attribute", args);
     }
   }
 

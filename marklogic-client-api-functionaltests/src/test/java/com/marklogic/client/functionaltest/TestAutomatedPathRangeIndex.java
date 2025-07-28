@@ -14,18 +14,12 @@ import com.marklogic.client.pojo.PojoQueryBuilder.Operator;
 import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.util.GenerateIndexConfig;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import com.marklogic.mgmt.ManageClient;
+import com.marklogic.mgmt.resource.databases.DatabaseManager;
 import org.junit.jupiter.api.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,12 +38,11 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 
 public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
+
   private static String dbName = "TestAutomatedPathRangeIndexDB";
   private static String[] fNames = { "TestAutomatedPathRangeIndexDB-1" };
 
   private DatabaseClient client;
-  private static String appServerHostname = null;
-  private static int adminPort = 0;
 
   @BeforeAll
   public static void setUpBeforeClass() throws Exception {
@@ -57,14 +50,12 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
     configureRESTServer(dbName, fNames);
 
     BasicJavaClientREST.addRangePathIndex(dbName, "long", "com.marklogic.client.functionaltest.ArtifactIndexedOnInteger/inventory", "", "reject", true);
-    appServerHostname = getRestAppServerHostName();
-    adminPort = getAdminPort();
   }
 
   @AfterAll
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
-    cleanupRESTServer(dbName, fNames);
+    cleanupRESTServer(dbName);
   }
 
   @BeforeEach
@@ -78,112 +69,46 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
     client.release();
   }
 
-  /*
-   * This Method takes the property name and value strings and verifies if
-   * propName exist and then extracts it from the response. The propValue string
-   * needs to be available in the extracted JsonNode's path-expression property.
-   */
-  public static void validateRangePathIndexInDatabase(String propName, String propValue) throws KeyManagementException, NoSuchAlgorithmException, IOException {
-    InputStream jsonstream = null;
-    boolean propFound = false;
-    String propertyAvailable = null;
-    DefaultHttpClient client = null;
-    try {
-      client = new DefaultHttpClient();
-      client.getCredentialsProvider().setCredentials(
-          new AuthScope(appServerHostname, adminPort),
-          new UsernamePasswordCredentials("admin", "admin"));
-      HttpGet getrequest = new HttpGet("http://" + appServerHostname + ":" + adminPort
-          + "/manage/v2/databases/" + dbName
-          + "/properties?format=json");
-      HttpResponse response1 = client.execute(getrequest);
-      jsonstream = response1.getEntity().getContent();
-      ObjectMapper mapper = new ObjectMapper();
-      JsonNode jnode = mapper.readTree(jsonstream);
+	public static void validateRangePathIndexInDatabase(String propName, String propValue) throws IOException {
+		ManageClient manageClient = newManageClient();
+		String jsonResponse = new DatabaseManager(manageClient).getPropertiesAsJson(dbName);
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode jnode = mapper.readTree(jsonResponse);
 
-      if (!jnode.isNull()) {
+		if (jnode.has(propName)) {
+			List<JsonNode> jsonStringList = jnode.findValues(propName);
 
-        if (jnode.has(propName)) {
-          propFound = true;
-          List<JsonNode> jsonStringList = jnode.findValues(propName);
+			String pathExpressValue = (jsonStringList.get(0)).findValues("path-expression").toString();
+			String propValueJsonDecorated = "[\"" + propValue + "\"]";
 
-          String pathExpressValue = (jsonStringList.get(0)).findValues("path-expression").toString();
-          String propValueJsonDecorated = "[\"" + propValue + "\"]";
+			boolean contains = pathExpressValue.contains(propValueJsonDecorated);
+			String propertyAvailable = contains == true ? (" contains " + propValue) : (" does not contain " + propValue);
+			assertTrue(contains, new StringBuffer("Database : " + dbName + propertyAvailable).toString());
+		}
+	}
 
-          boolean contains = pathExpressValue.contains(propValueJsonDecorated);
-          propertyAvailable = contains == true ? (" contains " + propValue) : (" does not contain " + propValue);
-          assertTrue(contains, new StringBuffer("Database : " + dbName + propertyAvailable).toString());
-        }
+	public static void validateMultipleRangePathIndexInDatabase(String propName, String[] propValue) throws IOException {
+		ManageClient manageClient = newManageClient();
+		String jsonResponse = new DatabaseManager(manageClient).getPropertiesAsJson(dbName);
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode jnode = mapper.readTree(jsonResponse);
 
-      } else {
-        assertTrue(propFound, "Path range property not available or database properties not avilable");
-      }
-    } catch (Exception e) {
-      // writing error to Log
-      e.printStackTrace();
-    } finally {
-      client.getConnectionManager().shutdown();
-    }
-  }
+		if (jnode.has(propName)) {
+			List<JsonNode> jsonStringList1 = jnode.findValues(propName);
+			// Validate the first propValue
+			String pathExpressValue1 = jsonStringList1.get(0).findValues("path-expression").toString();
+			String propValueJsonDecorated1 = "[\"" + propValue[0];
+			assertTrue(pathExpressValue1.contains(propValueJsonDecorated1));
 
-  /*
-   * This Method takes the property name and multiple value strings and verifies
-   * if propName exist and then extracts it from the response. The propValue
-   * string needs to be available in the extracted JsonNode's path-expression
-   * property.
-   */
-  public static void validateMultipleRangePathIndexInDatabase(String propName, String[] propValue) throws KeyManagementException, NoSuchAlgorithmException, IOException {
-    InputStream jsonstream = null;
-    boolean propFound = false;
-    String propertyAvailable1 = null;
-    String propertyAvailable2 = null;
-    DefaultHttpClient client = null;
-    try {
-      client = new DefaultHttpClient();
-      client.getCredentialsProvider().setCredentials(
-          new AuthScope(appServerHostname, adminPort),
-          new UsernamePasswordCredentials("admin", "admin"));
-      HttpGet getrequest = new HttpGet("http://" + appServerHostname + ":" + adminPort
-          + "/manage/v2/databases/" + dbName
-          + "/properties?format=json");
-      HttpResponse response1 = client.execute(getrequest);
-      jsonstream = response1.getEntity().getContent();
-      ObjectMapper mapper = new ObjectMapper();
-      JsonNode jnode = mapper.readTree(jsonstream);
-
-      if (!jnode.isNull()) {
-
-        if (jnode.has(propName)) {
-          propFound = true;
-          List<JsonNode> jsonStringList1 = jnode.findValues(propName);
-          // Validate the first propValue at index 0
-          String pathExpressValue1 = (jsonStringList1.get(0)).findValues("path-expression").toString();
-          String propValueJsonDecorated1 = "[\"" + propValue[0];
-
-          boolean contains1 = pathExpressValue1.contains(propValueJsonDecorated1);
-          assertTrue(contains1);
-
-          // Validate the second propValue at index 1. we have only two
-          String pathExpressValue2 = (jsonStringList1.get(1)).findValues("path-expression").toString();
-          String propValueJsonDecorated2 = propValue[1] + "\"]";
-
-          boolean contains2 = pathExpressValue2.contains(propValueJsonDecorated2);
-          assertTrue(contains2);
-        }
-
-      } else {
-        assertTrue(propFound);
-      }
-    } catch (Exception e) {
-      // writing error to Log
-      e.printStackTrace();
-    } finally {
-      client.getConnectionManager().shutdown();
-    }
-  }
+			// Validate the second propValue
+			String pathExpressValue2 = jsonStringList1.get(0).findValues("path-expression").toString();
+			String propValueJsonDecorated2 = propValue[1] + "\"]";
+			assertTrue(pathExpressValue2.contains(propValueJsonDecorated2));
+		}
+	}
 
   @Test
-  public void testArtifactIndexedOnInt() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void testArtifactIndexedOnInt() throws Exception {
     boolean succeeded = false;
     File jsonFile = null;
     try {
@@ -221,7 +146,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
    */
 
   @Test
-  public void testArtifactIndexedOnInteger() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void testArtifactIndexedOnInteger() {
     boolean succeeded = false;
     File jsonFile = null;
     try {
@@ -304,7 +229,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
   }
 
   @Test
-  public void testArtifactIndexedOnString() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void testArtifactIndexedOnString() throws Exception {
     boolean succeeded = false;
     File jsonFile = null;
     try {
@@ -336,7 +261,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
   }
 
   @Test
-  public void testArtifactIndexedOnDateTime() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void testArtifactIndexedOnDateTime() throws Exception {
     boolean succeeded = false;
     File jsonFile = null;
     try {
@@ -368,7 +293,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
   }
 
   @Test
-  public void testArtifactIndexedOnFloat() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void testArtifactIndexedOnFloat() throws Exception {
     boolean succeeded = false;
     File jsonFile = null;
     try {
@@ -400,7 +325,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
   }
 
   @Test
-  public void testArtifactIndexedOnAnyURI() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void testArtifactIndexedOnAnyURI() throws Exception {
     boolean succeeded = false;
     File jsonFile = null;
     try {
@@ -432,7 +357,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
   }
 
   @Test
-  public void testArtifactIndexedOnIntAsString() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void testArtifactIndexedOnIntAsString() throws Exception {
     boolean succeeded = false;
     File jsonFile = null;
     try {
@@ -464,7 +389,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
   }
 
   @Test
-  public void testArtifactIndexedOnMultipleFields() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void testArtifactIndexedOnMultipleFields() throws Exception {
     boolean succeeded = false;
     File jsonFile = null;
     try {
@@ -500,7 +425,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
   }
 
   @Test
-  public void testArtifactIndexedOnStringInSuperClass() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void testArtifactIndexedOnStringInSuperClass() throws Exception {
     boolean succeeded = false;
     File jsonFile = null;
     try {
@@ -536,7 +461,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
   }
 
   @Test
-  public void testArtifactMultipleIndexedOnInt() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void testArtifactMultipleIndexedOnInt() throws Exception {
     boolean succeeded = false;
     File jsonFile = null;
     try {
@@ -587,7 +512,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
    */
 
   @Test
-  public void testArtifactIndexedOnUnSupportedAsString() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void testArtifactIndexedOnUnSupportedAsString() throws Exception {
     boolean succeeded = false;
     File jsonFile = null;
     try {

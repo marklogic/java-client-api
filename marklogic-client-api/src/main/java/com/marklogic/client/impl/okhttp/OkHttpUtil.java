@@ -38,6 +38,7 @@ public abstract class OkHttpUtil {
 
 	final private static ConnectionPool connectionPool = new ConnectionPool();
 
+	@SuppressWarnings({"unchecked", "deprecation"})
 	public static OkHttpClient.Builder newOkHttpClientBuilder(String host, DatabaseClientFactory.SecurityContext securityContext) {
 		OkHttpClient.Builder clientBuilder = OkHttpUtil.newClientBuilder();
 		AuthenticationConfigurer authenticationConfigurer = null;
@@ -54,8 +55,10 @@ public abstract class OkHttpUtil {
 		} else if (securityContext instanceof DatabaseClientFactory.CertificateAuthContext) {
 		} else if (securityContext instanceof DatabaseClientFactory.SAMLAuthContext) {
 			configureSAMLAuth((DatabaseClientFactory.SAMLAuthContext) securityContext, clientBuilder);
-		} else if (securityContext instanceof DatabaseClientFactory.MarkLogicCloudAuthContext) {
-			authenticationConfigurer = new MarkLogicCloudAuthenticationConfigurer(host);
+		} else if (securityContext instanceof DatabaseClientFactory.ProgressDataCloudAuthContext ||
+			// It's fine to refer to this deprecated class as it needs to be supported until Java Client 8.
+			securityContext instanceof DatabaseClientFactory.MarkLogicCloudAuthContext) {
+			authenticationConfigurer = new ProgressDataCloudAuthenticationConfigurer(host);
 		} else if (securityContext instanceof DatabaseClientFactory.OAuthContext) {
 			authenticationConfigurer = new OAuthAuthenticationConfigurer();
 		} else {
@@ -180,6 +183,7 @@ public abstract class OkHttpUtil {
 			// the default trust manager is the appropriate one to pass to OkHttp.
 			sslContext.init(null, trustManagers, null);
 		} catch (KeyManagementException e) {
+			SSLUtil.logSecurityRelatedException(e);
 			throw new RuntimeException("Unable to initialize SSLContext; cause: " + e.getMessage(), e);
 		}
 		clientBuilder.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), (X509TrustManager) trustManagers[0]);

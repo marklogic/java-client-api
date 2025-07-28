@@ -153,7 +153,6 @@ public class WriteBatcherImpl
   }
 
   public void initialize() {
-    if ( initialized == true ) return;
     synchronized(this) {
       if ( initialized == true ) return;
       if ( getBatchSize() <= 0 ) {

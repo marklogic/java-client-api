@@ -1,42 +1,7 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 package com.marklogic.client.impl;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.Writer;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLEventWriter;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.XMLEvent;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-
-import org.xml.sax.SAXException;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
@@ -46,55 +11,21 @@ import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.stream.*;
+import javax.xml.stream.events.XMLEvent;
+import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class Utilities {
-  private static DocumentBuilderFactory factory;
-
   private static DatatypeFactory datatypeFactory;
-  static private int BUFFER_SIZE = 8192;
-
-  private static DocumentBuilderFactory getFactory() {
-    if (factory == null)
-      factory = makeDocumentBuilderFactory();
-    return factory;
-  }
-
-  private static DocumentBuilderFactory makeDocumentBuilderFactory() {
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setValidating(false);
-    return factory;
-  }
-
-  /**
-   * Construct a dom Element from a string. A utility function for creating
-   * DOM elements when needed for other builder functions.
-   *
-   * @param xmlString
-   *            XML for an element.
-   * @return w3c.dom.Element representation the provided XML.
-   */
-  public static org.w3c.dom.Element domElement(String xmlString) {
-    org.w3c.dom.Element element = null;
-    try {
-      ByteArrayInputStream bais = new ByteArrayInputStream(
-        xmlString.getBytes(Charset.forName("UTF-8")));
-      element = getFactory().newDocumentBuilder().parse(bais)
-        .getDocumentElement();
-    } catch (SAXException e) {
-      throw new MarkLogicIOException(
-        "Could not make Element from xmlString" + xmlString, e);
-    } catch (IOException e) {
-      throw new MarkLogicIOException(
-        "Could not make Element from xmlString" + xmlString, e);
-    } catch (ParserConfigurationException e) {
-      throw new MarkLogicIOException(
-        "Could not make Element from xmlString" + xmlString, e);
-    }
-    return element;
-  }
+  private static final int BUFFER_SIZE = 8192;
 
   public static List<XMLEvent> importFromHandle(AbstractWriteHandle writeHandle) {
     if (writeHandle == null) {
@@ -201,7 +132,7 @@ public final class Utilities {
     return readReader(new StringReader(string));
   }
   static XMLInputFactory makeInputFactory() {
-    XMLInputFactory factory = XMLInputFactory.newInstance();
+    XMLInputFactory factory = XmlFactories.makeNewInputFactory();
     factory.setProperty("javax.xml.stream.isNamespaceAware", true);
     factory.setProperty("javax.xml.stream.isValidating",     false);
 
@@ -227,7 +158,7 @@ public final class Utilities {
         }
       }
 
-      if (events.size() == 0) {
+      if (events.isEmpty()) {
         return null;
       }
       return events;
@@ -255,7 +186,7 @@ public final class Utilities {
     return handle;
   }
   public static Object eventsToObject(List<XMLEvent> events, Class<?> as) {
-    if (events == null || events.size() == 0) {
+    if (events == null || events.isEmpty()) {
       return null;
     }
 
@@ -295,8 +226,6 @@ public final class Utilities {
       }
 
       return tempFile;
-    } catch (FileNotFoundException e) {
-      throw new MarkLogicIOException(e);
     } catch (IOException e) {
       throw new MarkLogicIOException(e);
     }
@@ -326,7 +255,7 @@ public final class Utilities {
     return new String(bytes, StandardCharsets.UTF_8);
   }
   public static boolean writeEvents(List<XMLEvent> events, OutputStream out) {
-    if (events == null || events.size() == 0) {
+    if (events == null || events.isEmpty()) {
       return false;
     }
 
@@ -348,89 +277,8 @@ public final class Utilities {
     }
   }
 
-  @SuppressWarnings("unchecked")
-  public static <T extends AbstractReadHandle> T exportTextToHandle(
-    List<XMLEvent> events, T handle
-  ) {
-    if (handle == null) {
-      return null;
-    }
-
-    @SuppressWarnings("rawtypes")
-    HandleImplementation baseHandle = HandleAccessor.checkHandle(handle,
-      "export");
-
-    baseHandle.receiveContent(
-      eventTextToObject(events, baseHandle.receiveAs())
-    );
-
-    return handle;
-  }
-  public static Object eventTextToObject(List<XMLEvent> events, Class<?> as) {
-    if (events == null || events.size() == 0) {
-      return null;
-    }
-
-    if (byte[].class.isAssignableFrom(as)) {
-      return eventTextToBytes(events);
-    } else if (File.class.isAssignableFrom(as)) {
-      return eventTextToFile(events, ".txt");
-    } else if (InputStream.class.isAssignableFrom(as)) {
-      return eventTextToInputStream(events);
-    } else if (Reader.class.isAssignableFrom(as)) {
-      return eventTextToReader(events);
-    } else if (String.class.isAssignableFrom(as)) {
-      return eventTextToString(events);
-    } else {
-      throw new IllegalArgumentException(
-        "Unrecognized class for text export: "+as.getName()
-      );
-    }
-  }
-  public static byte[] eventTextToBytes(List<XMLEvent> events) {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    if (!writeEventText(events, baos)) {
-      return null;
-    }
-
-    return baos.toByteArray();
-  }
-  public static File eventTextToFile(List<XMLEvent> events, String extension) {
-    try {
-      File tempFile = File.createTempFile("tmp", extension);
-      if (!writeEventText(events, new FileOutputStream(tempFile))) {
-        if (tempFile.exists()) {
-          tempFile.delete();
-        }
-
-        return null;
-      }
-
-      return tempFile;
-    } catch (FileNotFoundException e) {
-      throw new MarkLogicIOException(e);
-    } catch (IOException e) {
-      throw new MarkLogicIOException(e);
-    }
-  }
-  public static InputStream eventTextToInputStream(List<XMLEvent> events) {
-    byte[] bytes = eventTextToBytes(events);
-    if (bytes == null || bytes.length == 0) {
-      return null;
-    }
-
-    return new ByteArrayInputStream(bytes);
-  }
-  public static Reader eventTextToReader(List<XMLEvent> events) {
-    String string = eventTextToString(events);
-    if (string == null) {
-      return null;
-    }
-
-    return new StringReader(string);
-  }
   public static String eventTextToString(List<XMLEvent> events) {
-    if (events == null || events.size() == 0) {
+    if (events == null || events.isEmpty()) {
       return null;
     }
 
@@ -443,179 +291,8 @@ public final class Utilities {
 
     return buf.toString();
   }
-  public static boolean writeEventText(List<XMLEvent> events, OutputStream out) {
-    if (events == null || events.size() == 0) {
-      return false;
-    }
 
-    try {
-      for (XMLEvent event: events) {
-        if (event.isCharacters()) {
-          out.write(event.asCharacters().getData().getBytes());
-        }
-      }
-
-      out.flush();
-      out.close();
-
-      return true;
-    } catch (IOException e) {
-      throw new MarkLogicIOException(e);
-    }
-  }
-
-  public static Source handleToSource(XMLWriteHandle handle) {
-    try {
-      if (handle == null) {
-        return null;
-      }
-
-      @SuppressWarnings("rawtypes")
-      HandleImplementation baseHandle =
-        HandleAccessor.checkHandle(handle, "source");
-
-      Object content = baseHandle.sendContent();
-      if (content instanceof byte[]) {
-        return new StreamSource(
-          new ByteArrayInputStream((byte[]) content));
-      } else if (content instanceof File) {
-        return new StreamSource(
-          new FileInputStream((File) content));
-      } else if (content instanceof InputStream) {
-        return new StreamSource((InputStream) content);
-      } else if (content instanceof OutputStreamSender) {
-        ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        ((OutputStreamSender) content).write(buf);
-        return new StreamSource(
-          new ByteArrayInputStream(buf.toByteArray()));
-      } else if (content instanceof Reader) {
-        return new StreamSource((Reader) content);
-      } else if (content instanceof String) {
-        return new StreamSource(
-          new StringReader((String) content));
-      } else {
-        throw new IllegalArgumentException("Unrecognized handle for source");
-      }
-    } catch (FileNotFoundException e) {
-      throw new MarkLogicIOException(e);
-    } catch (IOException e) {
-      throw new MarkLogicIOException(e);
-    }
-  }
-
-  static public XMLEventReader makeEventListReader(List<XMLEvent> events) {
-    if (events == null || events.size() == 0) {
-      return null;
-    }
-
-    return new XMLEventListReader(events);
-  }
-
-  static class XMLEventListReader implements XMLEventReader {
-    private List<XMLEvent> events;
-    private int curr = -1;
-
-    XMLEventListReader(List<XMLEvent> events) {
-      super();
-      this.events = events;
-    }
-    @Override
-    public Object next() {
-      return nextEvent();
-    }
-    @Override
-    public void remove() {
-      if (!hasItem(curr)) {
-        return;
-      }
-      events.remove(curr);
-    }
-    @Override
-    public XMLEvent nextEvent() {
-      if (!hasNext()) {
-        return null;
-      }
-      return events.get(++curr);
-    }
-    @Override
-    public boolean hasNext() {
-      return hasItem(curr + 1);
-    }
-    boolean hasItem(int i) {
-      return (events == null || i < events.size());
-    }
-    @Override
-    public XMLEvent peek() {
-      int peek = curr + 1;
-      if (!hasItem(peek)) {
-        return null;
-      }
-      return events.get(peek);
-    }
-    @Override
-    public String getElementText() throws XMLStreamException {
-      if (!hasNext() || !events.get(curr).isStartElement()) {
-        throw new XMLStreamException("no start element for text");
-      }
-
-      StringBuilder buf = new StringBuilder();
-      while (++curr < events.size()) {
-        XMLEvent event = events.get(curr);
-        int eventType = event.getEventType();
-        if (eventType == XMLEvent.CHARACTERS || eventType == XMLEvent.CDATA ||
-          eventType == XMLEvent.SPACE) {
-          buf.append(event.asCharacters().getData());
-        } else if (eventType == XMLEvent.END_ELEMENT) {
-          break;
-        } else if (eventType == XMLEvent.START_ELEMENT) {
-          throw new XMLStreamException("found subelement instead of text");
-        }
-      }
-
-      return buf.toString();
-    }
-    @Override
-    public XMLEvent nextTag() throws XMLStreamException {
-      if (!hasNext()) {
-        throw new XMLStreamException("no next tag");
-      }
-      XMLEvent event = events.get(curr);
-      int eventType = event.getEventType();
-      if (eventType != XMLEvent.START_ELEMENT && eventType != XMLEvent.END_ELEMENT) {
-        throw new XMLStreamException("no start tag for next tag");
-      }
-
-      while (++curr < events.size()) {
-        event = events.get(curr);
-        eventType = event.getEventType();
-        if (eventType == XMLEvent.START_ELEMENT || eventType == XMLEvent.END_ELEMENT) {
-          break;
-        } else if (eventType != XMLEvent.SPACE) {
-          throw new XMLStreamException("event other than space before next tag");
-        }
-      }
-
-      return event;
-    }
-    @Override
-    public Object getProperty(String name) {
-      if (name == null) return null;
-      if ("javax.xml.stream.isValidating".equals(name))                 return false;
-      if ("javax.xml.stream.isNamespaceAware".equals(name))             return true;
-      if ("javax.xml.stream.isCoalescing".equals(name))                 return false;
-      if ("javax.xml.stream.isReplacingEntityReferences".equals(name))  return false;
-      if ("javax.xml.stream.isSupportingExternalEntities".equals(name)) return false;
-      if ("javax.xml.stream.supportDTD".equals(name))                   return false;
-      return null;
-    }
-    @Override
-    public void close() {
-      events = null;
-      curr   = -1;
-    }
-  }
-
-  @SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings("unchecked")
   static public void setHandleContent(ContentHandle handle, Object content) {
     if (handle == null) {
       return;
@@ -633,17 +310,6 @@ public final class Utilities {
       setHandleStructuredFormat((BaseHandle) handle, format);
     }
   }
-  @SuppressWarnings("rawtypes")
-  static public void setHandleStructuredFormat(StructureWriteHandle handle, Format format) {
-    if (handle == null || format == null) {
-      return;
-    }
-
-    if (BaseHandle.class.isAssignableFrom(handle.getClass())) {
-      setHandleStructuredFormat((BaseHandle) handle, format);
-    }
-  }
-  @SuppressWarnings("rawtypes")
   static private void setHandleStructuredFormat(BaseHandle handle, Format format) {
     if (format != Format.JSON && format != Format.XML) {
       throw new IllegalArgumentException("Received "+format.name()+" format instead of JSON or XML");
@@ -674,7 +340,7 @@ public final class Utilities {
       try {
           byte[] byteArray = new byte[BUFFER_SIZE * 2];
 
-          int byteCount = 0;
+          int byteCount;
           while ((byteCount = in.read(byteArray)) != -1) {
               outStream.write(byteArray, 0, byteCount);
           }
@@ -694,7 +360,7 @@ public final class Utilities {
           return;
       try {
           char[] charArray = new char[BUFFER_SIZE * 2];
-          int charCount = 0;
+          int charCount;
           while ((charCount = in.read(charArray)) != -1) {
               out.write(charArray, 0, charCount);
           }
@@ -715,7 +381,7 @@ public final class Utilities {
 
   static String escapeMultipartParamAssignment(CharsetEncoder asciiEncoder, String value) {
     if (value == null) return null;
-    String assignment = null;
+    String assignment;
     if (asciiEncoder.canEncode(value)) {
       // escape any quotes or back-slashes
       assignment = "=\"" + value.replace("\"", "\\\"").replace("\\", "\\\\") + "\"";
@@ -734,21 +400,22 @@ public final class Utilities {
     return parseDouble(value, -1);
   }
   public static double parseDouble(String value, double defaultValue) {
-    return (value == null || value.length() == 0) ? defaultValue : Double.parseDouble(value);
+    return (value == null || value.isEmpty()) ? defaultValue : Double.parseDouble(value);
   }
   public static int parseInt(String value) {
     return parseInt(value, -1);
   }
   public static int parseInt(String value, int defaultValue) {
-    return (value == null || value.length() == 0) ? defaultValue : Integer.parseInt(value);
+    return (value == null || value.isEmpty()) ? defaultValue : Integer.parseInt(value);
   }
   public static long parseLong(String value) {
     return parseLong(value, -1L);
   }
   public static long parseLong(String value, long defaultValue) {
-    return (value == null || value.length() == 0) ? defaultValue : Long.parseLong(value);
+    return (value == null || value.isEmpty()) ? defaultValue : Long.parseLong(value);
   }
 
+	@SuppressWarnings("unchecked")
   public static void setHandleToString(AbstractReadHandle handle, String content) {
     if (!(handle instanceof BaseHandle)) {
       throw new IllegalArgumentException("cannot export with handle that doesn't extend base");

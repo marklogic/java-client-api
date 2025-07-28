@@ -112,24 +112,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
     System.out.println("In tear down");
 
     // Delete database first. Otherwise axis and collection cannot be deleted
-    cleanupRESTServer(dbName, fNames);
+    cleanupRESTServer(dbName);
     deleteRESTUser("eval-user");
     deleteUserRole("test-eval");
-
-    // Temporal collection needs to be delete before temporal axis associated
-    // with it can be deleted
-    /*ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
-        temporalLsqtCollectionName);
-    ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
-        temporalCollectionName);
-    ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
-        bulktemporalCollectionName);
-    ConnectedRESTQA.deleteElementRangeIndexTemporalAxis("Documents",
-        axisValidName);
-    ConnectedRESTQA.deleteElementRangeIndexTemporalAxis("Documents",
-        axisSystemName);*/
     deleteDB(schemadbName);
-    deleteForest(schemafNames[0]);
   }
 
   @BeforeEach
@@ -2685,9 +2671,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
       assertTrue(message.equals("TEMPORAL-CANNOT-URI"));
       assertTrue((statusCode == 400));
     }
-
-    ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
-        jsonDocId);
 
     assertTrue(exceptionThrown, "Exception not thrown for invalid temporal collection");
   }

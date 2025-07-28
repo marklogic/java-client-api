@@ -86,7 +86,7 @@ public class SearchCollector extends ResourceManager {
     params.add("format", "xml");
     params.add("start",  String.valueOf(start));
 
-    if (optionsName != null && optionsName.length() > 0)
+    if (optionsName != null && !optionsName.isEmpty())
       params.add("options", optionsName);
     if (pageLength != QueryManager.DEFAULT_PAGE_LENGTH)
       params.add("pageLength", String.valueOf(pageLength));
@@ -162,12 +162,6 @@ public class SearchCollector extends ResourceManager {
       if (searchResult != null) {
         searchResult = null;
       }
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-      close();
-      super.finalize();
     }
   }
 }

@@ -88,11 +88,8 @@ class ResourceExtensionsImpl
       extraParams.put("refresh", "false");
     }
 
-    listBase.receiveContent(
-      services.getValues(requestLogger, "config/resources", extraParams,
-        listFormat.getDefaultMimetype(), listBase.receiveAs())
-    );
-
+	Object content = services.getValues(requestLogger, "config/resources", extraParams, listFormat.getDefaultMimetype(), listBase.receiveAs());
+	listBase.receiveContent(content);
     return listHandle;
   }
 

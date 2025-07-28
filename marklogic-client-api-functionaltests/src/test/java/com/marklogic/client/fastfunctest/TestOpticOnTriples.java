@@ -12,13 +12,16 @@ import com.marklogic.client.expression.PlanBuilder.Plan;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager;
+import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.row.RowTemplate;
 import com.marklogic.client.type.*;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.*;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestOpticOnTriples extends AbstractFunctionalTest {
 
@@ -1425,66 +1428,77 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
   }
 
 	@Test
-	public void testShortestPathWithColumnInputs()
-	{
-		if(!isML12OrHigher){
+	void shortestPathWithColumnInputs() {
+		if (!isML12OrHigher) {
 			return;
 		}
 
-		RowManager rowMgr = client.newRowManager();
-		PlanBuilder p = rowMgr.newPlanBuilder();
-
-		PlanColumn teamIdCol = p.col("player_team");
-		PlanColumn teamNameCol = p.col("team_name");
-		PlanColumn teamCityCol = p.col("team_city");
-
-		PlanPrefixer team = p.prefixer("http://marklogic.com/mlb/team/");
-		PlanBuilder.ModifyPlan team_plan = p.fromTriples(
-			p.pattern(teamIdCol, team.iri("name"), teamNameCol),
-			p.pattern(teamIdCol, team.iri("city"), teamCityCol)
-		).shortestPath(p.col("team_name"), p.col("team_city"), p.col("path"), p.col("length"));
-		JacksonHandle jacksonHandle = new JacksonHandle().withMimetype("application/json");
-		rowMgr.resultDoc(team_plan, jacksonHandle);
-		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("rows");
-		for (int i=0; i<jsonBindingsNodes.size(); i++){
-			JsonNode path = jsonBindingsNodes.path(i);
-			assertNotNull(path.path("team_name"));
-			assertNotNull(path.path("team_city"));
-			assertNotNull(path.path("path"));
-			assertEquals("1",path.path("length").path("value").toString());
-		}
+		new RowTemplate(client).query(op -> {
+				PlanPrefixer team = op.prefixer("http://marklogic.com/mlb/team/");
+				return op.fromTriples(
+					op.pattern(op.col("player_team"), team.iri("name"), op.col("team_name")),
+					op.pattern(op.col("player_team"), team.iri("city"), op.col("team_city"))
+				)
+					.where(op.eq(op.col("team_name"), op.xs.string("Giants")))
+					.shortestPath(op.col("team_name"), op.col("team_city"), op.col("path"), op.col("length"));
+			},
+			rows -> {
+				RowRecord row = rows.iterator().next();
+				assertEquals("Giants", row.getString("team_name"));
+				assertEquals("San Francisco", row.getString("team_city"));
+				assertEquals(1, row.getInt("length"));
+				return null;
+			});
 	}
 
 	@Test
-	public void testShortestPathWithStringInputs()
-	{
-		if(!isML12OrHigher){
+	void shortestPathWithStringInputs() {
+		if (!isML12OrHigher) {
 			return;
 		}
 
-		RowManager rowMgr = client.newRowManager();
-		PlanBuilder p = rowMgr.newPlanBuilder();
+		new RowTemplate(client).query(op -> {
+				PlanPrefixer team = op.prefixer("http://marklogic.com/mlb/team/");
+				return op.fromTriples(
+					op.pattern(op.col("player_team"), team.iri("name"), op.col("team_name")),
+					op.pattern(op.col("player_team"), team.iri("city"), op.col("team_city"))
+				).shortestPath("team_name", "team_city", "path", "length");
+			},
+			rows -> {
+				rows.iterator().forEachRemaining(row -> {
+					assertNotNull(row.get("team_name"));
+					assertNotNull(row.get("team_city"));
+					assertNotNull(row.get("path"));
+					assertEquals("1", row.get("length").toString());
+				});
+				return null;
+			});
+	}
 
-		PlanColumn teamIdCol = p.col("player_team");
-		PlanColumn teamNameCol = p.col("team_name");
-		PlanColumn teamCityCol = p.col("team_city");
-
-		PlanPrefixer team = p.prefixer("http://marklogic.com/mlb/team/");
-		PlanBuilder.ModifyPlan team_plan = p.fromTriples(
-			p.pattern(teamIdCol, team.iri("name"), teamNameCol),
-			p.pattern(teamIdCol, team.iri("city"), teamCityCol)
-		).shortestPath("team_name", "team_city", "path", "length");
-		JacksonHandle jacksonHandle = new JacksonHandle().withMimetype("application/json");
-		rowMgr.resultDoc(team_plan, jacksonHandle);
-		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("rows");
-		for (int i=0; i<jsonBindingsNodes.size(); i++){
-			JsonNode path = jsonBindingsNodes.path(i);
-			assertNotNull(path.path("team_name"));
-			assertNotNull(path.path("team_city"));
-			assertNotNull(path.path("path"));
-			assertEquals("1",path.path("length").path("value").toString());
+	@Test
+	void shortestPathWithWeight() {
+		if (!isML12OrHigher) {
+			return;
 		}
+
+		new RowTemplate(client).query(op -> {
+				PlanPrefixer team = op.prefixer("http://marklogic.com/mlb/team/");
+				return op.fromTriples(
+						op.pattern(op.col("player_team"), team.iri("name"), op.col("team_name")),
+						op.pattern(op.col("player_team"), team.iri("city"), op.col("team_city"))
+					)
+					.where(op.eq(op.col("team_name"), op.xs.string("Giants")))
+					.bind(op.as("weight", op.xs.doubleVal(0.5)))
+					// The effect of the 'weight' column is not relevant to the test; we just want to make sure a
+					// value can be passed without causing an error.
+					.shortestPath("team_name", "team_city", "path", "length", "weight");
+			},
+			rows -> {
+				RowRecord row = rows.iterator().next();
+				assertEquals("Giants", row.getString("team_name"));
+				assertEquals("San Francisco", row.getString("team_city"));
+				assertEquals(1, row.getInt("length"));
+				return null;
+			});
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
+ * Copyright © 2025 MarkLogic Corporation. All Rights Reserved.
  */
 
 package com.marklogic.client.datamovement;
@@ -104,6 +104,7 @@ public class PathSplitter {
         return paths.flatMap(this::flatMapDocumentWriteOperations);
     }
 
+	@SuppressWarnings("unchecked")
     private Stream<? extends AbstractWriteHandle> flatMapHandles(Path path) {
         String extension = getExtension(path);
         Splitter splitter = lookupSplitter(extension);
@@ -111,6 +112,7 @@ public class PathSplitter {
             return Stream.empty();
         }
         try {
+			// Polaris warns on an unclosed stream, but it's up to the client to close the stream.
             InputStream inputStream = openInputStream(path, extension);
             return splitter.split(inputStream);
         } catch (Exception e) {
@@ -118,6 +120,7 @@ public class PathSplitter {
         }
     }
 
+	@SuppressWarnings("unchecked")
     private Stream<DocumentWriteOperation> flatMapDocumentWriteOperations(Path path)  {
         String extension = getExtension(path);
         Splitter splitter = lookupSplitter(extension);
@@ -126,9 +129,10 @@ public class PathSplitter {
         }
 
         try {
+			// Polaris warns on an unclosed stream, but it's up to the client to close the stream.
             InputStream inputStream = openInputStream(path, extension);
             String filename = getFileName(path).toString();
-            return splitter.splitWriteOperations(inputStream, getFileName(path).toString());
+            return splitter.splitWriteOperations(inputStream, filename);
         } catch (Exception e) {
             throw new RuntimeException("", e);
         }
@@ -151,6 +155,7 @@ public class PathSplitter {
         return matcher.group(1);
     }
 
+	@SuppressWarnings("unchecked")
     private Splitter<? extends AbstractWriteHandle> lookupSplitter(String extension) {
         Splitter splitter = splitterMap.get(extension);
         if (splitter == null && splitterMap.get(DEFAULT_SPLITTER_KEY) != null) {
