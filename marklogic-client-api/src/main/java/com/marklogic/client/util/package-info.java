@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
- */
 /**
  * The package provides loggers, specialized maps, and other utilities
  * shared across other packages.

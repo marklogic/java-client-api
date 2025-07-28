@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
- */
 /**
  * The package provides an adapter for using the GSON Open Source library
  * to read and write JSON documents, JSON structured search, and other JSON

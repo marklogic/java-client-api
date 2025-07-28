@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
- */
 /**
  * The package provides the core classes, interfaces and exceptions for working with the database.
  * Use {@link com.marklogic.client.DatabaseClientFactory}.newClient() to create

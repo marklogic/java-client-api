@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
- */
 /**
  * The package provides marker interfaces for reading and writing each kind of document format.
  * For instance, handle classes that can receive XML content when reading documents implement

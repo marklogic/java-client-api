@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
- */
 /**
  * <p>The MarkLogic Data Movement SDK supports long-running write, read,
  * delete, or transform jobs.  Long-running write jobs are enabled by {@link
