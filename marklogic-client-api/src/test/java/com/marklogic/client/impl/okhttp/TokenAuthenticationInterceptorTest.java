@@ -4,10 +4,11 @@
 package com.marklogic.client.impl.okhttp;
 
 import com.marklogic.client.ext.helper.LoggingObject;
+import mockwebserver3.MockResponse;
+import mockwebserver3.MockWebServer;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,15 +24,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Uses OkHttp's MockWebServer to completely mock a MarkLogic instance so that we can control what response codes are
  * returned and processed by TokenAuthenticationInterceptor.
  */
-public class TokenAuthenticationInterceptorTest extends LoggingObject {
+class TokenAuthenticationInterceptorTest extends LoggingObject {
 
 	private MockWebServer mockWebServer;
 	private FakeTokenGenerator fakeTokenGenerator;
 	private OkHttpClient okHttpClient;
 
 	@BeforeEach
-	void beforeEach() {
+	void beforeEach() throws IOException {
 		mockWebServer = new MockWebServer();
+		mockWebServer.start();
+
 		fakeTokenGenerator = new FakeTokenGenerator();
 
 		ProgressDataCloudAuthenticationConfigurer.TokenAuthenticationInterceptor interceptor =
@@ -41,6 +44,11 @@ public class TokenAuthenticationInterceptorTest extends LoggingObject {
 				"are using the DatabaseClient, they will all use the same token.");
 
 		okHttpClient = new OkHttpClient.Builder().addInterceptor(interceptor).build();
+	}
+
+	@AfterEach
+	void tearDown() {
+		mockWebServer.close();
 	}
 
 	@Test
@@ -110,7 +118,7 @@ public class TokenAuthenticationInterceptorTest extends LoggingObject {
 	 */
 	private void enqueueResponseCodes(int... codes) {
 		for (int code : codes) {
-			mockWebServer.enqueue(new MockResponse().setResponseCode(code));
+			mockWebServer.enqueue(new MockResponse.Builder().code(code).build());
 		}
 	}
 

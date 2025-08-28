@@ -1,14 +1,10 @@
 @Library('shared-libraries') _
 
 def getJava(){
-	if(env.JAVA_VERSION=="JAVA17"){
-		return "/home/builder/java/jdk-17.0.2"
-	}else if(env.JAVA_VERSION=="JAVA11"){
-		return "/home/builder/java/jdk-11.0.2"
-	}else if(env.JAVA_VERSION=="JAVA21"){
+	if (env.JAVA_VERSION == "JAVA21") {
 		return "/home/builder/java/jdk-21.0.1"
-	}else{
-		return "/home/builder/java/openjdk-1.8.0-262"
+	} else {
+		return "/home/builder/java/jdk-17.0.2"
 	}
 }
 
@@ -26,6 +22,7 @@ def setupDockerMarkLogic(String image){
     MARKLOGIC_IMAGE='''+image+''' MARKLOGIC_LOGS_VOLUME=marklogicLogs docker compose up -d --build
     echo "Waiting for MarkLogic server to initialize."
     sleep 60s
+		export JAVA_HOME=$JAVA_HOME_DIR
 		export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
 		export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
 		./gradlew mlTestConnections
