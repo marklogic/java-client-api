@@ -7,11 +7,7 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.impl.HTTPKerberosAuthInterceptor;
 import com.marklogic.client.impl.HTTPSamlAuthInterceptor;
 import com.marklogic.client.impl.SSLUtil;
-import okhttp3.ConnectionPool;
-import okhttp3.CookieJar;
-import okhttp3.Dns;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
+import okhttp3.*;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
@@ -81,6 +77,9 @@ public abstract class OkHttpUtil {
 
 		OkHttpUtil.configureSocketFactory(clientBuilder, sslContext, trustManager);
 		OkHttpUtil.configureHostnameVerifier(clientBuilder, sslVerifier);
+
+		// Trying this out for all calls initially to see how the regression test piplines do.
+		clientBuilder.addInterceptor(new RetryInterceptor(3, 1000, 2, 8000));
 
 		return clientBuilder;
 	}
