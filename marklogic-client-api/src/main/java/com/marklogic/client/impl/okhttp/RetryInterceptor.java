@@ -68,7 +68,8 @@ class RetryInterceptor implements Interceptor {
 				e.getMessage().contains("Failed to connect") ||
 					e.getMessage().contains("unexpected end of stream") ||
 					e.getMessage().contains("Connection reset") ||
-					e.getMessage().contains("Read timed out")
+					e.getMessage().contains("Read timed out") ||
+					e.getMessage().contains("Broken pipe")
 			));
 	}
 
