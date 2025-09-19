@@ -8,9 +8,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
+import com.marklogic.client.impl.okhttp.RetryInterceptor;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.ManageConfig;
+import okhttp3.OkHttpClient;
 import org.springframework.util.FileCopyUtils;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -28,6 +31,12 @@ import java.net.URISyntaxException;
 import java.security.cert.X509Certificate;
 
 public class Common {
+
+	static {
+		DatabaseClientFactory.removeConfigurators();
+		DatabaseClientFactory.addConfigurator((OkHttpClientConfigurator) client ->
+			client.addInterceptor(new RetryInterceptor(3, 1000, 2, 8000)));
+	}
 
 	final public static String USER = "rest-writer";
 	final public static String PASS = "x";
