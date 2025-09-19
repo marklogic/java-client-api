@@ -78,9 +78,6 @@ public abstract class OkHttpUtil {
 		OkHttpUtil.configureSocketFactory(clientBuilder, sslContext, trustManager);
 		OkHttpUtil.configureHostnameVerifier(clientBuilder, sslVerifier);
 
-		// Trying this out for all calls initially to see how the regression test piplines do.
-		clientBuilder.addInterceptor(new RetryInterceptor(3, 1000, 2, 8000));
-
 		return clientBuilder;
 	}
 

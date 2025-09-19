@@ -17,7 +17,7 @@ import java.net.UnknownHostException;
  * OkHttp interceptor that retries requests on certain connection failures,
  * which can be helpful when MarkLogic is temporarily unavailable during restarts.
  */
-class RetryInterceptor implements Interceptor {
+public class RetryInterceptor implements Interceptor {
 
 	private final static Logger logger = org.slf4j.LoggerFactory.getLogger(RetryInterceptor.class);
 
@@ -26,7 +26,7 @@ class RetryInterceptor implements Interceptor {
 	private final double backoffMultiplier;
 	private final long maxDelayMs;
 
-	RetryInterceptor(int maxRetries, long initialDelayMs, double backoffMultiplier, long maxDelayMs) {
+	public RetryInterceptor(int maxRetries, long initialDelayMs, double backoffMultiplier, long maxDelayMs) {
 		this.maxRetries = maxRetries;
 		this.initialDelayMs = initialDelayMs;
 		this.backoffMultiplier = backoffMultiplier;
@@ -36,14 +36,11 @@ class RetryInterceptor implements Interceptor {
 	@Override
 	public Response intercept(Chain chain) throws IOException {
 		Request request = chain.request();
-		IOException lastException = null;
 
 		for (int attempt = 0; attempt <= maxRetries; attempt++) {
 			try {
 				return chain.proceed(request);
 			} catch (IOException e) {
-				lastException = e;
-
 				if (attempt == maxRetries || !isRetryableException(e)) {
 					logger.warn("Not retryable: {}; {}", e.getClass(), e.getMessage());
 					throw e;
@@ -57,7 +54,8 @@ class RetryInterceptor implements Interceptor {
 			}
 		}
 
-		throw lastException;
+		// This should never be reached due to loop logic, but is required for compilation.
+		throw new IllegalStateException("Unexpected end of retry loop");
 	}
 
 	private boolean isRetryableException(IOException e) {

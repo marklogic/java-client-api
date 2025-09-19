@@ -15,7 +15,9 @@ import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.impl.SSLUtil;
+import com.marklogic.client.impl.okhttp.RetryInterceptor;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.query.QueryManager;
@@ -44,6 +46,12 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public abstract class ConnectedRESTQA {
+
+	static {
+		DatabaseClientFactory.removeConfigurators();
+		DatabaseClientFactory.addConfigurator((OkHttpClientConfigurator) client ->
+			client.addInterceptor(new RetryInterceptor(3, 1000, 2, 8000)));
+	}
 
 	private static Properties testProperties = null;
 
