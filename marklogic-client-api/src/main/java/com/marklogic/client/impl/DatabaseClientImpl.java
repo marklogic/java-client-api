@@ -60,8 +60,6 @@ public class DatabaseClientImpl implements DatabaseClient {
     this.database = database;
     this.securityContext = securityContext;
     this.connectionType  = connectionType;
-
-    services.setDatabaseClient(this);
   }
 
   public long getServerVersion() {

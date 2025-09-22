@@ -4,8 +4,10 @@
 package com.marklogic.client.impl.okhttp;
 
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.impl.HTTPKerberosAuthInterceptor;
 import com.marklogic.client.impl.HTTPSamlAuthInterceptor;
+import com.marklogic.client.impl.OkHttpServices;
 import com.marklogic.client.impl.SSLUtil;
 import okhttp3.*;
 
@@ -21,6 +23,7 @@ import java.security.KeyManagementException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -35,7 +38,8 @@ public abstract class OkHttpUtil {
 	final private static ConnectionPool connectionPool = new ConnectionPool();
 
 	@SuppressWarnings({"unchecked", "deprecation"})
-	public static OkHttpClient.Builder newOkHttpClientBuilder(String host, DatabaseClientFactory.SecurityContext securityContext) {
+	public static OkHttpClient.Builder newOkHttpClientBuilder(String host, DatabaseClientFactory.SecurityContext securityContext,
+															  List<OkHttpClientConfigurator> clientConfigurators) {
 		OkHttpClient.Builder clientBuilder = OkHttpUtil.newClientBuilder();
 		AuthenticationConfigurer authenticationConfigurer = null;
 
@@ -77,6 +81,10 @@ public abstract class OkHttpUtil {
 
 		OkHttpUtil.configureSocketFactory(clientBuilder, sslContext, trustManager);
 		OkHttpUtil.configureHostnameVerifier(clientBuilder, sslVerifier);
+
+		if (clientConfigurators != null) {
+			clientConfigurators.forEach(configurator -> configurator.configure(clientBuilder));
+		}
 
 		return clientBuilder;
 	}
