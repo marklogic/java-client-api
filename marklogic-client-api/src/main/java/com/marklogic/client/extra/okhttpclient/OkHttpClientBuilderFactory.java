@@ -7,6 +7,8 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.impl.okhttp.OkHttpUtil;
 import okhttp3.OkHttpClient;
 
+import java.util.ArrayList;
+
 /**
  * Exposes the mechanism for constructing an {@code OkHttpClient.Builder} in the same fashion as when a
  * {@code DatabaseClient} is constructed. Primarily intended for reuse in the ml-app-deployer library. If the
@@ -17,6 +19,6 @@ import okhttp3.OkHttpClient;
 public interface OkHttpClientBuilderFactory {
 
 	static OkHttpClient.Builder newOkHttpClientBuilder(String host, DatabaseClientFactory.SecurityContext securityContext) {
-		return OkHttpUtil.newOkHttpClientBuilder(host, securityContext);
+		return OkHttpUtil.newOkHttpClientBuilder(host, securityContext, new ArrayList<>());
 	}
 }

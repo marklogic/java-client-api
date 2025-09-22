@@ -7,7 +7,6 @@ import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.impl.*;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
-import okhttp3.OkHttpClient;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -31,7 +30,7 @@ import java.util.function.Function;
  */
 public class DatabaseClientFactory {
 
-  static private List<ClientConfigurator<?>> clientConfigurators = Collections.synchronizedList(new ArrayList<>());
+  static private List<OkHttpClientConfigurator> clientConfigurators = Collections.synchronizedList(new ArrayList<>());
 
   static private HandleFactoryRegistry handleRegistry =
     HandleFactoryRegistryImpl.newDefault();
@@ -1329,7 +1328,6 @@ public class DatabaseClientFactory {
   static public DatabaseClient newClient(String host, int port, String basePath, String database,
                                          SecurityContext securityContext,
                                          DatabaseClient.ConnectionType connectionType) {
-      RESTServices services = new OkHttpServices();
 	  // As of 6.1.0, the following optimization is made as it's guaranteed that if the user is connecting to a
 	  // Progress Data Cloud instance, then port 443 will be used. Every path for constructing a DatabaseClient goes through
 	  // this method, ensuring that this optimization will always be applied, and thus freeing the user from having to
@@ -1337,25 +1335,10 @@ public class DatabaseClientFactory {
 	  if (securityContext instanceof MarkLogicCloudAuthContext || securityContext instanceof ProgressDataCloudAuthContext) {
 		  port = 443;
 	  }
-      services.connect(host, port, basePath, database, securityContext);
 
-      if (clientConfigurators != null) {
-		  clientConfigurators.forEach(configurator -> {
-			  if (configurator instanceof OkHttpClientConfigurator) {
-				  OkHttpClient okHttpClient = (OkHttpClient) services.getClientImplementation();
-				  Objects.requireNonNull(okHttpClient);
-				  OkHttpClient.Builder clientBuilder = okHttpClient.newBuilder();
-				  ((OkHttpClientConfigurator) configurator).configure(clientBuilder);
-				  ((OkHttpServices) services).setClientImplementation(clientBuilder.build());
-			  } else {
-				  throw new IllegalArgumentException("A ClientConfigurator must implement OkHttpClientConfigurator");
-			  }
-		  });
-      }
-
-      DatabaseClientImpl client = new DatabaseClientImpl(
-          services, host, port, basePath, database, securityContext, connectionType
-      );
+	  OkHttpServices.ConnectionConfig config = new OkHttpServices.ConnectionConfig(host, port, basePath, database, securityContext, clientConfigurators);
+	  RESTServices services = new OkHttpServices(config);
+      DatabaseClientImpl client = new DatabaseClientImpl(services, host, port, basePath, database, securityContext, connectionType);
       client.setHandleRegistry(getHandleRegistry().copy());
       return client;
   }
@@ -1397,13 +1380,13 @@ public class DatabaseClientFactory {
    * @param configurator	the listener for configuring the communication library
    */
   static public void addConfigurator(ClientConfigurator<?> configurator) {
-    if (!OkHttpClientConfigurator.class.isInstance(configurator)) {
-      throw new IllegalArgumentException(
-        "Configurator must implement OkHttpClientConfigurator"
-      );
-    }
+	  if (!OkHttpClientConfigurator.class.isInstance(configurator)) {
+		  throw new IllegalArgumentException(
+			  "Configurator must implement OkHttpClientConfigurator"
+		  );
+	  }
 
-    clientConfigurators.add(configurator);
+	  clientConfigurators.add((OkHttpClientConfigurator) configurator);
   }
 
 	/**

@@ -3,34 +3,15 @@
  */
 package com.marklogic.client.impl;
 
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.SecurityContext;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.ResourceNotResendableException;
-import com.marklogic.client.SessionState;
-import com.marklogic.client.Transaction;
+import com.marklogic.client.DatabaseClient.ConnectionResult;
+import com.marklogic.client.*;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
-import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.*;
 import com.marklogic.client.document.DocumentManager.Metadata;
-import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentUriTemplate;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
-import com.marklogic.client.DatabaseClient.ConnectionResult;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
@@ -43,6 +24,14 @@ import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
+
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public interface RESTServices {
 
@@ -78,7 +67,6 @@ public interface RESTServices {
   String MIMETYPE_APPLICATION_JSON = "application/json";
   String MIMETYPE_APPLICATION_XML = "application/xml";
   String MIMETYPE_MULTIPART_MIXED = "multipart/mixed";
-  String MIMETYPE_MULTIPART_FORM = "multipart/form-data";
 
   int STATUS_OK = 200;
   int STATUS_CREATED = 201;
@@ -98,13 +86,6 @@ public interface RESTServices {
   String MAX_DELAY_PROP = "com.marklogic.client.maximumRetrySeconds";
   String MIN_RETRY_PROP = "com.marklogic.client.minimumRetries";
 
-  Set<Integer> getRetryStatus();
-  int getMaxDelay();
-  void setMaxDelay(int maxDelay);
-
-  void connect(String host, int port, String basePath, String database, SecurityContext securityContext);
-  DatabaseClient getDatabaseClient();
-  void setDatabaseClient(DatabaseClient client);
   void release();
 
   TemporalDescriptor deleteDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
@@ -129,7 +110,7 @@ public interface RESTServices {
                                        RequestParameters extraParams, String forestName)
           throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
-  <T extends AbstractReadHandle> T postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
+  <T extends AbstractReadHandle> void postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
                                                             ServerTransform transform, Transaction transaction, Format defaultFormat, T output,
                                                             String temporalCollection, String extraContentDispositionParams)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -188,10 +169,6 @@ public interface RESTServices {
   <T> T getValues(RequestLogger reqlog, String type, RequestParameters extraParams,
                          String mimetype, Class<T> as)
     throws ForbiddenUserException, FailedRequestException;
-  void postValue(RequestLogger logger, String type, String key, String mimetype, Object value)
-    throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
-  void postValue(RequestLogger reqlog, String type, String key, RequestParameters extraParams)
-    throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
   void putValue(RequestLogger logger, String type, String key,
                        String mimetype, Object value)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
@@ -201,11 +178,6 @@ public interface RESTServices {
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
     FailedRequestException;
   void deleteValue(RequestLogger logger, String type, String key)
-    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  void deleteValues(RequestLogger logger, String type)
-    throws ForbiddenUserException, FailedRequestException;
-
-  <R extends AbstractReadHandle> R getSystemSchema(RequestLogger reqlog, String schemaName, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
   <R extends UrisReadHandle> R uris(RequestLogger reqlog, String method, SearchQueryDefinition qdef,
@@ -335,7 +307,7 @@ public interface RESTServices {
 
   <R extends AbstractReadHandle> R getGraphUris(RequestLogger reqlog, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  <R extends AbstractReadHandle> R readGraph(RequestLogger reqlog, String uri, R output,
+  <R extends AbstractReadHandle> void readGraph(RequestLogger reqlog, String uri, R output,
                                                     Transaction transaction)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
   void writeGraph(RequestLogger reqlog, String uri,
@@ -343,7 +315,7 @@ public interface RESTServices {
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
   void writeGraphs(RequestLogger reqlog, AbstractWriteHandle input, Transaction transaction)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  Object deleteGraph(RequestLogger requestLogger, String uri,
+  void deleteGraph(RequestLogger requestLogger, String uri,
                             Transaction transaction)
     throws ForbiddenUserException, FailedRequestException;
   void deleteGraphs(RequestLogger requestLogger, Transaction transaction)
