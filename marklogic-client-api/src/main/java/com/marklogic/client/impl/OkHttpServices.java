@@ -131,6 +131,13 @@ public class OkHttpServices implements RESTServices {
 		this.okHttpClient = connect(connectionConfig);
 	}
 
+	private static ClientCookie parseClientCookie(HttpUrl url, String setCookieHeaderValue) {
+		Cookie cookie = Cookie.parse(url, setCookieHeaderValue);
+		if(cookie == null) throw new IllegalStateException(setCookieHeaderValue + " is not a well-formed cookie");
+		return new ClientCookie(cookie.name(), cookie.value(), cookie.expiresAt(), cookie.domain(), cookie.path(),
+			cookie.secure());
+	}
+
 	private FailedRequest extractErrorFields(Response response) {
 		if (response == null) return null;
 		try {
@@ -1501,7 +1508,7 @@ public class OkHttpServices implements RESTServices {
 		String location = response.headers().get("Location");
 		List<ClientCookie> cookies = new ArrayList<>();
 		for (String setCookie : response.headers(HEADER_SET_COOKIE)) {
-			ClientCookie cookie = ClientCookie.parse(requestBldr.build().url(), setCookie);
+			ClientCookie cookie = parseClientCookie(requestBldr.build().url(), setCookie);
 			cookies.add(cookie);
 		}
 		closeResponse(response);
@@ -5599,7 +5606,7 @@ public class OkHttpServices implements RESTServices {
 			if (session != null) {
 				List<ClientCookie> cookies = new ArrayList<>();
 				for (String setCookie : response.headers(HEADER_SET_COOKIE)) {
-					ClientCookie cookie = ClientCookie.parse(requestBldr.build().url(), setCookie);
+					ClientCookie cookie = parseClientCookie(requestBldr.build().url(), setCookie);
 					cookies.add(cookie);
 				}
 				((SessionStateImpl) session).setCookies(cookies);
