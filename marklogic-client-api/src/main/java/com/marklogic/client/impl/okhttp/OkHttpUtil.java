@@ -5,9 +5,6 @@ package com.marklogic.client.impl.okhttp;
 
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
-import com.marklogic.client.impl.HTTPKerberosAuthInterceptor;
-import com.marklogic.client.impl.HTTPSamlAuthInterceptor;
-import com.marklogic.client.impl.OkHttpServices;
 import com.marklogic.client.impl.SSLUtil;
 import okhttp3.*;
 
@@ -23,7 +20,6 @@ import java.security.KeyManagementException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
