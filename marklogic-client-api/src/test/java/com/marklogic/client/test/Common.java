@@ -130,7 +130,7 @@ public class Common {
 			.withBasePath(BASE_PATH)
 			.withUsername(USER)
 			.withPassword(PASS) // Most of the test users all have the same password, so we can use a default one here
-			.withAuthType(AUTH_TYPE)
+			.withAuthType("basic")
 			.withConnectionType(CONNECTION_TYPE);
 	}
 

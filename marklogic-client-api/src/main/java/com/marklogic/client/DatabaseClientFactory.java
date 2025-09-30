@@ -1338,7 +1338,8 @@ public class DatabaseClientFactory {
 
 	  OkHttpServices.ConnectionConfig config = new OkHttpServices.ConnectionConfig(host, port, basePath, database, securityContext, clientConfigurators);
 	  RESTServices services = new OkHttpServices(config);
-      DatabaseClientImpl client = new DatabaseClientImpl(services, host, port, basePath, database, securityContext, connectionType);
+	  RESTServices jdkServices = new JdkHttpServices(host, port, basePath, database, securityContext);
+      DatabaseClientImpl client = new DatabaseClientImpl(jdkServices, host, port, basePath, database, securityContext, connectionType);
       client.setHandleRegistry(getHandleRegistry().copy());
       return client;
   }

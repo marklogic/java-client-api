@@ -5,6 +5,7 @@ package com.marklogic.client.impl;
 
 import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClient.ConnectionResult;
+import com.marklogic.client.DatabaseClientFactory.BasicAuthContext;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
@@ -25,6 +26,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -33,6 +36,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of RESTServices using the JDK HttpClient instead of OkHttp.
@@ -60,6 +64,17 @@ public class JdkHttpServices implements RESTServices {
 		HttpClient.Builder clientBuilder = HttpClient.newBuilder()
 			.connectTimeout(Duration.ofSeconds(30))
 			.followRedirects(HttpClient.Redirect.NORMAL);
+
+		// Configure Basic Authentication if present
+		if (securityContext instanceof BasicAuthContext) {
+			BasicAuthContext basicAuth = (BasicAuthContext) securityContext;
+			clientBuilder.authenticator(new Authenticator() {
+				@Override
+				protected PasswordAuthentication getPasswordAuthentication() {
+					return new PasswordAuthentication(basicAuth.getUser(), basicAuth.getPassword().toCharArray());
+				}
+			});
+		}
 
 		// Configure SSL if present
 		SSLContext sslContext = securityContext.getSSLContext();
@@ -133,6 +148,10 @@ public class JdkHttpServices implements RESTServices {
                              DocumentMetadataReadHandle metadataHandle, AbstractReadHandle contentHandle)
             throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 
+        if (released) {
+            throw new IllegalStateException("Client has been released");
+        }
+
         String uri = desc.getUri();
         if (uri == null) {
             throw new IllegalArgumentException("Document read for document identifier without uri");
@@ -148,9 +167,16 @@ public class JdkHttpServices implements RESTServices {
                 .timeout(Duration.ofSeconds(30))
                 .GET();
 
-            // Add headers for metadata and content handles
-            HandleImplementation metadataBase = HandleAccessor.checkHandle(metadataHandle, "metadata");
-            HandleImplementation contentBase = HandleAccessor.checkHandle(contentHandle, "content");
+            // Check handles and determine what we're requesting
+            HandleImplementation metadataBase = null;
+            HandleImplementation contentBase = null;
+
+            if (metadataHandle != null) {
+                metadataBase = HandleAccessor.checkHandle(metadataHandle, "metadata");
+            }
+            if (contentHandle != null) {
+                contentBase = HandleAccessor.checkHandle(contentHandle, "content");
+            }
 
             // Set Accept header based on handle types
             String acceptHeader = buildAcceptHeader(metadataBase, contentBase);
@@ -158,9 +184,9 @@ public class JdkHttpServices implements RESTServices {
                 requestBuilder.header(HEADER_ACCEPT, acceptHeader);
             }
 
-            // Add transaction ID if present
-            if (transaction != null) {
-                requestBuilder.header("ML-Transaction-ID", transaction.getTransactionId());
+            // Add version header for conditional requests
+            if (desc.getVersion() != DocumentDescriptor.UNKNOWN_VERSION) {
+                requestBuilder.header("If-None-Match", "\"" + desc.getVersion() + "\"");
             }
 
             // Execute the request
@@ -171,26 +197,45 @@ public class JdkHttpServices implements RESTServices {
             int statusCode = response.statusCode();
 
             if (statusCode == STATUS_NOT_FOUND) {
+                response.body().close();
                 throw new ResourceNotFoundException("Could not read non-existent document");
             }
             if (statusCode == STATUS_FORBIDDEN) {
+                response.body().close();
                 throw new ForbiddenUserException("User is not allowed to read documents");
             }
             if (statusCode == STATUS_NOT_MODIFIED) {
+                response.body().close();
                 return false;
             }
             if (statusCode != STATUS_OK && statusCode != STATUS_PARTIAL_CONTENT) {
+                response.body().close();
                 throw new FailedRequestException("read failed: HTTP " + statusCode);
             }
 
-            // Process the response body into the handle
+            // Process the response
             try (InputStream responseBody = response.body()) {
-                if (contentBase != null) {
-                    HandleAccessor.receiveContent(contentHandle, responseBody);
-                }
+                String contentType = response.headers().firstValue("Content-Type").orElse("");
 
-                // For now, we'll skip metadata handling in this simplified implementation
-                // A complete implementation would parse multipart responses for both content and metadata
+                // Update descriptor with response headers if needed
+                updateDescriptorFromHeaders(desc, response);
+
+                if (contentType.startsWith("multipart/mixed") && metadataBase != null && contentBase != null) {
+                    // Handle multipart response (both metadata and content)
+                    // For simplicity, we'll implement this later - for now handle as single part
+                    throw new UnsupportedOperationException("Multipart responses not yet implemented in JDK HTTP client");
+                } else {
+                    // Handle single part response
+                    if (contentBase != null) {
+                        // Read content into the content handle
+                        receiveContent(contentBase, responseBody, logger);
+                    }
+
+                    if (metadataBase != null && contentBase == null) {
+                        // Only metadata requested
+                        receiveContent(metadataBase, responseBody, logger);
+                    }
+                }
 
                 return true;
             }
@@ -201,54 +246,91 @@ public class JdkHttpServices implements RESTServices {
     }
 
     /**
-     * Builds the request URI for document operations
+     * Builds the request URI for document operations using proper URI construction
      */
     private URI buildDocumentRequestUri(String docUri, Set<Metadata> categories, Transaction transaction, RequestParameters extraParams) {
-        StringBuilder uriBuilder = new StringBuilder(baseUri.toString());
-        uriBuilder.append("documents");
-
-        // Add query parameters
-        List<String> params = new ArrayList<>();
-
-        // Document URI
-        params.add("uri=" + URLEncoder.encode(docUri, StandardCharsets.UTF_8));
-
-        // Database parameter
-        if (database != null) {
-            params.add("database=" + URLEncoder.encode(database, StandardCharsets.UTF_8));
-        }
-
-        // Categories
-        if (categories == null || categories.isEmpty()) {
-            params.add("category=content");
-        } else {
-            for (Metadata category : categories) {
-                params.add("category=" + category.name().toLowerCase());
+        try {
+            // Build the base path
+            String path = baseUri.getPath();
+            if (!path.endsWith("/")) {
+                path += "/";
             }
-        }
+            path += "documents";
 
-        // Transaction
-        if (transaction != null) {
-            params.add("txid=" + transaction.getTransactionId());
-        }
+            // Build query parameters using proper encoding
+            Map<String, List<String>> queryParams = new LinkedHashMap<>();
 
-        // Extra parameters
-        if (extraParams != null) {
-            for (Map.Entry<String, List<String>> entry : extraParams.entrySet()) {
-                String key = entry.getKey();
-                for (String value : entry.getValue()) {
-                    params.add(URLEncoder.encode(key, StandardCharsets.UTF_8) + "=" +
-                              URLEncoder.encode(value, StandardCharsets.UTF_8));
+            // Document URI - required parameter
+            addQueryParam(queryParams, "uri", docUri);
+
+            // Database parameter
+            if (database != null) {
+                addQueryParam(queryParams, "database", database);
+            }
+
+            // Categories
+            if (categories == null || categories.isEmpty()) {
+                addQueryParam(queryParams, "category", "content");
+            } else {
+                for (Metadata category : categories) {
+                    addQueryParam(queryParams, "category", category.name().toLowerCase());
                 }
             }
+
+            // Transaction
+            if (transaction != null) {
+                addQueryParam(queryParams, "txid", transaction.getTransactionId());
+            }
+
+            // Extra parameters
+            if (extraParams != null) {
+                for (Map.Entry<String, List<String>> entry : extraParams.entrySet()) {
+                    String key = entry.getKey();
+                    for (String value : entry.getValue()) {
+                        addQueryParam(queryParams, key, value);
+                    }
+                }
+            }
+
+            // Build the query string
+            String query = buildQueryString(queryParams);
+
+            // Construct the final URI
+            return new URI(
+                baseUri.getScheme(),
+                baseUri.getUserInfo(),
+                baseUri.getHost(),
+                baseUri.getPort(),
+                path,
+                query.isEmpty() ? null : query,
+                null // fragment
+            );
+
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to build document request URI: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Helper method to add a query parameter to the map
+     */
+    private void addQueryParam(Map<String, List<String>> queryParams, String key, String value) {
+        queryParams.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
+    }
+
+    /**
+     * Builds a properly encoded query string from parameters
+     */
+    private String buildQueryString(Map<String, List<String>> queryParams) {
+        if (queryParams.isEmpty()) {
+            return "";
         }
 
-        // Append query string
-        if (!params.isEmpty()) {
-            uriBuilder.append("?").append(String.join("&", params));
-        }
-
-        return URI.create(uriBuilder.toString());
+        return queryParams.entrySet().stream()
+            .flatMap(entry -> entry.getValue().stream()
+                .map(value -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8) + "=" +
+                             URLEncoder.encode(value, StandardCharsets.UTF_8)))
+            .collect(Collectors.joining("&"));
     }
 
     /**
@@ -730,5 +812,90 @@ public class JdkHttpServices implements RESTServices {
     @Override
     public CallRequest makeNodeBodyRequest(String endpoint, HttpMethod method, SessionState session, CallField... params) {
         throw new UnsupportedOperationException("makeNodeBodyRequest not yet implemented");
+    }
+
+    // Helper methods for getDocument implementation
+
+    /**
+     * Updates document descriptor with information from response headers
+     */
+    private void updateDescriptorFromHeaders(DocumentDescriptor desc, HttpResponse<InputStream> response) {
+        // Update version if ETag header is present
+        response.headers().firstValue("ETag").ifPresent(etag -> {
+            if (etag.startsWith("\"") && etag.endsWith("\"")) {
+                String versionStr = etag.substring(1, etag.length() - 1);
+                try {
+                    long version = Long.parseLong(versionStr);
+                    if (desc instanceof DocumentDescriptorImpl) {
+                        ((DocumentDescriptorImpl) desc).setVersion(version);
+                    }
+                } catch (NumberFormatException e) {
+                    // Ignore invalid version
+                }
+            }
+        });
+
+        // Update content length if present
+        response.headers().firstValue("Content-Length").ifPresent(lengthStr -> {
+            try {
+                long length = Long.parseLong(lengthStr);
+                if (desc instanceof ContentDescriptor) {
+                    ((ContentDescriptor) desc).setByteLength(length);
+                }
+            } catch (NumberFormatException e) {
+                // Ignore invalid length
+            }
+        });
+
+        // Update format from content type
+        response.headers().firstValue("Content-Type").ifPresent(contentType -> {
+            if (desc instanceof ContentDescriptor) {
+                ((ContentDescriptor) desc).setMimetype(contentType);
+                Format format = getFormatFromMimetype(contentType);
+                if (format != null) {
+                    ((ContentDescriptor) desc).setFormat(format);
+                }
+            }
+        });
+    }
+
+    /**
+     * Receives content into a handle, handling different types appropriately
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void receiveContent(HandleImplementation handleBase, InputStream responseBody, RequestLogger logger)
+            throws IOException {
+        Class<?> as = handleBase.receiveAs();
+        Object content;
+
+        if (InputStream.class.isAssignableFrom(as)) {
+            content = responseBody;
+        } else if (String.class.isAssignableFrom(as)) {
+            content = new String(responseBody.readAllBytes(), StandardCharsets.UTF_8);
+        } else {
+            // For other types, read as bytes and let the handle convert
+            content = responseBody.readAllBytes();
+        }
+
+        Object finalContent = (logger != null) ? logger.copyContent(content) : content;
+        handleBase.receiveContent(finalContent);
+    }
+
+    /**
+     * Gets Format enum from MIME type string
+     */
+    private Format getFormatFromMimetype(String mimetype) {
+        if (mimetype == null) return null;
+
+        String lowerMimetype = mimetype.toLowerCase();
+        if (lowerMimetype.contains("xml")) {
+            return Format.XML;
+        } else if (lowerMimetype.contains("json")) {
+            return Format.JSON;
+        } else if (lowerMimetype.contains("text")) {
+            return Format.TEXT;
+        } else {
+            return Format.BINARY;
+        }
     }
 }
