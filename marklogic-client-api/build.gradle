@@ -18,8 +18,8 @@ dependencies {
 	api "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
 	implementation "org.glassfish.jaxb:jaxb-runtime:3.0.2"
 
-	implementation 'com.squareup.okhttp3:okhttp:5.1.0'
-	implementation 'com.squareup.okhttp3:logging-interceptor:5.1.0'
+	implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
+	implementation "com.squareup.okhttp3:logging-interceptor:${okhttpVersion}"
 	implementation 'io.github.rburgst:okhttp-digest:3.1.1'
 
 	// We tried upgrading to the org.eclipse.angus:angus-mail dependency, but we ran into significant performance issues
@@ -27,7 +27,7 @@ dependencies {
 	// take 50s instead of 2 to 3s. Haven't dug into the details, but seems like the call isn't lazy and the entire set
 	// of URIs is being retrieved. This implementation - in the old "com.sun.mail" package but still adhering to the new
 	// jakarta.mail API - works fine and performs well for eval calls.
-	implementation "com.sun.mail:jakarta.mail:2.0.1"
+	implementation "com.sun.mail:jakarta.mail:2.0.2"
 
 	implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
 	implementation 'org.slf4j:slf4j-api:2.0.17'
@@ -36,22 +36,21 @@ dependencies {
 
 	// Only used by extras (which some examples then depend on)
 	compileOnly 'org.jdom:jdom2:2.0.6.1'
-	compileOnly 'org.dom4j:dom4j:2.1.4'
-	compileOnly 'com.google.code.gson:gson:2.10.1'
+	compileOnly 'org.dom4j:dom4j:2.2.0'
+	compileOnly 'com.google.code.gson:gson:2.13.2'
 
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
 
 	// Forcing junit version to avoid vulnerability with older version in xmlunit
 	testImplementation 'junit:junit:4.13.2'
-	testImplementation 'org.xmlunit:xmlunit-legacy:2.10.0'
+	testImplementation 'org.xmlunit:xmlunit-legacy:2.10.4'
 	testImplementation project(':examples')
 
-	testImplementation 'org.apache.commons:commons-lang3:3.18.0'
+	testImplementation 'org.apache.commons:commons-lang3:3.19.0'
+
 	// Allows talking to the Manage API.
-	testImplementation ("com.marklogic:ml-app-deployer:5.0.0") {
+	testImplementation ("com.marklogic:ml-app-deployer:6.0.1") {
 		exclude module: "marklogic-client-api"
-		// Use the commons-lang3 declared above to keep Black Duck happy.
-		exclude module: "commons-lang3"
 	}
 
 	// Starting with mockito 5.x, Java 11 is required, so sticking with 4.x as we have to support Java 8.
@@ -65,11 +64,12 @@ dependencies {
 	// Using this to avoid a schema validation issue with the regular xercesImpl
 	testImplementation 'org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115'
 
-	testImplementation('com.opencsv:opencsv:5.11.2') {
+	testImplementation('com.opencsv:opencsv:5.12.0') {
 		// Excluding this due to a security vulnerability, and the test for the example that uses this library
 		// passes without this on the classpath.
 		exclude module: "commons-beanutils"
 	}
+
 	testImplementation 'org.skyscreamer:jsonassert:1.5.3'
 
 	// Automatic loading of test framework implementation dependencies is deprecated.
@@ -101,7 +101,7 @@ javadoc {
     options.overview = "src/main/javadoc/overview.html"
     options.windowTitle = "$rootProject.describedName $rootProject.version"
     options.docTitle = "$rootProject.describedName $rootProject.version"
-    options.bottom = "Copyright © 2024 MarkLogic Corporation. All Rights Reserved."
+    options.bottom = "Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved."
     options.links = [ 'http://docs.oracle.com/javase/8/docs/api/' ]
     options.use = true
     if (JavaVersion.current().isJava9Compatible()) {
