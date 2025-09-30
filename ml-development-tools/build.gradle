@@ -23,7 +23,7 @@ dependencies {
 	testImplementation 'xmlunit:xmlunit:1.6'
 	testCompileOnly gradleTestKit()
 
-	testImplementation 'com.squareup.okhttp3:okhttp:4.12.0'
+	testImplementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
 }
 
 // Added to avoid problem where processResources fails because - somehow - the plugin properties file is getting

@@ -10,19 +10,19 @@ dependencies {
 	// The 'api' configuration is used so that the test configuration in marklogic-client-api doesn't have to declare
 	// all of these dependencies. This library project won't otherwise be depended on by anything else as it's not
 	// setup for publishing.
-	api 'com.squareup.okhttp3:okhttp:4.12.0'
-	api 'io.github.rburgst:okhttp-digest:2.7'
+	api "com.squareup.okhttp3:okhttp:${okhttpVersion}"
+	api 'io.github.rburgst:okhttp-digest:3.1.1'
 	api 'org.slf4j:slf4j-api:2.0.17'
 	api "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
 
 	api 'org.jdom:jdom2:2.0.6.1'
-	api 'org.dom4j:dom4j:2.1.4'
-	api 'com.google.code.gson:gson:2.10.1'
+	api 'org.dom4j:dom4j:2.2.0'
+	api 'com.google.code.gson:gson:2.13.2'
 	api 'net.sourceforge.htmlcleaner:htmlcleaner:2.29'
-	api ('com.opencsv:opencsv:5.11.2') {
+	api ('com.opencsv:opencsv:5.12.0') {
 		// Excluding this due to a security vulnerability, and the test for the example that uses this library
 		// passes without this on the classpath.
 		exclude module: "commons-beanutils"
 	}
-	api 'org.apache.commons:commons-lang3:3.18.0'
+	api 'org.apache.commons:commons-lang3:3.19.0'
 }
