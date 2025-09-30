@@ -3,13 +3,8 @@
  */
 
 plugins {
-	id 'java-library'
 	id 'maven-publish'
 }
-
-group = 'com.marklogic'
-
-description = "The official MarkLogic Java client API."
 
 dependencies {
 	// Using the latest version now that the 8.0.0 release requires Java 17.
@@ -51,7 +46,7 @@ dependencies {
 	testImplementation 'org.apache.commons:commons-lang3:3.19.0'
 
 	// Allows talking to the Manage API.
-	testImplementation ("com.marklogic:ml-app-deployer:6.0.1") {
+	testImplementation("com.marklogic:ml-app-deployer:6.0.1") {
 		exclude module: "marklogic-client-api"
 	}
 
@@ -92,143 +87,102 @@ test {
 	systemProperty "TEST_USE_REVERSE_PROXY_SERVER", testUseReverseProxyServer
 }
 
-task sourcesJar(type: Jar) {
-    archiveClassifier = 'sources'
-    exclude ('property', '*.xsd', '*.xjb')
-    from sourceSets.main.allSource
-}
-
-javadoc {
-    maxMemory="6000m"
-    options.overview = "src/main/javadoc/overview.html"
-    options.windowTitle = "$rootProject.describedName $rootProject.version"
-    options.docTitle = "$rootProject.describedName $rootProject.version"
-    options.bottom = "Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved."
-    options.links = [ 'http://docs.oracle.com/javase/8/docs/api/' ]
-    options.use = true
-    if (JavaVersion.current().isJava9Compatible()) {
-        options.addBooleanOption('html4', true)
-    }
-    exclude([
-            '**/impl/**', '**/jaxb/**', '**/test/**'
-    ])
-// workaround for bug in options.docFilesSubDirs = true
-    doLast{
-        copy{
-            from "${projectDir}/src/main/javadoc/doc-files"
-            into "${buildDir}/docs/javadoc/doc-files"
-        }
-    }
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-	archiveClassifier = 'javadoc'
-	from javadoc.destinationDir
-}
-
-Node pomCustomizations = new NodeBuilder(). project {
-    name "$rootProject.describedName"
-    packaging 'jar'
-    textdescription "$project.description"
-    url 'https://github.com/marklogic/java-client-api'
-
-    scm {
-        url 'git@github.com:marklogic/java-client-api.git'
-        connection 'scm:git:git@github.com:marklogic/java-client-api.git'
-        developerConnection 'scm:git:git@github.com:marklogic/java-client-api.git'
-    }
-
-    licenses {
-        license {
-            name 'The Apache License, Version 2.0'
-            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-        }
-    }
-
-    developers {
-        developer {
-            name 'MarkLogic'
-            email 'java-sig@marklogic.com'
-            organization 'MarkLogic'
-            organizationUrl 'https://www.marklogic.com'
-        }
-        developer {
-            name 'MarkLogic Github Contributors'
-            email 'general@developer.marklogic.com'
-            organization 'Github Contributors'
-            organizationUrl 'https://github.com/marklogic/java-client-api/graphs/contributors'
-        }
-    }
-}
-
-publishing {
-    publications {
-        mainJava(MavenPublication) {
-            from components.java
-
-            pom.withXml {
-                asNode().append(pomCustomizations.packaging)
-                asNode().append(pomCustomizations.name)
-                asNode().appendNode("description", pomCustomizations.textdescription.text())
-                asNode().append(pomCustomizations.url)
-                asNode().append(pomCustomizations.licenses)
-                asNode().append(pomCustomizations.developers)
-                asNode().append(pomCustomizations.scm)
-            }
-            artifact sourcesJar
-            artifact javadocJar
-        }
-    }
-    repositories {
-        maven {
-            if(project.hasProperty("mavenUser")) {
-                credentials {
-                    username mavenUser
-                    password mavenPassword
-                }
-            }
-            url = publishUrl
-        }
-    }
-}
-
-task printClassPath() {
-    doLast {
-        println sourceSets.main.runtimeClasspath.asPath+':'+sourceSets.test.runtimeClasspath.asPath
-    }
-}
-
-task generatePomForDependencyGraph(dependsOn: "generatePomFileForMainJavaPublication") {
-    description = "Prepare for a release by making a copy of the generated pom file in the root directory so that it " +
-            "can enable Github's Dependency Graph feature, which does not yet support Gradle"
-    doLast {
-        def preamble = '<?xml version="1.0" encoding="UTF-8"?>'
-        def comment = "<!--\n" +
-                "This file was generated via Gradle and is being used primarily for github's Dependency Graph feature.\n" +
-                "It is not intended to be used to build this project.\n" +
-                "-->"
-        def fileText = file("build/publications/mainJava/pom-default.xml").getText()
-        file("../pom.xml").setText(fileText.replace(preamble, preamble + comment))
-    }
-}
-
-task testRows(type: Test) {
+tasks.register("testRows", Test) {
 	useJUnitPlatform()
 	description = "Run all 'rows' tests; i.e. those exercising Optic and Optic Update functionality"
 	include "com/marklogic/client/test/rows/**"
 }
 
-task debugCloudAuth(type: JavaExec) {
+tasks.register("debugCloudAuth", JavaExec) {
 	description = "Test program for manual testing of cloud-based authentication against a Progress Data Cloud instance"
-	mainClass = 'com.marklogic.client.test.MarkLogicCloudAuthenticationDebugger'
+	mainClass = 'com.marklogic.client.test.ProgressDataCloudAuthenticationDebugger'
 	classpath = sourceSets.test.runtimeClasspath
 	args = [cloudHost, cloudKey, cloudBasePath]
 }
 
-task runXmlSmokeTests(type: Test) {
+tasks.register("runXmlSmokeTests", Test) {
+	useJUnitPlatform()
 	description = "Run a bunch of XML-related tests for smoke-testing on a particular JVM"
 	include "com/marklogic/client/test/BufferableHandleTest.class"
 	include "com/marklogic/client/test/EvalTest.class"
 	include "com/marklogic/client/test/HandleAsTest.class"
 	include "com/marklogic/client/test/JAXBHandleTest.class"
+}
+
+// Publishing setup - see https://docs.gradle.org/current/userguide/publishing_setup.html .
+java {
+	withJavadocJar()
+	withSourcesJar()
+}
+
+javadoc {
+	maxMemory = "6000m"
+	options.overview = "src/main/javadoc/overview.html"
+	options.windowTitle = "MarkLogic Java Client API $rootProject.version"
+	options.docTitle = "MarkLogic Java Client API $rootProject.version"
+	options.bottom = "Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved."
+	options.use = true
+	exclude([
+		'**/impl/**', '**/jaxb/**', '**/test/**'
+	])
+// workaround for bug in options.docFilesSubDirs = true
+	doLast {
+		copy {
+			from "${projectDir}/src/main/javadoc/doc-files"
+			into "${layout.buildDirectory.get()}/docs/javadoc/doc-files"
+		}
+	}
+}
+
+publishing {
+	publications {
+		mainJava(MavenPublication) {
+			from components.java
+			pom {
+				name = "${group}:${project.name}"
+				description = "The MarkLogic Java Client API"
+				packaging = "jar"
+				url = "https://github.com/marklogic/java-client-api"
+				licenses {
+					license {
+						name = "The Apache License, Version 2.0"
+						url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+					}
+				}
+				developers {
+					developer {
+						id = "marklogic"
+						name = "MarkLogic Github Contributors"
+						email = "general@developer.marklogic.com"
+						organization = "MarkLogic"
+						organizationUrl = "https://www.marklogic.com"
+					}
+				}
+				scm {
+					url = "git@github.com:marklogic/java-client-api.git"
+					connection = "scm:git:git@github.com:marklogic/java-client-api.git"
+					developerConnection = "scm:git:git@github.com:marklogic/java-client-api.git"
+				}
+			}
+		}
+	}
+	repositories {
+		maven {
+			if (project.hasProperty("mavenUser")) {
+				credentials {
+					username = mavenUser
+					password = mavenPassword
+				}
+				url publishUrl
+				allowInsecureProtocol = true
+			} else {
+				name = "central"
+				url = mavenCentralUrl
+				credentials {
+					username = mavenCentralUsername
+					password = mavenCentralPassword
+				}
+			}
+		}
+	}
 }

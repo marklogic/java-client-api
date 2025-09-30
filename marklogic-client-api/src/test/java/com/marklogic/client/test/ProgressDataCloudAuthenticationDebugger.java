@@ -16,7 +16,7 @@ import com.marklogic.client.io.JacksonHandle;
  * "localhost" as the cloud host, "username:password" (often "admin:the admin password") as the apiKey, and
  * "local/manage" as the basePath.
  */
-public class MarkLogicCloudAuthenticationDebugger {
+public class ProgressDataCloudAuthenticationDebugger {
 
 	public static void main(String[] args) throws Exception {
 		String cloudHost = args[0];
