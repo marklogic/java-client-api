@@ -12,11 +12,12 @@ group = 'com.marklogic'
 description = "The official MarkLogic Java client API."
 
 dependencies {
-	// With 7.0.0, now using the Jakarta JAXB APIs instead of the JAVAX JAXB APIs that were bundled in Java 8.
-	// To ease support for Java 8, we are depending on version 3.x of the Jakarta JAXB APIs as those only require Java 8,
-	// whereas the 4.x version requires Java 11 or higher.
-	api "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
-	implementation "org.glassfish.jaxb:jaxb-runtime:3.0.2"
+	// Using the latest version now that the 8.0.0 release requires Java 17.
+	// This is now an implementation dependency as opposed to an api dependency in 7.x and earlier.
+	// The only time it appears in the public API is when a user uses JAXBHandle.
+	// But in that scenario, the user would already be using JAXB in their application.
+	implementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.4"
+	implementation "org.glassfish.jaxb:jaxb-runtime:4.0.6"
 
 	implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
 	implementation "com.squareup.okhttp3:logging-interceptor:${okhttpVersion}"
@@ -27,9 +28,10 @@ dependencies {
 	// take 50s instead of 2 to 3s. Haven't dug into the details, but seems like the call isn't lazy and the entire set
 	// of URIs is being retrieved. This implementation - in the old "com.sun.mail" package but still adhering to the new
 	// jakarta.mail API - works fine and performs well for eval calls.
+	// As of the 8.0.0 release - this still is a good solution, particularly as com.sun.mail:jakarta.mail received a
+	// recent patch release and is therefore still being maintained.
 	implementation "com.sun.mail:jakarta.mail:2.0.2"
 
-	implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
 	implementation 'org.slf4j:slf4j-api:2.0.17'
 	implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
 	implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-csv:${jacksonVersion}"

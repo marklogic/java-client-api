@@ -136,7 +136,8 @@ public class BitemporalTest {
   }
 
   @Test
-  public void c_testOther() throws Exception {
+  @Disabled("Needs updating based on recent 12 nightly server changes")
+  public void c_testOther() {
 
     String version1 = "<test>" +
       uniqueTerm + " version1" +
