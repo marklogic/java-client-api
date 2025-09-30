@@ -1,22 +1,9 @@
-// Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
-
-// We need the properties plugin to work on both marklogic-client-api and test-app. The 'plugins' Gradle syntax can't be
-// used for that. So we have to add the properties plugin to the buildscript classpath and then apply the properties
-// plugin via subprojects below.
-buildscript {
-	repositories {
-		maven {
-			url = "https://plugins.gradle.org/m2/"
-		}
-	}
-	dependencies {
-		classpath "net.saliman:gradle-properties-plugin:1.5.2"
-	}
-}
+/*
+ * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ */
 
 subprojects {
-	apply plugin: "net.saliman.properties"
-	apply plugin: 'java'
+	apply plugin: 'java-library'
 
 	tasks.withType(JavaCompile) {
 		options.encoding = 'UTF-8'
@@ -46,6 +33,11 @@ subprojects {
 	}
 
 	test {
+		useJUnitPlatform()
+		testLogging {
+			events = ['started', 'passed', 'skipped', 'failed']
+			exceptionFormat = 'full'
+		}
 		systemProperty "file.encoding", "UTF-8"
 		systemProperty "javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl"
 	}
