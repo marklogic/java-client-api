@@ -31,6 +31,13 @@ subprojects {
 
 	configurations {
 		testImplementation.extendsFrom compileOnly
+
+		all {
+			resolutionStrategy {
+				// Forcing the latest commons-lang3 version to eliminate CVEs.
+				force "org.apache.commons:commons-lang3:3.19.0"
+			}
+		}
 	}
 
 	repositories {

@@ -6,6 +6,7 @@ plugins {
 
 dependencies {
 	implementation project(':marklogic-client-api')
+	implementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.4"
 
 	// The 'api' configuration is used so that the test configuration in marklogic-client-api doesn't have to declare
 	// all of these dependencies. This library project won't otherwise be depended on by anything else as it's not

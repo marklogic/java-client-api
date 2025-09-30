@@ -40,3 +40,5 @@ ml-development-tools/src/test/java/com/marklogic/client/test/dbfunction/generate
 docker/
 
 .kotlin
+
+dep.txt
