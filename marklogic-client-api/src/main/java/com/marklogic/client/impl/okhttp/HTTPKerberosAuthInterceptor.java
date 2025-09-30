@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
-package com.marklogic.client.impl;
+package com.marklogic.client.impl.okhttp;
 
 import java.io.IOException;
 import java.util.Map;
@@ -20,6 +20,7 @@ import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.kerberos.KerberosTicket;
 
+import com.marklogic.client.impl.SSLUtil;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
