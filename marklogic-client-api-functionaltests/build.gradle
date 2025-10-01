@@ -30,6 +30,8 @@ dependencies {
 }
 
 tasks.withType(Test).configureEach {
+	useJUnitPlatform()
+
 	// For use in testing TestDatabaseClientKerberosFromFile
 	systemProperty "keytabFile", System.getProperty("keytabFile")
 	systemProperty "principal", System.getProperty("principal")
