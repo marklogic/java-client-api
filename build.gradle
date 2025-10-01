@@ -5,11 +5,6 @@
 subprojects {
 	apply plugin: 'java-library'
 
-	tasks.withType(JavaCompile) {
-		options.encoding = 'UTF-8'
-		options.compilerArgs += ["-Xlint:unchecked", "-Xlint:deprecation"]
-	}
-
 	java {
 		toolchain {
 			languageVersion = JavaLanguageVersion.of(17)
@@ -32,12 +27,19 @@ subprojects {
 		mavenCentral()
 	}
 
-	test {
+	tasks.withType(JavaCompile) {
+		options.encoding = 'UTF-8'
+		options.compilerArgs += ["-Xlint:unchecked", "-Xlint:deprecation"]
+	}
+
+	tasks.withType(Test).configureEach {
 		useJUnitPlatform()
 		testLogging {
 			events = ['started', 'passed', 'skipped', 'failed']
 			exceptionFormat = 'full'
 		}
+
+		// Will remove this in a future PR to determine if they're needed or not.
 		systemProperty "file.encoding", "UTF-8"
 		systemProperty "javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl"
 	}

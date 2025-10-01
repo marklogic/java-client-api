@@ -2,14 +2,6 @@
  * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
-test {
-	// For use in testing TestDatabaseClientKerberosFromFile
-	systemProperty "keytabFile", System.getProperty("keytabFile")
-	systemProperty "principal", System.getProperty("principal")
-
-	systemProperty "TEST_USE_REVERSE_PROXY_SERVER", testUseReverseProxyServer
-}
-
 dependencies {
 	testImplementation project(':marklogic-client-api')
 	testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.4"
@@ -37,20 +29,30 @@ dependencies {
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.13.4"
 }
 
+tasks.withType(Test).configureEach {
+	// For use in testing TestDatabaseClientKerberosFromFile
+	systemProperty "keytabFile", System.getProperty("keytabFile")
+	systemProperty "principal", System.getProperty("principal")
+
+	systemProperty "TEST_USE_REVERSE_PROXY_SERVER", testUseReverseProxyServer
+}
+
 tasks.register("runFragileTests", Test) {
-	useJUnitPlatform()
 	description = "These are called 'fragile' because they'll pass when run by themselves, but when run as part of the " +
 		"full suite, there seem to be one or more other fast functional tests that run before them and cause some of " +
 		"their test methods to break. The Jenkinsfile thus calls these first before running the other functional " +
 		"tests."
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
 	include "com/marklogic/client/fastfunctest/TestQueryOptionBuilder.class"
 	include "com/marklogic/client/fastfunctest/TestRawCombinedQuery.class"
 	include "com/marklogic/client/fastfunctest/TestRawStructuredQuery.class"
 }
 
 tasks.register("runFastFunctionalTests", Test) {
-	useJUnitPlatform()
 	description = "Run all fast functional tests that don't setup/teardown custom app servers / databases"
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
 	include "com/marklogic/client/fastfunctest/**"
 	// Exclude the "fragile" ones
 	exclude "com/marklogic/client/fastfunctest/TestQueryOptionBuilder.class"
@@ -59,8 +61,9 @@ tasks.register("runFastFunctionalTests", Test) {
 }
 
 tasks.register("runSlowFunctionalTests", Test) {
-	useJUnitPlatform()
 	description = "Run slow functional tests; i.e. those that setup/teardown custom app servers / databases"
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
 	include "com/marklogic/client/datamovement/functionaltests/**"
 	include "com/marklogic/client/functionaltest/**"
 }
