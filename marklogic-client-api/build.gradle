@@ -140,14 +140,14 @@ publishing {
 		mainJava(MavenPublication) {
 			from components.java
 			pom {
-				name = "${group}:${project.name}"
+				name = "${project.group}:${project.name}"
 				description = "The MarkLogic Java Client API"
 				packaging = "jar"
 				url = "https://github.com/marklogic/java-client-api"
 				licenses {
 					license {
 						name = "The Apache License, Version 2.0"
-						url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+						url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
 					}
 				}
 				developers {
@@ -160,9 +160,9 @@ publishing {
 					}
 				}
 				scm {
-					url = "git@github.com:marklogic/java-client-api.git"
-					connection = "scm:git:git@github.com:marklogic/java-client-api.git"
-					developerConnection = "scm:git:git@github.com:marklogic/java-client-api.git"
+					url = "https://github.com/marklogic/java-client-api"
+					connection = "https://github.com/marklogic/java-client-api"
+					developerConnection = "https://github.com/marklogic/java-client-api"
 				}
 			}
 		}
@@ -174,7 +174,7 @@ publishing {
 					username = mavenUser
 					password = mavenPassword
 				}
-				url publishUrl
+				url = publishUrl
 				allowInsecureProtocol = true
 			} else {
 				name = "central"

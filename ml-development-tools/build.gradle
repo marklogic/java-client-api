@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 /*
  * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
@@ -12,6 +14,10 @@ plugins {
 
 dependencies {
 	compileOnly gradleApi()
+
+	// This is a runtime dependency of marklogic-client-api but is needed for compiling.
+	compileOnly "jakarta.xml.bind:jakarta.xml.bind-api:4.0.4"
+
 	implementation project(':marklogic-client-api')
 	implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.0'
 	implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
@@ -29,7 +35,7 @@ dependencies {
 // Added to avoid problem where processResources fails because - somehow - the plugin properties file is getting
 // copied twice. This started occurring with the upgrade of Gradle from 6.x to 7.x.
 tasks.processResources {
-	duplicatesStrategy = "exclude"
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.register("mlDevelopmentToolsJar", Jar) {
@@ -45,7 +51,7 @@ gradlePlugin {
 			id = 'com.marklogic.ml-development-tools'
 			displayName = 'ml-development-tools MarkLogic Data Service Tools'
 			description = 'ml-development-tools plugin for developing data services on MarkLogic'
-			tags.set(['marklogic', 'progress'])
+			tags = ['marklogic', 'progress']
 			implementationClass = 'com.marklogic.client.tools.gradle.ToolsPlugin'
 		}
 	}
@@ -53,7 +59,7 @@ gradlePlugin {
 
 publishing {
 	publications {
-		main(MavenPublication) {
+		mainJava(MavenPublication) {
 			from components.java
 		}
 	}
@@ -70,11 +76,10 @@ publishing {
 	}
 }
 
-compileKotlin {
-	kotlinOptions.jvmTarget = '17'
-}
-compileTestKotlin {
-	kotlinOptions.jvmTarget = '17'
+tasks.withType(KotlinCompile).configureEach {
+	compilerOptions {
+		jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+	}
 }
 
 tasks.register("generateTests", JavaExec) {

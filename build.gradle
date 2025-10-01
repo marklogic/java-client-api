@@ -27,9 +27,11 @@ subprojects {
 		mavenCentral()
 	}
 
-	tasks.withType(JavaCompile) {
-		options.encoding = 'UTF-8'
-		options.compilerArgs += ["-Xlint:unchecked", "-Xlint:deprecation"]
+	// Allows for identifying compiler warnings and treating them as errors.
+	tasks.withType(JavaCompile).configureEach {
+		options.compilerArgs += ["-Xlint:unchecked", "-Xlint:deprecation", "-Werror"]
+		options.deprecation = true
+		options.warnings = true
 	}
 
 	tasks.withType(Test).configureEach {
@@ -38,17 +40,15 @@ subprojects {
 			events = ['started', 'passed', 'skipped', 'failed']
 			exceptionFormat = 'full'
 		}
-
-		// Will remove this in a future PR to determine if they're needed or not.
-		systemProperty "file.encoding", "UTF-8"
-		systemProperty "javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl"
 	}
 
-	// Until we do a cleanup of javadoc errors, the build (and specifically the javadoc task) fails on Java 11
-	// and higher. Preventing that until the cleanup can occur.
-	javadoc.failOnError = false
+	tasks.withType(Javadoc).configureEach {
+		// Until we do a cleanup of javadoc errors, the build (and specifically the javadoc task) fails on Java 11
+		// and higher. Preventing that until the cleanup can occur.
+		failOnError = false
 
-	// Ignores warnings on param tags with no descriptions. Will remove this once javadoc errors are addressed.
-	// Until then, it's just a lot of noise.
-	javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+		// Ignores warnings on param tags with no descriptions. Will remove this once javadoc errors are addressed.
+		// Until then, it's just a lot of noise.
+		options.addStringOption('Xdoclint:none', '-quiet')
+	}
 }
