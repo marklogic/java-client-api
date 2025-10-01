@@ -77,8 +77,7 @@ dependencies {
 }
 
 // Ensure that mlHost and mlPassword can override the defaults of localhost/admin if they've been modified
-test {
-	useJUnitPlatform()
+tasks.withType(Test).configureEach {
 	systemProperty "TEST_HOST", mlHost
 	systemProperty "TEST_ADMIN_PASSWORD", mlPassword
 	// Needed by the tests for the example programs
@@ -88,8 +87,9 @@ test {
 }
 
 tasks.register("testRows", Test) {
-	useJUnitPlatform()
 	description = "Run all 'rows' tests; i.e. those exercising Optic and Optic Update functionality"
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
 	include "com/marklogic/client/test/rows/**"
 }
 
@@ -101,8 +101,9 @@ tasks.register("debugCloudAuth", JavaExec) {
 }
 
 tasks.register("runXmlSmokeTests", Test) {
-	useJUnitPlatform()
 	description = "Run a bunch of XML-related tests for smoke-testing on a particular JVM"
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
 	include "com/marklogic/client/test/BufferableHandleTest.class"
 	include "com/marklogic/client/test/EvalTest.class"
 	include "com/marklogic/client/test/HandleAsTest.class"

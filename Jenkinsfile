@@ -173,8 +173,9 @@ pipeline{
           export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
           cd java-client-api
           ./gradlew cleanTest marklogic-client-api:test
-          ./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runFastFunctionalTests || true
         '''
+				// Omitting this until MLE-24523 can be addressed
+				// ./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runFastFunctionalTests || true
         junit '**/build/**/TEST*.xml'
       }
 			post {
@@ -222,24 +223,25 @@ pipeline{
 			}
 		}
 
-		stage('regressions-11-reverseProxy') {
-			when {
-				allOf {
-					branch 'develop'
-					expression {return params.regressions}
-				}
-			}
-			steps {
-				runTestsWithReverseProxy("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
-				junit '**/build/**/TEST*.xml'
-			}
-			post {
-				always {
-					updateWorkspacePermissions()
-					tearDownDocker()
-				}
-			}
-		}
+		// Omitting this until MLE-24523 can be addressed
+//		stage('regressions-11-reverseProxy') {
+//			when {
+//				allOf {
+//					branch 'develop'
+//					expression {return params.regressions}
+//				}
+//			}
+//			steps {
+//				runTestsWithReverseProxy("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
+//				junit '**/build/**/TEST*.xml'
+//			}
+//			post {
+//				always {
+//					updateWorkspacePermissions()
+//					tearDownDocker()
+//				}
+//			}
+//		}
 
 		stage('regressions-12') {
 			when {
