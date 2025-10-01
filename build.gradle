@@ -35,7 +35,7 @@ subprojects {
 	}
 
 	tasks.withType(Test).configureEach {
-		useJUnitPlatform()
+		// Can't use useJUnitPlatform here as it breaks ml-development-tools
 		testLogging {
 			events = ['started', 'passed', 'skipped', 'failed']
 			exceptionFormat = 'full'

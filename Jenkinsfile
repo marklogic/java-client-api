@@ -166,7 +166,7 @@ pipeline{
         }
       }
       steps {
-	      setupDockerMarkLogic("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi-rootless:12.0.0-ubi-rootless-2.2.0")
+	      setupDockerMarkLogic("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi-rootless:11.3.2-ubi-rootless-2.2.2")
         sh label:'run marklogic-client-api tests', script: '''#!/bin/bash
           export JAVA_HOME=$JAVA_HOME_DIR
           export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
@@ -212,7 +212,7 @@ pipeline{
 				}
 			}
 			steps {
-				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
+				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi-rootless:11.3.2-ubi-rootless-2.2.2")
 				junit '**/build/**/TEST*.xml'
 			}
 			post {

@@ -78,6 +78,8 @@ dependencies {
 
 // Ensure that mlHost and mlPassword can override the defaults of localhost/admin if they've been modified
 tasks.withType(Test).configureEach {
+	useJUnitPlatform()
+
 	systemProperty "TEST_HOST", mlHost
 	systemProperty "TEST_ADMIN_PASSWORD", mlPassword
 	// Needed by the tests for the example programs
