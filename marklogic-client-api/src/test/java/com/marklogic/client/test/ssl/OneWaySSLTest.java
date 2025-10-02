@@ -20,8 +20,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledOnJre;
-import org.junit.jupiter.api.condition.JRE;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.net.ssl.SSLContext;
@@ -162,9 +160,6 @@ class OneWaySSLTest {
 	}
 
 	@ExtendWith(RequiresML12.class)
-	// The TLSv1.3 tests are failing on Java 8, because TLSv1.3 is disabled with our version of Java 8.
-	// There may be a way to configure Java 8 to use TLSv1.3, but it is not currently working.
-	@DisabledOnJre(JRE.JAVA_8)
 	@Test
 	void tLS13ClientWithTLS13Server() {
 		setAppServerMinimumTLSVersion("TLSv1.3");
@@ -177,7 +172,6 @@ class OneWaySSLTest {
 	}
 
 	@ExtendWith(RequiresML12.class)
-	@DisabledOnJre(JRE.JAVA_8)
 	@Test
 	void tLS12ClientWithTLS13ServerShouldFail() {
 		setAppServerMinimumTLSVersion("TLSv1.3");

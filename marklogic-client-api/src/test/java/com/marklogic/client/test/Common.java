@@ -77,7 +77,6 @@ public class Common {
 
 	public static DatabaseClient client;
 	public static DatabaseClient restAdminClient;
-	public static DatabaseClient serverAdminClient;
 	public static DatabaseClient evalClient;
 	public static DatabaseClient readOnlyClient;
 
@@ -91,12 +90,6 @@ public class Common {
 		if (restAdminClient == null)
 			restAdminClient = newRestAdminClient();
 		return restAdminClient;
-	}
-
-	public static DatabaseClient connectServerAdmin() {
-		if (serverAdminClient == null)
-			serverAdminClient = newServerAdminClient();
-		return serverAdminClient;
 	}
 
 	public static DatabaseClient connectEval() {
@@ -274,9 +267,11 @@ public class Common {
 	}
 
 	public static void deleteUrisWithPattern(String pattern) {
-		Common.connectServerAdmin().newServerEval()
-			.xquery(String.format("cts:uri-match('%s') ! xdmp:document-delete(.)", pattern))
-			.evalAs(String.class);
+		try (DatabaseClient client = Common.newServerAdminClient()) {
+			client.newServerEval()
+				.xquery(String.format("cts:uri-match('%s') ! xdmp:document-delete(.)", pattern))
+				.evalAs(String.class);
+		}
 	}
 
 	/**
