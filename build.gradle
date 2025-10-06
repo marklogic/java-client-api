@@ -25,6 +25,11 @@ subprojects {
 	repositories {
 		mavenLocal()
 		mavenCentral()
+
+		// Needed so that ml-development-tools can resolve snapshots of marklogic-client-api.
+		maven {
+			url = "https://bed-artifactory.bedford.progress.com:443/artifactory/ml-maven-snapshots/"
+		}
 	}
 
 	// Allows for identifying compiler warnings and treating them as errors.
