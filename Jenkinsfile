@@ -38,6 +38,8 @@ def runTests(String image) {
 			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
 			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
 			cd java-client-api
+			// Ensure all modules can be built first.
+      ./gradlew clean build -x test
 			mkdir -p marklogic-client-api/build/test-results/test
 			./gradlew marklogic-client-api:test  || true
 	'''
@@ -172,6 +174,8 @@ pipeline{
           export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
           export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
           cd java-client-api
+          // Ensure all modules can be built first.
+          ./gradlew clean build -x test
           ./gradlew cleanTest marklogic-client-api:test
         '''
 				// Omitting this until MLE-24523 can be addressed
