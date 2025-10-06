@@ -22,6 +22,7 @@ import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.impl.okhttp.HttpUrlBuilder;
 import com.marklogic.client.impl.okhttp.OkHttpUtil;
 import com.marklogic.client.impl.okhttp.PartIterator;
+import com.marklogic.client.impl.okhttp.RetryableRequestBody;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.*;
 import com.marklogic.client.query.*;
@@ -99,14 +100,18 @@ public class OkHttpServices implements RESTServices {
 
 	private boolean released = false;
 
+	/**
+	 * The next 4 fields implement an application-level retry that only works for certain HTTP status codes. It will not
+	 * attempt a retry on any IOException or any type of connection failure. Sadly, the logic that uses these fields is
+	 * in several places and is slightly different in each place. It's also not possible to implement this logic in an
+	 * OkHttp interceptor as the logic needs access to details that are not available to an interceptor.
+	 */
 	private final Random randRetry = new Random();
-
 	private int maxDelay = DEFAULT_MAX_DELAY;
 	private int minRetry = DEFAULT_MIN_RETRY;
+	private final Set<Integer> retryStatus = new HashSet<>();
 
 	private boolean checkFirstRequest = true;
-
-	private final Set<Integer> retryStatus = new HashSet<>();
 
 	static protected class ThreadState {
 		boolean isFirstRequest;
@@ -5408,7 +5413,8 @@ public class OkHttpServices implements RESTServices {
 		}
 	}
 
-	static private class ObjectRequestBody extends RequestBody {
+	static private class ObjectRequestBody extends RequestBody implements RetryableRequestBody {
+
 		private Object obj;
 		private MediaType contentType;
 
@@ -5441,6 +5447,13 @@ public class OkHttpServices implements RESTServices {
 			} else {
 				throw new IllegalStateException("Cannot write object of type: " + obj.getClass());
 			}
+		}
+
+		@Override
+		public boolean isRetryable() {
+			// Added in 8.0.0 to work with the retry interceptor so it knows whether the body can be retried or not.
+			// InputStreams cannot be retried as they are consumed on first read.
+			return !(obj instanceof InputStream);
 		}
 	}
 

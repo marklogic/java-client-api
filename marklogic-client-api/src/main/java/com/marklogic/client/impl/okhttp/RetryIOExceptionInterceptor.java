@@ -14,19 +14,22 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 /**
- * OkHttp interceptor that retries requests on certain connection failures,
- * which can be helpful when MarkLogic is temporarily unavailable during restarts.
+ * Experimental interceptor added in 8.0.0 for retrying requests that fail due to connection issues. These issues are
+ * not handled by the application-level retry support in OkHttpServices, which only handles retries based on certain
+ * HTTP status codes. The main limitation of this approach is that it cannot retry a request that has a one-shot body,
+ * such as a streaming body. But for requests that don't have one-shot bodies, this interceptor can be helpful for
+ * retrying requests that fail due to temporary network issues or MarkLogic restarts.
  */
-public class RetryInterceptor implements Interceptor {
+public class RetryIOExceptionInterceptor implements Interceptor {
 
-	private final static Logger logger = org.slf4j.LoggerFactory.getLogger(RetryInterceptor.class);
+	private final static Logger logger = org.slf4j.LoggerFactory.getLogger(RetryIOExceptionInterceptor.class);
 
 	private final int maxRetries;
 	private final long initialDelayMs;
 	private final double backoffMultiplier;
 	private final long maxDelayMs;
 
-	public RetryInterceptor(int maxRetries, long initialDelayMs, double backoffMultiplier, long maxDelayMs) {
+	public RetryIOExceptionInterceptor(int maxRetries, long initialDelayMs, double backoffMultiplier, long maxDelayMs) {
 		this.maxRetries = maxRetries;
 		this.initialDelayMs = initialDelayMs;
 		this.backoffMultiplier = backoffMultiplier;
@@ -37,11 +40,15 @@ public class RetryInterceptor implements Interceptor {
 	public Response intercept(Chain chain) throws IOException {
 		Request request = chain.request();
 
+		if (request.body() instanceof RetryableRequestBody body && !body.isRetryable()) {
+			return chain.proceed(request);
+		}
+
 		for (int attempt = 0; attempt <= maxRetries; attempt++) {
 			try {
 				return chain.proceed(request);
 			} catch (IOException e) {
-				if (attempt == maxRetries || !isRetryableException(e)) {
+				if (attempt == maxRetries || !isRetryableIOException(e)) {
 					logger.warn("Not retryable: {}; {}", e.getClass(), e.getMessage());
 					throw e;
 				}
@@ -58,7 +65,7 @@ public class RetryInterceptor implements Interceptor {
 		throw new IllegalStateException("Unexpected end of retry loop");
 	}
 
-	private boolean isRetryableException(IOException e) {
+	private boolean isRetryableIOException(IOException e) {
 		return e instanceof ConnectException ||
 			e instanceof SocketTimeoutException ||
 			e instanceof UnknownHostException ||
