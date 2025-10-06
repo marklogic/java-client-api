@@ -40,7 +40,8 @@ import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RowBatcherTest {
+class RowBatcherTest {
+	
     private final static String TEST_DIR = "/test/rowbatch/unit/";
     private final static String TEST_COLLECTION = TEST_DIR+"codes";
     private final static String TABLE_NS_URI = "http://marklogic.com/table";
@@ -191,7 +192,8 @@ public class RowBatcherTest {
     }
 
 	@Test
-	@Disabled("A query returning no rows is now throwing an IOException on 12 nightly, so disabling temporarily.")
+	@Disabled("Disabled due to https://progresssoftware.atlassian.net/browse/MLE-24579 , which causes the server to restart, " +
+		"which can cause many other tests to fail.")
 	void noRowsReturned() {
 		RowBatcher<JsonNode> rowBatcher = jsonBatcher(1);
 		RowManager rowMgr = rowBatcher.getRowManager();
