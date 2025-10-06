@@ -24,6 +24,7 @@ import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanSystemColumn;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -190,6 +191,7 @@ public class RowBatcherTest {
     }
 
 	@Test
+	@Disabled("A query returning no rows is now throwing an IOException on 12 nightly, so disabling temporarily.")
 	void noRowsReturned() {
 		RowBatcher<JsonNode> rowBatcher = jsonBatcher(1);
 		RowManager rowMgr = rowBatcher.getRowManager();

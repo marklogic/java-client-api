@@ -3,46 +3,54 @@
  */
 package com.marklogic.client.impl;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
-import com.marklogic.client.util.RequestLogger;
+import com.marklogic.client.impl.okhttp.RetryableRequestBody;
 import com.marklogic.client.io.OutputStreamSender;
+import com.marklogic.client.util.RequestLogger;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
 
-class StreamingOutputImpl extends RequestBody {
-  private OutputStreamSender handle;
-  private RequestLogger      logger;
-  private MediaType          contentType;
+import java.io.IOException;
+import java.io.OutputStream;
 
-  StreamingOutputImpl(OutputStreamSender handle, RequestLogger logger, MediaType contentType) {
-    super();
-    this.handle = handle;
-    this.logger = logger;
-    this.contentType = contentType;
-  }
+class StreamingOutputImpl extends RequestBody implements RetryableRequestBody {
 
-  @Override
-  public MediaType contentType() {
-    return contentType;
-  }
+	private OutputStreamSender handle;
+	private RequestLogger logger;
+	private MediaType contentType;
 
-  @Override
-  public void writeTo(BufferedSink sink) throws IOException {
-    OutputStream out = sink.outputStream();
+	StreamingOutputImpl(OutputStreamSender handle, RequestLogger logger, MediaType contentType) {
+		super();
+		this.handle = handle;
+		this.logger = logger;
+		this.contentType = contentType;
+	}
 
-    if (logger != null) {
-      OutputStream tee = logger.getPrintStream();
-      long         max = logger.getContentMax();
-      if (tee != null && max > 0) {
-        handle.write(new OutputStreamTee(out, tee, max));
+	@Override
+	public MediaType contentType() {
+		return contentType;
+	}
 
-        return;
-      }
-    }
+	@Override
+	public void writeTo(BufferedSink sink) throws IOException {
+		OutputStream out = sink.outputStream();
 
-    handle.write(out);
-  }
+		if (logger != null) {
+			OutputStream tee = logger.getPrintStream();
+			long max = logger.getContentMax();
+			if (tee != null && max > 0) {
+				handle.write(new OutputStreamTee(out, tee, max));
+
+				return;
+			}
+		}
+
+		handle.write(out);
+	}
+
+	@Override
+	public boolean isRetryable() {
+		// Added in 8.0.0; streaming output cannot be retried as the stream is consumed on first write.
+		return false;
+	}
 }
