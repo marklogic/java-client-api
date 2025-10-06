@@ -1,8 +1,8 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 /*
  * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
+
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
 	id "groovy"
@@ -18,7 +18,11 @@ dependencies {
 	// This is a runtime dependency of marklogic-client-api but is needed for compiling.
 	compileOnly "jakarta.xml.bind:jakarta.xml.bind-api:4.0.4"
 
-	implementation project(':marklogic-client-api')
+	// Gradle 9 does not like for a plugin to have a project dependency; trying to publish it results in a
+	// NoSuchMethodError pertaining to getProjectDependency. So treating this as a 3rd party dependency. This creates
+	// additional work during development, though we rarely modify the code in this plugin anymore.
+	implementation "com.marklogic:marklogic-client-api:${version}"
+
 	implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.0'
 	implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
 	implementation 'com.networknt:json-schema-validator:1.0.88'
@@ -58,11 +62,6 @@ gradlePlugin {
 }
 
 publishing {
-	publications {
-		mainJava(MavenPublication) {
-			from components.java
-		}
-	}
 	repositories {
 		maven {
 			if (project.hasProperty("mavenUser")) {
