@@ -18,10 +18,7 @@ services:
       - ${MARKLOGIC_LOGS_VOLUME}:/var/opt/MarkLogic/Logs
     ports:
       - "8000-8002:8000-8002"
-      - "8010-8014:8010-8014"
-      - "8022:8022"
-      - "8054-8059:8054-8059"
-      - "8093:8093"
+      - "8010-8015:8010-8015" # Range of ports used by app servers, at least one of which - 8015 - is created by a test.
 
 volumes:
   marklogicLogs:

@@ -1,6 +1,6 @@
 @Library('shared-libraries') _
 
-def getJava() {
+def getJavaHomePath() {
 	if (env.JAVA_VERSION == "JAVA21") {
 		return "/home/builder/java/jdk-21.0.1"
 	} else {
@@ -38,9 +38,10 @@ def runTests(String image) {
 			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
 			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
 			cd java-client-api
-			// Ensure all modules can be built first.
+
+			echo "Ensure all subprojects can be built first."
       ./gradlew clean build -x test
-			mkdir -p marklogic-client-api/build/test-results/test
+
 			./gradlew marklogic-client-api:test  || true
 	'''
 
@@ -49,7 +50,6 @@ def runTests(String image) {
 			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
 			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
 			cd java-client-api
-			mkdir -p ml-development-tools/build/test-results/test
 			./gradlew ml-development-tools:test || true
 	'''
 
@@ -84,12 +84,25 @@ def runTests(String image) {
 def runTestsWithReverseProxy(String image) {
 	setupDockerMarkLogic(image)
 
+	sh label: 'run marklogic-client-api tests with reverse proxy', script: '''#!/bin/bash
+			export JAVA_HOME=$JAVA_HOME_DIR
+			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+			cd java-client-api
+
+			echo "Ensure all subprojects can be built first."
+      ./gradlew clean build -x test
+
+      echo "Running marklogic-client-api tests with reverse proxy."
+			./gradlew -PtestUseReverseProxyServer=true runReverseProxyServer marklogic-client-api:test || true
+	'''
+
 	sh label: 'run fragile functional tests with reverse proxy', script: '''#!/bin/bash
 			export JAVA_HOME=$JAVA_HOME_DIR
 			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
 			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
 			cd java-client-api
-			./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runFragileTests || true
+			./gradlew -PtestUseReverseProxyServer=true runReverseProxyServer marklogic-client-api-functionaltests:runFragileTests || true
 	'''
 
 	sh label: 'run fast functional tests with reverse proxy', script: '''#!/bin/bash
@@ -97,7 +110,7 @@ def runTestsWithReverseProxy(String image) {
 			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
 			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
 			cd java-client-api
-			./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runFastFunctionalTests || true
+			./gradlew -PtestUseReverseProxyServer=true runReverseProxyServer marklogic-client-api-functionaltests:runFastFunctionalTests || true
 	'''
 
 	sh label: 'run slow functional tests with reverse proxy', script: '''#!/bin/bash
@@ -105,7 +118,7 @@ def runTestsWithReverseProxy(String image) {
 			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
 			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
 			cd java-client-api
-			./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runSlowFunctionalTests || true
+			./gradlew -PtestUseReverseProxyServer=true runReverseProxyServer marklogic-client-api-functionaltests:runSlowFunctionalTests || true
 	'''
 
 	postProcessTestResults()
@@ -149,18 +162,18 @@ pipeline {
 
 	parameters {
 		booleanParam(name: 'regressions', defaultValue: false, description: 'indicator if build is for regressions')
-		string(name: 'Email', defaultValue: '', description: 'Who should I say send the email to?')
-		string(name: 'JAVA_VERSION', defaultValue: 'JAVA8', description: 'Who should I say send the email to?')
+		string(name: 'JAVA_VERSION', defaultValue: 'JAVA17', description: 'Either JAVA17 or JAVA21')
 	}
 
 	environment {
-		JAVA_HOME_DIR = getJava()
+		JAVA_HOME_DIR = getJavaHomePath()
 		GRADLE_DIR = ".gradle"
 		DMC_USER = credentials('MLBUILD_USER')
 		DMC_PASSWORD = credentials('MLBUILD_PASSWORD')
 	}
 
 	stages {
+
 		stage('pull-request-tests') {
 			when {
 				not {
@@ -168,24 +181,26 @@ pipeline {
 				}
 			}
 			steps {
-				setupDockerMarkLogic("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi-rootless:11.3.2-ubi-rootless-2.2.2")
+				setupDockerMarkLogic("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-12")
 				sh label: 'run marklogic-client-api tests', script: '''#!/bin/bash
           export JAVA_HOME=$JAVA_HOME_DIR
           export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
           export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
           cd java-client-api
-          // Ensure all modules can be built first.
+
+          echo "Ensure all subprojects can be built first."
           ./gradlew clean build -x test
 
-          // Run a sufficient number of tests to verify the PR.
-          ./gradlew cleanTest marklogic-client-api:test || true
+          echo "Run a sufficient number of tests to verify the PR."
+					./gradlew marklogic-client-api:test --tests ReadDocumentPageTest || true
+
+					echo "Run a test with the reverse proxy server to ensure it's fine."
+					./gradlew -PtestUseReverseProxyServer=true runReverseProxyServer marklogic-client-api-functionaltests:test --tests SearchWithPageLengthTest || true
         '''
-				// Omitting this until MLE-24523 can be addressed
-				// ./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runFastFunctionalTests || true
-				junit '**/build/**/TEST*.xml'
 			}
 			post {
 				always {
+					junit '**/build/**/TEST*.xml'
 					updateWorkspacePermissions()
 					tearDownDocker()
 				}
@@ -218,36 +233,35 @@ pipeline {
 				}
 			}
 			steps {
-				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi-rootless:11.3.2-ubi-rootless-2.2.2")
-				junit '**/build/**/TEST*.xml'
+				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
 			}
 			post {
 				always {
+					junit '**/build/**/TEST*.xml'
 					updateWorkspacePermissions()
 					tearDownDocker()
 				}
 			}
 		}
 
-		// Omitting this until MLE-24523 can be addressed
-//		stage('regressions-11-reverseProxy') {
-//			when {
-//				allOf {
-//					branch 'develop'
-//					expression {return params.regressions}
-//				}
-//			}
-//			steps {
-//				runTestsWithReverseProxy("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-11")
-//				junit '**/build/**/TEST*.xml'
-//			}
-//			post {
-//				always {
-//					updateWorkspacePermissions()
-//					tearDownDocker()
-//				}
-//			}
-//		}
+		stage('regressions-12-reverseProxy') {
+			when {
+				allOf {
+					branch 'develop'
+					expression {return params.regressions}
+				}
+			}
+			steps {
+				runTestsWithReverseProxy("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-12")
+			}
+			post {
+				always {
+					junit '**/build/**/TEST*.xml'
+					updateWorkspacePermissions()
+					tearDownDocker()
+				}
+			}
+		}
 
 		stage('regressions-12') {
 			when {
@@ -257,18 +271,18 @@ pipeline {
 				}
 			}
 			steps {
-				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi-rootless:12.0.0-ubi-rootless-2.2.0")
-				junit '**/build/**/TEST*.xml'
+				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-12")
 			}
 			post {
 				always {
+					junit '**/build/**/TEST*.xml'
 					updateWorkspacePermissions()
 					tearDownDocker()
 				}
 			}
 		}
 
-		stage('regressions-10.0') {
+		stage('regressions-10') {
 			when {
 				allOf {
 					branch 'develop'
@@ -277,10 +291,10 @@ pipeline {
 			}
 			steps {
 				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-10")
-				junit '**/build/**/TEST*.xml'
 			}
 			post {
 				always {
+					junit '**/build/**/TEST*.xml'
 					updateWorkspacePermissions()
 					tearDownDocker()
 				}

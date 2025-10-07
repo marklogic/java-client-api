@@ -34,3 +34,8 @@ You can also specify custom mappings via the Gradle task. For example, if you ha
 port 8123 and you want to associate a path of "/my/custom/server" to it, you can do:
 
     ./gradlew runBlock -PrpsCustomMappings=/my/custom/server,8123
+
+To run one or more tests with the reverse proxy server being started, the tests being run, and then the server being 
+stopped, do the following (you can see examples of this in the project `Jenkinsfile` as well):
+
+		./gradlew -PtestUseReverseProxyServer=true runReverseProxyServer marklogic-client-api:test --tests ReadDocumentPageTest

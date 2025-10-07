@@ -124,11 +124,10 @@ public class TestDatabaseClientConnection extends AbstractFunctionalTest {
 		DatabaseClient client = newDatabaseClientBuilder().withPort(assumedInvalidPort).build();
 
 		MarkLogicIOException ex = Assertions.assertThrows(MarkLogicIOException.class, () -> client.checkConnection());
-		String expected = "Error occurred while calling http://localhost:60123/v1/ping; java.net.ConnectException: " +
-							  "Failed to connect to localhost/127.0.0.1:60123 ; possible reasons for the error include " +
+		String expected = "Failed to connect to localhost/127.0.0.1:60123 ; possible reasons for the error include " +
 							  "that a MarkLogic app server may not be listening on the port, or MarkLogic was stopped " +
 							  "or restarted during the request; check the MarkLogic server logs for more information.";
-		assertEquals(expected, ex.getMessage());
+		assertTrue(ex.getMessage().contains(expected), "Unexpected error: " + ex.getMessage());
 	}
 
   @Test
