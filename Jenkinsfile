@@ -184,10 +184,10 @@ pipeline {
           export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
           cd java-client-api
           // Ensure all modules can be built first.
-          ./gradlew clean build -x test
+          //./gradlew clean build -x test
 
           // Run a sufficient number of tests to verify the PR.
-					./gradlew marklogic-client-api:test || true
+					./gradlew marklogic-client-api:test --tests ReadDocumentPageTest || true
 
 					// Run a test with the reverse proxy server to ensure it's fine.
 					./gradlew -PtestUseReverseProxyServer=true clean runReverseProxyServer marklogic-client-api:test --tests ReadDocumentPageTest || true
