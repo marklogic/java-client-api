@@ -187,10 +187,12 @@ pipeline {
           //./gradlew clean build -x test
 
           // Run a sufficient number of tests to verify the PR.
-					./gradlew marklogic-client-api:test --tests ReadDocumentPageTest || true
+					//./gradlew marklogic-client-api:test --tests ReadDocumentPageTest || true
 
 					// Run a test with the reverse proxy server to ensure it's fine.
+					echo "Starting tests!"
 					./gradlew -PtestUseReverseProxyServer=true clean runReverseProxyServer marklogic-client-api:test --tests ReadDocumentPageTest || true
+					echo "Finished tests!"
         '''
 				junit '**/build/**/TEST*.xml'
 			}
