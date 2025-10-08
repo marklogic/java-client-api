@@ -39,6 +39,10 @@ def runTests(String image) {
 			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
 			cd java-client-api
 
+			echo "Temporary fix for mysterious issue with okhttp3 being corrupted in local Maven cache."
+			ls -la ~/.m2/repository/com/squareup
+			rm -rf ~/.m2/repository/com/squareup/okhttp3/
+
 			echo "Ensure all subprojects can be built first."
       ./gradlew clean build -x test
 
@@ -89,6 +93,10 @@ def runTestsWithReverseProxy(String image) {
 			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
 			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
 			cd java-client-api
+
+			echo "Temporary fix for mysterious issue with okhttp3 being corrupted in local Maven cache."
+			ls -la ~/.m2/repository/com/squareup
+			rm -rf ~/.m2/repository/com/squareup/okhttp3/
 
 			echo "Ensure all subprojects can be built first."
       ./gradlew clean build -x test
@@ -187,6 +195,10 @@ pipeline {
           export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
           export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
           cd java-client-api
+
+          echo "Temporary fix for mysterious issue with okhttp3 being corrupted in local Maven cache."
+          ls -la ~/.m2/repository/com/squareup
+					rm -rf ~/.m2/repository/com/squareup/okhttp3/
 
           echo "Ensure all subprojects can be built first."
           ./gradlew clean build -x test
