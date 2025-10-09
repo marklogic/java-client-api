@@ -294,25 +294,5 @@ pipeline {
 				}
 			}
 		}
-
-		stage('regressions-10') {
-			when {
-				allOf {
-					branch 'develop'
-					expression { return params.regressions }
-				}
-			}
-			steps {
-				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-10")
-			}
-			post {
-				always {
-					junit '**/build/**/TEST*.xml'
-					updateWorkspacePermissions()
-					tearDownDocker()
-				}
-			}
-		}
-
 	}
 }
