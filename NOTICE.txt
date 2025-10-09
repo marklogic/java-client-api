@@ -28,7 +28,7 @@ Eclipse Public License 1.0 (EPL-1.0)
 
 Third-Party Components
 
-The following is a list of the third-party components used by the MarkLogic® for Java Client 7.2.0 (last updated July 21, 2025):
+The following is a list of the third-party components used by the MarkLogic® for Java Client 8.0.0 (last updated October 29, 2025):
 
 jackson-databind 2.20.0 (Apache-2.0)
 https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/
@@ -68,7 +68,7 @@ For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
 Common Licenses
 
-The following is a list of the third-party components used by the MarkLogic® for Java Client 7.2.0 (last updated July 21, 2025):
+The following is a list of the third-party components used by the MarkLogic® for Java Client 8.0.0 (last updated October 29, 2025):
 
 Apache License 2.0 (Apache-2.0)
 https://spdx.org/licenses/Apache-2.0.html

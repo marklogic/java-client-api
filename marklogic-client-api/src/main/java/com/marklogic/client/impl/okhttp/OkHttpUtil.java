@@ -51,9 +51,7 @@ public abstract class OkHttpUtil {
 		} else if (securityContext instanceof DatabaseClientFactory.CertificateAuthContext) {
 		} else if (securityContext instanceof DatabaseClientFactory.SAMLAuthContext) {
 			configureSAMLAuth((DatabaseClientFactory.SAMLAuthContext) securityContext, clientBuilder);
-		} else if (securityContext instanceof DatabaseClientFactory.ProgressDataCloudAuthContext ||
-			// It's fine to refer to this deprecated class as it needs to be supported until Java Client 8.
-			securityContext instanceof DatabaseClientFactory.MarkLogicCloudAuthContext) {
+		} else if (securityContext instanceof DatabaseClientFactory.ProgressDataCloudAuthContext) {
 			authenticationConfigurer = new ProgressDataCloudAuthenticationConfigurer(host);
 		} else if (securityContext instanceof DatabaseClientFactory.OAuthContext) {
 			authenticationConfigurer = new OAuthAuthenticationConfigurer();
