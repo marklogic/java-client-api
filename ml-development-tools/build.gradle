@@ -23,8 +23,10 @@ dependencies {
 	// additional work during development, though we rarely modify the code in this plugin anymore.
 	implementation "com.marklogic:marklogic-client-api:${version}"
 
-	implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.0'
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.20'
 	implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
+
+	// Sticking with this older version for now as the latest 1.x version introduces breaking changes.
 	implementation 'com.networknt:json-schema-validator:1.0.88'
 
 	// Not yet migrating this project to JUnit 5. Will reconsider it once we have a reason to enhance
