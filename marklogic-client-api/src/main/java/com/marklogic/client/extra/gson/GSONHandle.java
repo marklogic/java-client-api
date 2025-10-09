@@ -3,12 +3,6 @@
  */
 package com.marklogic.client.extra.gson;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonParser;
@@ -16,8 +10,13 @@ import com.google.gson.JsonSyntaxException;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.marker.ResendableContentHandle;
 import com.marklogic.client.io.marker.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 /**
  * A GSONHandle represents JSON content as a GSON JsonElement for reading or
@@ -81,18 +80,6 @@ public class GSONHandle
   public GSONHandle[] newHandleArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
     return new GSONHandle[length];
-  }
-
-  /**
-   * Returns the parser used to construct element objects from JSON.
-   * @return	the JSON parser.
-   * @deprecated Use static methods like JsonParser.parseString() or JsonParser.parseReader() directly instead
-   */
-  @Deprecated
-  public JsonParser getParser() {
-    if (parser == null)
-      parser = new JsonParser();
-    return parser;
   }
 
   /**
