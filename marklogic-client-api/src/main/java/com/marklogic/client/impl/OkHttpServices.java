@@ -18,9 +18,11 @@ import com.marklogic.client.document.*;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResultIterator;
+import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.impl.okhttp.HttpUrlBuilder;
 import com.marklogic.client.impl.okhttp.OkHttpUtil;
 import com.marklogic.client.impl.okhttp.PartIterator;
+import com.marklogic.client.impl.okhttp.RetryableRequestBody;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.*;
 import com.marklogic.client.query.*;
@@ -74,10 +76,10 @@ public class OkHttpServices implements RESTServices {
 
 	static final private Logger logger = LoggerFactory.getLogger(OkHttpServices.class);
 
-	static final public String OKHTTP_LOGGINGINTERCEPTOR_LEVEL = "com.marklogic.client.okhttp.httplogginginterceptor.level";
-	static final public String OKHTTP_LOGGINGINTERCEPTOR_OUTPUT = "com.marklogic.client.okhttp.httplogginginterceptor.output";
+	private static final String OKHTTP_LOGGINGINTERCEPTOR_LEVEL = "com.marklogic.client.okhttp.httplogginginterceptor.level";
+	private static final String OKHTTP_LOGGINGINTERCEPTOR_OUTPUT = "com.marklogic.client.okhttp.httplogginginterceptor.output";
 
-	static final private String DOCUMENT_URI_PREFIX = "/documents?uri=";
+	private static final String DOCUMENT_URI_PREFIX = "/documents?uri=";
 
 	static final private int DELAY_FLOOR = 125;
 	static final private int DELAY_CEILING = 2000;
@@ -88,20 +90,28 @@ public class OkHttpServices implements RESTServices {
 	private final static MediaType URLENCODED_MIME_TYPE = MediaType.parse("application/x-www-form-urlencoded; charset=UTF-8");
 	private final static String UTF8_ID = StandardCharsets.UTF_8.toString();
 
-	private DatabaseClient databaseClient;
 	private String database = null;
 	private HttpUrl baseUri;
-	private OkHttpClient client;
+
+	// This should really be final, but given the history of this class and the former "connect()" method that meant
+	// the client was created in the constructor, this is being kept as non-final so it can be assigned a value of null
+	// on release.
+	private OkHttpClient okHttpClient;
+
 	private boolean released = false;
 
+	/**
+	 * The next 4 fields implement an application-level retry that only works for certain HTTP status codes. It will not
+	 * attempt a retry on any IOException or any type of connection failure. Sadly, the logic that uses these fields is
+	 * in several places and is slightly different in each place. It's also not possible to implement this logic in an
+	 * OkHttp interceptor as the logic needs access to details that are not available to an interceptor.
+	 */
 	private final Random randRetry = new Random();
-
 	private int maxDelay = DEFAULT_MAX_DELAY;
 	private int minRetry = DEFAULT_MIN_RETRY;
+	private final Set<Integer> retryStatus = new HashSet<>();
 
 	private boolean checkFirstRequest = true;
-
-	private final Set<Integer> retryStatus = new HashSet<>();
 
 	static protected class ThreadState {
 		boolean isFirstRequest;
@@ -114,25 +124,23 @@ public class OkHttpServices implements RESTServices {
 	private final ThreadLocal<ThreadState> threadState =
 		ThreadLocal.withInitial(() -> new ThreadState(checkFirstRequest));
 
-	public OkHttpServices() {
+	public record ConnectionConfig(String host, int port, String basePath, String database,
+									SecurityContext securityContext, List<OkHttpClientConfigurator> clientConfigurators) {
+	}
+
+	public OkHttpServices(ConnectionConfig connectionConfig) {
 		retryStatus.add(STATUS_BAD_GATEWAY);
 		retryStatus.add(STATUS_SERVICE_UNAVAILABLE);
 		retryStatus.add(STATUS_GATEWAY_TIMEOUT);
+
+		this.okHttpClient = connect(connectionConfig);
 	}
 
-	@Override
-	public Set<Integer> getRetryStatus() {
-		return retryStatus;
-	}
-
-	@Override
-	public int getMaxDelay() {
-		return maxDelay;
-	}
-
-	@Override
-	public void setMaxDelay(int maxDelay) {
-		this.maxDelay = maxDelay;
+	private static ClientCookie parseClientCookie(HttpUrl url, String setCookieHeaderValue) {
+		Cookie cookie = Cookie.parse(url, setCookieHeaderValue);
+		if(cookie == null) throw new IllegalStateException(setCookieHeaderValue + " is not a well-formed cookie");
+		return new ClientCookie(cookie.name(), cookie.value(), cookie.expiresAt(), cookie.domain(), cookie.path(),
+			cookie.secure());
 	}
 
 	private FailedRequest extractErrorFields(Response response) {
@@ -176,18 +184,19 @@ public class OkHttpServices implements RESTServices {
 		}
 	}
 
-	@Override
-	public void connect(String host, int port, String basePath, String database, SecurityContext securityContext) {
-		if (host == null)
+	private OkHttpClient connect(ConnectionConfig config) {
+		if (config.host == null) {
 			throw new IllegalArgumentException("No host provided");
-		if (securityContext == null)
+		}
+		if (config.securityContext == null) {
 			throw new IllegalArgumentException("No security context provided");
+		}
 
-		this.checkFirstRequest = securityContext instanceof DigestAuthContext;
-		this.database = database;
-		this.baseUri = HttpUrlBuilder.newBaseUrl(host, port, basePath, securityContext.getSSLContext());
+		this.checkFirstRequest = config.securityContext instanceof DigestAuthContext;
+		this.database = config.database;
+		this.baseUri = HttpUrlBuilder.newBaseUrl(config.host, config.port, config.basePath, config.securityContext.getSSLContext());
 
-		OkHttpClient.Builder clientBuilder = OkHttpUtil.newOkHttpClientBuilder(host, securityContext);
+		OkHttpClient.Builder clientBuilder = OkHttpUtil.newOkHttpClientBuilder(config.host, config.securityContext, config.clientConfigurators);
 
 		Properties props = System.getProperties();
 		if (props.containsKey(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) {
@@ -195,15 +204,12 @@ public class OkHttpServices implements RESTServices {
 		}
 		this.configureDelayAndRetry(props);
 
-		this.client = clientBuilder.build();
+		return clientBuilder.build();
 	}
 
 	/**
 	 * Based on the given properties, add a network interceptor to the given OkHttpClient.Builder to log HTTP
 	 * traffic.
-	 *
-	 * @param clientBuilder
-	 * @param props
 	 */
 	private void configureOkHttpLogging(OkHttpClient.Builder clientBuilder, Properties props) {
 		final boolean useLogger = "LOGGER".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_OUTPUT));
@@ -245,39 +251,20 @@ public class OkHttpServices implements RESTServices {
 	}
 
 	@Override
-	public DatabaseClient getDatabaseClient() {
-		return databaseClient;
-	}
-
-	@Override
-	public void setDatabaseClient(DatabaseClient client) {
-		this.databaseClient = client;
-	}
-
-	private OkHttpClient getConnection() {
-		if (client != null) {
-			return client;
-		} else if (released) {
-			throw new IllegalStateException(
-				"You cannot use this connected object anymore--connection has already been released");
-		} else {
-			throw new MarkLogicInternalException("Cannot proceed--connection is null for unknown reason");
-		}
-	}
-
-	@Override
 	public void release() {
-		if (client == null) return;
+		if (released || okHttpClient == null) {
+			return;
+		}
 		try {
 			released = true;
-			client.dispatcher().executorService().shutdownNow();
+			okHttpClient.dispatcher().executorService().shutdownNow();
 		} finally {
 			try {
-				if (client.cache() != null) client.cache().close();
+				if (okHttpClient.cache() != null) okHttpClient.cache().close();
 			} catch (IOException e) {
 				throw new MarkLogicIOException(e);
 			} finally {
-				client = null;
+				okHttpClient = null;
 				logger.debug("Releasing connection");
 			}
 		}
@@ -491,8 +478,13 @@ public class OkHttpServices implements RESTServices {
 	}
 
 	private Response sendRequestOnce(Request request) {
+		if (released) {
+			throw new IllegalStateException(
+				"You cannot use this connected object anymore--connection has already been released");
+		}
+
 		try {
-			return getConnection().newCall(request).execute();
+			return okHttpClient.newCall(request).execute();
 		} catch (IOException e) {
 			if (e instanceof SSLException) {
 				String message = e.getMessage();
@@ -1521,7 +1513,7 @@ public class OkHttpServices implements RESTServices {
 		String location = response.headers().get("Location");
 		List<ClientCookie> cookies = new ArrayList<>();
 		for (String setCookie : response.headers(HEADER_SET_COOKIE)) {
-			ClientCookie cookie = ClientCookie.parse(requestBldr.build().url(), setCookie);
+			ClientCookie cookie = parseClientCookie(requestBldr.build().url(), setCookie);
 			cookies.add(cookie);
 		}
 		closeResponse(response);
@@ -2592,25 +2584,6 @@ public class OkHttpServices implements RESTServices {
 	}
 
 	@Override
-	public void postValue(RequestLogger reqlog, String type, String key,
-						  String mimetype, Object value)
-		throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		logger.debug("Posting {}/{}", type, key);
-
-		putPostValueImpl(reqlog, "post", type, key, null, mimetype, value, STATUS_CREATED);
-	}
-
-	@Override
-	public void postValue(RequestLogger reqlog, String type, String key,
-						  RequestParameters extraParams)
-		throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		logger.debug("Posting {}/{}", type, key);
-
-		putPostValueImpl(reqlog, "post", type, key, extraParams, null, null, STATUS_NO_CONTENT);
-	}
-
-
-	@Override
 	public void putValue(RequestLogger reqlog, String type, String key,
 						 String mimetype, Object value)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
@@ -2793,42 +2766,6 @@ public class OkHttpServices implements RESTServices {
 		closeResponse(response);
 
 		logRequest(reqlog, "deleted %s value with %s key", type, key);
-	}
-
-	@Override
-	public void deleteValues(RequestLogger reqlog, String type)
-		throws ForbiddenUserException, FailedRequestException {
-		logger.debug("Deleting {}", type);
-
-		Request.Builder requestBldr = setupRequest(type, null);
-		requestBldr = addTelemetryAgentId(requestBldr);
-
-		Function<Request.Builder, Response> doDeleteFunction = new Function<Request.Builder, Response>() {
-			public Response apply(Request.Builder funcBuilder) {
-				return sendRequestOnce(funcBuilder.delete().build());
-			}
-		};
-		Response response = sendRequestWithRetry(requestBldr, doDeleteFunction, null);
-		int status = response.code();
-		if (status == STATUS_FORBIDDEN) {
-			throw new ForbiddenUserException("User is not allowed to delete "
-				+ type, extractErrorFields(response));
-		}
-		if (status != STATUS_NO_CONTENT) {
-			throw new FailedRequestException("delete failed: "
-				+ getReasonPhrase(response), extractErrorFields(response));
-		}
-		closeResponse(response);
-
-		logRequest(reqlog, "deleted %s values", type);
-	}
-
-	@Override
-	public <R extends AbstractReadHandle> R getSystemSchema(RequestLogger reqlog, String schemaName, R output)
-		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		RequestParameters params = new RequestParameters();
-		params.add("system", schemaName);
-		return getResource(reqlog, "internal/schemas", null, params, output);
 	}
 
 	@Override
@@ -3352,7 +3289,7 @@ public class OkHttpServices implements RESTServices {
 	}
 
 	@Override
-	public <R extends AbstractReadHandle> R postBulkDocuments(
+	public <R extends AbstractReadHandle> void postBulkDocuments(
 		RequestLogger reqlog, DocumentWriteSet writeSet,
 		ServerTransform transform, Transaction transaction, Format defaultFormat, R output,
 		String temporalCollection, String extraContentDispositionParams)
@@ -3411,7 +3348,7 @@ public class OkHttpServices implements RESTServices {
 			transform.merge(params);
 		}
 		if (temporalCollection != null) params.add("temporal-collection", temporalCollection);
-		return postResource(reqlog, "documents", transaction, params,
+		postResource(reqlog, "documents", transaction, params,
 			(AbstractWriteHandle[]) writeHandles.toArray(new AbstractWriteHandle[0]),
 			(RequestParameters[]) headerList.toArray(new RequestParameters[0]),
 			output);
@@ -4843,12 +4780,7 @@ public class OkHttpServices implements RESTServices {
 
 	@Override
 	public OkHttpClient getClientImplementation() {
-		if (client == null) return null;
-		return client;
-	}
-
-	public void setClientImplementation(OkHttpClient client) {
-		this.client = client;
+		return okHttpClient;
 	}
 
 	@Override
@@ -5153,12 +5085,12 @@ public class OkHttpServices implements RESTServices {
 	}
 
 	@Override
-	public <R extends AbstractReadHandle> R readGraph(RequestLogger reqlog, String uri, R output,
+	public <R extends AbstractReadHandle> void readGraph(RequestLogger reqlog, String uri, R output,
 													  Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		RequestParameters params = new RequestParameters();
 		addGraphUriParam(params, uri);
-		return getResource(reqlog, "graphs", transaction, params, output);
+		getResource(reqlog, "graphs", transaction, params, output);
 	}
 
 	@Override
@@ -5235,12 +5167,11 @@ public class OkHttpServices implements RESTServices {
 	}
 
 	@Override
-	public Object deleteGraph(RequestLogger reqlog, String uri, Transaction transaction)
+	public void deleteGraph(RequestLogger reqlog, String uri, Transaction transaction)
 		throws ForbiddenUserException, FailedRequestException {
 		RequestParameters params = new RequestParameters();
 		addGraphUriParam(params, uri);
-		return deleteResource(reqlog, "graphs", transaction, params, null);
-
+		deleteResource(reqlog, "graphs", transaction, params, null);
 	}
 
 	@Override
@@ -5482,7 +5413,8 @@ public class OkHttpServices implements RESTServices {
 		}
 	}
 
-	static private class ObjectRequestBody extends RequestBody {
+	static private class ObjectRequestBody extends RequestBody implements RetryableRequestBody {
+
 		private Object obj;
 		private MediaType contentType;
 
@@ -5515,6 +5447,13 @@ public class OkHttpServices implements RESTServices {
 			} else {
 				throw new IllegalStateException("Cannot write object of type: " + obj.getClass());
 			}
+		}
+
+		@Override
+		public boolean isRetryable() {
+			// Added in 8.0.0 to work with the retry interceptor so it knows whether the body can be retried or not.
+			// InputStreams cannot be retried as they are consumed on first read.
+			return !(obj instanceof InputStream);
 		}
 	}
 
@@ -5680,7 +5619,7 @@ public class OkHttpServices implements RESTServices {
 			if (session != null) {
 				List<ClientCookie> cookies = new ArrayList<>();
 				for (String setCookie : response.headers(HEADER_SET_COOKIE)) {
-					ClientCookie cookie = ClientCookie.parse(requestBldr.build().url(), setCookie);
+					ClientCookie cookie = parseClientCookie(requestBldr.build().url(), setCookie);
 					cookies.add(cookie);
 				}
 				((SessionStateImpl) session).setCookies(cookies);

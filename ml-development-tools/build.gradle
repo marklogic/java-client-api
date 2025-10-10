@@ -2,6 +2,8 @@
  * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
 	id "groovy"
 	id 'maven-publish'
@@ -12,9 +14,19 @@ plugins {
 
 dependencies {
 	compileOnly gradleApi()
-	implementation project(':marklogic-client-api')
-	implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.0'
+
+	// This is a runtime dependency of marklogic-client-api but is needed for compiling.
+	compileOnly "jakarta.xml.bind:jakarta.xml.bind-api:4.0.4"
+
+	// Gradle 9 does not like for a plugin to have a project dependency; trying to publish it results in a
+	// NoSuchMethodError pertaining to getProjectDependency. So treating this as a 3rd party dependency. This creates
+	// additional work during development, though we rarely modify the code in this plugin anymore.
+	implementation "com.marklogic:marklogic-client-api:${version}"
+
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.20'
 	implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
+
+	// Sticking with this older version for now as the latest 1.x version introduces breaking changes.
 	implementation 'com.networknt:json-schema-validator:1.0.88'
 
 	// Not yet migrating this project to JUnit 5. Will reconsider it once we have a reason to enhance
@@ -23,13 +35,13 @@ dependencies {
 	testImplementation 'xmlunit:xmlunit:1.6'
 	testCompileOnly gradleTestKit()
 
-	testImplementation 'com.squareup.okhttp3:okhttp:4.12.0'
+	testImplementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
 }
 
 // Added to avoid problem where processResources fails because - somehow - the plugin properties file is getting
 // copied twice. This started occurring with the upgrade of Gradle from 6.x to 7.x.
 tasks.processResources {
-	duplicatesStrategy = "exclude"
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.register("mlDevelopmentToolsJar", Jar) {
@@ -45,18 +57,13 @@ gradlePlugin {
 			id = 'com.marklogic.ml-development-tools'
 			displayName = 'ml-development-tools MarkLogic Data Service Tools'
 			description = 'ml-development-tools plugin for developing data services on MarkLogic'
-			tags.set(['marklogic', 'progress'])
+			tags = ['marklogic', 'progress']
 			implementationClass = 'com.marklogic.client.tools.gradle.ToolsPlugin'
 		}
 	}
 }
 
 publishing {
-	publications {
-		main(MavenPublication) {
-			from components.java
-		}
-	}
 	repositories {
 		maven {
 			if (project.hasProperty("mavenUser")) {
@@ -70,11 +77,10 @@ publishing {
 	}
 }
 
-compileKotlin {
-	kotlinOptions.jvmTarget = '1.8'
-}
-compileTestKotlin {
-	kotlinOptions.jvmTarget = '1.8'
+tasks.withType(KotlinCompile).configureEach {
+	compilerOptions {
+		jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+	}
 }
 
 tasks.register("generateTests", JavaExec) {

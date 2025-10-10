@@ -4,14 +4,9 @@
 package com.marklogic.client.impl.okhttp;
 
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.impl.HTTPKerberosAuthInterceptor;
-import com.marklogic.client.impl.HTTPSamlAuthInterceptor;
+import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.impl.SSLUtil;
-import okhttp3.ConnectionPool;
-import okhttp3.CookieJar;
-import okhttp3.Dns;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
+import okhttp3.*;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
@@ -39,7 +34,8 @@ public abstract class OkHttpUtil {
 	final private static ConnectionPool connectionPool = new ConnectionPool();
 
 	@SuppressWarnings({"unchecked", "deprecation"})
-	public static OkHttpClient.Builder newOkHttpClientBuilder(String host, DatabaseClientFactory.SecurityContext securityContext) {
+	public static OkHttpClient.Builder newOkHttpClientBuilder(String host, DatabaseClientFactory.SecurityContext securityContext,
+															  List<OkHttpClientConfigurator> clientConfigurators) {
 		OkHttpClient.Builder clientBuilder = OkHttpUtil.newClientBuilder();
 		AuthenticationConfigurer authenticationConfigurer = null;
 
@@ -55,9 +51,7 @@ public abstract class OkHttpUtil {
 		} else if (securityContext instanceof DatabaseClientFactory.CertificateAuthContext) {
 		} else if (securityContext instanceof DatabaseClientFactory.SAMLAuthContext) {
 			configureSAMLAuth((DatabaseClientFactory.SAMLAuthContext) securityContext, clientBuilder);
-		} else if (securityContext instanceof DatabaseClientFactory.ProgressDataCloudAuthContext ||
-			// It's fine to refer to this deprecated class as it needs to be supported until Java Client 8.
-			securityContext instanceof DatabaseClientFactory.MarkLogicCloudAuthContext) {
+		} else if (securityContext instanceof DatabaseClientFactory.ProgressDataCloudAuthContext) {
 			authenticationConfigurer = new ProgressDataCloudAuthenticationConfigurer(host);
 		} else if (securityContext instanceof DatabaseClientFactory.OAuthContext) {
 			authenticationConfigurer = new OAuthAuthenticationConfigurer();
@@ -81,6 +75,10 @@ public abstract class OkHttpUtil {
 
 		OkHttpUtil.configureSocketFactory(clientBuilder, sslContext, trustManager);
 		OkHttpUtil.configureHostnameVerifier(clientBuilder, sslVerifier);
+
+		if (clientConfigurators != null) {
+			clientConfigurators.forEach(configurator -> configurator.configure(clientBuilder));
+		}
 
 		return clientBuilder;
 	}

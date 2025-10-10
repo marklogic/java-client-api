@@ -3,7 +3,7 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.impl.ClientCookie;
+import com.marklogic.client.ClientCookie;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.Transaction;
@@ -19,7 +19,7 @@ class TransactionImpl implements Transaction {
   private RESTServices    services;
   private String          transactionId;
   private String          hostId;
-  // we keep cookies scoped with each tranasaction to work with load balancers
+  // we keep cookies scoped with each transaction to work with load balancers
   // that need to keep requests for one transaction on a specific MarkLogic Server host
   private List<ClientCookie> cookies = new ArrayList<>();
   private Calendar           created;
@@ -29,9 +29,7 @@ class TransactionImpl implements Transaction {
     this.transactionId = transactionId;
     if ( cookies != null ) {
       for (ClientCookie cookie : cookies) {
-        // make a clone to ensure we're not holding on to any resources
-        // related to an HTTP connection that need to be released
-        this.cookies.add(new ClientCookie(cookie));
+        this.cookies.add(cookie);
         if ( "HostId".equalsIgnoreCase(cookie.getName()) ) {
           hostId = cookie.getValue();
         }
@@ -44,9 +42,6 @@ class TransactionImpl implements Transaction {
   public String getTransactionId() {
     return transactionId;
   }
-  public void setTransactionId(String transactionId) {
-    this.transactionId = transactionId;
-  }
 
   @Override
   public List<ClientCookie> getCookies() {
@@ -56,9 +51,6 @@ class TransactionImpl implements Transaction {
   @Override
   public String getHostId() {
     return hostId;
-  }
-  protected void setHostId(String hostId) {
-    this.hostId = hostId;
   }
 
   public Calendar getCreatedTimestamp() {

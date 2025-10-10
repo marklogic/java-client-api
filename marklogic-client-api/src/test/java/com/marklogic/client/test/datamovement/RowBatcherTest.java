@@ -24,6 +24,7 @@ import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanSystemColumn;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -39,7 +40,8 @@ import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RowBatcherTest {
+class RowBatcherTest {
+	
     private final static String TEST_DIR = "/test/rowbatch/unit/";
     private final static String TEST_COLLECTION = TEST_DIR+"codes";
     private final static String TABLE_NS_URI = "http://marklogic.com/table";
@@ -190,6 +192,8 @@ public class RowBatcherTest {
     }
 
 	@Test
+	@Disabled("Disabled due to https://progresssoftware.atlassian.net/browse/MLE-24579 , which causes the server to restart, " +
+		"which can cause many other tests to fail.")
 	void noRowsReturned() {
 		RowBatcher<JsonNode> rowBatcher = jsonBatcher(1);
 		RowManager rowMgr = rowBatcher.getRowManager();

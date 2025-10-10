@@ -2,11 +2,12 @@
  * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
-package com.marklogic.client.impl;
+package com.marklogic.client.impl.okhttp;
 
 import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext.AuthorizerCallback;
 import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext.ExpiringSAMLAuth;
 import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext.RenewerCallback;
+import com.marklogic.client.impl.RESTServices;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -55,7 +56,7 @@ public class HTTPSamlAuthInterceptor implements Interceptor {
 		Request authenticatedRequest = chain.request().newBuilder()
 			.header(RESTServices.HEADER_AUTHORIZATION, buildSamlHeader())
 			.build();
-		
+
 		return chain.proceed(authenticatedRequest);
 	}
 

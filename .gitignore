@@ -38,3 +38,7 @@ ml-development-tools/src/test/java/com/marklogic/client/test/dbfunction/generate
 
 .vscode
 docker/
+
+.kotlin
+
+dep.txt

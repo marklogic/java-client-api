@@ -10,14 +10,15 @@ services:
       - MARKLOGIC_INIT=true
       - MARKLOGIC_ADMIN_USERNAME=admin
       - MARKLOGIC_ADMIN_PASSWORD=admin
+    # The NET_RAW capability allows a process to create raw sockets. Polaris does not like that.
+    # This setting removes the NET_RAW capability from the container.
+    cap_drop:
+      - NET_RAW
     volumes:
       - ${MARKLOGIC_LOGS_VOLUME}:/var/opt/MarkLogic/Logs
     ports:
       - "8000-8002:8000-8002"
-      - "8010-8014:8010-8014"
-      - "8022:8022"
-      - "8054-8059:8054-8059"
-      - "8093:8093"
+      - "8010-8015:8010-8015" # Range of ports used by app servers, at least one of which - 8015 - is created by a test.
 
 volumes:
   marklogicLogs:

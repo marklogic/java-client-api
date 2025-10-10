@@ -10,15 +10,14 @@ product and version for which you are requesting source code.
 
 Third Party Notices
 
-jackson-databind 2.19.0 (Apache-2.0)
-jackson-dataformat-csv 2.19.0 (Apache-2.0)
-okhttp 4.12.0 (Apache-2.0)
-logging-interceptor 4.12.0 (Apache-2.0)
-jakarta.mail 2.0.1 (EPL-1.0)
-okhttp-digest 2.7 (Apache-2.0)
-jakarta.xml.bind-api 3.0.1 (EPL-1.0)
-javax.ws.rs-api 2.1.1 (CDDL-1.1)
-jaxb-runtime 3.0.2 (CDDL-1.1)
+jackson-databind 2.20.0 (Apache-2.0)
+jackson-dataformat-csv 2.20.0 (Apache-2.0)
+okhttp 5.2.0 (Apache-2.0)
+logging-interceptor 5.2.0 (Apache-2.0)
+jakarta.mail 2.0.2 (EPL-1.0)
+okhttp-digest 3.1.1 (Apache-2.0)
+jakarta.xml.bind-api 4.0.4 (EPL-1.0)
+jaxb-runtime 4.0.6 (CDDL-1.1)
 slf4j-api 2.0.17 (Apache-2.0)
 
 Common Licenses
@@ -29,41 +28,37 @@ Eclipse Public License 1.0 (EPL-1.0)
 
 Third-Party Components
 
-The following is a list of the third-party components used by the MarkLogic® for Java Client 7.2.0 (last updated July 21, 2025):
+The following is a list of the third-party components used by the MarkLogic® for Java Client 8.0.0 (last updated October 29, 2025):
 
-jackson-databind 2.19.0 (Apache-2.0)
+jackson-databind 2.20.0 (Apache-2.0)
 https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/
 For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-jackson-dataformat-csv 2.19.0 (Apache-2.0)
+jackson-dataformat-csv 2.20.0 (Apache-2.0)
 https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-csv/
 For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-okhttp 4.12.0 (Apache-2.0)
+okhttp 5.2.0 (Apache-2.0)
 https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/
 For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-logging-interceptor 4.12.0 (Apache-2.0)
+logging-interceptor 5.2.0 (Apache-2.0)
 https://repo1.maven.org/maven2/com/squareup/okhttp3/logging-interceptor/
 For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-jakarta.mail 2.0.1 (Apache-2.0)
+jakarta.mail 2.0.2 (Apache-2.0)
 https://repo1.maven.org/maven2/com/sun/mail/jakarta.mail/
 For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-okhttp-digest 2.7 (Apache-2.0)
+okhttp-digest 3.1.1 (Apache-2.0)
 https://repo1.maven.org/maven2/io/github/rburgst/okhttp-digest/
 For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-jakarta.xml.bind-api 3.0.1 (Apache-2.0)
+jakarta.xml.bind-api 4.0.4 (Apache-2.0)
 https://repo1.maven.org/maven2/jakarta/xml/bind/jakarta.xml.bind-api/
 For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
-javax.ws.rs-api 2.1.1 (Apache-2.0)
-https://repo1.maven.org/maven2/javax/ws/rs/javax.ws.rs-api/
-For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
-
-jaxb-runtime 3.0.2 (Apache-2.0)
+jaxb-runtime 4.0.6 (Apache-2.0)
 https://repo1.maven.org/maven2/org/glassfish/jaxb/jaxb-runtime/
 For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
@@ -73,7 +68,7 @@ For the full text of the Apache-2.0 license, see Apache License 2.0 (Apache-2.0)
 
 Common Licenses
 
-The following is a list of the third-party components used by the MarkLogic® for Java Client 7.2.0 (last updated July 21, 2025):
+The following is a list of the third-party components used by the MarkLogic® for Java Client 8.0.0 (last updated October 29, 2025):
 
 Apache License 2.0 (Apache-2.0)
 https://spdx.org/licenses/Apache-2.0.html

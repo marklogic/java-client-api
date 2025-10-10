@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
+import com.marklogic.client.impl.okhttp.RetryIOExceptionInterceptor;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.ManageConfig;
@@ -28,6 +30,12 @@ import java.net.URISyntaxException;
 import java.security.cert.X509Certificate;
 
 public class Common {
+
+	static {
+		DatabaseClientFactory.removeConfigurators();
+		DatabaseClientFactory.addConfigurator((OkHttpClientConfigurator) client ->
+			client.addInterceptor(new RetryIOExceptionInterceptor(3, 1000, 2, 8000)));
+	}
 
 	final public static String USER = "rest-writer";
 	final public static String PASS = "x";
@@ -68,7 +76,6 @@ public class Common {
 
 	public static DatabaseClient client;
 	public static DatabaseClient restAdminClient;
-	public static DatabaseClient serverAdminClient;
 	public static DatabaseClient evalClient;
 	public static DatabaseClient readOnlyClient;
 
@@ -82,12 +89,6 @@ public class Common {
 		if (restAdminClient == null)
 			restAdminClient = newRestAdminClient();
 		return restAdminClient;
-	}
-
-	public static DatabaseClient connectServerAdmin() {
-		if (serverAdminClient == null)
-			serverAdminClient = newServerAdminClient();
-		return serverAdminClient;
 	}
 
 	public static DatabaseClient connectEval() {
@@ -265,9 +266,11 @@ public class Common {
 	}
 
 	public static void deleteUrisWithPattern(String pattern) {
-		Common.connectServerAdmin().newServerEval()
-			.xquery(String.format("cts:uri-match('%s') ! xdmp:document-delete(.)", pattern))
-			.evalAs(String.class);
+		try (DatabaseClient client = Common.newServerAdminClient()) {
+			client.newServerEval()
+				.xquery(String.format("cts:uri-match('%s') ! xdmp:document-delete(.)", pattern))
+				.evalAs(String.class);
+		}
 	}
 
 	/**

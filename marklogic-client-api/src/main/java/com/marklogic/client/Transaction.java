@@ -3,7 +3,6 @@
  */
 package com.marklogic.client;
 
-import com.marklogic.client.impl.ClientCookie;
 import com.marklogic.client.io.marker.StructureReadHandle;
 
 import java.util.List;
