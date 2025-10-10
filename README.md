@@ -20,11 +20,13 @@ The client supports the following core features of the MarkLogic database:
 *  Execute multi-statement transactions so changes to multiple documents succeed or fail together.
 *  Call Data Services via a Java interface on the client for data functionality implemented by an endpoint on the server.
 
-The client is tested on Java 8, 11, 17, and 21 and can safely be used on each of those major Java versions. The client
-may work on more recent major versions of Java but has not been thoroughly tested on those yet.
+## System Requirements
 
-If you are using Java 11 or higher and intend to use [JAXB](https://docs.oracle.com/javase/tutorial/jaxb/intro/), please see the section below for ensuring that the
-necessary dependencies are available in your application's classpath.
+As of the 8.0.0 release, the Java Client requires Java 17 or Java 21. 
+
+Prior releases are compatible with Java 8, 11, 17, and 21.
+
+For compatibility with MarkLogic server versions, please see the [Compatibility Matrix](https://developer.marklogic.com/products/support-matrix/#java-client-api).
 
 ## QuickStart
 
