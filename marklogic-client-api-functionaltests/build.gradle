@@ -20,7 +20,7 @@ dependencies {
 		exclude module: "marklogic-client-api"
 	}
 
-	testImplementation 'ch.qos.logback:logback-classic:1.5.18'
+	testImplementation 'ch.qos.logback:logback-classic:1.5.19'
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
 	testImplementation 'org.xmlunit:xmlunit-legacy:2.10.4'
 
