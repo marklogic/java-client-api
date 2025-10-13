@@ -56,7 +56,7 @@ dependencies {
 	testImplementation "com.squareup.okhttp3:mockwebserver3:5.1.0"
 
 	testImplementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jacksonVersion}"
-	testImplementation 'ch.qos.logback:logback-classic:1.5.18'
+	testImplementation 'ch.qos.logback:logback-classic:1.5.19'
 
 	// Using this to avoid a schema validation issue with the regular xercesImpl
 	testImplementation 'org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115'
