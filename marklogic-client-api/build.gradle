@@ -46,14 +46,12 @@ dependencies {
 	testImplementation 'org.apache.commons:commons-lang3:3.19.0'
 
 	// Allows talking to the Manage API.
-	testImplementation("com.marklogic:ml-app-deployer:6.0.1") {
-		exclude module: "marklogic-client-api"
-	}
+	testImplementation "com.marklogic:ml-app-deployer:6.1.0"
 
-	// Starting with mockito 5.x, Java 11 is required, so sticking with 4.x as we have to support Java 8.
-	testImplementation "org.mockito:mockito-core:4.11.0"
-	testImplementation "org.mockito:mockito-inline:4.11.0"
-	testImplementation "com.squareup.okhttp3:mockwebserver3:5.1.0"
+	testImplementation "org.mockito:mockito-core:5.20.0"
+	testImplementation "org.mockito:mockito-inline:5.20.0"
+
+	testImplementation "com.squareup.okhttp3:mockwebserver3:5.2.0"
 
 	testImplementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jacksonVersion}"
 	testImplementation 'ch.qos.logback:logback-classic:1.5.19'
@@ -73,7 +71,7 @@ dependencies {
 	// https://docs.gradle.org/current/userguide/upgrading_version_8.html#test_framework_implementation_dependencies
 	// Without this, once using JUnit 5.12 or higher, Gradle will not find any tests and report an error of:
 	// org.junit.platform.commons.JUnitException: TestEngine with ID 'junit-jupiter' failed to discover tests
-	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.13.4"
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.14.0"
 }
 
 // Ensure that mlHost and mlPassword can override the defaults of localhost/admin if they've been modified

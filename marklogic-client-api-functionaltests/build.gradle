@@ -15,18 +15,15 @@ dependencies {
 
 	testImplementation 'org.apache.commons:commons-lang3:3.19.0'
 
-	// Allows talking to the Manage API.
-	testImplementation("com.marklogic:ml-app-deployer:6.0.1") {
-		exclude module: "marklogic-client-api"
-	}
+	testImplementation "com.marklogic:ml-app-deployer:6.1.0"
 
 	testImplementation 'ch.qos.logback:logback-classic:1.5.19'
-	testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.14.0'
 	testImplementation 'org.xmlunit:xmlunit-legacy:2.10.4'
 
 	// Without this, once using JUnit 5.12 or higher, Gradle will not find any tests and report an error of:
 	// org.junit.platform.commons.JUnitException: TestEngine with ID 'junit-jupiter' failed to discover tests
-	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.13.4"
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.14.0"
 }
 
 tasks.withType(Test).configureEach {
