@@ -15,8 +15,6 @@ import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.*;
 import com.marklogic.client.query.StructuredQueryBuilder.TemporalOperator;
-import com.marklogic.mgmt.ManageClient;
-import com.marklogic.mgmt.resource.temporal.TemporalCollectionLSQTManager;
 import jakarta.xml.bind.DatatypeConverter;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.jupiter.api.AfterEach;
@@ -163,21 +161,6 @@ class BitemporalTest {
 
 	@Test
 	void lsqtTest() {
-		// Due to bug MLE-24511 where LSQT properties aren't updated correctly in ml-gradle 6.0.0, we need to manually
-		// deploy them for this test.
-		ManageClient manageClient = Common.newManageClient();
-		TemporalCollectionLSQTManager mgr = new TemporalCollectionLSQTManager(manageClient, "java-unittest", "temporal-collection");
-		String payload = """
-						{
-				"lsqt-enabled": true,
-				"automation": {
-					"enabled": true,
-					"period": 5000
-				}
-			}
-			""";
-		mgr.save(payload);
-
 		String version1 = """
 			<test>
 			%s version1
