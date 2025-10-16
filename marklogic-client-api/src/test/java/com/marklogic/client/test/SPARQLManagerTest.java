@@ -30,7 +30,8 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SPARQLManagerTest {
+class SPARQLManagerTest {
+
   private static String graphUri = "http://marklogic.com/java/SPARQLManagerTest";
   private static String triple1 = "<http://example.org/s1> <http://example.org/p1> <http://example.org/o1>.";
   private static String triple2 = "<http://example.org/s2> <http://example.org/p2> <http://example.org/o2>.";
@@ -362,10 +363,6 @@ public class SPARQLManagerTest {
 
   @Test
   public void testPagination() {
-	  if (Common.getMarkLogicVersion().getMajor() >= 12) {
-		  // Disabled until MLE-12708 is fixed.
-		  return;
-	  }
     SPARQLQueryDefinition qdef1 = smgr.newQueryDefinition(
       "SELECT ?s ?p ?o FROM <" + graphUri + "> { ?s ?p ?o }");
     qdef1.setIncludeDefaultRulesets(false);
