@@ -23,7 +23,6 @@ subprojects {
 	}
 
 	repositories {
-		mavenLocal()
 		mavenCentral()
 
 		// Needed so that ml-development-tools can resolve snapshots of marklogic-client-api.

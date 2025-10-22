@@ -15,7 +15,7 @@ dependencies {
 
 	testImplementation 'org.apache.commons:commons-lang3:3.19.0'
 
-	testImplementation "com.marklogic:ml-app-deployer:6.1.0"
+	testImplementation "com.marklogic:ml-app-deployer:6.2-SNAPSHOT"
 
 	testImplementation 'ch.qos.logback:logback-classic:1.5.19'
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.14.0'
