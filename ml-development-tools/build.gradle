@@ -32,7 +32,7 @@ dependencies {
 	// Not yet migrating this project to JUnit 5. Will reconsider it once we have a reason to enhance
 	// this project.
 	testImplementation 'junit:junit:4.13.2'
-	testImplementation 'xmlunit:xmlunit:1.6'
+	testImplementation 'org.xmlunit:xmlunit-legacy:2.10.4'
 	testCompileOnly gradleTestKit()
 
 	testImplementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"

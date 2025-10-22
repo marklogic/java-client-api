@@ -36,7 +36,7 @@ dependencies {
 	compileOnly 'org.dom4j:dom4j:2.2.0'
 	compileOnly 'com.google.code.gson:gson:2.13.2'
 
-	testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.14.0'
 
 	// Forcing junit version to avoid vulnerability with older version in xmlunit
 	testImplementation 'junit:junit:4.13.2'
@@ -46,7 +46,7 @@ dependencies {
 	testImplementation 'org.apache.commons:commons-lang3:3.19.0'
 
 	// Allows talking to the Manage API.
-	testImplementation "com.marklogic:ml-app-deployer:6.1.0"
+	testImplementation "com.marklogic:ml-app-deployer:6.2-SNAPSHOT"
 
 	testImplementation "org.mockito:mockito-core:5.20.0"
 	testImplementation "org.mockito:mockito-inline:5.2.0"
