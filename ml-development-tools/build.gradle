@@ -29,13 +29,9 @@ dependencies {
 	// Sticking with this older version for now as the latest 1.x version introduces breaking changes.
 	implementation 'com.networknt:json-schema-validator:1.0.88'
 
-	// Not yet migrating this project to JUnit 5. Will reconsider it once we have a reason to enhance
-	// this project.
+	// Sticking with JUnit 4 as there are no vulnerabilities with it, and shifting to JUnit 5 in this module will be
+	// a significant and tedious effort.
 	testImplementation 'junit:junit:4.13.2'
-	testImplementation 'org.xmlunit:xmlunit-legacy:2.10.4'
-	testCompileOnly gradleTestKit()
-
-	testImplementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
 }
 
 // Added to avoid problem where processResources fails because - somehow - the plugin properties file is getting
