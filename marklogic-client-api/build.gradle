@@ -38,8 +38,6 @@ dependencies {
 
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.14.0'
 
-	// Forcing junit version to avoid vulnerability with older version in xmlunit
-	testImplementation 'junit:junit:4.13.2'
 	testImplementation 'org.xmlunit:xmlunit-legacy:2.10.4'
 	testImplementation project(':examples')
 
