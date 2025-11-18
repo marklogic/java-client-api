@@ -162,7 +162,7 @@ def tearDownDocker() {
 }
 
 pipeline {
-	agent none
+	agent { label 'javaClientLinuxPool' }
 
 	options {
 		checkoutToSubdirectory 'java-client-api'
@@ -185,7 +185,6 @@ pipeline {
 	stages {
 
 		stage('pull-request-tests') {
-			agent { label 'javaClientLinuxPool' }
 			when {
 				not {
 					expression { return params.regressions }
@@ -223,7 +222,6 @@ pipeline {
 		}
 
 		stage('publish') {
-			agent { label 'javaClientLinuxPool' }
 			when {
 				branch 'develop'
 				not {
@@ -255,28 +253,20 @@ pipeline {
 					def imageTags = params.MARKLOGIC_IMAGE_TAGS.split(',')
 					def imagePrefix = 'ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/'
 
-					def parallelStages = [:]
-
 					imageTags.each { tag ->
 						def fullImage = imagePrefix + tag.trim()
 						def stageName = "regressions-${tag.trim().replace(':', '-')}"
 
-						parallelStages[stageName] = {
-							node('javaClientLinuxPool') {
-								stage(stageName) {
-									try {
-										runTests(fullImage)
-									} finally {
-										junit '**/build/**/TEST*.xml'
-										updateWorkspacePermissions()
-										tearDownDocker()
-									}
-								}
+						stage(stageName) {
+							try {
+								runTests(fullImage)
+							} finally {
+								junit '**/build/**/TEST*.xml'
+								updateWorkspacePermissions()
+								tearDownDocker()
 							}
 						}
 					}
-
-					parallel parallelStages
 				}
 			}
 		}
