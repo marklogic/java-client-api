@@ -2,11 +2,25 @@
  * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
+buildscript {
+	repositories {
+		mavenCentral()
+		// Needed for ml-gradle 6.2-SNAPSHOT
+		maven {
+			url = "https://bed-artifactory.bedford.progress.com:443/artifactory/ml-maven-snapshots/"
+		}
+	}
+	dependencies {
+		classpath "com.marklogic:ml-gradle:6.2-SNAPSHOT"
+	}
+}
+
 plugins {
 	id "net.saliman.properties" version "1.5.2"
-	id 'com.marklogic.ml-gradle' version '6.1.0'
 	id "com.github.psxpaul.execfork" version "0.2.2"
 }
+
+apply plugin: "com.marklogic.ml-gradle"
 
 dependencies {
 	implementation "io.undertow:undertow-core:2.3.20.Final"
