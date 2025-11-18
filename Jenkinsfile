@@ -20,12 +20,13 @@ def setupDockerMarkLogic(String image) {
     echo "Using image: "''' + image + '''
     docker pull ''' + image + '''
     MARKLOGIC_IMAGE=''' + image + ''' MARKLOGIC_LOGS_VOLUME=marklogicLogs docker compose up -d --build
-    echo "Waiting for MarkLogic server to initialize."
-    sleep 60s
 		export JAVA_HOME=$JAVA_HOME_DIR
 		export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-		export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-		./gradlew mlTestConnections
+		export PATH=$JAVA_HOME/bin:$PATH
+		./gradlew -i mlWaitTillReady
+    sleep 3
+    ./gradlew -i mlWaitTillReady
+    ./gradlew mlTestConnections
    	./gradlew -i mlDeploy mlReloadSchemas
   '''
 }
@@ -161,7 +162,7 @@ def tearDownDocker() {
 }
 
 pipeline {
-	agent { label 'javaClientLinuxPool' }
+	agent none
 
 	options {
 		checkoutToSubdirectory 'java-client-api'
@@ -184,6 +185,7 @@ pipeline {
 	stages {
 
 		stage('pull-request-tests') {
+			agent { label 'javaClientLinuxPool' }
 			when {
 				not {
 					expression { return params.regressions }
@@ -219,7 +221,9 @@ pipeline {
 				}
 			}
 		}
+
 		stage('publish') {
+			agent { label 'javaClientLinuxPool' }
 			when {
 				branch 'develop'
 				not {
@@ -245,28 +249,33 @@ pipeline {
 					expression { return params.regressions }
 				}
 			}
-		steps {
-			script {
-				def imageTags = params.MARKLOGIC_IMAGE_TAGS.split(',')
-				def imagePrefix = 'ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/'
 
-				def parallelStages = [:]
-				imageTags.each { tag ->
+			steps {
+				script {
+					def imageTags = params.MARKLOGIC_IMAGE_TAGS.split(',')
+					def imagePrefix = 'ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/'
+
+					def parallelStages = [:]
+
+					imageTags.each { tag ->
 						def fullImage = imagePrefix + tag.trim()
 						def stageName = "regressions-${tag.trim().replace(':', '-')}"
 
 						parallelStages[stageName] = {
-							stage(stageName) {
-								try {
-									runTests(fullImage)
-								} finally {
-									junit '**/build/**/TEST*.xml'
-									updateWorkspacePermissions()
-									tearDownDocker()
+							node('javaClientLinuxPool') {
+								stage(stageName) {
+									try {
+										runTests(fullImage)
+									} finally {
+										junit '**/build/**/TEST*.xml'
+										updateWorkspacePermissions()
+										tearDownDocker()
+									}
 								}
 							}
 						}
 					}
+
 					parallel parallelStages
 				}
 			}
