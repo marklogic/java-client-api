@@ -16,41 +16,41 @@ class BatchWriter implements Runnable {
 
 	private static Logger logger = LoggerFactory.getLogger(WriteBatcherImpl.class);
 
-	private final BatchWriteSet writeSet;
+	private final BatchWriteSet batchWriteSet;
 
-	BatchWriter(BatchWriteSet writeSet) {
-		if (writeSet.getWriteSet().size() == 0) {
+	BatchWriter(BatchWriteSet batchWriteSet) {
+		if (batchWriteSet.getDocumentWriteSet().size() == 0) {
 			throw new IllegalStateException("Attempt to write an empty batch");
 		}
-		this.writeSet = writeSet;
+		this.batchWriteSet = batchWriteSet;
 	}
 
 	@Override
 	public void run() {
 		try {
-			logger.trace("begin write batch {} to forest on host \"{}\"", writeSet.getBatchNumber(), writeSet.getClient().getHost());
-			if (writeSet.getTemporalCollection() == null) {
-				writeSet.getClient().newDocumentManager().write(
-					writeSet.getWriteSet(), writeSet.getTransform(), null
+			logger.trace("begin write batch {} to forest on host \"{}\"", batchWriteSet.getBatchNumber(), batchWriteSet.getClient().getHost());
+			if (batchWriteSet.getTemporalCollection() == null) {
+				batchWriteSet.getClient().newDocumentManager().write(
+					batchWriteSet.getDocumentWriteSet(), batchWriteSet.getTransform(), null
 				);
 			} else {
 				// to get access to the TemporalDocumentManager write overload we need to instantiate
 				// a JSONDocumentManager or XMLDocumentManager, but we don't want to make assumptions about content
 				// format, so we'll set the default content format to unknown
-				XMLDocumentManager docMgr = writeSet.getClient().newXMLDocumentManager();
+				XMLDocumentManager docMgr = batchWriteSet.getClient().newXMLDocumentManager();
 				docMgr.setContentFormat(Format.UNKNOWN);
 				docMgr.write(
-					writeSet.getWriteSet(), writeSet.getTransform(), null, writeSet.getTemporalCollection()
+					batchWriteSet.getDocumentWriteSet(), batchWriteSet.getTransform(), null, batchWriteSet.getTemporalCollection()
 				);
 			}
 			closeAllHandles();
-			Runnable onSuccess = writeSet.getOnSuccess();
+			Runnable onSuccess = batchWriteSet.getOnSuccess();
 			if (onSuccess != null) {
 				onSuccess.run();
 			}
 		} catch (Throwable t) {
-			logger.trace("failed batch sent to forest on host \"{}\"", writeSet.getClient().getHost());
-			Consumer<Throwable> onFailure = writeSet.getOnFailure();
+			logger.trace("failed batch sent to forest on host \"{}\"", batchWriteSet.getClient().getHost());
+			Consumer<Throwable> onFailure = batchWriteSet.getOnFailure();
 			if (onFailure != null) {
 				onFailure.accept(t);
 			}
@@ -59,7 +59,7 @@ class BatchWriter implements Runnable {
 
 	private void closeAllHandles() throws Throwable {
 		Throwable lastThrowable = null;
-		for (DocumentWriteOperation doc : writeSet.getWriteSet()) {
+		for (DocumentWriteOperation doc : batchWriteSet.getDocumentWriteSet()) {
 			try {
 				if (doc.getContent() instanceof Closeable) {
 					((Closeable) doc.getContent()).close();
@@ -75,7 +75,7 @@ class BatchWriter implements Runnable {
 		if (lastThrowable != null) throw lastThrowable;
 	}
 
-	public BatchWriteSet getWriteSet() {
-		return writeSet;
+	public BatchWriteSet getBatchWriteSet() {
+		return batchWriteSet;
 	}
 }

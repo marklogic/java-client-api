@@ -204,7 +204,7 @@ public class WriteBatcherImpl
       BatchWriteSet writeSet = newBatchWriteSet();
       int minBatchSize = 0;
       if(defaultMetadata != null) {
-        writeSet.getWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
+        writeSet.getDocumentWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
         minBatchSize = 1;
       }
       for (int i=0; i < getBatchSize(); i++ ) {
@@ -213,9 +213,9 @@ public class WriteBatcherImpl
           // strange, there should have been a full batch of docs in the queue...
           break;
         }
-        writeSet.getWriteSet().add(doc);
+        writeSet.getDocumentWriteSet().add(doc);
       }
-      if ( writeSet.getWriteSet().size() > minBatchSize ) {
+      if ( writeSet.getDocumentWriteSet().size() > minBatchSize ) {
         threadPool.submit( new BatchWriter(writeSet) );
       }
     }
@@ -326,7 +326,7 @@ public class WriteBatcherImpl
       });
     }
     for (WriteEvent doc : batch.getItems()) {
-      writeSet.getWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
+      writeSet.getDocumentWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
     }
     BatchWriter runnable = new BatchWriter(writeSet);
     runnable.run();
@@ -392,12 +392,12 @@ public class WriteBatcherImpl
       }
       BatchWriteSet writeSet = newBatchWriteSet();
       if(defaultMetadata != null) {
-          writeSet.getWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
+          writeSet.getDocumentWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
         }
       int j=0;
       for ( ; j < getBatchSize() && iter.hasNext(); j++ ) {
         DocumentWriteOperation doc = iter.next();
-        writeSet.getWriteSet().add(doc);
+        writeSet.getDocumentWriteSet().add(doc);
       }
       threadPool.submit( new BatchWriter(writeSet) );
     }
@@ -406,7 +406,7 @@ public class WriteBatcherImpl
   }
 
   private void sendSuccessToListeners(BatchWriteSet batchWriteSet) {
-    batchWriteSet.setItemsSoFar(itemsSoFar.addAndGet(batchWriteSet.getWriteSet().size()));
+    batchWriteSet.setItemsSoFar(itemsSoFar.addAndGet(batchWriteSet.getDocumentWriteSet().size()));
     WriteBatch batch = batchWriteSet.getBatchOfWriteEvents();
     for ( WriteBatchListener successListener : successListeners ) {
       try {
@@ -606,16 +606,16 @@ public class WriteBatcherImpl
       for ( Runnable task : tasks ) {
         if ( task instanceof BatchWriter ) {
           BatchWriter writerTask = (BatchWriter) task;
-          if ( removedHostInfos.containsKey(writerTask.getWriteSet().getClient().getHost()) ) {
+          if ( removedHostInfos.containsKey(writerTask.getBatchWriteSet().getClient().getHost()) ) {
             // this batch was targeting a host that's no longer on the list
             // if we re-add these docs they'll now be in batches that target acceptable hosts
-            BatchWriteSet writeSet = newBatchWriteSet(writerTask.getWriteSet().getBatchNumber());
+            BatchWriteSet writeSet = newBatchWriteSet(writerTask.getBatchWriteSet().getBatchNumber());
             writeSet.onFailure(throwable -> {
               if ( throwable instanceof RuntimeException ) throw (RuntimeException) throwable;
               else throw new DataMovementException("Failed to retry batch after failover", throwable);
             });
-            for ( WriteEvent doc : writerTask.getWriteSet().getBatchOfWriteEvents().getItems() ) {
-              writeSet.getWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
+            for ( WriteEvent doc : writerTask.getBatchWriteSet().getBatchOfWriteEvents().getItems() ) {
+              writeSet.getDocumentWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
             }
             BatchWriter retryWriterTask = new BatchWriter(writeSet);
             Runnable fretryWriterTask = (Runnable) threadPool.submit(retryWriterTask);
