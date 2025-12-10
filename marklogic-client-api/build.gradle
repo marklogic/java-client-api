@@ -37,6 +37,11 @@ dependencies {
 	implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
 	implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-csv:${jacksonVersion}"
 
+	// Dependencies for hash generation. Can be safely omitted if not using the incremental write feature. But neither
+	// has any transitive dependencies, and thus their impact on the dependency tree is minimal.
+	implementation "io.github.erdtman:java-json-canonicalization:1.1"
+	implementation "net.openhft:zero-allocation-hashing:0.27ea1"
+
 	// Only used by extras (which some examples then depend on)
 	compileOnly 'org.jdom:jdom2:2.0.6.1'
 	compileOnly 'org.dom4j:dom4j:2.2.0'
