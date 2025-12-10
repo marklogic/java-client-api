@@ -4,6 +4,7 @@
 package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.datamovement.DocumentWriteSetFilter;
 import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.WriteEvent;
@@ -16,14 +17,16 @@ import java.util.function.Consumer;
  * Mutable class that captures the documents to be written. Documents are added via calls to "getDocumentWriteSet()", where the
  * DocumentWriteSet is empty when this class is constructed.
  */
-class BatchWriteSet {
+class BatchWriteSet implements DocumentWriteSetFilter.Context {
 
 	private final WriteBatcher batcher;
-	private final DocumentWriteSet documentWriteSet;
 	private final long batchNumber;
 	private final DatabaseClient client;
 	private final ServerTransform transform;
 	private final String temporalCollection;
+
+	// Can be overridden after creation
+	private DocumentWriteSet documentWriteSet;
 
 	private long itemsSoFar;
 	private Runnable onSuccess;
@@ -38,16 +41,32 @@ class BatchWriteSet {
 		this.batchNumber = batchNumber;
 	}
 
+	/**
+	 * Must be called if a DocumentWriteSetFilter modified the DocumentWriteSet owned by this class.
+	 *
+	 * @since 8.1.0
+	 */
+	void updateWithFilteredDocumentWriteSet(DocumentWriteSet filteredDocumentWriteSet) {
+		this.documentWriteSet = filteredDocumentWriteSet;
+	}
+
+	@Override
 	public DocumentWriteSet getDocumentWriteSet() {
 		return documentWriteSet;
 	}
 
+	@Override
 	public long getBatchNumber() {
 		return batchNumber;
 	}
 
 	public void setItemsSoFar(long itemsSoFar) {
 		this.itemsSoFar = itemsSoFar;
+	}
+
+	@Override
+	public DatabaseClient getDatabaseClient() {
+		return client;
 	}
 
 	public DatabaseClient getClient() {
@@ -58,6 +77,7 @@ class BatchWriteSet {
 		return transform;
 	}
 
+	@Override
 	public String getTemporalCollection() {
 		return temporalCollection;
 	}
