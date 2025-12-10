@@ -12,10 +12,14 @@ import com.marklogic.client.document.ServerTransform;
 
 import java.util.function.Consumer;
 
+/**
+ * Mutable class that captures the documents to be written. Documents are added via calls to "getDocumentWriteSet()", where the
+ * DocumentWriteSet is empty when this class is constructed.
+ */
 class BatchWriteSet {
 
 	private final WriteBatcher batcher;
-	private final DocumentWriteSet writeSet;
+	private final DocumentWriteSet documentWriteSet;
 	private final long batchNumber;
 	private final DatabaseClient client;
 	private final ServerTransform transform;
@@ -27,15 +31,15 @@ class BatchWriteSet {
 
 	BatchWriteSet(WriteBatcher batcher, DatabaseClient hostClient, ServerTransform transform, String temporalCollection, long batchNumber) {
 		this.batcher = batcher;
-		this.writeSet = hostClient.newDocumentManager().newWriteSet();
+		this.documentWriteSet = hostClient.newDocumentManager().newWriteSet();
 		this.client = hostClient;
 		this.transform = transform;
 		this.temporalCollection = temporalCollection;
 		this.batchNumber = batchNumber;
 	}
 
-	public DocumentWriteSet getWriteSet() {
-		return writeSet;
+	public DocumentWriteSet getDocumentWriteSet() {
+		return documentWriteSet;
 	}
 
 	public long getBatchNumber() {
@@ -82,7 +86,7 @@ class BatchWriteSet {
 			.withJobWritesSoFar(itemsSoFar)
 			.withJobTicket(batcher.getJobTicket());
 
-		WriteEvent[] writeEvents = getWriteSet().stream()
+		WriteEvent[] writeEvents = getDocumentWriteSet().stream()
 			.map(writeOperation ->
 				new WriteEventImpl()
 					.withTargetUri(writeOperation.getUri())
