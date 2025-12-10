@@ -188,6 +188,15 @@
 		{
 			"field-name": "int2",
 			"include-root": false
+		},
+		{
+			"field-name": "incrementalWriteHash",
+			"metadata": "",
+			"stemmed-searches": "off",
+			"word-searches": false,
+			"fast-phrase-searches": false,
+			"fast-case-sensitive-searches": false,
+			"fast-diacritic-sensitive-searches": false
 		}
 	],
 	"range-field-index": [
@@ -202,6 +211,13 @@
 			"scalar-type": "int",
 			"field-name": "int2",
 			"collation": "",
+			"range-value-positions": false,
+			"invalid-values": "reject"
+		},
+		{
+			"scalar-type": "string",
+			"collation": "http://marklogic.com/collation/",
+			"field-name": "incrementalWriteHash",
 			"range-value-positions": false,
 			"invalid-values": "reject"
 		}
