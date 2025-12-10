@@ -3,121 +3,95 @@
  */
 package com.marklogic.client.datamovement.impl;
 
-import java.util.function.Consumer;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.WriteEvent;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.ServerTransform;
 
-public class BatchWriteSet {
-  private WriteBatcher batcher;
-  private DocumentWriteSet writeSet;
-  private long batchNumber;
-  private long itemsSoFar;
-  private DatabaseClient client;
-  private ServerTransform transform;
-  private String temporalCollection;
-  private Runnable onSuccess;
-  private Consumer<Throwable> onFailure;
-  private Runnable onBeforeWrite;
+import java.util.function.Consumer;
 
-  public BatchWriteSet(WriteBatcher batcher, DocumentWriteSet writeSet, DatabaseClient client,
-    ServerTransform transform, String temporalCollection)
-  {
-    this.batcher = batcher;
-    this.writeSet = writeSet;
-    this.client = client;
-    this.transform = transform;
-    this.temporalCollection = temporalCollection;
-  }
+class BatchWriteSet {
 
-  public DocumentWriteSet getWriteSet() {
-    return writeSet;
-  }
+	private final WriteBatcher batcher;
+	private final DocumentWriteSet writeSet;
+	private final long batchNumber;
+	private final DatabaseClient client;
+	private final ServerTransform transform;
+	private final String temporalCollection;
 
-  public void setWriteSet(DocumentWriteSet writeSet) {
-    this.writeSet = writeSet;
-  }
+	private long itemsSoFar;
+	private Runnable onSuccess;
+	private Consumer<Throwable> onFailure;
 
-  public long getBatchNumber() {
-    return batchNumber;
-  }
+	BatchWriteSet(WriteBatcher batcher, DatabaseClient hostClient, ServerTransform transform, String temporalCollection, long batchNumber) {
+		this.batcher = batcher;
+		this.writeSet = hostClient.newDocumentManager().newWriteSet();
+		this.client = hostClient;
+		this.transform = transform;
+		this.temporalCollection = temporalCollection;
+		this.batchNumber = batchNumber;
+	}
 
-  public void setBatchNumber(long batchNumber) {
-    this.batchNumber = batchNumber;
-  }
+	public DocumentWriteSet getWriteSet() {
+		return writeSet;
+	}
 
-  public void setItemsSoFar(long itemsSoFar) {
-    this.itemsSoFar = itemsSoFar;
-  }
+	public long getBatchNumber() {
+		return batchNumber;
+	}
 
-  public DatabaseClient getClient() {
-    return client;
-  }
+	public void setItemsSoFar(long itemsSoFar) {
+		this.itemsSoFar = itemsSoFar;
+	}
 
-  public void setClient(DatabaseClient client) {
-    this.client = client;
-  }
+	public DatabaseClient getClient() {
+		return client;
+	}
 
-  public ServerTransform getTransform() {
-    return transform;
-  }
+	public ServerTransform getTransform() {
+		return transform;
+	}
 
-  public void setTransform(ServerTransform transform) {
-    this.transform = transform;
-  }
+	public String getTemporalCollection() {
+		return temporalCollection;
+	}
 
-  public String getTemporalCollection() {
-    return temporalCollection;
-  }
+	public Runnable getOnSuccess() {
+		return onSuccess;
+	}
 
-  public void setTemporalCollection(String temporalCollection) {
-    this.temporalCollection = temporalCollection;
-  }
+	public void onSuccess(Runnable onSuccess) {
+		this.onSuccess = onSuccess;
+	}
 
-  public Runnable getOnSuccess() {
-    return onSuccess;
-  }
+	public Consumer<Throwable> getOnFailure() {
+		return onFailure;
+	}
 
-  public void onSuccess(Runnable onSuccess) {
-    this.onSuccess = onSuccess;
-  }
+	public void onFailure(Consumer<Throwable> onFailure) {
+		this.onFailure = onFailure;
+	}
 
-  public Consumer<Throwable> getOnFailure() {
-    return onFailure;
-  }
+	public WriteBatch getBatchOfWriteEvents() {
+		WriteBatchImpl batch = new WriteBatchImpl()
+			.withBatcher(batcher)
+			.withClient(client)
+			.withJobBatchNumber(batchNumber)
+			.withJobWritesSoFar(itemsSoFar)
+			.withJobTicket(batcher.getJobTicket());
 
-  public void onFailure(Consumer<Throwable>  onFailure) {
-    this.onFailure = onFailure;
-  }
+		WriteEvent[] writeEvents = getWriteSet().stream()
+			.map(writeOperation ->
+				new WriteEventImpl()
+					.withTargetUri(writeOperation.getUri())
+					.withContent(writeOperation.getContent())
+					.withMetadata(writeOperation.getMetadata())
+			)
+			.toArray(WriteEventImpl[]::new);
 
-  public Runnable getOnBeforeWrite() {
-    return onBeforeWrite;
-  }
-
-  public void onBeforeWrite(Runnable onBeforeWrite) {
-    this.onBeforeWrite = onBeforeWrite;
-  }
-
-  public WriteBatch getBatchOfWriteEvents() {
-    WriteBatchImpl batch = new WriteBatchImpl()
-      .withBatcher(batcher)
-      .withClient(client)
-      .withJobBatchNumber(batchNumber)
-      .withJobWritesSoFar(itemsSoFar)
-      .withJobTicket(batcher.getJobTicket());
-    WriteEvent[] writeEvents = getWriteSet().stream()
-      .map(writeOperation ->
-        new WriteEventImpl()
-          .withTargetUri(writeOperation.getUri())
-          .withContent(writeOperation.getContent())
-          .withMetadata(writeOperation.getMetadata())
-      )
-      .toArray(WriteEventImpl[]::new);
-    batch.withItems(writeEvents);
-    return batch;
-  }
+		batch.withItems(writeEvents);
+		return batch;
+	}
 }
