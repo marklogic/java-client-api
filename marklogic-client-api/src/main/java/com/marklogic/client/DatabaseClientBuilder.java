@@ -29,7 +29,15 @@ public class DatabaseClientBuilder {
 	public final static String PREFIX = "marklogic.client.";
 	public final static String AUTH_TYPE_BASIC = "basic";
 	public final static String AUTH_TYPE_DIGEST = "digest";
-	public final static String AUTH_TYPE_MARKLOGIC_CLOUD = "cloud";
+
+	public final static String AUTH_TYPE_CLOUD = "cloud";
+
+	/**
+	 * @deprecated as of 8.1.0, use AUTH_TYPE_CLOUD instead
+	 */
+	@Deprecated
+	public final static String AUTH_TYPE_MARKLOGIC_CLOUD = AUTH_TYPE_CLOUD;
+
 	public final static String AUTH_TYPE_KERBEROS = "kerberos";
 	public final static String AUTH_TYPE_CERTIFICATE = "certificate";
 	public final static String AUTH_TYPE_SAML = "saml";
@@ -150,7 +158,7 @@ public class DatabaseClientBuilder {
 	}
 
 	public DatabaseClientBuilder withCloudAuth(String apiKey, String basePath) {
-		return withAuthType(AUTH_TYPE_MARKLOGIC_CLOUD)
+		return withAuthType(AUTH_TYPE_CLOUD)
 			.withCloudApiKey(apiKey)
 			.withBasePath(basePath);
 	}
@@ -163,7 +171,7 @@ public class DatabaseClientBuilder {
 	 * @since 6.3.0
 	 */
 	public DatabaseClientBuilder withCloudAuth(String apiKey, String basePath, Integer tokenDuration) {
-		return withAuthType(AUTH_TYPE_MARKLOGIC_CLOUD)
+		return withAuthType(AUTH_TYPE_CLOUD)
 			.withCloudApiKey(apiKey)
 			.withBasePath(basePath)
 			.withCloudTokenDuration(tokenDuration != null ? tokenDuration.toString() : null);
