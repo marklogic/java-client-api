@@ -24,7 +24,7 @@ class ProgressDataCloudAuthenticationConfigurer implements AuthenticationConfigu
 	@Override
 	public void configureAuthentication(OkHttpClient.Builder clientBuilder, DatabaseClientFactory.ProgressDataCloudAuthContext securityContext) {
 		final String apiKey = securityContext.getApiKey();
-		if (apiKey == null || apiKey.trim().length() < 1) {
+		if (apiKey == null || apiKey.trim().isEmpty()) {
 			throw new IllegalArgumentException("No API key provided");
 		}
 		TokenGenerator tokenGenerator = new DefaultTokenGenerator(this.host, securityContext);
@@ -56,8 +56,8 @@ class ProgressDataCloudAuthenticationConfigurer implements AuthenticationConfigu
 		public String generateToken() {
 			final Response tokenResponse = callTokenEndpoint();
 			String token = getAccessTokenFromResponse(tokenResponse);
-			if (logger.isInfoEnabled()) {
-				logger.info("Successfully obtained authentication token");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Successfully obtained authentication token");
 			}
 			return token;
 		}
@@ -70,8 +70,8 @@ class ProgressDataCloudAuthenticationConfigurer implements AuthenticationConfigu
 			OkHttpUtil.configureSocketFactory(clientBuilder, securityContext.getSSLContext(), securityContext.getTrustManager());
 			OkHttpUtil.configureHostnameVerifier(clientBuilder, securityContext.getSSLHostnameVerifier());
 
-			if (logger.isInfoEnabled()) {
-				logger.info("Calling token endpoint at: " + tokenUrl);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Calling token endpoint at: {}", tokenUrl);
 			}
 
 			final Call call = clientBuilder.build().newCall(
@@ -85,7 +85,7 @@ class ProgressDataCloudAuthenticationConfigurer implements AuthenticationConfigu
 				return call.execute();
 			} catch (IOException e) {
 				throw new ProgressDataCloudException(String.format("Unable to call token endpoint at %s; cause: %s",
-					tokenUrl, e.getMessage(), e));
+					tokenUrl, e.getMessage()), e);
 			}
 		}
 
@@ -97,7 +97,8 @@ class ProgressDataCloudAuthenticationConfigurer implements AuthenticationConfigu
 				.host(host)
 				.port(443)
 				.build()
-				.resolve(securityContext.getTokenEndpoint()).newBuilder();
+				.resolve(securityContext.getTokenEndpoint())
+				.newBuilder();
 
 			Integer duration = securityContext.getTokenDuration();
 			return duration != null ?
@@ -146,7 +147,7 @@ class ProgressDataCloudAuthenticationConfigurer implements AuthenticationConfigu
 		@Override
 		public Response intercept(Chain chain) throws IOException {
 			Request.Builder builder = chain.request().newBuilder();
-			addTokenToRequest(builder);
+			builder = addTokenToRequest(builder);
 			Response response = chain.proceed(builder.build());
 			if (response.code() == 401) {
 				logger.info("Received 401; will generate new token if necessary and retry request");
@@ -155,7 +156,7 @@ class ProgressDataCloudAuthenticationConfigurer implements AuthenticationConfigu
 				generateNewTokenIfNecessary(currentToken);
 
 				builder = chain.request().newBuilder();
-				addTokenToRequest(builder);
+				builder = addTokenToRequest(builder);
 				response = chain.proceed(builder.build());
 			}
 			return response;
