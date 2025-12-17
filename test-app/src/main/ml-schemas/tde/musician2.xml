@@ -1,0 +1,21 @@
+<template xmlns="http://marklogic.com/xdmp/tde">
+	<context>/musician</context>
+	<rows>
+		<row>
+			<schema-name>opticUnitTest</schema-name>
+			<view-name>musician2</view-name>
+			<columns>
+				<column>
+					<name>lastName2</name>
+					<scalar-type>string</scalar-type>
+					<val>lastName</val>
+				</column>
+				<column>
+					<name>firstName2</name>
+					<scalar-type>string</scalar-type>
+					<val>firstName</val>
+				</column>
+			</columns>
+		</row>
+	</rows>
+</template>

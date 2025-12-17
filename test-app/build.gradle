@@ -5,6 +5,7 @@
 buildscript {
 	repositories {
 		mavenCentral()
+		mavenLocal()
 		// Needed for ml-gradle 6.2-SNAPSHOT
 		maven {
 			url = "https://bed-artifactory.bedford.progress.com:443/artifactory/ml-maven-snapshots/"

@@ -23,6 +23,33 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class RowBatcherFailureTest {
 
 	@Test
+	void qbv() {
+		DatabaseClient client = Common.newClient();
+		DataMovementManager dmm = client.newDataMovementManager();
+
+		RowManager rowManager = client.newRowManager();
+		PlanBuilder op = rowManager.newPlanBuilder();
+		PlanBuilder.ModifyPlan plan = op
+			.fromView("qbv", "musicians");
+
+		List<JsonNode> returnedRows = new ArrayList<>();
+		List<Throwable> batchFailures = new ArrayList<>();
+
+		RowBatcher rowBatcher = dmm.newRowBatcher(new JacksonHandle())
+			.withBatchView(plan)
+			.withBatchSize(Integer.MAX_VALUE) // guarantees a single batch
+			.onSuccess(batch -> returnedRows.add(batch.getRowsDoc()))
+			.onFailure(((batch, throwable) -> batchFailures.add(throwable)));
+
+		dmm.startJob(rowBatcher);
+		rowBatcher.awaitCompletion();
+		dmm.stopJob(rowBatcher);
+
+		System.out.println("Returned rows: " + returnedRows);
+		System.out.println("Batch failures: " + batchFailures);
+	}
+
+	@Test
 	void invalidQuery() {
 		DatabaseClient client = Common.newClient();
 		DataMovementManager dmm = client.newDataMovementManager();
