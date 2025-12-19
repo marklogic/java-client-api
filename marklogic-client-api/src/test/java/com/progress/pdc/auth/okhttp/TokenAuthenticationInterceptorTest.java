@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
-package com.marklogic.client.impl.okhttp;
+package com.progress.pdc.auth.okhttp;
 
 import com.marklogic.client.ext.helper.LoggingObject;
 import mockwebserver3.MockResponse;
@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -37,8 +38,7 @@ class TokenAuthenticationInterceptorTest extends LoggingObject {
 
 		fakeTokenGenerator = new FakeTokenGenerator();
 
-		ProgressDataCloudAuthenticationConfigurer.TokenAuthenticationInterceptor interceptor =
-			new ProgressDataCloudAuthenticationConfigurer.TokenAuthenticationInterceptor(fakeTokenGenerator);
+		TokenAuthenticationInterceptor interceptor = new TokenAuthenticationInterceptor(fakeTokenGenerator);
 		assertEquals(1, fakeTokenGenerator.timesInvoked,
 			"When the interceptor is created, it should immediately generate a token so that when multiple threads " +
 				"are using the DatabaseClient, they will all use the same token.");
@@ -148,11 +148,11 @@ class TokenAuthenticationInterceptorTest extends LoggingObject {
 	 * Fake token generator that allows us to assert on how many times it's invoked, which ensures that new tokens are
 	 * or are not being generated when required.
 	 */
-	private static class FakeTokenGenerator implements ProgressDataCloudAuthenticationConfigurer.TokenGenerator {
+	private static class FakeTokenGenerator implements Supplier<String> {
 		int timesInvoked;
 
 		@Override
-		public String generateToken() {
+		public String get() {
 			// A slight delay is added here for the multipleThread test case to simulate the token generation taking
 			// some amount of time. This allows us to verify that the synchronization is working properly in the
 			// interceptor.

@@ -7,6 +7,7 @@ import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.impl.*;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
+import com.progress.pdc.auth.okhttp.TokenInputs;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -350,7 +351,7 @@ public class DatabaseClientFactory {
 	/**
 	 * @since 7.2.0 Replaced {@code MarkLogicCloudAuthContext} which was removed in 8.0.0
 	 */
-	public static class ProgressDataCloudAuthContext extends AuthContext {
+	public static class ProgressDataCloudAuthContext extends AuthContext implements TokenInputs {
 		private String tokenEndpoint;
 		private String grantType;
 		private String apiKey;
@@ -399,18 +400,22 @@ public class DatabaseClientFactory {
 			this.tokenDuration = tokenDuration;
 		}
 
+		@Override
 		public String getTokenEndpoint() {
 			return tokenEndpoint;
 		}
 
+		@Override
 		public String getGrantType() {
 			return grantType;
 		}
 
+		@Override
 		public String getApiKey() {
 			return apiKey;
 		}
 
+		@Override
 		public Integer getTokenDuration() {
 			return tokenDuration;
 		}
