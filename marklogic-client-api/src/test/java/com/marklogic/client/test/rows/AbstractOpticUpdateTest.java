@@ -18,6 +18,7 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.test.AbstractClientTest;
 import com.marklogic.client.test.Common;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public abstract class AbstractOpticUpdateTest {
+public abstract class AbstractOpticUpdateTest extends AbstractClientTest {
 
 	private final static String XML_PREAMBLE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
@@ -42,10 +43,6 @@ public abstract class AbstractOpticUpdateTest {
 
 	@BeforeEach
 	public void setup() {
-		// Subclasses of this test are expected to only write URIs starting with /acme/ (which is used so that test
-		// URIs show up near the top when exploring the database in qconsole), so delete all of them before running the
-		// test to ensure a document doesn't already exist.
-		Common.deleteUrisWithPattern("/acme/*");
 		Common.client = Common.newClientBuilder().withUsername("writer-no-default-permissions").build();
 		rowManager = Common.client.newRowManager().withUpdate(true);
 		op = rowManager.newPlanBuilder();
