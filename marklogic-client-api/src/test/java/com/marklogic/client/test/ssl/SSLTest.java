@@ -81,7 +81,7 @@ public class SSLTest {
 
   @Test
   // Not able to mock the X509Certificate class on Java 21.
-  @EnabledOnJre({JRE.JAVA_8, JRE.JAVA_11, JRE.JAVA_17})
+  @EnabledOnJre({JRE.JAVA_17})
   public void testHostnameVerifier() throws SSLException, CertificateParsingException {
     // three things our SSLHostnameVerifier will capture
     AtomicReference<String> capturedHost = new AtomicReference<>();
