@@ -5,6 +5,9 @@
 buildscript {
 	repositories {
 		mavenCentral()
+
+		mavenLocal()
+
 		// Needed for ml-gradle 6.2-SNAPSHOT
 		maven {
 			url = "https://bed-artifactory.bedford.progress.com:443/artifactory/ml-maven-snapshots/"
@@ -26,7 +29,7 @@ dependencies {
 	implementation "io.undertow:undertow-core:2.3.20.Final"
 	implementation "io.undertow:undertow-servlet:2.3.20.Final"
 	implementation 'org.slf4j:slf4j-api:2.0.17'
-	implementation 'ch.qos.logback:logback-classic:1.5.19'
+	implementation 'ch.qos.logback:logback-classic:1.5.23'
 	implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
 	implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
 }
