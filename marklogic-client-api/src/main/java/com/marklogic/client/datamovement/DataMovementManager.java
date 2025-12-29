@@ -7,6 +7,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.query.*;
 
+import java.io.Closeable;
 import java.util.Iterator;
 
 /**
@@ -33,7 +34,15 @@ import java.util.Iterator;
  *     dataMovementManager.release();
  *}</pre>
  */
-public interface DataMovementManager {
+public interface DataMovementManager extends Closeable {
+
+	/**
+	 * @since 8.1.0
+	 */
+	default void close() {
+		release();
+	}
+
   /** Calls release() on all host-specific DatabaseClient instances (but not on
    * the DatabaseClient instance used to create this DataMovementManager
    * instance).
