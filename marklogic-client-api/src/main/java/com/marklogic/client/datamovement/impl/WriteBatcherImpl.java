@@ -126,6 +126,7 @@ public class WriteBatcherImpl
   private boolean initialized = false;
   private CompletableThreadPoolExecutor threadPool = null;
   private DocumentMetadataHandle defaultMetadata;
+  private DocumentWriteSetFilter documentWriteSetFilter;
 
   public WriteBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super(moveMgr);
@@ -200,7 +201,7 @@ public class WriteBatcherImpl
         writeSet.getDocumentWriteSet().add(doc);
       }
       if ( writeSet.getDocumentWriteSet().size() > minBatchSize ) {
-        threadPool.submit( new BatchWriter(writeSet) );
+        threadPool.submit( new BatchWriter(writeSet, documentWriteSetFilter) );
       }
     }
     return this;
@@ -308,7 +309,7 @@ public class WriteBatcherImpl
     for (WriteEvent doc : batch.getItems()) {
       writeSet.getDocumentWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
     }
-    BatchWriter runnable = new BatchWriter(writeSet);
+    BatchWriter runnable = new BatchWriter(writeSet, documentWriteSetFilter);
     runnable.run();
   }
   @Override
@@ -379,7 +380,7 @@ public class WriteBatcherImpl
         DocumentWriteOperation doc = iter.next();
         writeSet.getDocumentWriteSet().add(doc);
       }
-      threadPool.submit( new BatchWriter(writeSet) );
+      threadPool.submit( new BatchWriter(writeSet, documentWriteSetFilter) );
     }
 
     if (waitForCompletion) awaitCompletion();
@@ -597,7 +598,7 @@ public class WriteBatcherImpl
             for ( WriteEvent doc : writerTask.batchWriteSet().getBatchOfWriteEvents().getItems() ) {
               writeSet.getDocumentWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
             }
-            BatchWriter retryWriterTask = new BatchWriter(writeSet);
+            BatchWriter retryWriterTask = new BatchWriter(writeSet, documentWriteSetFilter);
             Runnable fretryWriterTask = (Runnable) threadPool.submit(retryWriterTask);
             threadPool.replaceTask(writerTask, fretryWriterTask);
             // jump to the next task
@@ -846,4 +847,10 @@ public class WriteBatcherImpl
   public DocumentMetadataHandle getDocumentMetadata() {
   return defaultMetadata;
 }
+
+  @Override
+  public WriteBatcher withDocumentWriteSetFilter(DocumentWriteSetFilter filter) {
+    this.documentWriteSetFilter = filter;
+    return this;
+  }
 }

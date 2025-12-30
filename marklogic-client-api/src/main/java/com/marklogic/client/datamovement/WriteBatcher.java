@@ -357,4 +357,17 @@ public interface WriteBatcher extends Batcher {
    * @param writeBatch the information about the batch that failed
    */
   void retryWithFailureListeners(WriteBatch writeBatch);
+
+  /**
+   * Sets a filter to modify or replace the DocumentWriteSet before it is written.
+   * The filter can return either the modified DocumentWriteSet or a new one.
+   * If the filter returns null or an empty DocumentWriteSet, no write will occur.
+   *
+   * @param filter the function to apply before writing
+   * @return this instance for method chaining
+   * @since 8.1.0
+   */
+  default WriteBatcher withDocumentWriteSetFilter(DocumentWriteSetFilter filter) {
+	  return this;
+  }
 }

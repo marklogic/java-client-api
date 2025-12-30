@@ -31,6 +31,7 @@ public abstract class AbstractClientTest extends AbstractMarkLogicTest {
 	void releaseClient() {
 		if (Common.client != null) {
 			Common.client.release();
+			Common.client = null;
 		}
 	}
 }
