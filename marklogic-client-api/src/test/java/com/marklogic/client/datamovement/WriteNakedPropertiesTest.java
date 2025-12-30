@@ -1,14 +1,12 @@
 /*
  * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
-package com.marklogic.client.test.datamovement;
+package com.marklogic.client.datamovement;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.test.AbstractClientTest;
 import com.marklogic.client.test.Common;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.namespace.QName;
@@ -16,12 +14,7 @@ import javax.xml.namespace.QName;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class WriteNakedPropertiesTest {
-
-	@BeforeEach
-	void setup() {
-		Common.newRestAdminClient().newXMLDocumentManager().delete("/naked.xml");
-	}
+class WriteNakedPropertiesTest extends AbstractClientTest {
 
 	@Test
 	void test() {

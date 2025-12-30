@@ -3,6 +3,7 @@
  */
 package com.marklogic.client.datamovement.impl;
 
+import com.marklogic.client.datamovement.DocumentWriteSetFilter;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.XMLDocumentManager;
@@ -13,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.util.function.Consumer;
 
-record BatchWriter(BatchWriteSet batchWriteSet) implements Runnable {
+record BatchWriter(BatchWriteSet batchWriteSet, DocumentWriteSetFilter filter) implements Runnable {
 
 	private static Logger logger = LoggerFactory.getLogger(WriteBatcherImpl.class);
 
@@ -28,6 +29,16 @@ record BatchWriter(BatchWriteSet batchWriteSet) implements Runnable {
 			logger.trace("Begin write batch {} to forest on host '{}'", batchWriteSet.getBatchNumber(), batchWriteSet.getClient().getHost());
 
 			DocumentWriteSet documentWriteSet = batchWriteSet.getDocumentWriteSet();
+			if (filter != null) {
+				documentWriteSet = filter.apply(batchWriteSet);
+				if (documentWriteSet == null || documentWriteSet.isEmpty()) {
+					logger.debug("Filter returned empty write set for batch {}, skipping write", batchWriteSet.getBatchNumber());
+					closeAllHandles();
+					return;
+				}
+				batchWriteSet.updateWithFilteredDocumentWriteSet(documentWriteSet);
+			}
+
 			writeDocuments(documentWriteSet);
 
 			// This seems like it should be part of a finally block - but it's able to throw an exception. Which implies

@@ -3,6 +3,7 @@
  */
 package com.marklogic.client.impl.okhttp;
 
+import com.marklogic.client.MarkLogicIOException;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -47,7 +48,7 @@ public class RetryIOExceptionInterceptor implements Interceptor {
 		for (int attempt = 0; attempt <= maxRetries; attempt++) {
 			try {
 				return chain.proceed(request);
-			} catch (IOException e) {
+			} catch (MarkLogicIOException | IOException e) {
 				if (attempt == maxRetries || !isRetryableIOException(e)) {
 					logger.warn("Not retryable: {}; {}", e.getClass(), e.getMessage());
 					throw e;
@@ -65,7 +66,7 @@ public class RetryIOExceptionInterceptor implements Interceptor {
 		throw new IllegalStateException("Unexpected end of retry loop");
 	}
 
-	private boolean isRetryableIOException(IOException e) {
+	private boolean isRetryableIOException(Exception e) {
 		return e instanceof ConnectException ||
 			e instanceof SocketTimeoutException ||
 			e instanceof UnknownHostException ||
