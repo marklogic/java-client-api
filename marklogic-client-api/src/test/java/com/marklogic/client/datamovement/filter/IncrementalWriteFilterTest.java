@@ -9,6 +9,8 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.StringHandle;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -32,7 +34,8 @@ class IncrementalWriteFilterTest {
 		DocumentWriteOperation doc1 = new DocumentWriteOperationImpl("/1.xml", metadata, new StringHandle("<doc1/>"));
 		DocumentWriteOperation doc2 = new DocumentWriteOperationImpl("/2.xml", metadata, new StringHandle("<doc2/>"));
 
-		doc2 = IncrementalWriteFilter.addHashToMetadata(doc2, "theField", "abc123");
+		final String timestamp = Instant.now().toString();
+		doc2 = IncrementalWriteFilter.addHashToMetadata(doc2, "theField", "abc123", "theTimestamp", timestamp);
 
 		assertEquals(metadata, doc1.getMetadata(), "doc1 should still have the original metadata object");
 
@@ -44,5 +47,6 @@ class IncrementalWriteFilterTest {
 
 		assertEquals("value1", metadata2.getMetadataValues().get("meta1"), "metadata value should be preserved");
 		assertEquals("abc123", metadata2.getMetadataValues().get("theField"), "hash field should be added");
+		assertEquals(timestamp, metadata2.getMetadataValues().get("theTimestamp"), "timestamp should be added");
 	}
 }

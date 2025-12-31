@@ -153,7 +153,7 @@ class IncrementalWriteTest extends AbstractClientTest {
 	@Test
 	void noRangeIndexForField() {
 		filter = IncrementalWriteFilter.newBuilder()
-			.fieldName("non-existent-field")
+			.hashKeyName("non-existent-field")
 			.build();
 
 		writeTenDocuments();
@@ -168,7 +168,7 @@ class IncrementalWriteTest extends AbstractClientTest {
 	@Test
 	void noRangeIndexForFieldWithEval() {
 		filter = IncrementalWriteFilter.newBuilder()
-			.fieldName("non-existent-field")
+			.hashKeyName("non-existent-field")
 			.useEvalQuery(true)
 			.build();
 
@@ -218,8 +218,6 @@ class IncrementalWriteTest extends AbstractClientTest {
 		while (page.hasNext()) {
 			DocumentRecord doc = page.next();
 			DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
-			assertTrue(metadata.getMetadataValues().containsKey("incrementalWriteHash"),
-				"Document " + doc.getUri() + " should have an incrementalWriteHash in its metadata values.");
 
 			String hash = metadata.getMetadataValues().get("incrementalWriteHash");
 			try {
@@ -228,6 +226,9 @@ class IncrementalWriteTest extends AbstractClientTest {
 			} catch (NumberFormatException e) {
 				fail("Document " + doc.getUri() + " has an invalid incrementalWriteHash value: " + hash);
 			}
+
+			String timestamp = metadata.getMetadataValues().get("incrementalWriteTimestamp");
+			assertNotNull(timestamp, "Document " + doc.getUri() + " should have an incrementalWriteTimestamp value.");
 		}
 	}
 

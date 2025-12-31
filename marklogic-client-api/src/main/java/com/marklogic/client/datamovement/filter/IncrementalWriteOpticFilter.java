@@ -19,8 +19,9 @@ import java.util.function.Consumer;
  */
 class IncrementalWriteOpticFilter extends IncrementalWriteFilter {
 
-	IncrementalWriteOpticFilter(String fieldName, boolean canonicalizeJson, Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer) {
-		super(fieldName, canonicalizeJson, skippedDocumentsConsumer);
+	IncrementalWriteOpticFilter(String hashKeyName, String timestampKeyName, boolean canonicalizeJson,
+								Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer) {
+		super(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer);
 	}
 
 	@Override
@@ -38,7 +39,7 @@ class IncrementalWriteOpticFilter extends IncrementalWriteFilter {
 			Map<String, String> existingHashes = rowTemplate.query(op ->
 					op.fromLexicons(Map.of(
 						"uri", op.cts.uriReference(),
-						"hash", op.cts.fieldReference(super.fieldName)
+						"hash", op.cts.fieldReference(super.hashKeyName)
 					)).where(
 						op.cts.documentQuery(op.xs.stringSeq(uris))
 					),

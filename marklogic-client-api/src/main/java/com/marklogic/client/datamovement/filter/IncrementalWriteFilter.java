@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -39,16 +40,25 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 
 	public static class Builder {
 
-		private String fieldName = "incrementalWriteHash";
+		private String hashKeyName = "incrementalWriteHash";
+		private String timestampKeyName = "incrementalWriteTimestamp";
 		private boolean canonicalizeJson = true;
 		private boolean useEvalQuery = false;
 		private Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer;
 
 		/**
-		 * @param fieldName the name of the MarkLogic field that will hold the hash value; defaults to "incrementalWriteHash".
+		 * @param keyName the name of the MarkLogic metadata key that will hold the hash value; defaults to "incrementalWriteHash".
 		 */
-		public Builder fieldName(String fieldName) {
-			this.fieldName = fieldName;
+		public Builder hashKeyName(String keyName) {
+			this.hashKeyName = keyName;
+			return this;
+		}
+
+		/**
+		 * @param keyName the name of the MarkLogic metadata key that will hold the timestamp value; defaults to "incrementalWriteTimestamp".
+		 */
+		public Builder timestampKeyName(String keyName) {
+			this.timestampKeyName = keyName;
 			return this;
 		}
 
@@ -79,13 +89,14 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 
 		public IncrementalWriteFilter build() {
 			if (useEvalQuery) {
-				return new IncrementalWriteEvalFilter(fieldName, canonicalizeJson, skippedDocumentsConsumer);
+				return new IncrementalWriteEvalFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer);
 			}
-			return new IncrementalWriteOpticFilter(fieldName, canonicalizeJson, skippedDocumentsConsumer);
+			return new IncrementalWriteOpticFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer);
 		}
 	}
 
-	protected final String fieldName;
+	protected final String hashKeyName;
+	private final String timestampKeyName;
 	private final boolean canonicalizeJson;
 	private final Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer;
 
@@ -93,8 +104,9 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 	// See https://xxhash.com for benchmarks.
 	private final LongHashFunction hashFunction = LongHashFunction.xx3();
 
-	public IncrementalWriteFilter(String fieldName, boolean canonicalizeJson, Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer) {
-		this.fieldName = fieldName;
+	public IncrementalWriteFilter(String hashKeyName, String timestampKeyName, boolean canonicalizeJson, Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer) {
+		this.hashKeyName = hashKeyName;
+		this.timestampKeyName = timestampKeyName;
 		this.canonicalizeJson = canonicalizeJson;
 		this.skippedDocumentsConsumer = skippedDocumentsConsumer;
 	}
@@ -102,6 +114,7 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 	protected final DocumentWriteSet filterDocuments(Context context, Function<String, String> hashRetriever) {
 		final DocumentWriteSet newWriteSet = context.getDatabaseClient().newDocumentManager().newWriteSet();
 		final List<DocumentWriteOperation> skippedDocuments = new ArrayList<>();
+		final String timestamp = Instant.now().toString();
 
 		for (DocumentWriteOperation doc : context.getDocumentWriteSet()) {
 			if (!DocumentWriteOperation.OperationType.DOCUMENT_WRITE.equals(doc.getOperationType())) {
@@ -117,14 +130,14 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 
 			if (existingHash != null) {
 				if (!existingHash.equals(contentHash)) {
-					newWriteSet.add(addHashToMetadata(doc, fieldName, contentHash));
+					newWriteSet.add(addHashToMetadata(doc, hashKeyName, contentHash, timestampKeyName, timestamp));
 				} else if (skippedDocumentsConsumer != null) {
 					skippedDocuments.add(doc);
 				} else {
 					// No consumer, so skip the document silently.
 				}
 			} else {
-				newWriteSet.add(addHashToMetadata(doc, fieldName, contentHash));
+				newWriteSet.add(addHashToMetadata(doc, hashKeyName, contentHash, timestampKeyName, timestamp));
 			}
 		}
 
@@ -173,7 +186,8 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		return Long.toHexString(hash);
 	}
 
-	protected static DocumentWriteOperation addHashToMetadata(DocumentWriteOperation op, String fieldName, String hash) {
+	protected static DocumentWriteOperation addHashToMetadata(DocumentWriteOperation op, String hashKeyName, String hash,
+															  String timestampKeyName, String timestamp) {
 		DocumentMetadataHandle newMetadata = new DocumentMetadataHandle();
 		if (op.getMetadata() != null) {
 			DocumentMetadataHandle originalMetadata = (DocumentMetadataHandle) op.getMetadata();
@@ -183,7 +197,10 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 			newMetadata.setProperties(originalMetadata.getProperties());
 			newMetadata.getMetadataValues().putAll(originalMetadata.getMetadataValues());
 		}
-		newMetadata.getMetadataValues().put(fieldName, hash);
+
+		newMetadata.getMetadataValues().put(hashKeyName, hash);
+		newMetadata.getMetadataValues().put(timestampKeyName, timestamp);
+
 		return new DocumentWriteOperationImpl(op.getUri(), newMetadata, op.getContent(), op.getTemporalDocumentURI());
 	}
 }

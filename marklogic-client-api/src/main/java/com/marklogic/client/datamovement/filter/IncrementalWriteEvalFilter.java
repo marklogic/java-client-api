@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 class IncrementalWriteEvalFilter extends IncrementalWriteFilter {
 
 	private static final String EVAL_SCRIPT = """
-		const tuples = cts.valueTuples([cts.uriReference(), cts.fieldReference(fieldName)], null, cts.documentQuery(uris));
+		const tuples = cts.valueTuples([cts.uriReference(), cts.fieldReference(hashKeyName)], null, cts.documentQuery(uris));
 		const response = {};
 		for (var tuple of tuples) {
 		  response[tuple[0]] = tuple[1];
@@ -30,8 +30,9 @@ class IncrementalWriteEvalFilter extends IncrementalWriteFilter {
 		response
 		""";
 
-	IncrementalWriteEvalFilter(String fieldName, boolean canonicalizeJson, Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer) {
-		super(fieldName, canonicalizeJson, skippedDocumentsConsumer);
+	IncrementalWriteEvalFilter(String hashKeyName, String timestampKeyName, boolean canonicalizeJson,
+							   Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer) {
+		super(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer);
 	}
 
 	@Override
@@ -45,7 +46,7 @@ class IncrementalWriteEvalFilter extends IncrementalWriteFilter {
 
 		try {
 			JsonNode response = context.getDatabaseClient().newServerEval().javascript(EVAL_SCRIPT)
-				.addVariable("fieldName", fieldName)
+				.addVariable("hashKeyName", hashKeyName)
 				.addVariable("uris", new JacksonHandle(uris))
 				.evalAs(JsonNode.class);
 
