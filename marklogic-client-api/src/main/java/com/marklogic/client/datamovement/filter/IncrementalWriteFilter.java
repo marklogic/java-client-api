@@ -109,7 +109,7 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 				continue;
 			}
 
-			final String contentHash = serializeContent(doc);
+			final String contentHash = computeHash(serializeContent(doc));
 			final String existingHash = hashRetriever.apply(doc.getUri());
 			if (logger.isTraceEnabled()) {
 				logger.trace("URI: {}, existing Hash: {}, new Hash: {}", doc.getUri(), existingHash, contentHash);

@@ -6,6 +6,7 @@ package com.marklogic.client.datamovement.filter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.datamovement.DocumentWriteSetFilter;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -42,16 +43,21 @@ class IncrementalWriteEvalFilter extends IncrementalWriteFilter {
 			}
 		}
 
-		JsonNode response = context.getDatabaseClient().newServerEval().javascript(EVAL_SCRIPT)
-			.addVariable("fieldName", fieldName)
-			.addVariable("uris", new JacksonHandle(uris))
-			.evalAs(JsonNode.class);
+		try {
+			JsonNode response = context.getDatabaseClient().newServerEval().javascript(EVAL_SCRIPT)
+				.addVariable("fieldName", fieldName)
+				.addVariable("uris", new JacksonHandle(uris))
+				.evalAs(JsonNode.class);
 
-		return filterDocuments(context, uri -> {
-			if (response.has(uri)) {
-				return response.get(uri).asText();
-			}
-			return null;
-		});
+			return filterDocuments(context, uri -> {
+				if (response.has(uri)) {
+					return response.get(uri).asText();
+				}
+				return null;
+			});
+		} catch (FailedRequestException e) {
+			String message = "Unable to query for existing incremental write hashes; cause: " + e.getMessage();
+			throw new FailedRequestException(message, e.getFailedRequest());
+		}
 	}
 }

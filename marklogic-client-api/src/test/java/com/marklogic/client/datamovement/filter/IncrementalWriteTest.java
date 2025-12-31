@@ -5,7 +5,7 @@ package com.marklogic.client.datamovement.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.document.DocumentWriteOperation;
+import com.marklogic.client.document.*;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
@@ -150,8 +150,40 @@ class IncrementalWriteTest extends AbstractClientTest {
 			"Expecting the server to throw an error. Actual message: " + message);
 	}
 
+	@Test
+	void noRangeIndexForField() {
+		filter = IncrementalWriteFilter.newBuilder()
+			.fieldName("non-existent-field")
+			.build();
+
+		writeTenDocuments();
+
+		assertNotNull(batchFailure.get());
+		String message = batchFailure.get().getMessage();
+		assertTrue(message.contains("Unable to query for existing incremental write hashes") && message.contains("XDMP-FIELDRIDXNOTFOUND"),
+			"When the user tries to use the incremental write feature without the required range index, we should " +
+				"fail with a helpful error message. Actual message: " + message);
+	}
+
+	@Test
+	void noRangeIndexForFieldWithEval() {
+		filter = IncrementalWriteFilter.newBuilder()
+			.fieldName("non-existent-field")
+			.useEvalQuery(true)
+			.build();
+
+		writeTenDocuments();
+
+		assertNotNull(batchFailure.get());
+		String message = batchFailure.get().getMessage();
+		assertTrue(message.contains("Unable to query for existing incremental write hashes") && message.contains("XDMP-FIELDRIDXNOTFOUND"),
+			"When the user tries to use the incremental write feature without the required range index, we should " +
+				"fail with a helpful error message. Actual message: " + message);
+	}
+
 	private void verifyIncrementalWriteWorks() {
 		writeTenDocuments();
+		verifyDocumentsHasHashInMetadataKey();
 		assertEquals(10, writtenCount.get());
 		assertEquals(0, skippedCount.get(), "No docs should have been skipped on the first write.");
 
@@ -169,36 +201,44 @@ class IncrementalWriteTest extends AbstractClientTest {
 	}
 
 	private void writeTenDocuments() {
-		new WriteBatcherTemplate(Common.client).runWriteJob(writeBatcher -> writeBatcher
-				.withThreadCount(1).withBatchSize(5)
-				.onBatchSuccess(batch -> writtenCount.addAndGet(batch.getItems().length))
-				.withDocumentWriteSetFilter(filter),
+		docs = new ArrayList<>();
+		for (int i = 1; i <= 10; i++) {
+			// Consistent URIs are required for incremental writes to work.
+			String uri = "/incremental/test/doc-" + i + ".xml";
+			String content = "<doc>This is document number " + i + "</doc>";
+			docs.add(new DocumentWriteOperationImpl(uri, METADATA, new StringHandle(content)));
+		}
+		writeDocs(docs);
+	}
 
-			writeBatcher -> {
-				for (int i = 1; i <= 10; i++) {
-					// Consistent URIs are required for incremental writes to work.
-					String uri = "/incremental/test/doc-" + i + ".xml";
-					String content = "<doc>This is document number " + i + "</doc>";
-					writeBatcher.add(uri, METADATA, new StringHandle(content));
-				}
+	private void verifyDocumentsHasHashInMetadataKey() {
+		GenericDocumentManager mgr = Common.client.newDocumentManager();
+		mgr.setMetadataCategories(DocumentManager.Metadata.METADATAVALUES);
+		DocumentPage page = mgr.search(Common.client.newQueryManager().newStructuredQueryBuilder().collection("incremental-test"), 1);
+		while (page.hasNext()) {
+			DocumentRecord doc = page.next();
+			DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
+			assertTrue(metadata.getMetadataValues().containsKey("incrementalWriteHash"),
+				"Document " + doc.getUri() + " should have an incrementalWriteHash in its metadata values.");
+
+			String hash = metadata.getMetadataValues().get("incrementalWriteHash");
+			try {
+				// Can use Java's support for parsing unsigned longs in base 16 to verify the hash is valid.
+				Long.parseUnsignedLong(hash, 16);
+			} catch (NumberFormatException e) {
+				fail("Document " + doc.getUri() + " has an invalid incrementalWriteHash value: " + hash);
 			}
-		);
+		}
 	}
 
 	private void modifyFiveDocuments() {
-		new WriteBatcherTemplate(Common.client).runWriteJob(writeBatcher -> writeBatcher
-				.withThreadCount(1).withBatchSize(5)
-				.onBatchSuccess(batch -> writtenCount.addAndGet(batch.getItems().length))
-				.withDocumentWriteSetFilter(filter),
-
-			writeBatcher -> {
-				for (int i = 6; i <= 10; i++) {
-					String uri = "/incremental/test/doc-" + i + ".xml";
-					String content = "<doc>This is modified content</doc>";
-					writeBatcher.add(uri, METADATA, new StringHandle(content));
-				}
-			}
-		);
+		docs = new ArrayList<>();
+		for (int i = 6; i <= 10; i++) {
+			String uri = "/incremental/test/doc-" + i + ".xml";
+			String content = "<doc>This is modified content</doc>";
+			docs.add(new DocumentWriteOperationImpl(uri, METADATA, new StringHandle(content)));
+		}
+		writeDocs(docs);
 	}
 
 	private void writeDocs(List<DocumentWriteOperation> docs) {
