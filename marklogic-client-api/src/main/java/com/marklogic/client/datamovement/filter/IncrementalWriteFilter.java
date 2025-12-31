@@ -149,7 +149,9 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 				jc = new JsonCanonicalizer(content);
 				return jc.getEncodedString();
 			} catch (IOException e) {
-				// Going to improve this in the next PR, as I think we can throw an exception if Format = JSON.
+				// If the Format is actually JSON, then the write to MarkLogic should ultimately fail, which is the
+				// error message the user would want to see via a batch failure listener. So in all cases, if we cannot
+				// canonicalize something that appears to be JSON, we log a warning and return the original content for hashing.
 				logger.warn("Unable to canonicalize JSON content for URI {}, using original content for hashing; cause: {}",
 					doc.getUri(), e.getMessage());
 			}
