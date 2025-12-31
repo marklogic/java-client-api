@@ -3,6 +3,7 @@
  */
 package com.marklogic.client.datamovement.filter;
 
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.row.RowTemplate;
@@ -31,25 +32,32 @@ class IncrementalWriteOpticFilter extends IncrementalWriteFilter {
 
 		// It doesn't seem possible yet to use a DSL query and bind an array of strings to a "uris" param, so using
 		// a serialized query instead. That doesn't allow a user to override the query though.
-		Map<String, String> existingHashes = new RowTemplate(context.getDatabaseClient()).query(op ->
-				op.fromLexicons(Map.of(
-					"uri", op.cts.uriReference(),
-					"hash", op.cts.fieldReference(super.fieldName)
-				)).where(
-					op.cts.documentQuery(op.xs.stringSeq(uris))
-				),
+		RowTemplate rowTemplate = new RowTemplate(context.getDatabaseClient());
 
-			rows -> {
-				Map<String, String> map = new HashMap<>();
-				rows.forEach(row -> {
-					String uri = row.getString("uri");
-					String existingHash = row.getString("hash");
-					map.put(uri, existingHash);
-				});
-				return map;
-			}
-		);
+		try {
+			Map<String, String> existingHashes = rowTemplate.query(op ->
+					op.fromLexicons(Map.of(
+						"uri", op.cts.uriReference(),
+						"hash", op.cts.fieldReference(super.fieldName)
+					)).where(
+						op.cts.documentQuery(op.xs.stringSeq(uris))
+					),
 
-		return filterDocuments(context, uri -> existingHashes.get(uri));
+				rows -> {
+					Map<String, String> map = new HashMap<>();
+					rows.forEach(row -> {
+						String uri = row.getString("uri");
+						String existingHash = row.getString("hash");
+						map.put(uri, existingHash);
+					});
+					return map;
+				}
+			);
+
+			return filterDocuments(context, uri -> existingHashes.get(uri));
+		} catch (FailedRequestException e) {
+			String message = "Unable to query for existing incremental write hashes; cause: " + e.getMessage();
+			throw new FailedRequestException(message, e.getFailedRequest());
+		}
 	}
 }
