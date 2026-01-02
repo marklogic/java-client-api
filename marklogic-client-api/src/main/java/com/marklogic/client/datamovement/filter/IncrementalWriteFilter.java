@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.datamovement.filter;
 
@@ -50,7 +50,10 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		 * @param keyName the name of the MarkLogic metadata key that will hold the hash value; defaults to "incrementalWriteHash".
 		 */
 		public Builder hashKeyName(String keyName) {
-			this.hashKeyName = keyName;
+			// Don't let user shoot themselves in the foot with an empty key name.
+			if (keyName != null && !keyName.trim().isEmpty()) {
+				this.hashKeyName = keyName;
+			}
 			return this;
 		}
 
@@ -58,7 +61,10 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		 * @param keyName the name of the MarkLogic metadata key that will hold the timestamp value; defaults to "incrementalWriteTimestamp".
 		 */
 		public Builder timestampKeyName(String keyName) {
-			this.timestampKeyName = keyName;
+			// Don't let user shoot themselves in the foot with an empty key name.
+			if (keyName != null && !keyName.trim().isEmpty()) {
+				this.timestampKeyName = keyName;
+			}
 			return this;
 		}
 

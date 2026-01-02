@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.datamovement.filter;
 
@@ -179,6 +179,43 @@ class IncrementalWriteTest extends AbstractClientTest {
 		assertTrue(message.contains("Unable to query for existing incremental write hashes") && message.contains("XDMP-FIELDRIDXNOTFOUND"),
 			"When the user tries to use the incremental write feature without the required range index, we should " +
 				"fail with a helpful error message. Actual message: " + message);
+	}
+
+	@Test
+	void customTimestampKeyName() {
+		filter = IncrementalWriteFilter.newBuilder()
+			.hashKeyName("incrementalWriteHash")
+			.timestampKeyName("myTimestamp")
+			.build();
+
+		writeTenDocuments();
+
+		DocumentMetadataHandle metadata = Common.client.newDocumentManager().readMetadata("/incremental/test/doc-1.xml",
+			new DocumentMetadataHandle());
+
+		assertNotNull(metadata.getMetadataValues().get("myTimestamp"));
+		assertNotNull(metadata.getMetadataValues().get("incrementalWriteHash"));
+		assertFalse(metadata.getMetadataValues().containsKey("incrementalWriteTimestamp"));
+	}
+
+	/**
+	 * The thought for this test is that if the user passes null in (which could happen via our Spark connector),
+	 * they're breaking the feature. So don't let them do that - ignore null and use the default values.
+	 */
+	@Test
+	void nullIsIgnoredForKeyNames() {
+		filter = IncrementalWriteFilter.newBuilder()
+			.hashKeyName(null)
+			.timestampKeyName(null)
+			.build();
+
+		writeTenDocuments();
+
+		DocumentMetadataHandle metadata = Common.client.newDocumentManager().readMetadata("/incremental/test/doc-1.xml",
+			new DocumentMetadataHandle());
+
+		assertNotNull(metadata.getMetadataValues().get("incrementalWriteHash"));
+		assertNotNull(metadata.getMetadataValues().get("incrementalWriteTimestamp"));
 	}
 
 	private void verifyIncrementalWriteWorks() {
