@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.datamovement.filter;
 
@@ -31,8 +31,8 @@ class IncrementalWriteEvalFilter extends IncrementalWriteFilter {
 		""";
 
 	IncrementalWriteEvalFilter(String hashKeyName, String timestampKeyName, boolean canonicalizeJson,
-							   Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer) {
-		super(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer);
+							   Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer, String[] jsonExclusions) {
+		super(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions);
 	}
 
 	@Override
