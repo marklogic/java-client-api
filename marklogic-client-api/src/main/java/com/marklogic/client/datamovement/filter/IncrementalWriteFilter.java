@@ -45,6 +45,7 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		private boolean canonicalizeJson = true;
 		private boolean useEvalQuery = false;
 		private Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer;
+		private String[] jsonExclusions;
 
 		/**
 		 * @param keyName the name of the MarkLogic metadata key that will hold the hash value; defaults to "incrementalWriteHash".
@@ -93,11 +94,20 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 			return this;
 		}
 
+		/**
+		 * @param jsonPointers JSON Pointer expressions (RFC 6901) identifying JSON properties to exclude from hash calculation.
+		 *                     For example, "/metadata/timestamp" or "/user/lastModified".
+		 */
+		public Builder jsonExclusions(String... jsonPointers) {
+			this.jsonExclusions = jsonPointers;
+			return this;
+		}
+
 		public IncrementalWriteFilter build() {
 			if (useEvalQuery) {
-				return new IncrementalWriteEvalFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer);
+				return new IncrementalWriteEvalFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions);
 			}
-			return new IncrementalWriteOpticFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer);
+			return new IncrementalWriteOpticFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions);
 		}
 	}
 
@@ -105,16 +115,18 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 	private final String timestampKeyName;
 	private final boolean canonicalizeJson;
 	private final Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer;
+	private final String[] jsonExclusions;
 
 	// Hardcoding this for now, with a good general purpose hashing function.
 	// See https://xxhash.com for benchmarks.
 	private final LongHashFunction hashFunction = LongHashFunction.xx3();
 
-	public IncrementalWriteFilter(String hashKeyName, String timestampKeyName, boolean canonicalizeJson, Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer) {
+	public IncrementalWriteFilter(String hashKeyName, String timestampKeyName, boolean canonicalizeJson, Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer, String[] jsonExclusions) {
 		this.hashKeyName = hashKeyName;
 		this.timestampKeyName = timestampKeyName;
 		this.canonicalizeJson = canonicalizeJson;
 		this.skippedDocumentsConsumer = skippedDocumentsConsumer;
+		this.jsonExclusions = jsonExclusions;
 	}
 
 	protected final DocumentWriteSet filterDocuments(Context context, Function<String, String> hashRetriever) {
@@ -165,6 +177,10 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		if (canonicalizeJson && (Format.JSON.equals(format) || isPossiblyJsonContent(content))) {
 			JsonCanonicalizer jc;
 			try {
+				if (jsonExclusions != null && jsonExclusions.length > 0) {
+					// TBD on error handling here, want to get XML supported first. 
+					content = ContentExclusionUtil.applyJsonExclusions(doc.getUri(), content, jsonExclusions);
+				}
 				jc = new JsonCanonicalizer(content);
 				return jc.getEncodedString();
 			} catch (IOException e) {

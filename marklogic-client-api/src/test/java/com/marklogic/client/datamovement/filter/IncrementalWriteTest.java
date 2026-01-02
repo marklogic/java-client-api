@@ -218,6 +218,65 @@ class IncrementalWriteTest extends AbstractClientTest {
 		assertNotNull(metadata.getMetadataValues().get("incrementalWriteTimestamp"));
 	}
 
+	@Test
+	void jsonExclusions() {
+		filter = IncrementalWriteFilter.newBuilder()
+			.jsonExclusions("/timestamp", "/metadata/lastModified")
+			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
+			.build();
+
+		// Write initial documents with three keys
+		docs = new ArrayList<>();
+		for (int i = 1; i <= 5; i++) {
+			ObjectNode doc = objectMapper.createObjectNode();
+			doc.put("id", i);
+			doc.put("name", "Document " + i);
+			doc.put("timestamp", "2025-01-01T10:00:00Z");
+			doc.putObject("metadata")
+				.put("lastModified", "2025-01-01T10:00:00Z")
+				.put("author", "Test User");
+			docs.add(new DocumentWriteOperationImpl("/incremental/test/json-doc-" + i + ".json", METADATA, new JacksonHandle(doc)));
+		}
+
+		writeDocs(docs);
+		assertEquals(5, writtenCount.get());
+		assertEquals(0, skippedCount.get());
+
+		// Write again with different values for excluded fields - should be skipped
+		docs = new ArrayList<>();
+		for (int i = 1; i <= 5; i++) {
+			ObjectNode doc = objectMapper.createObjectNode();
+			doc.put("id", i);
+			doc.put("name", "Document " + i);
+			doc.put("timestamp", "2026-01-02T15:30:00Z"); // Changed
+			doc.putObject("metadata")
+				.put("lastModified", "2026-01-02T15:30:00Z") // Changed
+				.put("author", "Test User");
+			docs.add(new DocumentWriteOperationImpl("/incremental/test/json-doc-" + i + ".json", METADATA, new JacksonHandle(doc)));
+		}
+
+		writeDocs(docs);
+		assertEquals(5, writtenCount.get(), "Documents should be skipped since only excluded fields changed");
+		assertEquals(5, skippedCount.get());
+
+		// Write again with actual content change - should NOT be skipped
+		docs = new ArrayList<>();
+		for (int i = 1; i <= 5; i++) {
+			ObjectNode doc = objectMapper.createObjectNode();
+			doc.put("id", i);
+			doc.put("name", "Modified Document " + i); // Changed
+			doc.put("timestamp", "2026-01-02T16:00:00Z");
+			doc.putObject("metadata")
+				.put("lastModified", "2026-01-02T16:00:00Z")
+				.put("author", "Test User");
+			docs.add(new DocumentWriteOperationImpl("/incremental/test/json-doc-" + i + ".json", METADATA, new JacksonHandle(doc)));
+		}
+
+		writeDocs(docs);
+		assertEquals(10, writtenCount.get(), "Documents should be written since non-excluded content changed");
+		assertEquals(5, skippedCount.get(), "Skip count should remain at 5");
+	}
+
 	private void verifyIncrementalWriteWorks() {
 		writeTenDocuments();
 		verifyDocumentsHasHashInMetadataKey();
