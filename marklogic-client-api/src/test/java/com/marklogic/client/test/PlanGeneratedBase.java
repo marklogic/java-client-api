@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.expression.PlanBuilder;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
@@ -19,7 +20,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -131,11 +131,7 @@ public class PlanGeneratedBase {
 // TODO: assertions on kind if set
       assertEquals(Format.XML, row.getContentFormat("t"));
       assertEquals("application/xml", row.getContentMimetype("t"));
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      factory.setCoalescing(true);
-      factory.setNamespaceAware(true);
-      factory.setValidating(false);
-      DocumentBuilder builder = factory.newDocumentBuilder();
+      DocumentBuilder builder = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder();
 
       Document expected = builder.parse(new ByteArrayInputStream(expectedRaw.getBytes()));
       Document actual   = row.getContentAs("t", Document.class);

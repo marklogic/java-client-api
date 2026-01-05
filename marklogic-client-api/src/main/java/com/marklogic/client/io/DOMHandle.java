@@ -1,25 +1,11 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.io;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-
-import javax.xml.XMLConstants;
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
+import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.marker.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,15 +13,14 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSException;
-import org.w3c.dom.ls.LSInput;
-import org.w3c.dom.ls.LSOutput;
-import org.w3c.dom.ls.LSParser;
-import org.w3c.dom.ls.LSResourceResolver;
+import org.w3c.dom.ls.*;
 
-import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.MarkLogicInternalException;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.*;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * A DOM Handle represents XML content as a DOM document for reading or writing.
@@ -199,7 +184,7 @@ public class DOMHandle
    */
   public DocumentBuilderFactory getFactory() throws ParserConfigurationException {
     if (factory == null)
-      factory = makeDocumentBuilderFactory();
+      factory = XmlFactories.getDocumentBuilderFactory();
     return factory;
   }
   /**
@@ -208,32 +193,6 @@ public class DOMHandle
    */
   public void setFactory(DocumentBuilderFactory factory) {
     this.factory = factory;
-  }
-  protected DocumentBuilderFactory makeDocumentBuilderFactory() throws ParserConfigurationException {
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    // default to best practices for conservative security including recommendations per
-    // https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
-    try {
-      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-    } catch (ParserConfigurationException e) {}
-    try {
-      factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-    } catch (ParserConfigurationException e) {}
-    try {
-      factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-    } catch (ParserConfigurationException e) {}
-    try {
-      factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-    } catch (ParserConfigurationException e) {}
-    try {
-      factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-    } catch (ParserConfigurationException e) {}
-    factory.setXIncludeAware(false);
-    factory.setExpandEntityReferences(false);
-    factory.setNamespaceAware(true);
-    factory.setValidating(false);
-
-    return factory;
   }
 
   /**

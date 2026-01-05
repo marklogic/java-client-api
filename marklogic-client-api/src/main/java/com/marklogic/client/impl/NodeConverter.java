@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -35,7 +35,6 @@ import java.util.stream.Stream;
 
 public class NodeConverter {
    static private ObjectMapper           mapper;
-   static private DocumentBuilderFactory documentBuilderFactory;
    static private XMLInputFactory        xmlInputFactory;
 
    private NodeConverter() {
@@ -49,16 +48,7 @@ public class NodeConverter {
       }
       return mapper;
    }
-   static private DocumentBuilderFactory getDocumentBuilderFactory() {
-      // okay if one thread overwrites another during lazy initialization
-      if (documentBuilderFactory == null) {
-         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-         factory.setNamespaceAware(true);
-         factory.setValidating(false);
-         documentBuilderFactory = factory;
-      }
-      return documentBuilderFactory;
-   }
+
    static private XMLInputFactory getXMLInputFactory() {
       // okay if one thread overwrites another during lazy initialization
       if (xmlInputFactory == null) {
@@ -265,7 +255,7 @@ public class NodeConverter {
 
    static public Document InputStreamToDocument(InputStream inputStream) {
       try {
-         return (inputStream == null) ? null : getDocumentBuilderFactory().newDocumentBuilder().parse(inputStream);
+         return (inputStream == null) ? null : XmlFactories.getDocumentBuilderFactory().newDocumentBuilder().parse(inputStream);
       } catch(SAXException | IOException | ParserConfigurationException e) {
          throw new RuntimeException(e);
       }

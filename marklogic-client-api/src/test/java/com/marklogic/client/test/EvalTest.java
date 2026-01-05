@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
@@ -18,21 +18,20 @@ import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.impl.HandleAccessor;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.*;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
-import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
+import jakarta.xml.bind.DatatypeConverter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import jakarta.xml.bind.DatatypeConverter;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -257,12 +256,9 @@ public class EvalTest {
   }
 
   private void runAndTestXQuery(ServerEvaluationCall call)
-    throws JsonProcessingException, IOException, SAXException, ParserConfigurationException, DatatypeConfigurationException
+    throws IOException, SAXException, ParserConfigurationException, DatatypeConfigurationException
   {
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setValidating(false);
-    Document document = factory.newDocumentBuilder()
+    Document document = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder()
       .parse(this.getClass().getClassLoader().getResourceAsStream("1-empty-1.0.xml"));
     call = call.addNamespace("myPrefix", "http://marklogic.com/test")
       .addVariable("myPrefix:myString",  "Mars")

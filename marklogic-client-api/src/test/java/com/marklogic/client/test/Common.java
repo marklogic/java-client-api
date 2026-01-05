@@ -9,6 +9,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.impl.okhttp.RetryIOExceptionInterceptor;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.mgmt.ManageClient;
@@ -228,10 +229,7 @@ public class Common {
 
 	public static Document testStringToDocument(String document) {
 		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			factory.setNamespaceAware(true);
-			factory.setValidating(false);
-			return factory.newDocumentBuilder().parse(
+			return XmlFactories.getDocumentBuilderFactory().newDocumentBuilder().parse(
 				new InputSource(new StringReader(document)));
 		} catch (SAXException e) {
 			throw new RuntimeException(e);

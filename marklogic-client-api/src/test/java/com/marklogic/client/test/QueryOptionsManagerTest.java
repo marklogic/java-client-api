@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
@@ -9,7 +9,9 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.*;
+import jakarta.xml.bind.JAXBException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -17,14 +19,10 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
-import org.xml.sax.SAXException;
 
-import jakarta.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -60,14 +58,11 @@ public class QueryOptionsManagerTest {
 
   @Test
   public void testXMLDocsAsSearchOptions()
-    throws ParserConfigurationException, SAXException, IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+    throws ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
   {
     String optionsName = "invalid";
 
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setValidating(false);
-    DocumentBuilder documentBldr = factory.newDocumentBuilder();
+    DocumentBuilder documentBldr = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder();
 
     Document domDocument = documentBldr.newDocument();
     Element root = domDocument.createElementNS("http://marklogic.com/appservices/search","options");

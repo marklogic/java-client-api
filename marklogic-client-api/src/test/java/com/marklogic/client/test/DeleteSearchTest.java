@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
@@ -7,6 +7,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
@@ -14,8 +15,6 @@ import org.junit.jupiter.api.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
-
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,11 +31,7 @@ public class DeleteSearchTest {
   }
 
   public static void writeDoc() throws Exception {
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setValidating(false);
-
-    Document domDocument = factory.newDocumentBuilder().newDocument();
+    Document domDocument = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder().newDocument();
     Element root = domDocument.createElement("root");
     root.setAttribute("xml:lang", "en");
     root.setAttribute("foo", "bar");
@@ -45,7 +40,7 @@ public class DeleteSearchTest {
     domDocument.appendChild(root);
 
     @SuppressWarnings("unused")
-    String domString = ((DOMImplementationLS) factory.newDocumentBuilder()
+    String domString = ((DOMImplementationLS) XmlFactories.getDocumentBuilderFactory().newDocumentBuilder()
       .getDOMImplementation()).createLSSerializer().writeToString(domDocument);
 
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -61,7 +56,7 @@ public class DeleteSearchTest {
     GenericDocumentManager docMgr = client.newDocumentManager();
     DocumentDescriptor desc = docMgr.exists(docId);
     assertNotNull(desc);
-    assertEquals(desc.getUri(), docId);
+    assertEquals(docId, desc.getUri());
 
     QueryManager queryMgr = client.newQueryManager();
     DeleteQueryDefinition qdef = queryMgr.newDeleteDefinition();

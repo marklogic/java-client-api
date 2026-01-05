@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test.datamovement;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.*;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.test.Common;
 import org.junit.jupiter.api.AfterAll;
@@ -14,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,10 +64,8 @@ public class ScenariosTest {
     public Map<String, Object> getBody() throws Exception {
       Map<String, Object> map = new HashMap<>();
       map.put("uri", "http://marklogic.com/my/test/uri");
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      factory.setNamespaceAware(true);
-      factory.setValidating(false);
-      Document document = factory.newDocumentBuilder().newDocument();
+
+      Document document = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder().newDocument();
       Element element = document.createElement("test");
       document.appendChild(element);
       map.put("content", document);

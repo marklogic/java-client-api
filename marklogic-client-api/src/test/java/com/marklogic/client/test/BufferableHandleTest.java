@@ -1,11 +1,14 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.*;
 import com.marklogic.client.test.util.Referred;
 import com.marklogic.client.test.util.Refers;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
@@ -17,16 +20,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BufferableHandleTest {
   static private XpathEngine xpather;
@@ -61,11 +62,7 @@ public class BufferableHandleTest {
     throws JAXBException, ParserConfigurationException, SAXException, IOException, XpathException
   {
 
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setValidating(false);
-
-    Document domDocument = factory.newDocumentBuilder().newDocument();
+    Document domDocument = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder().newDocument();
     Element root = domDocument.createElement("root");
     root.setAttribute("xml:lang", "en");
     root.setAttribute("foo", "bar");
