@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.datamovement.impl;
 
@@ -42,16 +42,17 @@ import java.util.stream.Collectors;
  * startIterating, withForestConfig, and retry.
  */
 public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
-  private static Logger logger = LoggerFactory.getLogger(QueryBatcherImpl.class);
+  private static final Logger logger = LoggerFactory.getLogger(QueryBatcherImpl.class);
   private String queryMethod;
   private SearchQueryDefinition query;
-  private SearchQueryDefinition originalQuery;
   private Boolean filtered;
   private Iterator<String> iterator;
   private boolean threadCountSet = false;
-  private List<QueryBatchListener> urisReadyListeners = new ArrayList<>();
-  private List<QueryFailureListener> failureListeners = new ArrayList<>();
-  private List<QueryBatcherListener> jobCompletionListeners = new ArrayList<>();
+
+  private final List<QueryBatchListener> urisReadyListeners = new ArrayList<>();
+  private final List<QueryFailureListener> failureListeners = new ArrayList<>();
+  private final List<QueryBatcherListener> jobCompletionListeners = new ArrayList<>();
+
   private QueryThreadPoolExecutor threadPool;
   private boolean consistentSnapshot = false;
   private final AtomicLong batchNumber = new AtomicLong(0);
@@ -61,10 +62,13 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private Map<Forest,AtomicLong> forestResults = new HashMap<>();
   private Map<Forest,AtomicBoolean> forestIsDone = new HashMap<>();
   private Map<Forest, AtomicInteger> retryForestMap = new HashMap<>();
-  private AtomicBoolean runJobCompletionListeners = new AtomicBoolean(false);
+
+  private final AtomicBoolean runJobCompletionListeners = new AtomicBoolean(false);
   private final Object lock = new Object();
   private final Map<Forest,List<QueryTask>> blackListedTasks = new HashMap<>();
+
   private boolean isSingleThreaded = false;
+
   private long maxUris = Long.MAX_VALUE;
   private long maxBatches = Long.MAX_VALUE;
   private int maxDocToUriBatchRatio;
@@ -72,40 +76,37 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private int defaultDocBatchSize;
   private int maxUriBatchSize;
 
-  QueryBatcherImpl(
-          SearchQueryDefinition originalQuery, DataMovementManager moveMgr, ForestConfiguration forestConfig,
-          String serializedCtsQuery, Boolean filtered, int maxDocToUriBatchRatio, int defaultDocBatchSize, int maxUriBatchSize
-  ) {
-    this(moveMgr, forestConfig, maxDocToUriBatchRatio, defaultDocBatchSize, maxUriBatchSize);
-    // TODO:  skip conversion in DataMovementManagerImpl.newQueryBatcherImpl() unless canSerializeQueryAsJSON()
-    if (serializedCtsQuery != null && serializedCtsQuery.length() > 0 &&
-            originalQuery instanceof AbstractSearchQueryDefinition &&
-            ((AbstractSearchQueryDefinition) originalQuery).canSerializeQueryAsJSON()) {
-      QueryManagerImpl queryMgr = (QueryManagerImpl) getPrimaryClient().newQueryManager();
-      this.queryMethod = "POST";
-      this.query = queryMgr.newRawCtsQueryDefinition(new StringHandle(serializedCtsQuery).withFormat(Format.JSON));
-      this.originalQuery = originalQuery;
-      if (filtered != null) {
-        this.filtered = filtered;
-      }
-    } else {
-      initQuery(originalQuery);
-    }
-  }
+	QueryBatcherImpl(SearchQueryDefinition originalQuery, DataMovementManager moveMgr, QueryConfig queryConfig) {
+		this(moveMgr, queryConfig);
+
+		final String serializedCtsQuery = queryConfig.serializedCtsQuery();
+		if (serializedCtsQuery != null && !serializedCtsQuery.isEmpty() &&
+			originalQuery instanceof AbstractSearchQueryDefinition &&
+			((AbstractSearchQueryDefinition) originalQuery).canSerializeQueryAsJSON()) {
+			QueryManagerImpl queryMgr = (QueryManagerImpl) getPrimaryClient().newQueryManager();
+			this.queryMethod = "POST";
+			this.query = queryMgr.newRawCtsQueryDefinition(new StringHandle(serializedCtsQuery).withFormat(Format.JSON));
+			this.filtered = queryConfig.filtered();
+		} else {
+			initQuery(originalQuery);
+		}
+	}
+
   public QueryBatcherImpl(SearchQueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     this(moveMgr, forestConfig);
     initQuery(query);
   }
+
   public QueryBatcherImpl(Iterator<String> iterator, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     this(moveMgr, forestConfig);
     this.iterator = iterator;
   }
-  private QueryBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig,
-                           int maxDocToUriBatchRatio, int defaultDocBatchSize, int maxUriBatchSize) {
-    this(moveMgr, forestConfig);
-    this.maxDocToUriBatchRatio = maxDocToUriBatchRatio;
-    this.defaultDocBatchSize = defaultDocBatchSize;
-    this.maxUriBatchSize = maxUriBatchSize;
+
+  private QueryBatcherImpl(DataMovementManager moveMgr, QueryConfig queryConfig) {
+    this(moveMgr, queryConfig.forestConfig());
+    this.maxDocToUriBatchRatio = queryConfig.maxDocToUriBatchRatio();
+    this.defaultDocBatchSize = queryConfig.defaultDocBatchSize();
+    this.maxUriBatchSize = queryConfig.maxUriBatchSize();
     withBatchSize(defaultDocBatchSize);
   }
   private QueryBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
@@ -187,7 +188,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   private void retry(QueryEvent queryEvent, boolean callFailListeners) {
-    if ( isStopped() == true ) {
+    if ( isStopped()) {
       logger.warn("Job is now stopped, aborting the retry");
       return;
     }
@@ -449,7 +450,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
 
   private synchronized void initialize() {
     Forest[] forests = getForestConfig().listForests();
-    if ( threadCountSet == false ) {
+    if ( !threadCountSet ) {
       if ( query != null ) {
         logger.warn("threadCount not set--defaulting to number of forests ({})", forests.length);
         withThreadCount(forests.length * docToUriBatchRatio);
@@ -529,7 +530,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     List<DatabaseClient> newClientList = clients(hostNames);
     clientList.set(newClientList);
     boolean started = (threadPool != null);
-    if ( started == true && oldForests.size() > 0 ) calculateDeltas(oldForests, forests);
+    if ( started && !oldForests.isEmpty() ) calculateDeltas(oldForests, forests);
     return this;
   }
 
@@ -550,7 +551,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       // this forest is not black-listed
       blackListedForests.remove(forest);
     }
-    if ( blackListedForests.size() > 0 ) {
+    if ( !blackListedForests.isEmpty() ) {
       DataMovementManagerImpl moveMgrImpl = getMoveMgr();
       String primaryHost = moveMgrImpl.getPrimaryClient().getHost();
       if ( getHostNames(blackListedForests).contains(primaryHost) ) {
@@ -562,7 +563,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   private synchronized void cleanupExistingTasks(Set<Forest> addedForests, Set<Forest> restartedForests, Set<Forest> blackListedForests) {
-    if ( blackListedForests.size() > 0 ) {
+    if ( !blackListedForests.isEmpty() ) {
       logger.warn("removing jobs related to hosts [{}] from the queue", getHostNames(blackListedForests));
       // since some forests have been removed, let's remove from the queue any jobs that were targeting that forest
       List<Runnable> tasks = new ArrayList<>();
