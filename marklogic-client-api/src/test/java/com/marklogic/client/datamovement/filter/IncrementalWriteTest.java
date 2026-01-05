@@ -3,7 +3,6 @@
  */
 package com.marklogic.client.datamovement.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.document.*;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
@@ -11,42 +10,15 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.test.AbstractClientTest;
 import com.marklogic.client.test.Common;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class IncrementalWriteTest extends AbstractClientTest {
-
-	private static final DocumentMetadataHandle METADATA = new DocumentMetadataHandle()
-		.withCollections("incremental-test")
-		.withPermission("rest-reader", DocumentMetadataHandle.Capability.READ, DocumentMetadataHandle.Capability.UPDATE);
-
-	AtomicInteger writtenCount = new AtomicInteger();
-	AtomicInteger skippedCount = new AtomicInteger();
-	AtomicReference<Throwable> batchFailure = new AtomicReference<>();
-	ObjectMapper objectMapper = new ObjectMapper();
-
-	List<DocumentWriteOperation> docs = new ArrayList<>();
-	IncrementalWriteFilter filter;
-
-	@BeforeEach
-	void setup() {
-		// Need a user with eval privileges so that the eval filter can be tested.
-		Common.client = Common.newEvalClient();
-
-		// Default filter implementation, should be suitable for most tests.
-		filter = IncrementalWriteFilter.newBuilder()
-			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
-			.build();
-	}
+class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 
 	@Test
 	void opticFilter() {
@@ -218,65 +190,6 @@ class IncrementalWriteTest extends AbstractClientTest {
 		assertNotNull(metadata.getMetadataValues().get("incrementalWriteTimestamp"));
 	}
 
-	@Test
-	void jsonExclusions() {
-		filter = IncrementalWriteFilter.newBuilder()
-			.jsonExclusions("/timestamp", "/metadata/lastModified")
-			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
-			.build();
-
-		// Write initial documents with three keys
-		docs = new ArrayList<>();
-		for (int i = 1; i <= 5; i++) {
-			ObjectNode doc = objectMapper.createObjectNode();
-			doc.put("id", i);
-			doc.put("name", "Document " + i);
-			doc.put("timestamp", "2025-01-01T10:00:00Z");
-			doc.putObject("metadata")
-				.put("lastModified", "2025-01-01T10:00:00Z")
-				.put("author", "Test User");
-			docs.add(new DocumentWriteOperationImpl("/incremental/test/json-doc-" + i + ".json", METADATA, new JacksonHandle(doc)));
-		}
-
-		writeDocs(docs);
-		assertEquals(5, writtenCount.get());
-		assertEquals(0, skippedCount.get());
-
-		// Write again with different values for excluded fields - should be skipped
-		docs = new ArrayList<>();
-		for (int i = 1; i <= 5; i++) {
-			ObjectNode doc = objectMapper.createObjectNode();
-			doc.put("id", i);
-			doc.put("name", "Document " + i);
-			doc.put("timestamp", "2026-01-02T15:30:00Z"); // Changed
-			doc.putObject("metadata")
-				.put("lastModified", "2026-01-02T15:30:00Z") // Changed
-				.put("author", "Test User");
-			docs.add(new DocumentWriteOperationImpl("/incremental/test/json-doc-" + i + ".json", METADATA, new JacksonHandle(doc)));
-		}
-
-		writeDocs(docs);
-		assertEquals(5, writtenCount.get(), "Documents should be skipped since only excluded fields changed");
-		assertEquals(5, skippedCount.get());
-
-		// Write again with actual content change - should NOT be skipped
-		docs = new ArrayList<>();
-		for (int i = 1; i <= 5; i++) {
-			ObjectNode doc = objectMapper.createObjectNode();
-			doc.put("id", i);
-			doc.put("name", "Modified Document " + i); // Changed
-			doc.put("timestamp", "2026-01-02T16:00:00Z");
-			doc.putObject("metadata")
-				.put("lastModified", "2026-01-02T16:00:00Z")
-				.put("author", "Test User");
-			docs.add(new DocumentWriteOperationImpl("/incremental/test/json-doc-" + i + ".json", METADATA, new JacksonHandle(doc)));
-		}
-
-		writeDocs(docs);
-		assertEquals(10, writtenCount.get(), "Documents should be written since non-excluded content changed");
-		assertEquals(5, skippedCount.get(), "Skip count should remain at 5");
-	}
-
 	private void verifyIncrementalWriteWorks() {
 		writeTenDocuments();
 		verifyDocumentsHasHashInMetadataKey();
@@ -336,16 +249,5 @@ class IncrementalWriteTest extends AbstractClientTest {
 			docs.add(new DocumentWriteOperationImpl(uri, METADATA, new StringHandle(content)));
 		}
 		writeDocs(docs);
-	}
-
-	private void writeDocs(List<DocumentWriteOperation> docs) {
-		new WriteBatcherTemplate(Common.client).runWriteJob(
-			writeBatcher -> writeBatcher
-				.withDocumentWriteSetFilter(filter)
-				.onBatchSuccess(batch -> writtenCount.addAndGet(batch.getItems().length))
-				.onBatchFailure((batch, failure) -> batchFailure.set(failure)),
-
-			writeBatcher -> docs.forEach(writeBatcher::add)
-		);
 	}
 }
