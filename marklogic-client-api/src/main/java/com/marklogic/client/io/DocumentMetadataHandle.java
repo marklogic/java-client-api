@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.io;
 
@@ -577,10 +577,7 @@ public class DocumentMetadataHandle
 
       Document document = null;
       if (content != null) {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        factory.setValidating(false);
-        DocumentBuilder builder = factory.newDocumentBuilder();
+        DocumentBuilder builder = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder();
         document = builder.parse(new InputSource(new InputStreamReader(content, StandardCharsets.UTF_8)));
         content.close();
       }

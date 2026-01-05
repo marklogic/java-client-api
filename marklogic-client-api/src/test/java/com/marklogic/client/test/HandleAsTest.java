@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
@@ -31,7 +31,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -124,10 +123,7 @@ public class HandleAsTest {
     String xmlDocId = "/test/testAs1.xml";
     XMLDocumentManager xmlMgr = Common.client.newXMLDocumentManager();
 
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setValidating(false);
-    DocumentBuilder xmlDocBldr = factory.newDocumentBuilder();
+    DocumentBuilder xmlDocBldr = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder();
 
     Document beforeDocument = xmlDocBldr.newDocument();
     Element root = beforeDocument.createElement("doc");

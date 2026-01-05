@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test.io;
 
@@ -7,6 +7,7 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.*;
 import com.marklogic.client.io.FileHandle;
@@ -27,7 +28,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -88,10 +88,7 @@ public class DocumentMetadataHandleTest {
         "</rapi:metadata-values>"+
       "</rapi:metadata>";
 
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setValidating(false);
-    Document document = factory.newDocumentBuilder().newDocument();
+    Document document = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder().newDocument();
     Element third = document.createElement("third");
     Element child = document.createElement("third.first");
     child.setTextContent("value third one");
