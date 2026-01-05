@@ -1,11 +1,10 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientBuilder;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.datamovement.*;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.marker.ContentHandle;
@@ -123,10 +122,8 @@ public class DataMovementManagerImpl implements DataMovementManager {
     QueryBatcherImpl queryBatcher = null;
     // preprocess the query if the effective version is at least 10.0-5
     if (Long.compareUnsigned(getServerVersion(), Long.parseUnsignedLong("10000500")) >= 0) {
-      DataMovementServices.QueryConfig queryConfig = service.initConfig("POST", query);
-      queryBatcher = new QueryBatcherImpl(query, this, queryConfig.forestConfig,
-              queryConfig.serializedCtsQuery, queryConfig.filtered,
-              queryConfig.maxDocToUriBatchRatio, queryConfig.defaultDocBatchSize, queryConfig.maxUriBatchSize);
+      QueryConfig queryConfig = service.initConfig("POST", query);
+      queryBatcher = new QueryBatcherImpl(query, this, queryConfig);
     } else {
       queryBatcher = new QueryBatcherImpl(query, this, getForestConfig());
     }
