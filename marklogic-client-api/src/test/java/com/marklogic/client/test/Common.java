@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
@@ -13,6 +13,8 @@ import com.marklogic.client.impl.okhttp.RetryIOExceptionInterceptor;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.ManageConfig;
+import com.marklogic.mgmt.admin.AdminConfig;
+import com.marklogic.mgmt.admin.AdminManager;
 import org.springframework.util.FileCopyUtils;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -256,6 +258,10 @@ public class Common {
 
 	public static ManageClient newManageClient() {
 		return new ManageClient(new ManageConfig(HOST, 8002, SERVER_ADMIN_USER, SERVER_ADMIN_PASS));
+	}
+
+	public static AdminManager newAdminManager() {
+		return new AdminManager(new AdminConfig(HOST, 8001, SERVER_ADMIN_USER, SERVER_ADMIN_PASS));
 	}
 
 	public static ObjectNode newServerPayload() {

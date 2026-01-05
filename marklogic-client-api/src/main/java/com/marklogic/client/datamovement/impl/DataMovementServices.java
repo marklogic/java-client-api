@@ -71,6 +71,13 @@ public class DataMovementServices {
 			logger.debug("initialized maxDocToUriBatchRatio to : {}", maxDocToUriBatchRatio);
 		}
 
+		// Per GitHub bug 1872 and MLE-26460, the server may return -1 when there are fewer server threads than forests.
+		// A value of -1 will cause later problems when constructing a LinkedBlockingQueue with a negative capacity.
+		// So defaulting this to 1 to avoid later errors.
+		if (maxDocToUriBatchRatio <= 0) {
+			maxDocToUriBatchRatio = 1;
+		}
+
 		JsonNode defaultDocBatchSizeNode = result.get("defaultDocBatchSize");
 		int defaultDocBatchSize = -1;
 		if (defaultDocBatchSizeNode != null && defaultDocBatchSizeNode.isInt()) {
