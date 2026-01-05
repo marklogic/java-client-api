@@ -31,8 +31,8 @@ class IncrementalWriteEvalFilter extends IncrementalWriteFilter {
 		""";
 
 	IncrementalWriteEvalFilter(String hashKeyName, String timestampKeyName, boolean canonicalizeJson,
-							   Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer, String[] jsonExclusions) {
-		super(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions);
+							   Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer, String[] jsonExclusions, String[] xmlExclusions) {
+		super(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions);
 	}
 
 	@Override

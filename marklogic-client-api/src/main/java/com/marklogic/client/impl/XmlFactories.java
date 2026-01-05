@@ -12,8 +12,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.xpath.XPathFactory;
 import java.lang.ref.SoftReference;
 import java.util.function.Supplier;
 
@@ -26,6 +28,12 @@ public final class XmlFactories {
 
   private static final CachedInstancePerThreadSupplier<DocumentBuilderFactory> cachedDocumentBuilderFactory =
     new CachedInstancePerThreadSupplier<>(XmlFactories::makeNewDocumentBuilderFactory);
+
+  private static final CachedInstancePerThreadSupplier<XPathFactory> cachedXPathFactory =
+    new CachedInstancePerThreadSupplier<>(XPathFactory::newInstance);
+
+  private static final CachedInstancePerThreadSupplier<TransformerFactory> cachedTransformerFactory =
+    new CachedInstancePerThreadSupplier<>(XmlFactories::makeNewTransformerFactory);
 
   private XmlFactories() {} // preventing instances of utility class
 
@@ -151,6 +159,47 @@ public final class XmlFactories {
   public static XMLOutputFactory getOutputFactory() {
     return cachedOutputFactory.get();
   }
+
+	/**
+	 * Returns a shared {@link XPathFactory}.
+	 * <p>
+	 * Creating XML factories is potentially a pretty expensive operation. Using a shared instance helps to amortize
+	 * this initialization cost via reuse.
+	 *
+	 * @return  a {@link XPathFactory}
+	 *
+	 * @since 8.1.0
+	 */
+	public static XPathFactory getXPathFactory() {
+		return cachedXPathFactory.get();
+	}
+
+	/**
+	 * Returns a shared {@link TransformerFactory} configured with secure defaults.
+	 * <p>
+	 * Creating XML factories is potentially a pretty expensive operation. Using a shared instance helps to amortize
+	 * this initialization cost via reuse.
+	 *
+	 * @return  a securely configured {@link TransformerFactory}
+	 *
+	 * @since 8.1.0
+	 */
+	public static TransformerFactory getTransformerFactory() {
+		return cachedTransformerFactory.get();
+	}
+
+	/**
+	 * Creates a new {@link Transformer} from the shared {@link TransformerFactory}.
+	 *
+	 * @since 8.1.0
+	 */
+	public static Transformer newTransformer() {
+		try {
+			return getTransformerFactory().newTransformer();
+		} catch (TransformerConfigurationException e) {
+			throw new RuntimeException("Unable to create new Transformer from TransformerFactory", e);
+		}
+	}
 
   /**
    * A supplier that caches results per thread.

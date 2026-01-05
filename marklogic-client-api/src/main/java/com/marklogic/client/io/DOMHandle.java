@@ -18,7 +18,10 @@ import org.w3c.dom.ls.*;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.*;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
@@ -205,7 +208,7 @@ public class DOMHandle
    */
   public XPath getXPathProcessor() {
     if (xpathProcessor == null)
-      xpathProcessor = makeXPathProcessorFactory().newXPath();
+      xpathProcessor = XmlFactories.getXPathFactory().newXPath();
     return xpathProcessor;
   }
   /**
@@ -215,9 +218,6 @@ public class DOMHandle
    */
   public void setXPathProcessor(XPath xpathProcessor) {
     this.xpathProcessor = xpathProcessor;
-  }
-  protected XPathFactory makeXPathProcessorFactory() {
-    return XPathFactory.newInstance();
   }
 
   /**

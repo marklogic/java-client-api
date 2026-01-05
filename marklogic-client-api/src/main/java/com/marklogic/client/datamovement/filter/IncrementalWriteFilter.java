@@ -46,6 +46,7 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		private boolean useEvalQuery = false;
 		private Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer;
 		private String[] jsonExclusions;
+		private String[] xmlExclusions;
 
 		/**
 		 * @param keyName the name of the MarkLogic metadata key that will hold the hash value; defaults to "incrementalWriteHash".
@@ -103,11 +104,20 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 			return this;
 		}
 
+		/**
+		 * @param xpathExpressions XPath expressions identifying XML elements to exclude from hash calculation.
+		 *                         For example, "//timestamp" or "//metadata/lastModified".
+		 */
+		public Builder xmlExclusions(String... xpathExpressions) {
+			this.xmlExclusions = xpathExpressions;
+			return this;
+		}
+
 		public IncrementalWriteFilter build() {
 			if (useEvalQuery) {
-				return new IncrementalWriteEvalFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions);
+				return new IncrementalWriteEvalFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions);
 			}
-			return new IncrementalWriteOpticFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions);
+			return new IncrementalWriteOpticFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions);
 		}
 	}
 
@@ -116,17 +126,19 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 	private final boolean canonicalizeJson;
 	private final Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer;
 	private final String[] jsonExclusions;
+	private final String[] xmlExclusions;
 
 	// Hardcoding this for now, with a good general purpose hashing function.
 	// See https://xxhash.com for benchmarks.
 	private final LongHashFunction hashFunction = LongHashFunction.xx3();
 
-	public IncrementalWriteFilter(String hashKeyName, String timestampKeyName, boolean canonicalizeJson, Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer, String[] jsonExclusions) {
+	public IncrementalWriteFilter(String hashKeyName, String timestampKeyName, boolean canonicalizeJson, Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer, String[] jsonExclusions, String[] xmlExclusions) {
 		this.hashKeyName = hashKeyName;
 		this.timestampKeyName = timestampKeyName;
 		this.canonicalizeJson = canonicalizeJson;
 		this.skippedDocumentsConsumer = skippedDocumentsConsumer;
 		this.jsonExclusions = jsonExclusions;
+		this.xmlExclusions = xmlExclusions;
 	}
 
 	protected final DocumentWriteSet filterDocuments(Context context, Function<String, String> hashRetriever) {
@@ -178,7 +190,6 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 			JsonCanonicalizer jc;
 			try {
 				if (jsonExclusions != null && jsonExclusions.length > 0) {
-					// TBD on error handling here, want to get XML supported first. 
 					content = ContentExclusionUtil.applyJsonExclusions(doc.getUri(), content, jsonExclusions);
 				}
 				jc = new JsonCanonicalizer(content);
@@ -188,6 +199,13 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 				// error message the user would want to see via a batch failure listener. So in all cases, if we cannot
 				// canonicalize something that appears to be JSON, we log a warning and return the original content for hashing.
 				logger.warn("Unable to canonicalize JSON content for URI {}, using original content for hashing; cause: {}",
+					doc.getUri(), e.getMessage());
+			}
+		} else if (xmlExclusions != null && xmlExclusions.length > 0) {
+			try {
+				content = ContentExclusionUtil.applyXmlExclusions(doc.getUri(), content, xmlExclusions);
+			} catch (Exception e) {
+				logger.warn("Unable to apply XML exclusions for URI {}, using original content for hashing; cause: {}",
 					doc.getUri(), e.getMessage());
 			}
 		}
