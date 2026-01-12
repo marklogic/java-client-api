@@ -170,7 +170,7 @@ pipeline {
 
 	parameters {
 		booleanParam(name: 'regressions', defaultValue: false, description: 'indicator if build is for regressions')
-		booleanParam(name: 'arm-regressions', defaultValue: false, description: 'indicator if build is for ARM regressions')
+		booleanParam(name: 'arm_regressions', defaultValue: false, description: 'indicator if build is for ARM regressions')
 		string(name: 'JAVA_VERSION', defaultValue: 'JAVA17', description: 'Either JAVA17 or JAVA21')
 		string(name: 'packagefile', defaultValue: 'Packagedependencies', description: 'package dependency file')
 		string(name: 'terraformBranch', defaultValue: 'master', description: 'Branch of terraform-templates repo to use')
@@ -304,7 +304,7 @@ pipeline {
 			when {
 				allOf {
 					branch 'arm-regressions-testbranch'
-					expression { return params.arm-regressions }
+					expression { return params.arm_regressions }
 				}
 			}
             agent {label 'javaClientLinuxPool'}
@@ -337,7 +337,7 @@ pipeline {
 			when {
 				allOf {
 					branch 'arm-regressions-testbranch'
-					expression { return params.arm-regressions }
+					expression { return params.arm_regressions }
 				}
 			}
             agent {label 'javaClientLinuxPool'}
@@ -382,7 +382,7 @@ pipeline {
 				allOf {
 					expression {false}
 					branch 'arm-regressions-testbranch'
-					expression { return params.arm-regressions }
+					expression { return params.arm_regressions }
 				}
 			}
 			steps {
