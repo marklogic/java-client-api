@@ -1,4 +1,4 @@
-@Library('shared-libraries') _
+@Library('shared-libraries@arminstances_aws_sharedlibraries') _
 
 def getJavaHomePath() {
 	if (env.JAVA_VERSION == "JAVA21") {
@@ -170,7 +170,11 @@ pipeline {
 
 	parameters {
 		booleanParam(name: 'regressions', defaultValue: false, description: 'indicator if build is for regressions')
+		booleanParam(name: 'arm-regressions', defaultValue: false, description: 'indicator if build is for ARM regressions')
+
 		string(name: 'JAVA_VERSION', defaultValue: 'JAVA17', description: 'Either JAVA17 or JAVA21')
+		string(name: 'packagefile', defaultValue: 'Packagedependencies', description: 'package dependency file')
+
 	}
 
 	environment {
@@ -208,7 +212,7 @@ pipeline {
 
 					echo "Run a test with the reverse proxy server to ensure it's fine."
 					./gradlew -PtestUseReverseProxyServer=true runReverseProxyServer marklogic-client-api-functionaltests:test --tests SearchWithPageLengthTest || true
-        '''
+        	'''
 			}
 			post {
 				always {
@@ -294,5 +298,157 @@ pipeline {
 				}
 			}
 		}
+
+		stage('provisionInfrastructure'){
+			when {
+				allOf {
+					branch 'develop'
+					expression { return params.arm-regressions }
+				}
+			}
+            agent {label 'javaClientLinuxPool'}
+			
+            steps{
+                script {
+                    def deploymentResult = deployAWSInstance([
+                        instanceName: "java-client-instance-${BUILD_NUMBER}",
+                        region: 'us-west-2',
+                        credentialsId: 'headlessDbUserEC2',
+                        role: 'role-headless-testing',
+                        roleAccount: '343869654284'
+                    ])
+                    
+                    echo "✅ Instance deployed: ${deploymentResult.privateIp}"
+					echo "✅ Terraform directory: ${deploymentResult.terraformDir}"
+					echo "✅ Workspace: ${deploymentResult.workspace}"
+					echo "✅ Status: ${deploymentResult.status}"
+					
+					// Store deployment info for cleanup 
+					env.DEPLOYMENT_INSTANCE_NAME = deploymentResult.instanceName
+					env.DEPLOYMENT_REGION = deploymentResult.region
+					env.DEPLOYMENT_TERRAFORM_DIR = deploymentResult.terraformDir
+					env.EC2_PRIVATE_IP = deploymentResult.privateIp
+                }
+            }
+        }
+        stage('setupJenkinsAgent'){
+			when {
+				allOf {
+					branch 'develop'
+					expression { return params.arm-regressions }
+				}
+			}
+            agent {label 'javaClientLinuxPool'}
+            steps{
+                script {
+                    def nodeName = "java-client-agent-${BUILD_NUMBER}"
+                    def remoteFS = "/space/jenkins_home"
+                    def labels = "java-client-agent-${BUILD_NUMBER}"
+                    def instanceIp = env.EC2_PRIVATE_IP
+                    
+                    // Use shared library for volume attachment
+                    def volumeResult = attachInstanceVolumes([
+                        instanceIp: instanceIp,
+                        remoteFS: remoteFS,
+                        packageFile: params.packagefile,
+                        setupScriptPath: 'terraform-templates/arm-server-build/setup_volume.sh',
+                        packageDir: 'terraform-templates/java-client-api'
+                    ])
+                    
+                    echo "✅ Volume attachment completed: ${volumeResult.volumeAttached}"
+                    echo "✅ Java installed: ${volumeResult.javaInstalled}"
+                    echo "✅ Dependencies installed: ${volumeResult.dependenciesInstalled}"
+                    
+                    // Use shared library to create Jenkins agent
+                    def agentResult = createJenkinsAgent([
+                        nodeName: nodeName,
+                        instanceIp: instanceIp,
+                        remoteFS: remoteFS,
+                        labels: labels,
+                        timeoutMinutes: 5
+                    ])
+                    
+                    echo "✅ Jenkins agent created: ${agentResult.nodeName}"
+                    echo "✅ Agent status: ${agentResult.status}"
+                }
+            }
+        }
+
+		stage('regressions-11 arm infrastructure') {
+    		agent { label "java-client-agent-${BUILD_NUMBER}" }
+			when {
+				allOf {
+					expression {false}
+					branch 'develop'
+					expression { return params.arm-regressions }
+				}
+			}
+			steps {
+				checkout([$class: 'GitSCM', 
+						branches: scm.branches, 
+						doGenerateSubmoduleConfigurations: false, 
+						extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'java-client-api']], 
+						submoduleCfg: [], 
+						userRemoteConfigs: scm.userRemoteConfigs])
+				
+				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi-arm:latest-11")
+			}
+			post {
+				always {
+					junit '**/build/**/TEST*.xml'
+					updateWorkspacePermissions()
+					tearDownDocker()
+				}
+			}
+		}
+
 	}
+
+	post{
+        always {
+            script {
+                echo "🧹 Starting cleanup process..."
+                
+                try {
+                    // Cleanup Terraform infrastructure first
+                    if (env.EC2_PRIVATE_IP) {
+                        echo "🗑️ Cleaning up Terraform resources..."
+                        node('javaClientLinuxPool') {
+                            try {
+                                unstash "terraform-${BUILD_NUMBER}"
+                                withAWS(credentials: 'headlessDbUserEC2', region: 'us-west-2', role: 'role-headless-testing', roleAccount: '343869654284', duration: 3600) {
+                                    sh '''#!/bin/bash
+                                        export PATH=/home/builder/terraform:$PATH
+                                        cd ${WORKSPACE}/${DEPLOYMENT_TERRAFORM_DIR}
+                                        terraform workspace select dev
+                                        terraform destroy -auto-approve
+                                    '''
+                                }
+                                echo "✅ Terraform resources destroyed successfully."
+                            } catch (Exception terraformException) {
+                                echo "⚠️ Warning: Terraform cleanup failed: ${terraformException.message}"
+                            }
+                        }
+                    } else {
+                        echo "ℹ️ No EC2 instance IP found, skipping Terraform cleanup"
+                    }
+                    
+                    // Cleanup Jenkins agent using shared library function
+                    def nodeName = "java-client-agent-${BUILD_NUMBER}"
+                    echo "🗑️ Cleaning up Jenkins agent: ${nodeName}"
+                    try {
+                        def cleanupResult = cleanupJenkinsAgent(nodeName)
+                        echo "✅ Cleanup result: ${cleanupResult.status} for node: ${cleanupResult.nodeName}"
+                    } catch (Exception jenkinsCleanupException) {
+                        echo "⚠️ Warning: Jenkins agent cleanup failed: ${jenkinsCleanupException.message}"
+                    }
+                    echo "✅ Pipeline cleanup completed successfully."
+                    
+                } catch (Exception cleanupException) {
+                    echo "⚠️ Warning: Cleanup encountered an error: ${cleanupException.message}"
+                    echo "📋 Continuing with pipeline completion despite cleanup issues..."
+                }
+            }
+        }
+    }
 }
