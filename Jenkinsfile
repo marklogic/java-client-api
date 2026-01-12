@@ -171,9 +171,10 @@ pipeline {
 	parameters {
 		booleanParam(name: 'regressions', defaultValue: false, description: 'indicator if build is for regressions')
 		booleanParam(name: 'arm-regressions', defaultValue: false, description: 'indicator if build is for ARM regressions')
-
 		string(name: 'JAVA_VERSION', defaultValue: 'JAVA17', description: 'Either JAVA17 or JAVA21')
 		string(name: 'packagefile', defaultValue: 'Packagedependencies', description: 'package dependency file')
+		string(name: 'terraformBranch', defaultValue: 'master', description: 'Branch of terraform-templates repo to use')
+
 
 	}
 
@@ -315,7 +316,8 @@ pipeline {
                         region: 'us-west-2',
                         credentialsId: 'headlessDbUserEC2',
                         role: 'role-headless-testing',
-                        roleAccount: '343869654284'
+                        roleAccount: '343869654284',
+						branch: params.terraformBranch 
                     ])
                     
                     echo "✅ Instance deployed: ${deploymentResult.privateIp}"
