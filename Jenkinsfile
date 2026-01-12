@@ -303,7 +303,7 @@ pipeline {
 		stage('provisionInfrastructure'){
 			when {
 				allOf {
-					branch 'develop'
+					branch 'arm-regressions-testbranch'
 					expression { return params.arm-regressions }
 				}
 			}
@@ -336,7 +336,7 @@ pipeline {
         stage('setupJenkinsAgent'){
 			when {
 				allOf {
-					branch 'develop'
+					branch 'arm-regressions-testbranch'
 					expression { return params.arm-regressions }
 				}
 			}
@@ -381,7 +381,7 @@ pipeline {
 			when {
 				allOf {
 					expression {false}
-					branch 'develop'
+					branch 'arm-regressions-testbranch'
 					expression { return params.arm-regressions }
 				}
 			}
