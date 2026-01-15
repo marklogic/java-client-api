@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
@@ -20,9 +20,14 @@ public abstract class AbstractClientTest extends AbstractMarkLogicTest {
 
 	@Override
 	protected final String getJavascriptForDeletingDocumentsBeforeTestRuns() {
+		// The "/acme/" directory was previously deleted by AbstractOpticUpdateTest. It still needs to be deleted
+		// since some tests end up copying URIs to that directory but retain the 'test-data' collection.
 		return """
 			declareUpdate();
-			cts.uris('', [], cts.notQuery(cts.collectionQuery(['test-data', 'temporal-collection'])))
+			cts.uris('', [], cts.orQuery([
+				cts.notQuery(cts.collectionQuery(['test-data', 'temporal-collection'])),
+				cts.directoryQuery('/acme/', 'infinity')
+			]))
 				.toArray().forEach(item => xdmp.documentDelete(item))
 			""";
 	}
