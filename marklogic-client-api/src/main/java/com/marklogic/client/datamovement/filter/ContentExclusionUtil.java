@@ -83,8 +83,11 @@ class ContentExclusionUtil {
 		JsonNode parentNode = rootNode.at(parentPointer);
 
 		if (parentNode.isObject()) {
-			String fieldName = pointer.last().getMatchingProperty();
-			((ObjectNode) parentNode).remove(fieldName);
+			JsonPointer lastSegment = pointer.last();
+			if (lastSegment != null) {
+				String fieldName = lastSegment.getMatchingProperty();
+				((ObjectNode) parentNode).remove(fieldName);
+			}
 		} else if (parentNode.isArray()) {
 			logger.warn("Array element exclusion not supported for JSONPointer '{}'. " +
 				"Consider excluding the entire array property instead.", jsonPointer);
