@@ -139,4 +139,107 @@ class ApplyExclusionsToIncrementalWriteTest extends AbstractIncrementalWriteTest
 		assertEquals(10, writtenCount.get(), "Documents should be written since non-excluded content changed");
 		assertEquals(5, skippedCount.get(), "Skip count should remain at 5");
 	}
+
+	/**
+	 * Verifies that JSON Pointer exclusions are only applied to JSON documents and are ignored for XML documents.
+	 * The XML document should use its full content for hashing since no XML exclusions are configured.
+	 */
+	@Test
+	void jsonExclusionsIgnoredForXmlDocuments() {
+		filter = IncrementalWriteFilter.newBuilder()
+			.jsonExclusions("/timestamp")
+			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
+			.build();
+
+		// Write one JSON doc and one XML doc
+		docs = new ArrayList<>();
+		ObjectNode jsonDoc = objectMapper.createObjectNode();
+		jsonDoc.put("id", 1);
+		jsonDoc.put("timestamp", "2025-01-01T10:00:00Z");
+		docs.add(new DocumentWriteOperationImpl("/incremental/test/mixed-doc.json", METADATA, new JacksonHandle(jsonDoc)));
+
+		String xmlDoc = "<doc><id>1</id><timestamp>2025-01-01T10:00:00Z</timestamp></doc>";
+		docs.add(new DocumentWriteOperationImpl("/incremental/test/mixed-doc.xml", METADATA, new StringHandle(xmlDoc).withFormat(Format.XML)));
+
+		writeDocs(docs);
+		assertEquals(2, writtenCount.get());
+		assertEquals(0, skippedCount.get());
+
+		// Write again with different timestamp values
+		docs = new ArrayList<>();
+		jsonDoc = objectMapper.createObjectNode();
+		jsonDoc.put("id", 1);
+		jsonDoc.put("timestamp", "2026-01-02T15:30:00Z"); // Changed
+		docs.add(new DocumentWriteOperationImpl("/incremental/test/mixed-doc.json", METADATA, new JacksonHandle(jsonDoc)));
+
+		xmlDoc = "<doc><id>1</id><timestamp>2026-01-02T15:30:00Z</timestamp></doc>"; // Changed
+		docs.add(new DocumentWriteOperationImpl("/incremental/test/mixed-doc.xml", METADATA, new StringHandle(xmlDoc).withFormat(Format.XML)));
+
+		writeDocs(docs);
+		assertEquals(3, writtenCount.get(), "XML doc should be written since its timestamp changed and no XML exclusions are configured");
+		assertEquals(1, skippedCount.get(), "JSON doc should be skipped since only the excluded timestamp field changed");
+	}
+
+	/**
+	 * Verifies that when canonicalizeJson is false, documents with logically identical content
+	 * but different key ordering will produce different hashes, causing a write to occur.
+	 */
+	@Test
+	void jsonNotCanonicalizedCausesDifferentHashForReorderedKeys() {
+		filter = IncrementalWriteFilter.newBuilder()
+			.canonicalizeJson(false)
+			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
+			.build();
+
+		// Write initial document with keys in a specific order
+		docs = new ArrayList<>();
+		String json1 = "{\"name\":\"Test\",\"id\":1,\"value\":100}";
+		docs.add(new DocumentWriteOperationImpl("/incremental/test/non-canonical.json", METADATA,
+			new StringHandle(json1).withFormat(Format.JSON)));
+
+		writeDocs(docs);
+		assertEquals(1, writtenCount.get());
+		assertEquals(0, skippedCount.get());
+
+		// Write again with same logical content but different key order
+		docs = new ArrayList<>();
+		String json2 = "{\"id\":1,\"value\":100,\"name\":\"Test\"}";
+		docs.add(new DocumentWriteOperationImpl("/incremental/test/non-canonical.json", METADATA,
+			new StringHandle(json2).withFormat(Format.JSON)));
+
+		writeDocs(docs);
+		assertEquals(2, writtenCount.get(), "Document should be written because key order differs and JSON is not canonicalized");
+		assertEquals(0, skippedCount.get(), "No documents should be skipped");
+	}
+
+	/**
+	 * Verifies that with the default canonicalizeJson(true), documents with logically identical content
+	 * but different key ordering will produce the same hash, causing the document to be skipped.
+	 */
+	@Test
+	void jsonCanonicalizedProducesSameHashForReorderedKeys() {
+		filter = IncrementalWriteFilter.newBuilder()
+			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
+			.build();
+
+		// Write initial document with keys in a specific order
+		docs = new ArrayList<>();
+		String json1 = "{\"name\":\"Test\",\"id\":1,\"value\":100}";
+		docs.add(new DocumentWriteOperationImpl("/incremental/test/canonical.json", METADATA,
+			new StringHandle(json1).withFormat(Format.JSON)));
+
+		writeDocs(docs);
+		assertEquals(1, writtenCount.get());
+		assertEquals(0, skippedCount.get());
+
+		// Write again with same logical content but different key order
+		docs = new ArrayList<>();
+		String json2 = "{\"id\":1,\"value\":100,\"name\":\"Test\"}";
+		docs.add(new DocumentWriteOperationImpl("/incremental/test/canonical.json", METADATA,
+			new StringHandle(json2).withFormat(Format.JSON)));
+
+		writeDocs(docs);
+		assertEquals(1, writtenCount.get(), "Document should be skipped because canonicalized JSON produces the same hash");
+		assertEquals(1, skippedCount.get(), "One document should be skipped");
+	}
 }
