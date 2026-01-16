@@ -15,6 +15,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.transform.OutputKeys;
@@ -29,6 +30,8 @@ import javax.xml.xpath.XPathExpressionException;
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Utility class for applying content exclusions to documents before hash calculation.
@@ -99,23 +102,28 @@ class ContentExclusionUtil {
 	 *
 	 * @param uri              the document URI (used for logging purposes)
 	 * @param xmlContent       the XML content as a string
+	 * @param namespaces       a map of namespace prefixes to URIs for use in XPath expressions, or null
 	 * @param xpathExpressions array of XPath expressions identifying elements to exclude
 	 * @return the modified XML content with specified elements removed
 	 * @throws Exception if the XML content cannot be parsed or serialized
 	 */
-	static String applyXmlExclusions(String uri, String xmlContent, String... xpathExpressions) throws Exception {
+	static String applyXmlExclusions(String uri, String xmlContent, Map<String, String> namespaces, String... xpathExpressions) throws Exception {
 		if (xpathExpressions == null || xpathExpressions.length == 0) {
 			return xmlContent;
 		}
 
 		DocumentBuilder builder = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder();
 		Document document = builder.parse(new ByteArrayInputStream(xmlContent.getBytes(StandardCharsets.UTF_8)));
-		applyXmlExclusions(uri, document, xpathExpressions);
+		applyXmlExclusions(uri, document, namespaces, xpathExpressions);
 		return serializeDocument(document);
 	}
 
-	private static void applyXmlExclusions(String uri, Document document, String[] xpathExpressions) {
+	private static void applyXmlExclusions(String uri, Document document, Map<String, String> namespaces, String[] xpathExpressions) {
 		final XPath xpath = XmlFactories.getXPathFactory().newXPath();
+		if (namespaces != null && !namespaces.isEmpty()) {
+			xpath.setNamespaceContext(new SimpleNamespaceContext(namespaces));
+		}
+		
 		for (String xpathExpression : xpathExpressions) {
 			try {
 				XPathExpression expr = xpath.compile(xpathExpression);
