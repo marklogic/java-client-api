@@ -5627,14 +5627,12 @@ public class OkHttpServices implements RESTServices {
 			};
 
 			Response response = sendRequestWithRetry(requestBldr, sendRequestFunction, resendableConsumer);
-
+			Objects.requireNonNull(response);
 			if (session != null) {
 				List<ClientCookie> cookies = new ArrayList<>();
-				if (response != null) {
-					for (String setCookie : response.headers(HEADER_SET_COOKIE)) {
-						ClientCookie cookie = parseClientCookie(requestBldr.build().url(), setCookie);
-						cookies.add(cookie);
-					}
+				for (String setCookie : response.headers(HEADER_SET_COOKIE)) {
+					ClientCookie cookie = parseClientCookie(requestBldr.build().url(), setCookie);
+					cookies.add(cookie);
 				}
 				((SessionStateImpl) session).setCookies(cookies);
 			}
