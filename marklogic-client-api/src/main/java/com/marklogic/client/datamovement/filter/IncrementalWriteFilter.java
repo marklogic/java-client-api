@@ -3,11 +3,13 @@
  */
 package com.marklogic.client.datamovement.filter;
 
+import com.fasterxml.jackson.core.JsonPointer;
 import com.marklogic.client.datamovement.DocumentWriteSetFilter;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.impl.HandleAccessor;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
@@ -16,6 +18,8 @@ import org.erdtman.jcs.JsonCanonicalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -114,10 +118,52 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		}
 
 		public IncrementalWriteFilter build() {
+			validateJsonExclusions();
+			validateXmlExclusions();
 			if (useEvalQuery) {
 				return new IncrementalWriteEvalFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions);
 			}
 			return new IncrementalWriteOpticFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions);
+		}
+
+		private void validateJsonExclusions() {
+			if (jsonExclusions == null) {
+				return;
+			}
+			for (String jsonPointer : jsonExclusions) {
+				if (jsonPointer == null || jsonPointer.trim().isEmpty()) {
+					throw new IllegalArgumentException(
+						"Empty JSON Pointer expression is not valid for excluding content from incremental write hash calculation; " +
+							"it would exclude the entire document. JSON Pointer expressions must start with '/'.");
+				}
+				try {
+					JsonPointer.compile(jsonPointer);
+				} catch (IllegalArgumentException e) {
+					throw new IllegalArgumentException(
+						String.format("Invalid JSON Pointer expression '%s' for excluding content from incremental write hash calculation. " +
+							"JSON Pointer expressions must start with '/'; cause: %s", jsonPointer, e.getMessage()), e);
+				}
+			}
+		}
+
+		private void validateXmlExclusions() {
+			if (xmlExclusions == null) {
+				return;
+			}
+			XPath xpath = XmlFactories.getXPathFactory().newXPath();
+			for (String xpathExpression : xmlExclusions) {
+				if (xpathExpression == null || xpathExpression.trim().isEmpty()) {
+					throw new IllegalArgumentException(
+						"Empty XPath expression is not valid for excluding content from incremental write hash calculation.");
+				}
+				try {
+					xpath.compile(xpathExpression);
+				} catch (XPathExpressionException e) {
+					throw new IllegalArgumentException(
+						String.format("Invalid XPath expression '%s' for excluding content from incremental write hash calculation; cause: %s",
+							xpathExpression, e.getMessage()), e);
+				}
+			}
 		}
 	}
 
