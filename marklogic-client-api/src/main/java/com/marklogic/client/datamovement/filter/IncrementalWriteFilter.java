@@ -188,6 +188,9 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 
 	private String serializeContent(DocumentWriteOperation doc) {
 		String content = HandleAccessor.contentAsString(doc.getContent());
+		if (content == null) {
+			return null;
+		}
 
 		Format format = null;
 		if (doc.getContent() instanceof BaseHandle<?, ?> baseHandle) {
