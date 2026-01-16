@@ -11,8 +11,9 @@ import com.marklogic.client.io.StringHandle;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ApplyExclusionsToIncrementalWriteTest extends AbstractIncrementalWriteTest {
 
@@ -85,15 +86,17 @@ class ApplyExclusionsToIncrementalWriteTest extends AbstractIncrementalWriteTest
 		// Write initial documents
 		docs = new ArrayList<>();
 		for (int i = 1; i <= 5; i++) {
-			String xml = "<doc>" +
-				"<id>" + i + "</id>" +
-				"<name>Document " + i + "</name>" +
-				"<timestamp>2025-01-01T10:00:00Z</timestamp>" +
-				"<metadata>" +
-				"<author>Test User</author>" +
-				"<lastModified>2025-01-01T10:00:00Z</lastModified>" +
-				"</metadata>" +
-				"</doc>";
+			String xml = """
+				<doc>
+					<id>%d</id>
+					<name>Document %d</name>
+					<timestamp>2025-01-01T10:00:00Z</timestamp>
+					<metadata>
+						<author>Test User</author>
+						<lastModified>2025-01-01T10:00:00Z</lastModified>
+					</metadata>
+				</doc>
+				""".formatted(i, i);
 			docs.add(new DocumentWriteOperationImpl("/incremental/test/xml-doc-" + i + ".xml", METADATA, new StringHandle(xml).withFormat(Format.XML)));
 		}
 
@@ -104,15 +107,17 @@ class ApplyExclusionsToIncrementalWriteTest extends AbstractIncrementalWriteTest
 		// Write again with different values for excluded fields - should be skipped
 		docs = new ArrayList<>();
 		for (int i = 1; i <= 5; i++) {
-			String xml = "<doc>" +
-				"<id>" + i + "</id>" +
-				"<name>Document " + i + "</name>" +
-				"<timestamp>2026-01-02T15:30:00Z</timestamp>" + // Changed
-				"<metadata>" +
-				"<author>Test User</author>" +
-				"<lastModified>2026-01-02T15:30:00Z</lastModified>" + // Changed
-				"</metadata>" +
-				"</doc>";
+			String xml = """
+				<doc>
+					<id>%d</id>
+					<name>Document %d</name>
+					<timestamp>2026-01-02T15:30:00Z</timestamp>
+					<metadata>
+						<author>Test User</author>
+						<lastModified>2026-01-02T15:30:00Z</lastModified>
+					</metadata>
+				</doc>
+				""".formatted(i, i);
 			docs.add(new DocumentWriteOperationImpl("/incremental/test/xml-doc-" + i + ".xml", METADATA, new StringHandle(xml).withFormat(Format.XML)));
 		}
 
@@ -123,15 +128,17 @@ class ApplyExclusionsToIncrementalWriteTest extends AbstractIncrementalWriteTest
 		// Write again with actual content change - should NOT be skipped
 		docs = new ArrayList<>();
 		for (int i = 1; i <= 5; i++) {
-			String xml = "<doc>" +
-				"<id>" + i + "</id>" +
-				"<name>Modified Document " + i + "</name>" + // Changed
-				"<timestamp>2026-01-02T16:00:00Z</timestamp>" +
-				"<metadata>" +
-				"<author>Test User</author>" +
-				"<lastModified>2026-01-02T16:00:00Z</lastModified>" +
-				"</metadata>" +
-				"</doc>";
+			String xml = """
+				<doc>
+					<id>%d</id>
+					<name>Modified Document %d</name>
+					<timestamp>2026-01-02T16:00:00Z</timestamp>
+					<metadata>
+						<author>Test User</author>
+						<lastModified>2026-01-02T16:00:00Z</lastModified>
+					</metadata>
+				</doc>
+				""".formatted(i, i);
 			docs.add(new DocumentWriteOperationImpl("/incremental/test/xml-doc-" + i + ".xml", METADATA, new StringHandle(xml).withFormat(Format.XML)));
 		}
 
@@ -158,7 +165,12 @@ class ApplyExclusionsToIncrementalWriteTest extends AbstractIncrementalWriteTest
 		jsonDoc.put("timestamp", "2025-01-01T10:00:00Z");
 		docs.add(new DocumentWriteOperationImpl("/incremental/test/mixed-doc.json", METADATA, new JacksonHandle(jsonDoc)));
 
-		String xmlDoc = "<doc><id>1</id><timestamp>2025-01-01T10:00:00Z</timestamp></doc>";
+		String xmlDoc = """
+			<doc>
+				<id>1</id>
+				<timestamp>2025-01-01T10:00:00Z</timestamp>
+			</doc>
+			""";
 		docs.add(new DocumentWriteOperationImpl("/incremental/test/mixed-doc.xml", METADATA, new StringHandle(xmlDoc).withFormat(Format.XML)));
 
 		writeDocs(docs);
@@ -172,7 +184,12 @@ class ApplyExclusionsToIncrementalWriteTest extends AbstractIncrementalWriteTest
 		jsonDoc.put("timestamp", "2026-01-02T15:30:00Z"); // Changed
 		docs.add(new DocumentWriteOperationImpl("/incremental/test/mixed-doc.json", METADATA, new JacksonHandle(jsonDoc)));
 
-		xmlDoc = "<doc><id>1</id><timestamp>2026-01-02T15:30:00Z</timestamp></doc>"; // Changed
+		xmlDoc = """
+			<doc>
+				<id>1</id>
+				<timestamp>2026-01-02T15:30:00Z</timestamp>
+			</doc>
+			""";
 		docs.add(new DocumentWriteOperationImpl("/incremental/test/mixed-doc.xml", METADATA, new StringHandle(xmlDoc).withFormat(Format.XML)));
 
 		writeDocs(docs);
@@ -241,5 +258,77 @@ class ApplyExclusionsToIncrementalWriteTest extends AbstractIncrementalWriteTest
 		writeDocs(docs);
 		assertEquals(1, writtenCount.get(), "Document should be skipped because canonicalized JSON produces the same hash");
 		assertEquals(1, skippedCount.get(), "One document should be skipped");
+	}
+
+	@Test
+	void xmlExclusionsWithNamespaces() {
+		filter = IncrementalWriteFilter.newBuilder()
+			.xmlExclusions("//ns:timestamp", "//ns:metadata/ns:lastModified")
+			.xmlNamespaces(Map.of("ns", "http://example.com/ns"))
+			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
+			.build();
+
+		// Write initial documents with namespaced elements
+		docs = new ArrayList<>();
+		for (int i = 1; i <= 3; i++) {
+			String xml = """
+				<ns:doc xmlns:ns="http://example.com/ns">
+					<ns:id>%d</ns:id>
+					<ns:name>Document %d</ns:name>
+					<ns:timestamp>2025-01-01T10:00:00Z</ns:timestamp>
+					<ns:metadata>
+						<ns:author>Test User</ns:author>
+						<ns:lastModified>2025-01-01T10:00:00Z</ns:lastModified>
+					</ns:metadata>
+				</ns:doc>
+				""".formatted(i, i);
+			docs.add(new DocumentWriteOperationImpl("/incremental/test/ns-xml-doc-" + i + ".xml", METADATA, new StringHandle(xml).withFormat(Format.XML)));
+		}
+
+		writeDocs(docs);
+		assertEquals(3, writtenCount.get());
+		assertEquals(0, skippedCount.get());
+
+		// Write again with different values for excluded fields - should be skipped
+		docs = new ArrayList<>();
+		for (int i = 1; i <= 3; i++) {
+			String xml = """
+				<ns:doc xmlns:ns="http://example.com/ns">
+					<ns:id>%d</ns:id>
+					<ns:name>Document %d</ns:name>
+					<ns:timestamp>2026-01-02T15:30:00Z</ns:timestamp>
+					<ns:metadata>
+						<ns:author>Test User</ns:author>
+						<ns:lastModified>2026-01-02T15:30:00Z</ns:lastModified>
+					</ns:metadata>
+				</ns:doc>
+				""".formatted(i, i);
+			docs.add(new DocumentWriteOperationImpl("/incremental/test/ns-xml-doc-" + i + ".xml", METADATA, new StringHandle(xml).withFormat(Format.XML)));
+		}
+
+		writeDocs(docs);
+		assertEquals(3, writtenCount.get(), "Documents should be skipped since only excluded fields changed");
+		assertEquals(3, skippedCount.get());
+
+		// Write again with actual content change - should NOT be skipped
+		docs = new ArrayList<>();
+		for (int i = 1; i <= 3; i++) {
+			String xml = """
+				<ns:doc xmlns:ns="http://example.com/ns">
+					<ns:id>%d</ns:id>
+					<ns:name>Modified Document %d</ns:name>
+					<ns:timestamp>2026-01-02T16:00:00Z</ns:timestamp>
+					<ns:metadata>
+						<ns:author>Test User</ns:author>
+						<ns:lastModified>2026-01-02T16:00:00Z</ns:lastModified>
+					</ns:metadata>
+				</ns:doc>
+				""".formatted(i, i);
+			docs.add(new DocumentWriteOperationImpl("/incremental/test/ns-xml-doc-" + i + ".xml", METADATA, new StringHandle(xml).withFormat(Format.XML)));
+		}
+
+		writeDocs(docs);
+		assertEquals(6, writtenCount.get(), "Documents should be written since non-excluded content changed");
+		assertEquals(3, skippedCount.get(), "Skip count should remain at 3");
 	}
 }

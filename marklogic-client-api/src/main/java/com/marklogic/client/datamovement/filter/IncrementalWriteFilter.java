@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -51,6 +52,7 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		private Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer;
 		private String[] jsonExclusions;
 		private String[] xmlExclusions;
+		private Map<String, String> xmlNamespaces;
 
 		/**
 		 * @param keyName the name of the MarkLogic metadata key that will hold the hash value; defaults to "incrementalWriteHash".
@@ -117,13 +119,22 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 			return this;
 		}
 
+		/**
+		 * @param namespaces a map of namespace prefixes to URIs for use in XPath exclusion expressions.
+		 *                   For example, Map.of("ns", "http://example.com/ns") allows XPath like "//ns:timestamp".
+		 */
+		public Builder xmlNamespaces(Map<String, String> namespaces) {
+			this.xmlNamespaces = namespaces;
+			return this;
+		}
+
 		public IncrementalWriteFilter build() {
 			validateJsonExclusions();
 			validateXmlExclusions();
 			if (useEvalQuery) {
-				return new IncrementalWriteEvalFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions);
+				return new IncrementalWriteEvalFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions, xmlNamespaces);
 			}
-			return new IncrementalWriteOpticFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions);
+			return new IncrementalWriteOpticFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions, xmlNamespaces);
 		}
 
 		private void validateJsonExclusions() {
@@ -151,6 +162,9 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 				return;
 			}
 			XPath xpath = XmlFactories.getXPathFactory().newXPath();
+			if (xmlNamespaces != null && !xmlNamespaces.isEmpty()) {
+				xpath.setNamespaceContext(new SimpleNamespaceContext(xmlNamespaces));
+			}
 			for (String xpathExpression : xmlExclusions) {
 				if (xpathExpression == null || xpathExpression.trim().isEmpty()) {
 					throw new IllegalArgumentException(
@@ -173,18 +187,20 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 	private final Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer;
 	private final String[] jsonExclusions;
 	private final String[] xmlExclusions;
+	private final Map<String, String> xmlNamespaces;
 
 	// Hardcoding this for now, with a good general purpose hashing function.
 	// See https://xxhash.com for benchmarks.
 	private final LongHashFunction hashFunction = LongHashFunction.xx3();
 
-	public IncrementalWriteFilter(String hashKeyName, String timestampKeyName, boolean canonicalizeJson, Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer, String[] jsonExclusions, String[] xmlExclusions) {
+	public IncrementalWriteFilter(String hashKeyName, String timestampKeyName, boolean canonicalizeJson, Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer, String[] jsonExclusions, String[] xmlExclusions, Map<String, String> xmlNamespaces) {
 		this.hashKeyName = hashKeyName;
 		this.timestampKeyName = timestampKeyName;
 		this.canonicalizeJson = canonicalizeJson;
 		this.skippedDocumentsConsumer = skippedDocumentsConsumer;
 		this.jsonExclusions = jsonExclusions;
 		this.xmlExclusions = xmlExclusions;
+		this.xmlNamespaces = xmlNamespaces;
 	}
 
 	protected final DocumentWriteSet filterDocuments(Context context, Function<String, String> hashRetriever) {
@@ -260,7 +276,7 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 			}
 		} else if (xmlExclusions != null && xmlExclusions.length > 0) {
 			try {
-				content = ContentExclusionUtil.applyXmlExclusions(doc.getUri(), content, xmlExclusions);
+				content = ContentExclusionUtil.applyXmlExclusions(doc.getUri(), content, xmlNamespaces, xmlExclusions);
 			} catch (Exception e) {
 				logger.warn("Unable to apply XML exclusions for URI {}, using original content for hashing; cause: {}",
 					doc.getUri(), e.getMessage());

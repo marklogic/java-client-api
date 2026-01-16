@@ -20,8 +20,8 @@ import java.util.function.Consumer;
 class IncrementalWriteOpticFilter extends IncrementalWriteFilter {
 
 	IncrementalWriteOpticFilter(String hashKeyName, String timestampKeyName, boolean canonicalizeJson,
-								Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer, String[] jsonExclusions, String[] xmlExclusions) {
-		super(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions);
+								Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer, String[] jsonExclusions, String[] xmlExclusions, Map<String, String> xmlNamespaces) {
+		super(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions, xmlNamespaces);
 	}
 
 	@Override
