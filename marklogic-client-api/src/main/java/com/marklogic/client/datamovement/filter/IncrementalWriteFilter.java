@@ -152,7 +152,15 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 				continue;
 			}
 
-			final String contentHash = computeHash(serializeContent(doc));
+			final String serializedContent = serializeContent(doc);
+			if (serializedContent == null) {
+				// Not sure if the doc can have null content - possibly for a naked properties document? - but if it
+				// does, just include it in the write set.
+				newWriteSet.add(doc);
+				continue;
+			}
+
+			final String contentHash = computeHash(serializedContent);
 			final String existingHash = hashRetriever.apply(doc.getUri());
 			if (logger.isTraceEnabled()) {
 				logger.trace("URI: {}, existing Hash: {}, new Hash: {}", doc.getUri(), existingHash, contentHash);
@@ -171,7 +179,7 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 			}
 		}
 
-		if (!skippedDocuments.isEmpty()) {
+		if (!skippedDocuments.isEmpty() && skippedDocumentsConsumer != null) {
 			skippedDocumentsConsumer.accept(skippedDocuments.toArray(new DocumentWriteOperation[0]));
 		}
 

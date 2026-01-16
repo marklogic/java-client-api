@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -618,6 +618,7 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
+		Objects.requireNonNull(response);
 
 		int status = response.code();
 		if (status == STATUS_NOT_FOUND) {
@@ -895,6 +896,7 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
+		Objects.requireNonNull(response);
 		int status = response.code();
 		if (status == STATUS_NOT_FOUND) {
 			throw new ResourceNotFoundException(
@@ -1501,6 +1503,7 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, doPostFunction, null);
+		Objects.requireNonNull(response);
 		int status = response.code();
 		if (status == STATUS_FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to open transactions", extractErrorFields(response));
@@ -1510,12 +1513,14 @@ public class OkHttpServices implements RESTServices {
 				getReasonPhrase(response), extractErrorFields(response));
 		}
 
-		String location = response.headers().get("Location");
-		List<ClientCookie> cookies = new ArrayList<>();
+		final String location = response.headers().get("Location");
+
+		final List<ClientCookie> cookies = new ArrayList<>();
 		for (String setCookie : response.headers(HEADER_SET_COOKIE)) {
 			ClientCookie cookie = parseClientCookie(requestBldr.build().url(), setCookie);
 			cookies.add(cookie);
 		}
+
 		closeResponse(response);
 		if (location == null) throw new MarkLogicInternalException("transaction open failed to provide location");
 		if (!location.contains("/")) {
@@ -2562,6 +2567,7 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+		Objects.requireNonNull(response);
 		int status = response.code();
 		if (status == STATUS_FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to read "
@@ -2749,6 +2755,7 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, doDeleteFunction, null);
+		Objects.requireNonNull(response);
 		int status = response.code();
 		if (status == STATUS_FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to delete "
@@ -3181,6 +3188,7 @@ public class OkHttpServices implements RESTServices {
 		};
 
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPostFunction, resendableConsumer);
+		Objects.requireNonNull(response);
 		int status = response.code();
 		checkStatus(response, status, operation, "resource", path,
 			ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
@@ -3712,6 +3720,7 @@ public class OkHttpServices implements RESTServices {
 		Consumer<Boolean> resendableConsumer = null;
 
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPostFunction, resendableConsumer);
+		Objects.requireNonNull(response);
 		int status = response.code();
 		checkStatus(response, status, "apply", "resource", path, ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 		return makeResults(OkHttpServiceResultIterator::new, reqlog, "apply", "resource", response);
@@ -3782,6 +3791,7 @@ public class OkHttpServices implements RESTServices {
 		);
 
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPostFunction, resendableConsumer);
+		Objects.requireNonNull(response);
 		checkStatus(response, response.code(), "apply", "resource", path, ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
 		boolean shouldStreamResults = "eval".equalsIgnoreCase(path) || "invoke".equalsIgnoreCase(path);
@@ -4820,6 +4830,7 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+		Objects.requireNonNull(response);
 		int status = response.code();
 		if (status == STATUS_FORBIDDEN) {
 			throw new ForbiddenUserException(
@@ -5040,7 +5051,8 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
-		int status = response.code();
+		Objects.requireNonNull(response);
+		final int status = response.code();
 		if (status == STATUS_FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to match",
 				extractErrorFields(response));
@@ -5618,9 +5630,11 @@ public class OkHttpServices implements RESTServices {
 
 			if (session != null) {
 				List<ClientCookie> cookies = new ArrayList<>();
-				for (String setCookie : response.headers(HEADER_SET_COOKIE)) {
-					ClientCookie cookie = parseClientCookie(requestBldr.build().url(), setCookie);
-					cookies.add(cookie);
+				if (response != null) {
+					for (String setCookie : response.headers(HEADER_SET_COOKIE)) {
+						ClientCookie cookie = parseClientCookie(requestBldr.build().url(), setCookie);
+						cookies.add(cookie);
+					}
 				}
 				((SessionStateImpl) session).setCookies(cookies);
 			}
