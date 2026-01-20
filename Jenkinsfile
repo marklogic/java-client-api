@@ -1,11 +1,22 @@
 @Library('shared-libraries@arminstances_aws_sharedlibraries') _
 
 def getJavaHomePath() {
-	if (env.JAVA_VERSION == "JAVA21") {
-		return "/home/builder/java/jdk-21.0.1"
-	} else {
-		return "/home/builder/java/jdk-17.0.2"
-	}
+    if (params.arm_regressions) {
+        // For ARM instances, Java is installed via Packagedependencies as java-17
+        // Amazon Linux 2 installs Amazon Corretto Java in /usr/lib/jvm/
+        if (env.JAVA_VERSION == "JAVA21") {
+            return "/usr/lib/jvm/java-21-amazon-corretto"
+        } else {
+            return "/usr/lib/jvm/java-17-amazon-corretto"
+        }
+    } else {
+        // For regular x86 instances
+        if (env.JAVA_VERSION == "JAVA21") {
+            return "/home/builder/java/jdk-21.0.1"
+        } else {
+            return "/home/builder/java/jdk-17.0.2"
+        }
+    }
 }
 
 def setupDockerMarkLogic(String image) {
@@ -22,6 +33,16 @@ def setupDockerMarkLogic(String image) {
     MARKLOGIC_IMAGE=''' + image + ''' MARKLOGIC_LOGS_VOLUME=marklogicLogs docker compose up -d --build
     echo "Waiting for MarkLogic server to initialize."
     sleep 60s
+
+		echo "Debugging Java installation on ARM instance:"
+		ls -la /usr/lib/jvm/
+		readlink -f /usr/bin/java
+		echo "Current JAVA_HOME_DIR value: $JAVA_HOME_DIR"
+		ls -la $JAVA_HOME_DIR || echo "JAVA_HOME_DIR path does not exist"
+		echo "Verifying Docker Compose installation:"
+		docker compose version || echo "Docker Compose not available"
+		docker --version
+
 		export JAVA_HOME=$JAVA_HOME_DIR
 		export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
 		export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
@@ -300,7 +321,7 @@ pipeline {
 			}
 		}
 
-		stage('provisionInfrastructure'){
+		tage('provisionInfrastructure'){
 			when {
 				allOf {
 					branch 'arm-regressions-testbranch'
@@ -354,7 +375,11 @@ pipeline {
                         remoteFS: remoteFS,
                         packageFile: params.packagefile,
                         setupScriptPath: 'terraform-templates/arm-server-build/setup_volume.sh',
-                        packageDir: 'terraform-templates/java-client-api'
+                        packageDir: 'terraform-templates/java-client-api',
+                        additionalScriptsDir: 'terraform-templates/java-client-api/scripts',
+						additionalScriptsFile: 'terraform-templates/java-client-api/AdditionalScripts',
+                        branch: params.terraformBranch
+
                     ])
                     
                     echo "✅ Volume attachment completed: ${volumeResult.volumeAttached}"
@@ -380,7 +405,6 @@ pipeline {
     		agent { label "java-client-agent-${BUILD_NUMBER}" }
 			when {
 				allOf {
-					expression {false}
 					branch 'arm-regressions-testbranch'
 					expression { return params.arm_regressions }
 				}
@@ -417,6 +441,7 @@ pipeline {
                         echo "🗑️ Cleaning up Terraform resources..."
                         node('javaClientLinuxPool') {
                             try {
+                                sleep 300
                                 unstash "terraform-${BUILD_NUMBER}"
                                 withAWS(credentials: 'headlessDbUserEC2', region: 'us-west-2', role: 'role-headless-testing', roleAccount: '343869654284', duration: 3600) {
                                     sh '''#!/bin/bash
