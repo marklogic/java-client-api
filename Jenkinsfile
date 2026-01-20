@@ -321,7 +321,7 @@ pipeline {
 			}
 		}
 
-		tage('provisionInfrastructure'){
+		stage('provisionInfrastructure'){
 			when {
 				allOf {
 					branch 'arm-regressions-testbranch'
