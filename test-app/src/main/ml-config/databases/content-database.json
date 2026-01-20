@@ -197,6 +197,15 @@
 			"fast-phrase-searches": false,
 			"fast-case-sensitive-searches": false,
 			"fast-diacritic-sensitive-searches": false
+		},
+		{
+			"field-name": "myWriteHash",
+			"metadata": "",
+			"stemmed-searches": "off",
+			"word-searches": false,
+			"fast-phrase-searches": false,
+			"fast-case-sensitive-searches": false,
+			"fast-diacritic-sensitive-searches": false
 		}
 	],
 	"range-field-index": [
