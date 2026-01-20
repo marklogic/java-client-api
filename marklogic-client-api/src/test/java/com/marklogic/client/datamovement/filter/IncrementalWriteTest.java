@@ -6,10 +6,7 @@ package com.marklogic.client.datamovement.filter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.document.*;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.test.Common;
 import org.junit.jupiter.api.Test;
 
@@ -156,7 +153,7 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 	@Test
 	void customTimestampKeyName() {
 		filter = IncrementalWriteFilter.newBuilder()
-			.hashKeyName("incrementalWriteHash")
+			.hashKeyName("myWriteHash")
 			.timestampKeyName("myTimestamp")
 			.build();
 
@@ -165,8 +162,9 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 		DocumentMetadataHandle metadata = Common.client.newDocumentManager().readMetadata("/incremental/test/doc-1.xml",
 			new DocumentMetadataHandle());
 
+		assertNotNull(metadata.getMetadataValues().get("myWriteHash"));
 		assertNotNull(metadata.getMetadataValues().get("myTimestamp"));
-		assertNotNull(metadata.getMetadataValues().get("incrementalWriteHash"));
+		assertFalse(metadata.getMetadataValues().containsKey("incrementalWriteHash"));
 		assertFalse(metadata.getMetadataValues().containsKey("incrementalWriteTimestamp"));
 	}
 
@@ -188,6 +186,46 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 
 		assertNotNull(metadata.getMetadataValues().get("incrementalWriteHash"));
 		assertNotNull(metadata.getMetadataValues().get("incrementalWriteTimestamp"));
+	}
+
+	@Test
+	void textDocument() {
+		final DocumentWriteOperation writeOp = new DocumentWriteOperationImpl("/incremental/test/doc.txt", METADATA,
+			new StringHandle("Hello world"));
+
+		docs.add(writeOp);
+		writeDocs(docs);
+		assertEquals(1, writtenCount.get());
+		assertEquals(0, skippedCount.get());
+
+		// Write the same text document again
+		docs = new ArrayList<>();
+		docs.add(writeOp);
+		writeDocs(docs);
+		assertEquals(1, writtenCount.get());
+		assertEquals(1, skippedCount.get(), "This is a sanity check to verify that text files work as expected. " +
+			"Exclusions can't yet be specified for them since we only support JSON Pointer and XPath so far. It may " +
+			"be worth supporting regex-based exclusions for text files in the future.");
+	}
+
+	@Test
+	void binaryDocument() {
+		byte[] binaryContent = "Binary content example".getBytes();
+		final DocumentWriteOperation writeOp = new DocumentWriteOperationImpl("/incremental/test/doc.bin", METADATA,
+			new BytesHandle(binaryContent).withFormat(Format.BINARY));
+
+		docs.add(writeOp);
+		writeDocs(docs);
+		assertEquals(1, writtenCount.get());
+		assertEquals(0, skippedCount.get());
+
+		// Write the same binary document again
+		docs = new ArrayList<>();
+		docs.add(writeOp);
+		writeDocs(docs);
+		assertEquals(1, writtenCount.get());
+		assertEquals(1, skippedCount.get(), "Another sanity check to make sure that binary documents work as " +
+			"expected. Exclusions cannot be specified for them.");
 	}
 
 	private void verifyIncrementalWriteWorks() {
