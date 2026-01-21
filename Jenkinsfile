@@ -393,8 +393,8 @@ pipeline {
                         packageFile: params.packagefile,
                         setupScriptPath: 'terraform-templates/arm-server-build/setup_volume.sh',
                         packageDir: 'terraform-templates/java-client-api',
-                        additionalScriptsDir: 'terraform-templates/java-client-api/scripts',
-						additionalScriptsFile: 'terraform-templates/java-client-api/AdditionalScripts',
+                        initScriptsDir: 'terraform-templates/java-client-api/scripts',
+						initScriptsFile: 'terraform-templates/java-client-api/initscripts',
                         branch: params.terraformBranch
 
                     ])
