@@ -10,6 +10,7 @@ services:
       - MARKLOGIC_INIT=true
       - MARKLOGIC_ADMIN_USERNAME=admin
       - MARKLOGIC_ADMIN_PASSWORD=admin
+      - MARKLOGIC_WALLET_PASSWORD=admin
     # The NET_RAW capability allows a process to create raw sockets. Polaris does not like that.
     # This setting removes the NET_RAW capability from the container.
     cap_drop:
