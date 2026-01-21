@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.impl;
@@ -2265,6 +2265,42 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
       throw new IllegalArgumentException("end parameter for shortestPath() cannot be null");
     }
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "shortest-path", new Object[]{ start, end, path, length, weight });
+  }
+
+
+  @Override
+  public ModifyPlan transitiveClosure(String start, String end) {
+    return transitiveClosure((start == null) ? (PlanExprCol) null : exprCol(start), (end == null) ? null : exprCol(end));
+  }
+
+
+  @Override
+  public ModifyPlan transitiveClosure(PlanExprCol start, PlanExprCol end) {
+    if (start == null) {
+      throw new IllegalArgumentException("start parameter for transitiveClosure() cannot be null");
+    }
+    if (end == null) {
+      throw new IllegalArgumentException("end parameter for transitiveClosure() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "transitive-closure", new Object[]{ start, end });
+  }
+
+
+  @Override
+  public ModifyPlan transitiveClosure(String start, String end, PlanTransitiveClosureOptions options) {
+    return transitiveClosure((start == null) ? null : exprCol(start), (end == null) ? null : exprCol(end), options);
+  }
+
+
+  @Override
+  public ModifyPlan transitiveClosure(PlanExprCol start, PlanExprCol end, PlanTransitiveClosureOptions options) {
+    if (start == null) {
+      throw new IllegalArgumentException("start parameter for transitiveClosure() cannot be null");
+    }
+    if (end == null) {
+      throw new IllegalArgumentException("end parameter for transitiveClosure() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "transitive-closure", new Object[]{ start, end, PlanBuilderSubImpl.asArg(PlanBuilderSubImpl.makeMap(options)) });
   }
 
 

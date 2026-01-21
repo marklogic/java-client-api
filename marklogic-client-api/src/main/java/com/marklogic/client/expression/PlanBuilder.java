@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.expression;
@@ -2043,6 +2043,36 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @since 7.2.0; requires MarkLogic 12
   */
   public abstract ModifyPlan shortestPath(PlanExprCol start, PlanExprCol end, PlanExprCol path, PlanExprCol length, PlanExprCol weight);
+/**
+  * This method performs a transitive closure operation over a graph-like structure, identifying all reachable node pairs from a given start node to an end node through one or more intermediate steps. A set of (start, end) node pairs where a path exists between them with a length between minLength and maxLength, inclusive. This models the SPARQL one-or-more (+) operator, enabling recursive or chained relationships to be queried efficiently.
+  * @param start  The column is the starting node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @param end  The column is the end node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan transitiveClosure(String start, String end);
+/**
+  * This method performs a transitive closure operation over a graph-like structure, identifying all reachable node pairs from a given start node to an end node through one or more intermediate steps. A set of (start, end) node pairs where a path exists between them with a length between minLength and maxLength, inclusive. This models the SPARQL one-or-more (+) operator, enabling recursive or chained relationships to be queried efficiently.
+  * @param start  The column is the starting node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @param end  The column is the end node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan transitiveClosure(PlanExprCol start, PlanExprCol end);
+/**
+  * This method performs a transitive closure operation over a graph-like structure, identifying all reachable node pairs from a given start node to an end node through one or more intermediate steps. A set of (start, end) node pairs where a path exists between them with a length between minLength and maxLength, inclusive. This models the SPARQL one-or-more (+) operator, enabling recursive or chained relationships to be queried efficiently.
+  * @param start  The column is the starting node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @param end  The column is the end node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @param options  This is either an array of strings or an object containing keys and values for the options to this operator. Options include: min-length This option is the minimum number of steps (edges) required in the path. It should be a non-negative integer, and the default is 1.max-length This option Maximum number of steps (edges) allowed in the path. It should be a non-negative integer, and the default is unlimited.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan transitiveClosure(String start, String end, PlanTransitiveClosureOptions options);
+/**
+  * This method performs a transitive closure operation over a graph-like structure, identifying all reachable node pairs from a given start node to an end node through one or more intermediate steps. A set of (start, end) node pairs where a path exists between them with a length between minLength and maxLength, inclusive. This models the SPARQL one-or-more (+) operator, enabling recursive or chained relationships to be queried efficiently.
+  * @param start  The column is the starting node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @param end  The column is the end node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @param options  This is either an array of strings or an object containing keys and values for the options to this operator. Options include: min-length This option is the minimum number of steps (edges) required in the path. It should be a non-negative integer, and the default is 1.max-length This option Maximum number of steps (edges) allowed in the path. It should be a non-negative integer, and the default is unlimited.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan transitiveClosure(PlanExprCol start, PlanExprCol end, PlanTransitiveClosureOptions options);
   }
 
 
