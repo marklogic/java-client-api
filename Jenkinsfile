@@ -434,7 +434,7 @@ pipeline {
 						submoduleCfg: [], 
 						userRemoteConfigs: scm.userRemoteConfigs])
 				
-				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi-arm:latest-11")
+				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi9-arm:latest-11")
 			}
 			post {
 				always {
