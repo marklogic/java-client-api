@@ -4,9 +4,6 @@ def getJavaHomePath() {
     if (params.arm_regressions) {
         def version = (env.JAVA_VERSION == "JAVA21") ? "21" : "17"
         def path = "/usr/lib/jvm/java-${version}-amazon-corretto.aarch64"
-        if (!fileExists(path)) {
-            error "Java home not found: ${path}"
-        }
         return path
     } else {
         if (env.JAVA_VERSION == "JAVA21") {
