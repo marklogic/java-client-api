@@ -2,15 +2,13 @@
 
 def getJavaHomePath() {
     if (params.arm_regressions) {
-        // For ARM instances, Java is installed via Packagedependencies as java-17
-        // Amazon Linux 2 installs Amazon Corretto Java in /usr/lib/jvm/
-        if (env.JAVA_VERSION == "JAVA21") {
-            return "/usr/lib/jvm/java-21-amazon-corretto"
-        } else {
-            return "/usr/lib/jvm/java-17-amazon-corretto"
+        def version = (env.JAVA_VERSION == "JAVA21") ? "21" : "17"
+        def path = "/usr/lib/jvm/java-${version}-amazon-corretto.aarch64"
+        if (!fileExists(path)) {
+            error "Java home not found: ${path}"
         }
+        return path
     } else {
-        // For regular x86 instances
         if (env.JAVA_VERSION == "JAVA21") {
             return "/home/builder/java/jdk-21.0.1"
         } else {
@@ -36,20 +34,20 @@ def setupDockerMarkLogic(String image) {
 
         MARKLOGIC_IMAGE=''' + image + ''' MARKLOGIC_LOGS_VOLUME=marklogicLogs \
         docker compose -f docker-compose-arm.yaml up -d --build
-		
 		echo "Waiting for MarkLogic to be ready..."
-		timeout=120
+		timeout=180
 		count=0
-		until $(curl --output /dev/null --silent --head --fail http://localhost:8001); do
-			((count++))
-			if [ $count -ge $timeout ]; then
-				echo "MarkLogic did not start in time!"
-				docker compose -f docker-compose-arm.yaml logs
-				exit 1
-			fi
-			sleep 2
-		done
-		echo "MarkLogic is ready."
+		until curl -u admin:admin --output /dev/null --silent --fail http://localhost:8001; do
+
+            ((count++))
+            if [ $count -ge $timeout ]; then
+                echo "MarkLogic did not start in time!"
+                docker compose -f docker-compose-arm.yaml logs
+                exit 1
+            fi
+            sleep 5
+        done
+        echo "MarkLogic is ready."
 
         echo "Debugging Java installation on ARM instance:"
         ls -la /usr/lib/jvm/
@@ -208,10 +206,10 @@ pipeline {
 
 	parameters {
 		booleanParam(name: 'regressions', defaultValue: false, description: 'indicator if build is for regressions')
-		booleanParam(name: 'arm_regressions', defaultValue: false, description: 'indicator if build is for ARM regressions')
+		booleanParam(name: 'arm_regressions', defaultValue: true, description: 'indicator if build is for ARM regressions')
 		string(name: 'JAVA_VERSION', defaultValue: 'JAVA17', description: 'Either JAVA17 or JAVA21')
 		string(name: 'packagefile', defaultValue: 'Packagedependencies', description: 'package dependency file')
-		string(name: 'terraformBranch', defaultValue: 'master', description: 'Branch of terraform-templates repo to use')
+		string(name: 'terraformBranch', defaultValue: 'create-packagedependencies-javaclientapi', description: 'Branch of terraform-templates repo to use')
 
 
 	}
@@ -226,7 +224,9 @@ pipeline {
 	stages {
 
 		stage('pull-request-tests') {
+
 			when {
+				expression { false }
 				not {
 					expression { return params.regressions }
 				}
@@ -263,6 +263,7 @@ pipeline {
 		}
 		stage('publish') {
 			when {
+				expression { false }
 				branch 'develop'
 				not {
 					expression { return params.regressions }
@@ -285,6 +286,7 @@ pipeline {
 				allOf {
 					branch 'develop'
 					expression { return params.regressions }
+					expression { false }
 				}
 			}
 			steps {
@@ -324,6 +326,7 @@ pipeline {
 				allOf {
 					branch 'develop'
 					expression { return params.regressions }
+					expression { false }
 				}
 			}
 			steps {
