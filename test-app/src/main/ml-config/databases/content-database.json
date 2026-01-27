@@ -229,6 +229,13 @@
 			"field-name": "incrementalWriteHash",
 			"range-value-positions": false,
 			"invalid-values": "reject"
+		},
+		{
+			"scalar-type": "string",
+			"collation": "http://marklogic.com/collation/",
+			"field-name": "myWriteHash",
+			"range-value-positions": false,
+			"invalid-values": "reject"
 		}
 	],
 	"geospatial-element-index": [
