@@ -14,6 +14,14 @@ def getJavaHomePath() {
     }
 }
 
+def getPlatform() {
+	return params.arm_regressions ? "linux/arm64" : "linux/amd64"
+}
+
+def setConverters() {
+	return params.arm_regressions ? "false" :"true"
+}
+
 def setupDockerMarkLogic(String image) {
     cleanupDocker()
     sh label: 'mlsetup', script: '''#!/bin/bash
@@ -21,16 +29,17 @@ def setupDockerMarkLogic(String image) {
         sudo /usr/local/sbin/mladmin remove
         sudo /usr/local/sbin/mladmin cleandata
         cd java-client-api
-
+		export PLATFORM=$PLATFORM
+		export SET_CONVERTERS=$SET_CONVERTERS
         # Use the ARM-specific compose file
-        docker compose -f docker-compose-arm.yaml down -v || true
+        docker compose down -v || true
         docker volume prune -f
 
         echo "Using image: ''' + image + '''"
         docker pull ''' + image + '''
 
         MARKLOGIC_IMAGE=''' + image + ''' MARKLOGIC_LOGS_VOLUME=marklogicLogs \
-        docker compose -f docker-compose-arm.yaml up -d --build
+        docker compose up -d --build
 		echo "Waiting for MarkLogic to be ready..."
 		timeout=180
 		count=0
@@ -39,7 +48,7 @@ def setupDockerMarkLogic(String image) {
             ((count++))
             if [ $count -ge $timeout ]; then
                 echo "MarkLogic did not start in time!"
-                docker compose -f docker-compose-arm.yaml logs
+                docker compose logs
                 exit 1
             fi
             sleep 5
@@ -216,6 +225,8 @@ pipeline {
 		GRADLE_DIR = ".gradle"
 		DMC_USER = credentials('MLBUILD_USER')
 		DMC_PASSWORD = credentials('MLBUILD_PASSWORD')
+		PLATFORM = getPlatform()
+		SET_CONVERTERS = setConverters()
 	}
 
 	stages {
@@ -409,7 +420,8 @@ pipeline {
                         instanceIp: instanceIp,
                         remoteFS: remoteFS,
                         labels: labels,
-                        timeoutMinutes: 5
+                        timeoutMinutes: 5,
+						credentialsId: 'qa-builder-aws'
                     ])
                     
                     echo "✅ Jenkins agent created: ${agentResult.nodeName}"

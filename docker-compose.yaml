@@ -4,9 +4,9 @@ services:
 
   marklogic:
     image: "${MARKLOGIC_IMAGE}"
-    platform: linux/amd64
+    platform: "${PLATFORM:linux/amd64}"
     environment:
-      - INSTALL_CONVERTERS=true
+      - INSTALL_CONVERTERS=${SET_CONVERTERS:true}
       - MARKLOGIC_INIT=true
       - MARKLOGIC_ADMIN_USERNAME=admin
       - MARKLOGIC_ADMIN_PASSWORD=admin
