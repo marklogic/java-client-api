@@ -4,7 +4,7 @@ services:
 
   marklogic:
     image: "${MARKLOGIC_IMAGE}"
-    platform: "${PLATFORM:linux/amd64}"
+    platform: "${PLATFORM:'linux/amd64'}"
     environment:
       - INSTALL_CONVERTERS=${SET_CONVERTERS:true}
       - MARKLOGIC_INIT=true
