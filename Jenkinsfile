@@ -40,33 +40,7 @@ def setupDockerMarkLogic(String image) {
 
         MARKLOGIC_IMAGE=''' + image + ''' MARKLOGIC_LOGS_VOLUME=marklogicLogs \
         docker compose up -d --build
-		echo "Waiting for MarkLogic Admin API (8001)..."
-		count=0
-		timeout=300
-		until curl -u admin:admin --output /dev/null --silent --fail http://localhost:8001/admin/v1/timestamp; do
-			((count++))
-			if [ $count -ge $timeout ]; then
-				echo "MarkLogic Admin API (8001) did not start in time!"
-				docker compose logs marklogic
-				exit 1
-			fi
-			sleep 5
-		done
-
-		echo "Waiting for MarkLogic Manage API (8002)..."
-		count=0
-		until curl -u admin:admin --output /dev/null --silent --fail http://localhost:8002/manage/v2; do
-			((count++))
-			if [ $count -ge $timeout ]; then
-				echo "MarkLogic Manage API (8002) did not start in time!"
-				docker compose logs marklogic
-				exit 1
-			fi
-			sleep 5
-		done
-
-		echo "MarkLogic is fully ready."
-
+        sleep 300
         echo "Debugging Java installation on ARM instance:"
         ls -la /usr/lib/jvm/
         readlink -f /usr/bin/java
