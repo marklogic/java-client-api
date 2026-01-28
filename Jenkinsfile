@@ -42,7 +42,7 @@ def setupDockerMarkLogic(String image) {
         docker compose up -d --build
 		echo "Waiting for MarkLogic Admin API (8001)..."
 		count=0
-		timeout=180
+		timeout=300
 		until curl -u admin:admin --output /dev/null --silent --fail http://localhost:8001/admin/v1/timestamp; do
 			((count++))
 			if [ $count -ge $timeout ]; then
