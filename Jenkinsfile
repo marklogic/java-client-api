@@ -462,6 +462,7 @@ pipeline {
 			}
 			post {
 				always {
+					archiveArtifacts artifacts: 'java-client-api/**/build/reports/**/*.html'
 					junit '**/build/**/TEST*.xml'
 					updateWorkspacePermissions()
 					tearDownDocker()
