@@ -1,4 +1,4 @@
-@Library('shared-libraries@arminstances_aws_sharedlibraries') _
+@Library('shared-libraries') _
 
 def getJavaHomePath() {
     if (params.arm_regressions) {
@@ -189,10 +189,10 @@ pipeline {
 
 	parameters {
 		booleanParam(name: 'regressions', defaultValue: false, description: 'indicator if build is for regressions')
-		booleanParam(name: 'arm_regressions', defaultValue: true, description: 'indicator if build is for ARM regressions')
+		booleanParam(name: 'arm_regressions', defaultValue: false, description: 'indicator if build is for ARM regressions')
 		string(name: 'JAVA_VERSION', defaultValue: 'JAVA17', description: 'Either JAVA17 or JAVA21')
 		string(name: 'packagefile', defaultValue: 'Packagedependencies', description: 'package dependency file')
-		string(name: 'terraformBranch', defaultValue: 'create-packagedependencies-javaclientapi', description: 'Branch of terraform-templates repo to use')
+		string(name: 'terraformBranch', defaultValue: 'master', description: 'Branch of terraform-templates repo to use')
 
 
 	}
@@ -329,8 +329,7 @@ pipeline {
 		stage('provisionInfrastructure'){
 			when {
 				allOf {
-					//branch 'develop'
-					branch 'arm-regressions-testbranch'
+					branch 'develop'
 					expression { return params.arm_regressions }
 					expression { return !params.regressions }          
 				}
@@ -339,10 +338,7 @@ pipeline {
 			
             steps{
                 script {
-					def nodeName = "java-client-agent-${BUILD_NUMBER}"
-                    def remoteFS = "/space/jenkins_home"
-                    def labels = "java-client-agent-${BUILD_NUMBER}"
-                    def instanceIp = env.EC2_PRIVATE_IP
+					
 
                     def deploymentResult = deployAWSInstance([
                         instanceName: "java-client-instance-${BUILD_NUMBER}",
@@ -363,6 +359,11 @@ pipeline {
 					env.DEPLOYMENT_REGION = deploymentResult.region
 					env.DEPLOYMENT_TERRAFORM_DIR = deploymentResult.terraformDir
 					env.EC2_PRIVATE_IP = deploymentResult.privateIp
+
+					def nodeName = "java-client-agent-${BUILD_NUMBER}"
+                    def remoteFS = "/space/jenkins_home"
+                    def labels = "java-client-agent-${BUILD_NUMBER}"
+                    def instanceIp = env.EC2_PRIVATE_IP
 
 					// Use shared library for volume attachment
                     def volumeResult = attachInstanceVolumes([
@@ -401,8 +402,7 @@ pipeline {
     		agent { label "java-client-agent-${BUILD_NUMBER}" }
 			when {
 				allOf {
-					//branch 'develop'
-					branch 'arm-regressions-testbranch'
+					branch 'develop'
 					expression { return params.arm_regressions }
 					expression { return !params.regressions }          
 				}
