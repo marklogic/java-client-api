@@ -31,25 +31,16 @@ def setupDockerMarkLogic(String image) {
         cd java-client-api
 		export PLATFORM=$PLATFORM
 		export SET_CONVERTERS=$SET_CONVERTERS
-        # Use the ARM-specific compose file
         docker compose down -v || true
         docker volume prune -f
 
-        echo "Using image: ''' + image + '''"
+        echo "Using image: "''' + image + '''
         docker pull ''' + image + '''
 
         MARKLOGIC_IMAGE=''' + image + ''' MARKLOGIC_LOGS_VOLUME=marklogicLogs \
         docker compose up -d --build
+		echo "Waiting for MarkLogic server to initialize."
         sleep 300
-        echo "Debugging Java installation on ARM instance:"
-        ls -la /usr/lib/jvm/
-        readlink -f /usr/bin/java
-        echo "Current JAVA_HOME_DIR value: $JAVA_HOME_DIR"
-        ls -la $JAVA_HOME_DIR || echo "JAVA_HOME_DIR path does not exist"
-        echo "Verifying Docker Compose installation:"
-        docker compose version || echo "Docker Compose not available"
-        docker --version
-
         export JAVA_HOME=$JAVA_HOME_DIR
         export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
         export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
@@ -218,11 +209,9 @@ pipeline {
 	stages {
 
 		stage('pull-request-tests') {
-
 			when {
-				expression { false }
-				not {
-					expression { return params.regressions }
+				expression { 
+					return !params.regressions && !params.arm_regressions
 				}
 			}
 			steps {
@@ -257,21 +246,23 @@ pipeline {
 		}
 		stage('publish') {
 			when {
-				expression { false }
 				branch 'develop'
 				not {
-					expression { return params.regressions }
+					anyOf {
+						expression { return params.regressions }
+						expression { return params.arm_regressions }
+					}
 				}
 			}
 			steps {
 				sh label: 'publish', script: '''#!/bin/bash
-          export JAVA_HOME=$JAVA_HOME_DIR
-          export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-          export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-          cp ~/.gradle/gradle.properties $GRADLE_USER_HOME;
-          cd java-client-api
-          ./gradlew publish
-        '''
+			export JAVA_HOME=$JAVA_HOME_DIR
+			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+			export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+			cp ~/.gradle/gradle.properties $GRADLE_USER_HOME;
+			cd java-client-api
+			./gradlew publish
+			'''
 			}
 		}
 
@@ -279,8 +270,8 @@ pipeline {
 			when {
 				allOf {
 					branch 'develop'
-					expression { return params.regressions }
-					expression { false }
+					expression { return params.regressions }          
+					expression { return !params.arm_regressions }     
 				}
 			}
 			steps {
@@ -319,8 +310,8 @@ pipeline {
 			when {
 				allOf {
 					branch 'develop'
-					expression { return params.regressions }
-					expression { false }
+					expression { return params.regressions }          
+					expression { return !params.arm_regressions }     
 				}
 			}
 			steps {
@@ -338,14 +329,21 @@ pipeline {
 		stage('provisionInfrastructure'){
 			when {
 				allOf {
+					//branch 'develop'
 					branch 'arm-regressions-testbranch'
 					expression { return params.arm_regressions }
+					expression { return !params.regressions }          
 				}
 			}
             agent {label 'javaClientLinuxPool'}
 			
             steps{
                 script {
+					def nodeName = "java-client-agent-${BUILD_NUMBER}"
+                    def remoteFS = "/space/jenkins_home"
+                    def labels = "java-client-agent-${BUILD_NUMBER}"
+                    def instanceIp = env.EC2_PRIVATE_IP
+
                     def deploymentResult = deployAWSInstance([
                         instanceName: "java-client-instance-${BUILD_NUMBER}",
                         region: 'us-west-2',
@@ -365,25 +363,8 @@ pipeline {
 					env.DEPLOYMENT_REGION = deploymentResult.region
 					env.DEPLOYMENT_TERRAFORM_DIR = deploymentResult.terraformDir
 					env.EC2_PRIVATE_IP = deploymentResult.privateIp
-                }
-            }
-        }
-        stage('setupJenkinsAgent'){
-			when {
-				allOf {
-					branch 'arm-regressions-testbranch'
-					expression { return params.arm_regressions }
-				}
-			}
-            agent {label 'javaClientLinuxPool'}
-            steps{
-                script {
-                    def nodeName = "java-client-agent-${BUILD_NUMBER}"
-                    def remoteFS = "/space/jenkins_home"
-                    def labels = "java-client-agent-${BUILD_NUMBER}"
-                    def instanceIp = env.EC2_PRIVATE_IP
-                    
-                    // Use shared library for volume attachment
+
+					// Use shared library for volume attachment
                     def volumeResult = attachInstanceVolumes([
                         instanceIp: instanceIp,
                         remoteFS: remoteFS,
@@ -399,8 +380,8 @@ pipeline {
                     echo "✅ Volume attachment completed: ${volumeResult.volumeAttached}"
                     echo "✅ Java installed: ${volumeResult.javaInstalled}"
                     echo "✅ Dependencies installed: ${volumeResult.dependenciesInstalled}"
-                    
-                    // Use shared library to create Jenkins agent
+
+					// Use shared library to create Jenkins agent
                     def agentResult = createJenkinsAgent([
                         nodeName: nodeName,
                         instanceIp: instanceIp,
@@ -420,8 +401,10 @@ pipeline {
     		agent { label "java-client-agent-${BUILD_NUMBER}" }
 			when {
 				allOf {
+					//branch 'develop'
 					branch 'arm-regressions-testbranch'
 					expression { return params.arm_regressions }
+					expression { return !params.regressions }          
 				}
 			}
 			steps {
@@ -452,12 +435,12 @@ pipeline {
                 echo "🧹 Starting cleanup process..."
                 
                 try {
-                    // Cleanup Terraform infrastructure first
+                    // Cleanup Terraform infrastructure
                     if (env.EC2_PRIVATE_IP) {
                         echo "🗑️ Cleaning up Terraform resources..."
                         node('javaClientLinuxPool') {
                             try {
-                                sleep 300
+                                sleep 60
                                 unstash "terraform-${BUILD_NUMBER}"
                                 withAWS(credentials: 'headlessDbUserEC2', region: 'us-west-2', role: 'role-headless-testing', roleAccount: '343869654284', duration: 3600) {
                                     sh '''#!/bin/bash
