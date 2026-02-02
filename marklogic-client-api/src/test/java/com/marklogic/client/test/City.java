@@ -8,6 +8,7 @@ import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
 
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+// Modifying this file to see if the copyright prompt changes it automatically. 
 @XmlRootElement
 public class City {
   private int geoNameId;
