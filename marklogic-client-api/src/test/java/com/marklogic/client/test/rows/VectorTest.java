@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test.rows;
 
@@ -57,6 +57,8 @@ class VectorTest extends AbstractOpticUpdateTest {
 				.bind(op.as("base64Encode", op.vec.base64Encode(op.col("sampleVector"))))
 				.bind(op.as("base64Decode", op.vec.base64Decode(op.col("base64Encode"))))
 				.bind(op.as("subVector", op.vec.subvector(op.col("sampleVector"), op.xs.integer(1), op.xs.integer(1))))
+				.bind(op.as("precision", op.vec.precision(op.col("sampleVector"), op.xs.unsignedInt(16))))
+				.bind(op.as("trunc", op.vec.trunc(op.col("sampleVector"), 1)))
 				.bind(op.as("vectorScore", op.vec.vectorScore(op.xs.unsignedInt(1), op.xs.doubleVal(0.5))))
 				.bind(op.as("simpleVectorScore", op.vec.vectorScore(op.xs.unsignedInt(1), 0.5, 1)))
 				.bind(op.as("simplestVectorScore", op.vec.vectorScore(op.xs.unsignedInt(1), 0.5)));
@@ -82,6 +84,8 @@ class VectorTest extends AbstractOpticUpdateTest {
 		assertEquals(3, ((ArrayNode) row.get("base64Decode")).size());
 		assertEquals(5.6, row.getDouble("get"));
 		assertEquals(1, ((ArrayNode) row.get("subVector")).size());
+		assertEquals(3, ((ArrayNode) row.get("precision")).size());
+		assertEquals(3, ((ArrayNode) row.get("trunc")).size());
 		assertEquals(333333.0, row.getDouble("vectorScore"));
 		assertEquals(666666.0, row.getDouble("simpleVectorScore"));
 		assertEquals(333333.0, row.getDouble("simplestVectorScore"));
@@ -183,5 +187,71 @@ class VectorTest extends AbstractOpticUpdateTest {
 		RawQueryDSLPlan plan = rowManager.newRawQueryDSLPlan(new StringHandle(query));
 		List<RowRecord> rows = resultRows(plan);
 		assertEquals(2, rows.size(), "Just verifying that 'annTopK' works via the DSL and v1/rows.");
+	}
+
+	@Test
+	void precision() {
+		// Test vec.precision with default precision (16 bits)
+		PlanBuilder.ModifyPlan plan = op.fromView("vectors", "persons")
+			.limit(1)
+			.bind(op.as("testVector", op.vec.vector(op.xs.doubleSeq(3.14159265, 2.71828182, 1.41421356))))
+			.bind(op.as("precisionDefault", op.vec.precision(op.col("testVector"))))
+			.bind(op.as("precision10", op.vec.precision(op.col("testVector"), op.xs.unsignedInt(10))));
+
+		List<RowRecord> rows = resultRows(plan);
+		assertEquals(1, rows.size());
+		RowRecord row = rows.get(0);
+
+		// Verify that precision returns a vector
+		ArrayNode precisionDefault = (ArrayNode) row.get("precisionDefault");
+		assertNotNull(precisionDefault);
+		assertEquals(3, precisionDefault.size());
+
+		// Verify precision with 10 bits - should truncate values
+		ArrayNode precision10 = (ArrayNode) row.get("precision10");
+		assertNotNull(precision10);
+		assertEquals(3, precision10.size());
+		assertEquals(3, precision10.get(0).asInt(), "First element should be truncated to 3");
+		assertEquals(2, precision10.get(1).asInt(), "Second element should be truncated to 2");
+		assertEquals(1, precision10.get(2).asInt(), "Third element should be truncated to 1");
+	}
+
+	@Test
+	void trunc() {
+		// Test vec.trunc with different decimal places
+		PlanBuilder.ModifyPlan plan = op.fromView("vectors", "persons")
+			.limit(1)
+			.bind(op.as("testVector", op.vec.vector(op.xs.doubleSeq(1.123456789, 2.123456789, 3.123456789))))
+			.bind(op.as("truncDefault", op.vec.trunc(op.col("testVector"))))
+			.bind(op.as("trunc1", op.vec.trunc(op.col("testVector"), 1)))
+			.bind(op.as("trunc2", op.vec.trunc(op.col("testVector"), op.xs.intVal(2))));
+
+		List<RowRecord> rows = resultRows(plan);
+		assertEquals(1, rows.size());
+		RowRecord row = rows.get(0);
+
+		// Verify truncation with default (0 decimal places)
+		ArrayNode truncDefault = (ArrayNode) row.get("truncDefault");
+		assertNotNull(truncDefault);
+		assertEquals(3, truncDefault.size());
+		assertEquals(1, truncDefault.get(0).asInt(), "First element should be truncated to 1");
+		assertEquals(2, truncDefault.get(1).asInt(), "Second element should be truncated to 2");
+		assertEquals(3, truncDefault.get(2).asInt(), "Third element should be truncated to 3");
+
+		// Verify truncation with 1 decimal place
+		ArrayNode trunc1 = (ArrayNode) row.get("trunc1");
+		assertNotNull(trunc1);
+		assertEquals(3, trunc1.size());
+		assertEquals(1.1, trunc1.get(0).asDouble(), 0.001, "First element should be truncated to 1.1");
+		assertEquals(2.1, trunc1.get(1).asDouble(), 0.001, "Second element should be truncated to 2.1");
+		assertEquals(3.1, trunc1.get(2).asDouble(), 0.001, "Third element should be truncated to 3.1");
+
+		// Verify truncation with 2 decimal places
+		ArrayNode trunc2 = (ArrayNode) row.get("trunc2");
+		assertNotNull(trunc2);
+		assertEquals(3, trunc2.size());
+		assertEquals(1.12, trunc2.get(0).asDouble(), 0.001, "First element should be truncated to 1.12");
+		assertEquals(2.12, trunc2.get(1).asDouble(), 0.001, "Second element should be truncated to 2.12");
+		assertEquals(3.12, trunc2.get(2).asDouble(), 0.001, "Third element should be truncated to 3.12");
 	}
 }
