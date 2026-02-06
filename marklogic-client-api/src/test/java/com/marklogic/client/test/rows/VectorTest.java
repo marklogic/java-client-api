@@ -45,6 +45,7 @@ class VectorTest extends AbstractOpticUpdateTest {
 				.limit(1)
 				.bind(op.as("sampleVector", op.vec.vector(sampleVector)))
 				.bind(op.as("cosine", op.vec.cosine(op.col("embedding"), op.col("sampleVector"))))
+				.bind(op.as("cosineDistanceEmbedding", op.vec.cosineDistance(op.col("embedding"), op.col("sampleVector"))))
 				.bind(op.as("cosineDistance", op.vec.cosineDistance(op.col("sampleVector"), op.col("sampleVector"))))
 				.bind(op.as("dotProduct", op.vec.dotProduct(op.col("embedding"), op.col("sampleVector"))))
 				.bind(op.as("euclideanDistance", op.vec.euclideanDistance(op.col("embedding"), op.col("sampleVector"))))
@@ -67,9 +68,16 @@ class VectorTest extends AbstractOpticUpdateTest {
 		assertEquals(1, rows.size());
 		RowRecord row = rows.get(0);
 
-		// Simple sanity checks to verify that the functions ran.
+		// Simple sanity checks to verify that the functions ran and produce reasonable values.
 		double cosine = row.getDouble("cosine");
-		assertTrue((cosine > 0) && (cosine < 1), "Unexpected value: " + cosine);
+		assertTrue((cosine >= -1) && (cosine <= 1), "Cosine must be between -1 and 1, got: " + cosine);
+
+		double cosineDistanceEmbedding = row.getDouble("cosineDistanceEmbedding");
+	    assertTrue(cosineDistanceEmbedding >= 0 && cosineDistanceEmbedding <= 2, "Cosine distance must be between 0 and 2, got: " + cosineDistanceEmbedding);
+
+		// this identity (cosine distance = 1 - cosine) should be true for doubles within a small delta, but we won't require exact equality due to inexact floating point math.
+		assertEquals(1 - cosine, cosineDistanceEmbedding, 0.0001, "Cosine distance should be 1 - cosine");
+
 		double dotProduct = row.getDouble("dotProduct");
 		Assertions.assertTrue(dotProduct > 0, "Unexpected value: " + dotProduct);
 		double euclideanDistance = row.getDouble("euclideanDistance");
@@ -253,5 +261,76 @@ class VectorTest extends AbstractOpticUpdateTest {
 		assertEquals(1.12, trunc2.get(0).asDouble(), 0.001, "First element should be truncated to 1.12");
 		assertEquals(2.12, trunc2.get(1).asDouble(), 0.001, "Second element should be truncated to 2.12");
 		assertEquals(3.12, trunc2.get(2).asDouble(), 0.001, "Third element should be truncated to 3.12");
+	}
+
+	@Test
+	void vectorScoreWithWeight_primitive() {
+		// Test vec.vectorScore with all 4 parameters using primitive doubles
+		PlanBuilder.ModifyPlan plan = op.fromView("vectors", "persons")
+			.limit(1)
+			.bind(op.as("vectorScore1", op.vec.vectorScore(op.xs.unsignedInt(100), 0.3, 0.5, 0.5)))
+			.bind(op.as("vectorScore2", op.vec.vectorScore(op.xs.unsignedInt(100), 0.3, 0.8, 0.7)))
+			.bind(op.as("vectorScore3", op.vec.vectorScore(op.xs.unsignedInt(100), 0.3, 0.5, 0.3)));
+
+		List<RowRecord> rows = resultRows(plan);
+		assertEquals(1, rows.size());
+		RowRecord row = rows.get(0);
+
+		// Verify that vector scores are calculated
+		double score1 = row.getDouble("vectorScore1");
+		assertTrue(score1 > 0, "Vector score should be positive, got: " + score1);
+		
+		double score2 = row.getDouble("vectorScore2");
+		assertTrue(score2 > 0, "Vector score should be positive, got: " + score2);
+		
+		double score3 = row.getDouble("vectorScore3");
+		assertTrue(score3 > 0, "Vector score should be positive, got: " + score3);
+		
+		// Different weight parameters should produce different scores
+		assertNotEquals(score1, score2, "Different distanceWeight values should produce different scores");
+		assertNotEquals(score1, score3, "Different weight values should produce different scores");
+	}
+
+	@Test
+	void vectorScoreWithWeight_serverExpression() {
+		// Test vec.vectorScore with all 4 parameters using ServerExpression
+		PlanBuilder.ModifyPlan plan = op.fromView("vectors", "persons")
+			.limit(1)
+			.bind(op.as("vectorScore1", op.vec.vectorScore(
+				op.xs.unsignedInt(100), 
+				op.xs.doubleVal(0.3), 
+				op.xs.doubleVal(0.5), 
+				op.xs.doubleVal(0.5)
+			)))
+			.bind(op.as("vectorScore2", op.vec.vectorScore(
+				op.xs.unsignedInt(100), 
+				op.xs.doubleVal(0.3), 
+				op.xs.doubleVal(0.8), 
+				op.xs.doubleVal(0.7)
+			)))
+			.bind(op.as("vectorScore3", op.vec.vectorScore(
+				op.xs.unsignedInt(100), 
+				op.xs.doubleVal(0.3), 
+				op.xs.doubleVal(0.5), 
+				op.xs.doubleVal(0.3)
+			)));
+
+		List<RowRecord> rows = resultRows(plan);
+		assertEquals(1, rows.size());
+		RowRecord row = rows.get(0);
+
+		// Verify that vector scores are calculated
+		double score1 = row.getDouble("vectorScore1");
+		assertTrue(score1 > 0, "Vector score should be positive, got: " + score1);
+		
+		double score2 = row.getDouble("vectorScore2");
+		assertTrue(score2 > 0, "Vector score should be positive, got: " + score2);
+		
+		double score3 = row.getDouble("vectorScore3");
+		assertTrue(score3 > 0, "Vector score should be positive, got: " + score3);
+		
+		// Different weight parameters should produce different scores
+		assertNotEquals(score1, score2, "Different distanceWeight values should produce different scores");
+		assertNotEquals(score1, score3, "Different weight values should produce different scores");
 	}
 }

@@ -57,30 +57,26 @@ public interface VecExpr {
   */
   public ServerExpression base64Encode(ServerExpression vector1);
 
-	/**
-	 * Returns the cosine similarity between two vectors. The vectors must be of the same dimension.
-	 *
-	 * <a name="ml-server-type-cosine"></a>
-	 *
-	 * <p>
-	 * Provides a client interface to the <a href="http://docs.marklogic.com/vec:cosine" target="mlserverdoc">vec:cosine</a> server function.
-	 *
-	 * @param vector1 The vector from which to calculate the cosine similarity with vector2.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
-	 * @param vector2 The vector from which to calculate the cosine similarity with vector1.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
-	 * @return a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
-	 * @since 7.2.0
-	 */
-	public ServerExpression cosine(ServerExpression vector1, ServerExpression vector2);
+/**
+  * Returns the cosine of the angle between two vectors. The vectors must be of the same dimension.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/vec:cosine" target="mlserverdoc">vec:cosine</a> server function.
+  * @param vector1  The vector from which to calculate the cosine with vector2.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
+  * @param vector2  The vector from which to calculate the cosine with vector1.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
+  * @since 7.2.0
+  */
+  public ServerExpression cosine(ServerExpression vector1, ServerExpression vector2);
 
-	/**
-	 * Return the distance between two vectors. The vectors must be of the same dimension.
-	 *
-	 * @param vector1 The vector from which to calculate the cosine distance with vector2.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
-	 * @param vector2 The vector from which to calculate the cosine distance with vector1.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
-	 * @return a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
-	 * @since 7.2.0
-	 */
-	public ServerExpression cosineDistance(ServerExpression vector1, ServerExpression vector2);
+/**
+  * Returns the cosine distance between two vectors. The vectors must be of the same dimension.
+  *
+  * @param vector1 The vector from which to calculate the cosine distance with vector2.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
+  * @param vector2 The vector from which to calculate the cosine distance with vector1.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
+  * @return a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
+  * @since 7.2.0
+  */
+  public ServerExpression cosineDistance(ServerExpression vector1, ServerExpression vector2);
 
 /**
   * Returns the dimension of the vector passed in.
@@ -246,44 +242,63 @@ public interface VecExpr {
   */
   public ServerExpression vector(ServerExpression values);
 /**
-  * A helper function that returns a hybrid score using a cts score and a vector similarity calculation result. You can tune the effect of the vector similarity on the score using the similarityWeight option. The ideal value for similarityWeight depends on your application.
+  * A helper function that returns a hybrid score using a cts score and a vector distance calculation result. You can tune the effect of the vector distance on the score using the distanceWeight option. The ideal value for distanceWeight depends on your application. The hybrid score is calculated using the formula: score = weight * annScore + (1 - weight) * ctsScore. - annScore is derived from the distance and distanceWeight, where a larger distanceWeight reduces the annScore for the same distance. - weight determines the contribution of the annScore and ctsScore to the final score. A weight of 0.5 balances both equally. This formula allows you to combine traditional cts scoring with vector-based distance scoring, providing a flexible way to rank results.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/vec:vector-score" target="mlserverdoc">vec:vector-score</a> server function.
   * @param score  The cts:score of the matching document.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
-  * @param similarity  The similarity between the vector in the matching document and the query vector. The result of a call to ovec:cosine(). In the case that the vectors are normalized, pass ovec:dot-product(). Note that vec:euclidean-distance() should not be used here.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param distance  The distance between the vector in the matching document and the query vector. Examples, the result of a call to ovec:cosine-distance() or ovec:euclidean-distance().  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public ServerExpression vectorScore(ServerExpression score, double similarity);
+  public ServerExpression vectorScore(ServerExpression score, double distance);
 /**
-  * A helper function that returns a hybrid score using a cts score and a vector similarity calculation result. You can tune the effect of the vector similarity on the score using the similarityWeight option. The ideal value for similarityWeight depends on your application.
-  *
-  * <a name="ml-server-type-vector-score"></a>
-
+  * A helper function that returns a hybrid score using a cts score and a vector distance calculation result. You can tune the effect of the vector distance on the score using the distanceWeight option. The ideal value for distanceWeight depends on your application. The hybrid score is calculated using the formula: score = weight * annScore + (1 - weight) * ctsScore. - annScore is derived from the distance and distanceWeight, where a larger distanceWeight reduces the annScore for the same distance. - weight determines the contribution of the annScore and ctsScore to the final score. A weight of 0.5 balances both equally. This formula allows you to combine traditional cts scoring with vector-based distance scoring, providing a flexible way to rank results.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/vec:vector-score" target="mlserverdoc">vec:vector-score</a> server function.
   * @param score  The cts:score of the matching document.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
-  * @param similarity  The similarity between the vector in the matching document and the query vector. The result of a call to ovec:cosine(). In the case that the vectors are normalized, pass ovec:dot-product(). Note that vec:euclidean-distance() should not be used here.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param distance  The distance between the vector in the matching document and the query vector. Examples, the result of a call to ovec:cosine-distance() or ovec:euclidean-distance().  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public ServerExpression vectorScore(ServerExpression score, ServerExpression similarity);
+  public ServerExpression vectorScore(ServerExpression score, ServerExpression distance);
 /**
-  * A helper function that returns a hybrid score using a cts score and a vector similarity calculation result. You can tune the effect of the vector similarity on the score using the similarityWeight option. The ideal value for similarityWeight depends on your application.
+  * A helper function that returns a hybrid score using a cts score and a vector distance calculation result. You can tune the effect of the vector distance on the score using the distanceWeight option. The ideal value for distanceWeight depends on your application. The hybrid score is calculated using the formula: score = weight * annScore + (1 - weight) * ctsScore. - annScore is derived from the distance and distanceWeight, where a larger distanceWeight reduces the annScore for the same distance. - weight determines the contribution of the annScore and ctsScore to the final score. A weight of 0.5 balances both equally. This formula allows you to combine traditional cts scoring with vector-based distance scoring, providing a flexible way to rank results.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/vec:vector-score" target="mlserverdoc">vec:vector-score</a> server function.
   * @param score  The cts:score of the matching document.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
-  * @param similarity  The similarity between the vector in the matching document and the query vector. The result of a call to ovec:cosine(). In the case that the vectors are normalized, pass ovec:dot-product(). Note that vec:euclidean-distance() should not be used here.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
-  * @param similarityWeight  The weight of the vector similarity on the score. The default value is 0.1. If 0.0 is passed in, vector similarity has no effect. If passed a value less than 0.0 or greater than 1.0, throw VEC-VECTORSCORE.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param distance  The distance between the vector in the matching document and the query vector. Examples, the result of a call to ovec:cosine-distance() or ovec:euclidean-distance().  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param distanceWeight  The weight of the vector distance on the annScore. This value is a positive coefficient that scales the distance. A larger distanceWeight produces a lower annScore for the same distance. The default value is 1.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public ServerExpression vectorScore(ServerExpression score, double similarity, double similarityWeight);
+  public ServerExpression vectorScore(ServerExpression score, double distance, double distanceWeight);
 /**
-  * A helper function that returns a hybrid score using a cts score and a vector similarity calculation result. You can tune the effect of the vector similarity on the score using the similarityWeight option. The ideal value for similarityWeight depends on your application.
+  * A helper function that returns a hybrid score using a cts score and a vector distance calculation result. You can tune the effect of the vector distance on the score using the distanceWeight option. The ideal value for distanceWeight depends on your application. The hybrid score is calculated using the formula: score = weight * annScore + (1 - weight) * ctsScore. - annScore is derived from the distance and distanceWeight, where a larger distanceWeight reduces the annScore for the same distance. - weight determines the contribution of the annScore and ctsScore to the final score. A weight of 0.5 balances both equally. This formula allows you to combine traditional cts scoring with vector-based distance scoring, providing a flexible way to rank results.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/vec:vector-score" target="mlserverdoc">vec:vector-score</a> server function.
   * @param score  The cts:score of the matching document.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
-  * @param similarity  The similarity between the vector in the matching document and the query vector. The result of a call to ovec:cosine(). In the case that the vectors are normalized, pass ovec:dot-product(). Note that vec:euclidean-distance() should not be used here.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
-  * @param similarityWeight  The weight of the vector similarity on the score. The default value is 0.1. If 0.0 is passed in, vector similarity has no effect. If passed a value less than 0.0 or greater than 1.0, throw VEC-VECTORSCORE.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param distance  The distance between the vector in the matching document and the query vector. Examples, the result of a call to ovec:cosine-distance() or ovec:euclidean-distance().  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param distanceWeight  The weight of the vector distance on the annScore. This value is a positive coefficient that scales the distance. A larger distanceWeight produces a lower annScore for the same distance. The default value is 1.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public ServerExpression vectorScore(ServerExpression score, ServerExpression similarity, ServerExpression similarityWeight);
+  public ServerExpression vectorScore(ServerExpression score, ServerExpression distance, ServerExpression distanceWeight);
+/**
+  * A helper function that returns a hybrid score using a cts score and a vector distance calculation result. You can tune the effect of the vector distance on the score using the distanceWeight option. The ideal value for distanceWeight depends on your application. The hybrid score is calculated using the formula: score = weight * annScore + (1 - weight) * ctsScore. - annScore is derived from the distance and distanceWeight, where a larger distanceWeight reduces the annScore for the same distance. - weight determines the contribution of the annScore and ctsScore to the final score. A weight of 0.5 balances both equally. This formula allows you to combine traditional cts scoring with vector-based distance scoring, providing a flexible way to rank results.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/vec:vector-score" target="mlserverdoc">vec:vector-score</a> server function.
+  * @param score  The cts:score of the matching document.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
+  * @param distance  The distance between the vector in the matching document and the query vector. Examples, the result of a call to ovec:cosine-distance() or ovec:euclidean-distance().  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param distanceWeight  The weight of the vector distance on the annScore. This value is a positive coefficient that scales the distance. A larger distanceWeight produces a lower annScore for the same distance. The default value is 1.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param weight  The weight of the annScore in the final hybrid score. This value is a coefficient between 0 and 1, where 0 gives full weight to the cts score and 1 gives full weight to the annScore. The default value is 0.5.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
+  */
+  public ServerExpression vectorScore(ServerExpression score, double distance, double distanceWeight, double weight);
+/**
+  * A helper function that returns a hybrid score using a cts score and a vector distance calculation result. You can tune the effect of the vector distance on the score using the distanceWeight option. The ideal value for distanceWeight depends on your application. The hybrid score is calculated using the formula: score = weight * annScore + (1 - weight) * ctsScore. - annScore is derived from the distance and distanceWeight, where a larger distanceWeight reduces the annScore for the same distance. - weight determines the contribution of the annScore and ctsScore to the final score. A weight of 0.5 balances both equally. This formula allows you to combine traditional cts scoring with vector-based distance scoring, providing a flexible way to rank results.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/vec:vector-score" target="mlserverdoc">vec:vector-score</a> server function.
+  * @param score  The cts:score of the matching document.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
+  * @param distance  The distance between the vector in the matching document and the query vector. Examples, the result of a call to ovec:cosine-distance() or ovec:euclidean-distance().  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param distanceWeight  The weight of the vector distance on the annScore. This value is a positive coefficient that scales the distance. A larger distanceWeight produces a lower annScore for the same distance. The default value is 1.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param weight  The weight of the annScore in the final hybrid score. This value is a coefficient between 0 and 1, where 0 gives full weight to the cts score and 1 gives full weight to the annScore. The default value is 0.5.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
+  */
+  public ServerExpression vectorScore(ServerExpression score, ServerExpression distance, ServerExpression distanceWeight, ServerExpression weight);
 }
