@@ -148,26 +148,38 @@ class VecExprImpl implements VecExpr {
 
   
   @Override
-  public ServerExpression vectorScore(ServerExpression score, double similarity) {
-    return vectorScore(score, xs.doubleVal(similarity));
+  public ServerExpression vectorScore(ServerExpression score, double distance) {
+    return vectorScore(score, xs.doubleVal(distance));
   }
 
   
   @Override
-  public ServerExpression vectorScore(ServerExpression score, ServerExpression similarity) {
-    return new XsExprImpl.UnsignedLongCallImpl("vec", "vector-score", new Object[]{ score, similarity });
+  public ServerExpression vectorScore(ServerExpression score, ServerExpression distance) {
+    return new XsExprImpl.UnsignedLongCallImpl("vec", "vector-score", new Object[]{ score, distance });
   }
 
   
   @Override
-  public ServerExpression vectorScore(ServerExpression score, double similarity, double similarityWeight) {
-    return vectorScore(score, xs.doubleVal(similarity), xs.doubleVal(similarityWeight));
+  public ServerExpression vectorScore(ServerExpression score, double distance, double distanceWeight) {
+    return vectorScore(score, xs.doubleVal(distance), xs.doubleVal(distanceWeight));
   }
 
   
   @Override
-  public ServerExpression vectorScore(ServerExpression score, ServerExpression similarity, ServerExpression similarityWeight) {
-    return new XsExprImpl.UnsignedLongCallImpl("vec", "vector-score", new Object[]{ score, similarity, similarityWeight });
+  public ServerExpression vectorScore(ServerExpression score, ServerExpression distance, ServerExpression distanceWeight) {
+    return new XsExprImpl.UnsignedLongCallImpl("vec", "vector-score", new Object[]{ score, distance, distanceWeight });
+  }
+
+  
+  @Override
+  public ServerExpression vectorScore(ServerExpression score, double distance, double distanceWeight, double weight) {
+    return vectorScore(score, xs.doubleVal(distance), xs.doubleVal(distanceWeight), xs.doubleVal(weight));
+  }
+
+  
+  @Override
+  public ServerExpression vectorScore(ServerExpression score, ServerExpression distance, ServerExpression distanceWeight, ServerExpression weight) {
+    return new XsExprImpl.UnsignedLongCallImpl("vec", "vector-score", new Object[]{ score, distance, distanceWeight, weight });
   }
 
   static class VectorSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
