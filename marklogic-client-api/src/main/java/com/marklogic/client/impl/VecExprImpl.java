@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.impl;
@@ -94,6 +94,18 @@ class VecExprImpl implements VecExpr {
 
   
   @Override
+  public ServerExpression precision(ServerExpression vector) {
+    return new VectorCallImpl("vec", "precision", new Object[]{ vector });
+  }
+
+  
+  @Override
+  public ServerExpression precision(ServerExpression vector, ServerExpression precision) {
+    return new VectorCallImpl("vec", "precision", new Object[]{ vector, precision });
+  }
+
+  
+  @Override
   public ServerExpression subtract(ServerExpression vector1, ServerExpression vector2) {
     return new VectorCallImpl("vec", "subtract", new Object[]{ vector1, vector2 });
   }
@@ -108,6 +120,24 @@ class VecExprImpl implements VecExpr {
   @Override
   public ServerExpression subvector(ServerExpression vector, ServerExpression start, ServerExpression length) {
     return new VectorCallImpl("vec", "subvector", new Object[]{ vector, start, length });
+  }
+
+  
+  @Override
+  public ServerExpression trunc(ServerExpression vector) {
+    return new VectorCallImpl("vec", "trunc", new Object[]{ vector });
+  }
+
+  
+  @Override
+  public ServerExpression trunc(ServerExpression vector, int n) {
+    return trunc(vector, xs.intVal(n));
+  }
+
+  
+  @Override
+  public ServerExpression trunc(ServerExpression vector, ServerExpression n) {
+    return new VectorCallImpl("vec", "trunc", new Object[]{ vector, n });
   }
 
   

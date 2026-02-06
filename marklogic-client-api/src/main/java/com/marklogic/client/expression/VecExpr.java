@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.expression;
@@ -152,6 +152,26 @@ public interface VecExpr {
   */
   public ServerExpression normalize(ServerExpression vector1);
 /**
+  * Returns a new vector which is a copy of the input vector with reduced precision. The precision reduction is achieved by clearing the bottom (32 - precision) bits of the mantissa for each dimension's float value. This can be useful for reducing storage requirements or for creating approximate vector representations.
+  *
+  * <a name="ml-server-type-precision"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/vec:precision" target="mlserverdoc">vec:precision</a> server function.
+  * @param vector  The input vector to reduce precision. Can be a vector or an empty sequence.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a> server data type
+  */
+  public ServerExpression precision(ServerExpression vector);
+/**
+  * Returns a new vector which is a copy of the input vector with reduced precision. The precision reduction is achieved by clearing the bottom (32 - precision) bits of the mantissa for each dimension's float value. This can be useful for reducing storage requirements or for creating approximate vector representations.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/vec:precision" target="mlserverdoc">vec:precision</a> server function.
+  * @param vector  The input vector to reduce precision. Can be a vector or an empty sequence.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
+  * @param precision  The number of mantissa bits to preserve (9-32 inclusive). Default is 16. Higher values preserve more precision. If the value is outside the valid range, throw VEC-INVALIDPRECISION.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a> server data type
+  */
+  public ServerExpression precision(ServerExpression vector, ServerExpression precision);
+/**
   * Returns the difference of two vectors. The vectors must be of the same dimension.
   *
   * <a name="ml-server-type-subtract"></a>
@@ -185,6 +205,35 @@ public interface VecExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a> server data type
   */
   public ServerExpression subvector(ServerExpression vector, ServerExpression start, ServerExpression length);
+/**
+  * Returns a new vector which is a copy of the input vector with each element truncated to a specific number of digits.
+  *
+  * <a name="ml-server-type-trunc"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/vec:trunc" target="mlserverdoc">vec:trunc</a> server function.
+  * @param vector  The input vector to truncate.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a> server data type
+  */
+  public ServerExpression trunc(ServerExpression vector);
+/**
+  * Returns a new vector which is a copy of the input vector with each element truncated to a specific number of digits.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/vec:trunc" target="mlserverdoc">vec:trunc</a> server function.
+  * @param vector  The input vector to truncate.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
+  * @param n  The numbers of decimal places to truncate to. The default is 0. Negative values cause that many digits to the left of the decimal point to be truncated.  (of <a href="{@docRoot}/doc-files/types/xs_int.html">xs:int</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a> server data type
+  */
+  public ServerExpression trunc(ServerExpression vector, int n);
+/**
+  * Returns a new vector which is a copy of the input vector with each element truncated to a specific number of digits.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/vec:trunc" target="mlserverdoc">vec:trunc</a> server function.
+  * @param vector  The input vector to truncate.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
+  * @param n  The numbers of decimal places to truncate to. The default is 0. Negative values cause that many digits to the left of the decimal point to be truncated.  (of <a href="{@docRoot}/doc-files/types/xs_int.html">xs:int</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a> server data type
+  */
+  public ServerExpression trunc(ServerExpression vector, ServerExpression n);
 /**
   * Returns a vector value.
   *
