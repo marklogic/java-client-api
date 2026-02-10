@@ -53,6 +53,8 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		private String[] jsonExclusions;
 		private String[] xmlExclusions;
 		private Map<String, String> xmlNamespaces;
+		private String schemaName;
+		private String viewName;
 
 		/**
 		 * @param keyName the name of the MarkLogic metadata key that will hold the hash value; defaults to "incrementalWriteHash".
@@ -128,13 +130,43 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 			return this;
 		}
 
+		/**
+		 * Configures the filter to use a TDE view for retrieving hash values instead of field range indexes.
+		 * This approach requires a TDE template to be deployed that extracts the URI and hash metadata.
+		 *
+		 * @param schemaName the schema name of the TDE view
+		 * @param viewName   the view name of the TDE view
+		 * @return this builder
+		 */
+		public Builder fromView(String schemaName, String viewName) {
+			boolean schemaEmpty = schemaName == null || schemaName.trim().isEmpty();
+			boolean viewEmpty = viewName == null || viewName.trim().isEmpty();
+
+			if (schemaEmpty && !viewEmpty) {
+				throw new IllegalArgumentException("Schema name cannot be null or empty when view name is provided");
+			}
+			if (!schemaEmpty && viewEmpty) {
+				throw new IllegalArgumentException("View name cannot be null or empty when schema name is provided");
+			}
+
+			this.schemaName = schemaName;
+			this.viewName = viewName;
+			return this;
+		}
+
 		public IncrementalWriteFilter build() {
 			validateJsonExclusions();
 			validateXmlExclusions();
-			if (useEvalQuery) {
-				return new IncrementalWriteEvalFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions, xmlNamespaces);
+			IncrementalWriteConfig config = new IncrementalWriteConfig(hashKeyName, timestampKeyName, canonicalizeJson,
+				skippedDocumentsConsumer, jsonExclusions, xmlExclusions, xmlNamespaces, schemaName, viewName);
+
+			if (schemaName != null && viewName != null) {
+				return new IncrementalWriteViewFilter(config);
 			}
-			return new IncrementalWriteOpticFilter(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions, xmlNamespaces);
+			if (useEvalQuery) {
+				return new IncrementalWriteEvalFilter(config);
+			}
+			return new IncrementalWriteOpticFilter(config);
 		}
 
 		private void validateJsonExclusions() {
@@ -181,26 +213,18 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		}
 	}
 
-	protected final String hashKeyName;
-	private final String timestampKeyName;
-	private final boolean canonicalizeJson;
-	private final Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer;
-	private final String[] jsonExclusions;
-	private final String[] xmlExclusions;
-	private final Map<String, String> xmlNamespaces;
+	private final IncrementalWriteConfig config;
 
 	// Hardcoding this for now, with a good general purpose hashing function.
 	// See https://xxhash.com for benchmarks.
 	private final LongHashFunction hashFunction = LongHashFunction.xx3();
 
-	public IncrementalWriteFilter(String hashKeyName, String timestampKeyName, boolean canonicalizeJson, Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer, String[] jsonExclusions, String[] xmlExclusions, Map<String, String> xmlNamespaces) {
-		this.hashKeyName = hashKeyName;
-		this.timestampKeyName = timestampKeyName;
-		this.canonicalizeJson = canonicalizeJson;
-		this.skippedDocumentsConsumer = skippedDocumentsConsumer;
-		this.jsonExclusions = jsonExclusions;
-		this.xmlExclusions = xmlExclusions;
-		this.xmlNamespaces = xmlNamespaces;
+	public IncrementalWriteFilter(IncrementalWriteConfig config) {
+		this.config = config;
+	}
+
+	public IncrementalWriteConfig getConfig() {
+		return config;
 	}
 
 	protected final DocumentWriteSet filterDocuments(Context context, Function<String, String> hashRetriever) {
@@ -230,19 +254,19 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 
 			if (existingHash != null) {
 				if (!existingHash.equals(contentHash)) {
-					newWriteSet.add(addHashToMetadata(doc, hashKeyName, contentHash, timestampKeyName, timestamp));
-				} else if (skippedDocumentsConsumer != null) {
+					newWriteSet.add(addHashToMetadata(doc, config.getHashKeyName(), contentHash, config.getTimestampKeyName(), timestamp));
+				} else if (config.getSkippedDocumentsConsumer() != null) {
 					skippedDocuments.add(doc);
 				} else {
 					// No consumer, so skip the document silently.
 				}
 			} else {
-				newWriteSet.add(addHashToMetadata(doc, hashKeyName, contentHash, timestampKeyName, timestamp));
+				newWriteSet.add(addHashToMetadata(doc, config.getHashKeyName(), contentHash, config.getTimestampKeyName(), timestamp));
 			}
 		}
 
-		if (!skippedDocuments.isEmpty() && skippedDocumentsConsumer != null) {
-			skippedDocumentsConsumer.accept(skippedDocuments.toArray(new DocumentWriteOperation[0]));
+		if (!skippedDocuments.isEmpty() && config.getSkippedDocumentsConsumer() != null) {
+			config.getSkippedDocumentsConsumer().accept(skippedDocuments.toArray(new DocumentWriteOperation[0]));
 		}
 
 		return newWriteSet;
@@ -259,11 +283,11 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 			format = baseHandle.getFormat();
 		}
 
-		if (canonicalizeJson && (Format.JSON.equals(format) || isPossiblyJsonContent(content))) {
+		if (config.isCanonicalizeJson() && (Format.JSON.equals(format) || isPossiblyJsonContent(content))) {
 			JsonCanonicalizer jc;
 			try {
-				if (jsonExclusions != null && jsonExclusions.length > 0) {
-					content = ContentExclusionUtil.applyJsonExclusions(doc.getUri(), content, jsonExclusions);
+				if (config.getJsonExclusions() != null && config.getJsonExclusions().length > 0) {
+					content = ContentExclusionUtil.applyJsonExclusions(doc.getUri(), content, config.getJsonExclusions());
 				}
 				jc = new JsonCanonicalizer(content);
 				return jc.getEncodedString();
@@ -274,9 +298,9 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 				logger.warn("Unable to canonicalize JSON content for URI {}, using original content for hashing; cause: {}",
 					doc.getUri(), e.getMessage());
 			}
-		} else if (xmlExclusions != null && xmlExclusions.length > 0) {
+		} else if (config.getXmlExclusions() != null && config.getXmlExclusions().length > 0) {
 			try {
-				content = ContentExclusionUtil.applyXmlExclusions(doc.getUri(), content, xmlNamespaces, xmlExclusions);
+				content = ContentExclusionUtil.applyXmlExclusions(doc.getUri(), content, config.getXmlNamespaces(), config.getXmlExclusions());
 			} catch (Exception e) {
 				logger.warn("Unable to apply XML exclusions for URI {}, using original content for hashing; cause: {}",
 					doc.getUri(), e.getMessage());
@@ -316,4 +340,6 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 
 		return new DocumentWriteOperationImpl(op.getUri(), newMetadata, op.getContent(), op.getTemporalDocumentURI());
 	}
+
+
 }

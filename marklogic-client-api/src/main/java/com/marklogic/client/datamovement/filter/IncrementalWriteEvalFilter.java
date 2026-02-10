@@ -12,9 +12,6 @@ import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.io.JacksonHandle;
 
-import java.util.Map;
-import java.util.function.Consumer;
-
 /**
  * Uses server-side JavaScript code to get the existing hash values for a set of URIs.
  *
@@ -31,9 +28,8 @@ class IncrementalWriteEvalFilter extends IncrementalWriteFilter {
 		response
 		""";
 
-	IncrementalWriteEvalFilter(String hashKeyName, String timestampKeyName, boolean canonicalizeJson,
-							   Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer, String[] jsonExclusions, String[] xmlExclusions, Map<String, String> xmlNamespaces) {
-		super(hashKeyName, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions, xmlNamespaces);
+	IncrementalWriteEvalFilter(IncrementalWriteConfig config) {
+		super(config);
 	}
 
 	@Override
@@ -47,7 +43,7 @@ class IncrementalWriteEvalFilter extends IncrementalWriteFilter {
 
 		try {
 			JsonNode response = context.getDatabaseClient().newServerEval().javascript(EVAL_SCRIPT)
-				.addVariable("hashKeyName", hashKeyName)
+				.addVariable("hashKeyName", getConfig().getHashKeyName())
 				.addVariable("uris", new JacksonHandle(uris))
 				.evalAs(JsonNode.class);
 

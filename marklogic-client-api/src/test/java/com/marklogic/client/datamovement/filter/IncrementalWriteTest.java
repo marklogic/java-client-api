@@ -228,6 +228,57 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 			"expected. Exclusions cannot be specified for them.");
 	}
 
+	@Test
+	void fromView() {
+		filter = IncrementalWriteFilter.newBuilder()
+			.fromView("javaClient", "incrementalWriteHash")
+			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
+			.build();
+
+		verifyIncrementalWriteWorks();
+	}
+
+	@Test
+	void emptyValuesForFromView() {
+		filter = IncrementalWriteFilter.newBuilder()
+			// Empty/null values are ignored, as long as both schema/view are empty/null. This makes life a little
+			// easier for a connector in that the connector does not need to check for empty/null values.
+			.fromView("", null)
+			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
+			.build();
+
+		verifyIncrementalWriteWorks();
+	}
+
+	@Test
+	void invalidSchemaArg() {
+		IncrementalWriteFilter.Builder builder = IncrementalWriteFilter.newBuilder();
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> builder.fromView(null, "theView"));
+		assertEquals("Schema name cannot be null or empty when view name is provided", ex.getMessage());
+	}
+
+	@Test
+	void invalidViewArg() {
+		IncrementalWriteFilter.Builder builder = IncrementalWriteFilter.newBuilder();
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> builder.fromView("javaClient", null));
+		assertEquals("View name cannot be null or empty when schema name is provided", ex.getMessage());
+	}
+
+	@Test
+	void invalidView() {
+		filter = IncrementalWriteFilter.newBuilder()
+			.fromView("javaClient", "this-view-doesnt-exist")
+			.build();
+
+		writeTenDocuments();
+
+		assertNotNull(batchFailure.get());
+		String message = batchFailure.get().getMessage();
+		assertTrue(message.contains("Unable to query for existing incremental write hashes") && message.contains("SQL-TABLENOTFOUND"),
+			"When the user tries to use the incremental write feature with an invalid view, " +
+				"we should fail with a helpful error message. Actual message: " + message);
+	}
+
 	private void verifyIncrementalWriteWorks() {
 		writeTenDocuments();
 		verifyDocumentsHasHashInMetadataKey();
