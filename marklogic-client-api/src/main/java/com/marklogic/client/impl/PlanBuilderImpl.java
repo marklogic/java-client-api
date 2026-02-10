@@ -185,6 +185,18 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
 
   @Override
+  public PlanColumnBuilder columnBuilder() {
+    return new ColumnBuilderImpl();
+  }
+
+
+  @Override
+  public PlanContextExprCall context() {
+    return new ContextExprCallCallImpl("op", "context", new Object[]{  });
+  }
+
+
+  @Override
   public PlanAggregateCol count(String name) {
     return count((name == null) ? (PlanColumn) null : col(name));
   }
@@ -505,6 +517,81 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
       throw new IllegalArgumentException("view parameter for fromView() cannot be null");
     }
     return new PlanBuilderSubImpl.AccessPlanSubImpl("op", "from-view", new Object[]{ schema, view, qualifierName, sysCols });
+  }
+
+
+  @Override
+  public AccessPlan fromDocs(String query, String contextPath, PlanColumnBuilder columnSpec) {
+    if (query == null) {
+      throw new IllegalArgumentException("query parameter for fromDocs() cannot be null");
+    }
+    if (contextPath == null) {
+      throw new IllegalArgumentException("contextPath parameter for fromDocs() cannot be null");
+    }
+    if (columnSpec == null) {
+      throw new IllegalArgumentException("columnSpec parameter for fromDocs() cannot be null");
+    }
+    return new PlanBuilderSubImpl.AccessPlanSubImpl("op", "from-docs", new Object[]{ cts.wordQuery(query), xs.string(contextPath), columnSpec });
+  }
+
+
+  @Override
+  public AccessPlan fromDocs(String query, String contextPath, PlanColumnBuilder columnSpec, String qualifier) {
+    if (query == null) {
+      throw new IllegalArgumentException("query parameter for fromDocs() cannot be null");
+    }
+    if (contextPath == null) {
+      throw new IllegalArgumentException("contextPath parameter for fromDocs() cannot be null");
+    }
+    if (columnSpec == null) {
+      throw new IllegalArgumentException("columnSpec parameter for fromDocs() cannot be null");
+    }
+    return new PlanBuilderSubImpl.AccessPlanSubImpl("op", "from-docs", new Object[]{ cts.wordQuery(query), xs.string(contextPath), columnSpec, (qualifier == null) ? null : xs.string(qualifier) });
+  }
+
+
+  @Override
+  public AccessPlan fromDocs(CtsQueryExpr query, String contextPath, PlanColumnBuilder columnSpec, String qualifier) {
+    if (query == null) {
+      throw new IllegalArgumentException("query parameter for fromDocs() cannot be null");
+    }
+    if (contextPath == null) {
+      throw new IllegalArgumentException("contextPath parameter for fromDocs() cannot be null");
+    }
+    if (columnSpec == null) {
+      throw new IllegalArgumentException("columnSpec parameter for fromDocs() cannot be null");
+    }
+    return new PlanBuilderSubImpl.AccessPlanSubImpl("op", "from-docs", new Object[]{ query, xs.string(contextPath), columnSpec, (qualifier == null) ? null : xs.string(qualifier) });
+  }
+
+
+  @Override
+  public AccessPlan fromDocs(String query, String contextPath, PlanColumnBuilder columnSpec, String qualifier, PlanSystemColumn systemCol) {
+    if (query == null) {
+      throw new IllegalArgumentException("query parameter for fromDocs() cannot be null");
+    }
+    if (contextPath == null) {
+      throw new IllegalArgumentException("contextPath parameter for fromDocs() cannot be null");
+    }
+    if (columnSpec == null) {
+      throw new IllegalArgumentException("columnSpec parameter for fromDocs() cannot be null");
+    }
+    return new PlanBuilderSubImpl.AccessPlanSubImpl("op", "from-docs", new Object[]{ cts.wordQuery(query), xs.string(contextPath), columnSpec, (qualifier == null) ? null : xs.string(qualifier), systemCol });
+  }
+
+
+  @Override
+  public AccessPlan fromDocs(String query, String contextPath, PlanColumnBuilder columnSpec, String qualifier, PlanSystemColumn systemCol, PlanNamespaceBindingsSeq namespaces) {
+    if (query == null) {
+      throw new IllegalArgumentException("query parameter for fromDocs() cannot be null");
+    }
+    if (contextPath == null) {
+      throw new IllegalArgumentException("contextPath parameter for fromDocs() cannot be null");
+    }
+    if (columnSpec == null) {
+      throw new IllegalArgumentException("columnSpec parameter for fromDocs() cannot be null");
+    }
+    return new PlanBuilderSubImpl.AccessPlanSubImpl("op", "from-docs", new Object[]{ cts.wordQuery(query), xs.string(contextPath), columnSpec, (qualifier == null) ? null : xs.string(qualifier), systemCol, namespaces });
   }
 
 
@@ -1285,6 +1372,24 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
   }
 
 
+  @Override
+  public ServerExpression xpath(ServerExpression expression, String path) {
+    return xpath(expression, (path == null) ? (ServerExpression) null : xs.string(path));
+  }
+
+
+  @Override
+  public ServerExpression xpath(ServerExpression expression, ServerExpression path) {
+    if (expression == null) {
+      throw new IllegalArgumentException("expression parameter for xpath() cannot be null");
+    }
+    if (path == null) {
+      throw new IllegalArgumentException("path parameter for xpath() cannot be null");
+    }
+    return new BaseTypeImpl.NodeSeqCallImpl("op", "xpath", new Object[]{ expression, path });
+  }
+
+
   // external type implementations
 
   static class AggregateColSeqListImpl extends PlanSeqListImpl implements PlanAggregateColSeq {
@@ -1366,6 +1471,13 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   static class ConditionCallImpl extends PlanCallImpl implements PlanCondition {
     ConditionCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+
+  static class ContextExprCallCallImpl extends PlanCallImpl implements PlanContextExprCall {
+    ContextExprCallCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }

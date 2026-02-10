@@ -156,6 +156,7 @@ public interface VecExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/vec:precision" target="mlserverdoc">vec:precision</a> server function.
   * @param vector  The input vector to reduce precision. Can be a vector or an empty sequence.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a> server data type
+  * @since 8.1.0; requires MarkLogic 12.1 or higher.
   */
   public ServerExpression precision(ServerExpression vector);
 /**
@@ -165,6 +166,7 @@ public interface VecExpr {
   * @param vector  The input vector to reduce precision. Can be a vector or an empty sequence.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
   * @param precision  The number of mantissa bits to preserve (9-32 inclusive). Default is 16. Higher values preserve more precision. If the value is outside the valid range, throw VEC-INVALIDPRECISION.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a> server data type
+  * @since 8.1.0; requires MarkLogic 12.1 or higher.
   */
   public ServerExpression precision(ServerExpression vector, ServerExpression precision);
 /**
@@ -210,6 +212,7 @@ public interface VecExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/vec:trunc" target="mlserverdoc">vec:trunc</a> server function.
   * @param vector  The input vector to truncate.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a> server data type
+  * @since 8.1.0; requires MarkLogic 12.1 or higher.
   */
   public ServerExpression trunc(ServerExpression vector);
 /**
@@ -219,6 +222,7 @@ public interface VecExpr {
   * @param vector  The input vector to truncate.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
   * @param n  The numbers of decimal places to truncate to. The default is 0. Negative values cause that many digits to the left of the decimal point to be truncated.  (of <a href="{@docRoot}/doc-files/types/xs_int.html">xs:int</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a> server data type
+  * @since 8.1.0; requires MarkLogic 12.1 or higher.
   */
   public ServerExpression trunc(ServerExpression vector, int n);
 /**
@@ -228,6 +232,7 @@ public interface VecExpr {
   * @param vector  The input vector to truncate.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
   * @param n  The numbers of decimal places to truncate to. The default is 0. Negative values cause that many digits to the left of the decimal point to be truncated.  (of <a href="{@docRoot}/doc-files/types/xs_int.html">xs:int</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a> server data type
+  * @since 8.1.0; requires MarkLogic 12.1 or higher.
   */
   public ServerExpression trunc(ServerExpression vector, ServerExpression n);
 /**
