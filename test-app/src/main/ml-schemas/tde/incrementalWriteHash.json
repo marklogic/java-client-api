@@ -1,0 +1,25 @@
+{
+	"template": {
+		"description": "For incremental write that uses op.fromView instead of op.fromLexicons",
+		"context": "/doc",
+		"rows": [
+			{
+				"schemaName": "javaClient",
+				"viewName": "incrementalWriteHash",
+				"columns": [
+					{
+						"name": "uri",
+						"scalarType": "string",
+						"val": "xdmp:node-uri(.)"
+					},
+					{
+						"name": "hash",
+						"scalarType": "string",
+						"val": "xdmp:node-metadata-value(., 'incrementalWriteHash')",
+						"nullable": true
+					}
+				]
+			}
+		]
+	}
+}

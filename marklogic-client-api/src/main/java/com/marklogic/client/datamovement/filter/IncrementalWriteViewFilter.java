@@ -12,13 +12,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Uses an Optic query to get the existing hash values for a set of URIs.
+ * Uses an Optic query with fromView to get the existing hash values for a set of URIs from a TDE view.
+ * This implementation requires a TDE template to be deployed that extracts the URI and hash metadata.
  *
  * @since 8.1.0
  */
-class IncrementalWriteOpticFilter extends IncrementalWriteFilter {
+class IncrementalWriteViewFilter extends IncrementalWriteFilter {
 
-	IncrementalWriteOpticFilter(IncrementalWriteConfig config) {
+	IncrementalWriteViewFilter(IncrementalWriteConfig config) {
 		super(config);
 	}
 
@@ -29,18 +30,12 @@ class IncrementalWriteOpticFilter extends IncrementalWriteFilter {
 			.map(DocumentWriteOperation::getUri)
 			.toArray(String[]::new);
 
-		// It doesn't seem possible yet to use a DSL query and bind an array of strings to a "uris" param, so using
-		// a serialized query instead. That doesn't allow a user to override the query though.
 		RowTemplate rowTemplate = new RowTemplate(context.getDatabaseClient());
 
 		try {
 			Map<String, String> existingHashes = rowTemplate.query(op ->
-					op.fromLexicons(Map.of(
-						"uri", op.cts.uriReference(),
-						"hash", op.cts.fieldReference(getConfig().getHashKeyName())
-					)).where(
-						op.cts.documentQuery(op.xs.stringSeq(uris))
-					),
+					op.fromView(getConfig().getSchemaName(), getConfig().getViewName())
+						.where(op.in(op.col("uri"), op.xs.stringSeq(uris))),
 
 				rows -> {
 					Map<String, String> map = new HashMap<>();
@@ -55,7 +50,7 @@ class IncrementalWriteOpticFilter extends IncrementalWriteFilter {
 
 			return filterDocuments(context, uri -> existingHashes.get(uri));
 		} catch (FailedRequestException e) {
-			String message = "Unable to query for existing incremental write hashes; cause: " + e.getMessage();
+			String message = "Unable to query for existing incremental write hashes from view " + getConfig().getSchemaName() + "." + getConfig().getViewName() + "; cause: " + e.getMessage();
 			throw new FailedRequestException(message, e.getFailedRequest());
 		}
 	}
