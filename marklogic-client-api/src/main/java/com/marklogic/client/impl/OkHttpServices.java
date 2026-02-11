@@ -34,7 +34,9 @@ import com.marklogic.client.util.RequestParameters;
 import jakarta.mail.BodyPart;
 import jakarta.mail.Header;
 import jakarta.mail.MessagingException;
+import jakarta.mail.internet.ContentDisposition;
 import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.internet.ParseException;
 import jakarta.mail.util.ByteArrayDataSource;
 import jakarta.xml.bind.DatatypeConverter;
 import okhttp3.*;
@@ -1808,13 +1810,47 @@ public class OkHttpServices implements RESTServices {
 
 	static private String getHeaderUri(BodyPart part) {
 		try {
-			if (part != null) {
-				return part.getFileName();
+			if (part == null) {
+				return null;
 			}
-			// if it's not found, just return null
+
+			try {
+				String filename = part.getFileName();
+				if (filename != null) {
+					return filename;
+				}
+			} catch (ParseException e) {
+				// Jakarta Mail's parser failed due to malformed Content-Disposition header.
+				// Check if MarkLogic sent a malformed "format=" parameter at the end, which violates RFC 2183.
+				String contentDisposition = getHeader(part, "Content-Disposition");
+				if (contentDisposition != null && contentDisposition.matches(".*;\\s*format\\s*=\\s*$")) {
+					// Remove the trailing "; format=" to fix the malformed header
+					String cleaned = contentDisposition.replaceFirst(";\\s*format\\s*=\\s*$", "").trim();
+					logger.debug("Removed trailing 'format=' from malformed Content-Disposition header: {} -> {}", contentDisposition, cleaned);
+					return extractFilenameFromContentDisposition(cleaned);
+				}
+				throw e;
+			}
+
 			return null;
 		} catch (MessagingException e) {
 			throw new MarkLogicIOException(e);
+		}
+	}
+
+	static private String extractFilenameFromContentDisposition(String contentDisposition) {
+		if (contentDisposition == null) {
+			return null;
+		}
+		try {
+			// Use Jakarta Mail's ContentDisposition parser to extract the filename parameter. This is the class
+			// that throws an error when "format=" exists in the value, but that has been removed already.
+			ContentDisposition cd = new ContentDisposition(contentDisposition);
+			return cd.getParameter("filename");
+		} catch (ParseException e) {
+			logger.warn("Failed to parse cleaned Content-Disposition header: {}; cause: {}",
+				contentDisposition, e.getMessage());
+			return null;
 		}
 	}
 
