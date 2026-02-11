@@ -1246,6 +1246,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
         case "from-doc-uris":
         case "from-param":
         case "from-doc-descriptors":
+        case "from-docs":
           if (fnArgs.length < 1) {
             throw new IllegalArgumentException("accessor constructor without parameters: "+fnArgs.length);
           }
