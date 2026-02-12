@@ -206,7 +206,7 @@ pipeline {
           ./gradlew clean build -x test
 
           echo "Run a sufficient number of tests to verify the PR."
-					./gradlew marklogic-client-api:test --tests ReadDocumentPageTest || true
+					./gradlew marklogic-client-api:test
 
 					echo "Run a test with the reverse proxy server to ensure it's fine."
 					./gradlew -PtestUseReverseProxyServer=true runReverseProxyServer marklogic-client-api-functionaltests:test --tests SearchWithPageLengthTest || true
