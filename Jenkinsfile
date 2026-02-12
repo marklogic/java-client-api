@@ -18,7 +18,7 @@ def getPlatform(isArm = false) {
 	return isArm ? "linux/arm64" : "linux/amd64"
 }
 
-def shouldInstallConverters(isArm = false) {
+def setConverters(isArm = false) {
 	return isArm ? "false" :"true"
 }
 
@@ -198,7 +198,7 @@ pipeline {
 		DMC_USER = credentials('MLBUILD_USER')
 		DMC_PASSWORD = credentials('MLBUILD_PASSWORD')
 		PLATFORM = getPlatform()
-		MARKLOGIC_INSTALL_CONVERTERS = shouldInstallConverters()
+		MARKLOGIC_INSTALL_CONVERTERS = setConverters()
 	}
 
 	stages {
@@ -293,7 +293,7 @@ pipeline {
 
 		stage('provisionInfrastructure'){
 			when {
-					branch 'develop-arm'
+					branch 'develop'
 					expression { return !params.regressions }
 			}
 			agent {label 'javaClientLinuxPool'}
@@ -376,7 +376,7 @@ pipeline {
 		stage('regressions-11 arm infrastructure') {
 			when {
 					beforeAgent true
-					branch 'develop-arm'
+					branch 'develop'
 					expression { return !params.regressions }
 					expression { return env.EC2_PRIVATE_IP != null }
 			}
@@ -384,7 +384,7 @@ pipeline {
 			environment {
 				JAVA_HOME_DIR = getJavaHomePath(true)
 				PLATFORM = getPlatform(true)
-				MARKLOGIC_INSTALL_CONVERTERS = shouldInstallConverters(true)
+				MARKLOGIC_INSTALL_CONVERTERS = setConverters(true)
 			}
 			steps {
 				checkout([$class: 'GitSCM',
