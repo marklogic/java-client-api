@@ -1,56 +1,39 @@
 @Library('shared-libraries') _
 
-def getJavaHomePath(isArm = false) {
-		if (isArm) {
-				def version = (env.JAVA_VERSION == "JAVA21") ? "21" : "17"
-				def path = "/usr/lib/jvm/java-${version}-amazon-corretto.aarch64"
-				return path
-		} else {
-				if (env.JAVA_VERSION == "JAVA21") {
-						return "/home/builder/java/jdk-21.0.1"
-				} else {
-						return "/home/builder/java/jdk-17.0.2"
-				}
-		}
-}
-
-def getPlatform(isArm = false) {
-	return isArm ? "linux/arm64" : "linux/amd64"
-}
-
-def setConverters(isArm = false) {
-	return isArm ? "false" :"true"
+def getJavaHomePath() {
+	if (env.JAVA_VERSION == "JAVA21") {
+		return "/home/builder/java/jdk-21.0.1"
+	} else {
+		return "/home/builder/java/jdk-17.0.2"
+	}
 }
 
 def setupDockerMarkLogic(String image) {
-		cleanupDocker()
-		sh label: 'mlsetup', script: '''#!/bin/bash
-				echo "Removing any running MarkLogic server and clean up MarkLogic data directory"
-				sudo /usr/local/sbin/mladmin remove
-				sudo /usr/local/sbin/mladmin cleandata
-				cd java-client-api
-				export PLATFORM=$PLATFORM
-				export MARKLOGIC_INSTALL_CONVERTERS=$MARKLOGIC_INSTALL_CONVERTERS
-				docker compose down -v || true
-				docker volume prune -f
-
-				echo "Using image: "''' + image + '''
-				docker pull ''' + image + '''
-
-				MARKLOGIC_IMAGE=''' + image + ''' MARKLOGIC_LOGS_VOLUME=marklogicLogs \
-				docker compose up -d --build
-				echo "Waiting for MarkLogic server to initialize."
-				export JAVA_HOME=$JAVA_HOME_DIR
-				export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-				export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-				./gradlew -i mlWaitTillReady
-				./gradlew mlTestConnections
-				./gradlew -i mlDeploy mlReloadSchemas
-		'''
+	cleanupDocker()
+	sh label: 'mlsetup', script: '''#!/bin/bash
+	echo "Removing any running MarkLogic server and clean up MarkLogic data directory"
+    sudo /usr/local/sbin/mladmin remove
+    sudo /usr/local/sbin/mladmin cleandata
+    cd java-client-api
+    docker compose down -v || true
+    docker volume prune -f
+    echo "Using image: "''' + image + '''
+    docker pull ''' + image + '''
+    MARKLOGIC_IMAGE=''' + image + ''' MARKLOGIC_LOGS_VOLUME=marklogicLogs docker compose up -d --build
+		export JAVA_HOME=$JAVA_HOME_DIR
+		export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+		export PATH=$JAVA_HOME/bin:$PATH
+		./gradlew -i mlWaitTillReady
+    sleep 3
+    ./gradlew -i mlWaitTillReady
+    ./gradlew mlTestConnections
+   	./gradlew -i mlDeploy mlReloadSchemas
+  '''
 }
 
 def runTests(String image) {
 	setupDockerMarkLogic(image)
+
 	sh label: 'run marklogic-client-api tests', script: '''#!/bin/bash
 			export JAVA_HOME=$JAVA_HOME_DIR
 			export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
@@ -62,7 +45,7 @@ def runTests(String image) {
 			rm -rf ~/.m2/repository/com/squareup/okhttp3/
 
 			echo "Ensure all subprojects can be built first."
-			./gradlew clean build -x test
+      ./gradlew clean build -x test
 
 			./gradlew marklogic-client-api:test  || true
 	'''
@@ -117,9 +100,9 @@ def runTestsWithReverseProxy(String image) {
 			rm -rf ~/.m2/repository/com/squareup/okhttp3/
 
 			echo "Ensure all subprojects can be built first."
-			./gradlew clean build -x test
+      ./gradlew clean build -x test
 
-			echo "Running marklogic-client-api tests with reverse proxy."
+      echo "Running marklogic-client-api tests with reverse proxy."
 			./gradlew -PtestUseReverseProxyServer=true runReverseProxyServer marklogic-client-api:test || true
 	'''
 
@@ -197,38 +180,37 @@ pipeline {
 		GRADLE_DIR = ".gradle"
 		DMC_USER = credentials('MLBUILD_USER')
 		DMC_PASSWORD = credentials('MLBUILD_PASSWORD')
-		PLATFORM = getPlatform()
-		MARKLOGIC_INSTALL_CONVERTERS = setConverters()
 	}
 
 	stages {
+
 		stage('pull-request-tests') {
 			when {
-				expression {
-					return !params.regressions
+				not {
+					expression { return params.regressions }
 				}
 			}
 			steps {
 				setupDockerMarkLogic("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-12")
 				sh label: 'run marklogic-client-api tests', script: '''#!/bin/bash
-					export JAVA_HOME=$JAVA_HOME_DIR
-					export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-					export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-					cd java-client-api
+          export JAVA_HOME=$JAVA_HOME_DIR
+          export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+          export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+          cd java-client-api
 
-					echo "Temporary fix for mysterious issue with okhttp3 being corrupted in local Maven cache."
-					ls -la ~/.m2/repository/com/squareup
+          echo "Temporary fix for mysterious issue with okhttp3 being corrupted in local Maven cache."
+          ls -la ~/.m2/repository/com/squareup
 					rm -rf ~/.m2/repository/com/squareup/okhttp3/
 
-					echo "Ensure all subprojects can be built first."
-					./gradlew clean build -x test
+          echo "Ensure all subprojects can be built first."
+          ./gradlew clean build -x test
 
-					echo "Run a sufficient number of tests to verify the PR."
+          echo "Run a sufficient number of tests to verify the PR."
 					./gradlew marklogic-client-api:test --tests ReadDocumentPageTest || true
 
 					echo "Run a test with the reverse proxy server to ensure it's fine."
 					./gradlew -PtestUseReverseProxyServer=true runReverseProxyServer marklogic-client-api-functionaltests:test --tests SearchWithPageLengthTest || true
-				'''
+        '''
 			}
 			post {
 				always {
@@ -243,20 +225,18 @@ pipeline {
 			when {
 				branch 'develop'
 				not {
-					anyOf {
-						expression { return params.regressions }
-					}
+					expression { return params.regressions }
 				}
 			}
 			steps {
 				sh label: 'publish', script: '''#!/bin/bash
-					export JAVA_HOME=$JAVA_HOME_DIR
-					export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-					export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-					cp ~/.gradle/gradle.properties $GRADLE_USER_HOME;
-					cd java-client-api
-					./gradlew publish
-				'''
+          export JAVA_HOME=$JAVA_HOME_DIR
+          export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+          export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+          cp ~/.gradle/gradle.properties $GRADLE_USER_HOME;
+          cd java-client-api
+          ./gradlew publish
+        '''
 			}
 		}
 
@@ -279,7 +259,7 @@ pipeline {
 
 						stage(stageName) {
 							try {
-								runTests(fullImage, false)
+								runTests(fullImage)
 							} finally {
 								junit '**/build/**/TEST*.xml'
 								updateWorkspacePermissions()
@@ -290,175 +270,5 @@ pipeline {
 				}
 			}
 		}
-
-		stage('provisionInfrastructure'){
-			when {
-					branch 'develop'
-					expression { return !params.regressions }
-			}
-			agent {label 'javaClientLinuxPool'}
-
-			steps{
-				script {
-					withCredentials([
-						string(credentialsId: 'aws-region-us-west', variable: 'AWS_REGION'),
-						string(credentialsId: 'aws-role-headless-testing', variable: 'AWS_ROLE'),
-						string(credentialsId: 'aws-role-account-headless', variable: 'AWS_ROLE_ACCOUNT')
-					]) {
-						def deploymentResult = deployAWSInstance([
-							instanceName: "java-client-instance-${BUILD_NUMBER}",
-							region: env.AWS_REGION,
-							credentialsId: 'headlessDbUserEC2',
-							role: env.AWS_ROLE,
-							roleAccount: env.AWS_ROLE_ACCOUNT,
-							branch: 'master'
-						])
-
-						echo "✅ Instance deployed: ${deploymentResult.privateIp}"
-						echo "✅ Terraform directory: ${deploymentResult.terraformDir}"
-						echo "✅ Workspace: ${deploymentResult.workspace}"
-						echo "✅ Status: ${deploymentResult.status}"
-
-						// Store deployment info for cleanup
-						env.DEPLOYMENT_INSTANCE_NAME = deploymentResult.instanceName
-						env.DEPLOYMENT_REGION = deploymentResult.region
-						env.DEPLOYMENT_TERRAFORM_DIR = deploymentResult.terraformDir
-						env.EC2_PRIVATE_IP = deploymentResult.privateIp
-
-						def nodeName = "java-client-agent-${BUILD_NUMBER}"
-						def remoteFS = "/space/jenkins_home"
-						def labels = "java-client-agent-${BUILD_NUMBER}"
-						def instanceIp = env.EC2_PRIVATE_IP
-
-						// Attach volumes
-						def volumeResult = attachInstanceVolumes([
-							instanceIp: instanceIp,
-							remoteFS: remoteFS,
-							branch: 'master'
-						])
-
-						echo "✅ Volume attachment completed: ${volumeResult.volumeAttached}"
-						echo "✅ Java installed: ${volumeResult.javaInstalled}"
-
-						//Install dependencies AND run init scripts
-						def depsResult = installDependenciesAndInitScripts([
-							instanceIp: instanceIp,
-							packageFile: 'Packagedependencies',
-							packageDir: 'terraform-templates/java-client-api',
-							initScriptsDir: 'terraform-templates/java-client-api/scripts',
-							initScriptsFile: 'terraform-templates/java-client-api/initscripts'
-						])
-
-						echo "✅ Dependencies installed: ${depsResult.dependenciesInstalled}"
-						if (depsResult.initScriptsExecuted) {
-							echo "✅ Init scripts executed: ${depsResult.initScriptsCount} scripts"
-						} else {
-							echo "ℹ️ No init scripts configured or executed"
-						}
-
-						// Use shared library to create Jenkins agent
-						def agentResult = createJenkinsAgent([
-							nodeName: nodeName,
-							instanceIp: instanceIp,
-							remoteFS: remoteFS,
-							labels: labels,
-							timeoutMinutes: 5,
-							credentialsId: 'qa-builder-aws'
-						])
-
-						echo "✅ Jenkins agent created: ${agentResult.nodeName}"
-						echo "✅ Agent status: ${agentResult.status}"
-					}
-				}
-			}
-		}
-
-		stage('regressions-11 arm infrastructure') {
-			when {
-					beforeAgent true
-					branch 'develop'
-					expression { return !params.regressions }
-					expression { return env.EC2_PRIVATE_IP != null }
-			}
-			agent { label "java-client-agent-${BUILD_NUMBER}" }
-			environment {
-				JAVA_HOME_DIR = getJavaHomePath(true)
-				PLATFORM = getPlatform(true)
-				MARKLOGIC_INSTALL_CONVERTERS = setConverters(true)
-			}
-			steps {
-				checkout([$class: 'GitSCM',
-						branches: scm.branches,
-						doGenerateSubmoduleConfigurations: false,
-						extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'java-client-api']],
-						submoduleCfg: [],
-						userRemoteConfigs: scm.userRemoteConfigs])
-
-				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi9-arm:latest-11")
-			}
-			post {
-				always {
-					archiveArtifacts artifacts: 'java-client-api/**/build/reports/**/*.html'
-					junit '**/build/**/TEST*.xml'
-					updateWorkspacePermissions()
-					tearDownDocker()
-				}
-			}
-		}
-	}
-
-	post{
-		always {
-			script {
-				echo "🧹 Starting cleanup process..."
-
-				try {
-					// Cleanup Terraform infrastructure
-					if (env.EC2_PRIVATE_IP) {
-						echo "🗑️ Cleaning up Terraform resources..."
-						node('javaClientLinuxPool') {
-							try {
-								//`sleep 60` allows AWS resources to stabilize before Terraform destroys them, preventing "resource in use" errors
-								sleep 60
-								unstash "terraform-${BUILD_NUMBER}"
-								withCredentials([
-									string(credentialsId: 'aws-region-us-west', variable: 'AWS_REGION'),
-									string(credentialsId: 'aws-role-headless-testing', variable: 'AWS_ROLE'),
-									string(credentialsId: 'aws-role-account-headless', variable: 'AWS_ROLE_ACCOUNT')
-								]) {
-									withAWS(credentials: 'headlessDbUserEC2', region: env.AWS_REGION, role: env.AWS_ROLE, roleAccount: env.AWS_ROLE_ACCOUNT, duration: 3600) {
-										sh '''#!/bin/bash
-											export PATH=/home/builder/terraform:$PATH
-											cd ${WORKSPACE}/${DEPLOYMENT_TERRAFORM_DIR}
-											terraform workspace select dev
-											terraform destroy -auto-approve
-										'''
-									}
-								}
-								echo "✅ Terraform resources destroyed successfully."
-								// Cleanup Jenkins agent using shared library function
-								def nodeName = "java-client-agent-${BUILD_NUMBER}"
-								echo "🗑️ Cleaning up Jenkins agent: ${nodeName}"
-								try {
-									def cleanupResult = cleanupJenkinsAgent(nodeName)
-									echo "✅ Cleanup result: ${cleanupResult.status} for node: ${cleanupResult.nodeName}"
-								} catch (Exception jenkinsCleanupException) {
-									echo "⚠️ Warning: Jenkins agent cleanup failed: ${jenkinsCleanupException.message}"
-								}
-								echo "✅ Pipeline cleanup completed successfully."
-							} catch (Exception terraformException) {
-								echo "⚠️ Warning: Terraform cleanup failed: ${terraformException.message}"
-							}
-						}
-					} else {
-						echo "ℹ️ No EC2 instance IP found, skipping Terraform cleanup"
-					}
-				} catch (Exception cleanupException) {
-					echo "⚠️ Warning: Cleanup encountered an error: ${cleanupException.message}"
-					echo "📋 Continuing with pipeline completion despite cleanup issues..."
-				}
-			}
-		}
 	}
 }
-
