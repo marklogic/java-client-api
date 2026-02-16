@@ -8,6 +8,11 @@ def getJavaHomePath() {
 	}
 }
 
+def getJavaHomePathForARM() {
+	def version = (env.JAVA_VERSION == "JAVA21") ? "21" : "17"
+	return "/usr/lib/jvm/java-${version}-amazon-corretto.aarch64"
+}
+
 def setupDockerMarkLogic(String image) {
 	cleanupDocker()
 	sh label: 'mlsetup', script: '''#!/bin/bash
@@ -24,7 +29,6 @@ def setupDockerMarkLogic(String image) {
 		export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
 		export PATH=$JAVA_HOME/bin:$PATH
 		./gradlew -i mlWaitTillReady
-		sleep 3
 		./gradlew -i mlWaitTillReady
 		./gradlew mlTestConnections
 		./gradlew -i mlDeploy mlReloadSchemas
@@ -133,6 +137,8 @@ pipeline {
 		GRADLE_DIR = ".gradle"
 		DMC_USER = credentials('MLBUILD_USER')
 		DMC_PASSWORD = credentials('MLBUILD_PASSWORD')
+		PLATFORM = "linux/amd64"
+		MARKLOGIC_INSTALL_CONVERTERS = "true"
 	}
 
 	stages {
@@ -223,5 +229,175 @@ pipeline {
 				}
 			}
 		}
+
+		stage('provisionInfrastructure') {
+			when {
+				branch 'develop'
+				expression { return params.regressions }
+			}
+			agent { label 'javaClientLinuxPool' }
+
+			steps {
+				script {
+					withCredentials([
+						string(credentialsId: 'aws-region-us-west', variable: 'AWS_REGION'),
+						string(credentialsId: 'aws-role-headless-testing', variable: 'AWS_ROLE'),
+						string(credentialsId: 'aws-role-account-headless', variable: 'AWS_ROLE_ACCOUNT')
+					]) {
+						def deploymentResult = deployAWSInstance([
+							instanceName : "java-client-instance-${BUILD_NUMBER}",
+							region       : env.AWS_REGION,
+							credentialsId: 'headlessDbUserEC2',
+							role         : env.AWS_ROLE,
+							roleAccount  : env.AWS_ROLE_ACCOUNT,
+							branch       : 'master'
+						])
+
+						echo "✅ Instance deployed: ${deploymentResult.privateIp}"
+						echo "✅ Terraform directory: ${deploymentResult.terraformDir}"
+						echo "✅ Workspace: ${deploymentResult.workspace}"
+						echo "✅ Status: ${deploymentResult.status}"
+
+						// Store deployment info for cleanup
+						env.DEPLOYMENT_INSTANCE_NAME = deploymentResult.instanceName
+						env.DEPLOYMENT_REGION = deploymentResult.region
+						env.DEPLOYMENT_TERRAFORM_DIR = deploymentResult.terraformDir
+						env.EC2_PRIVATE_IP = deploymentResult.privateIp
+
+						def nodeName = "java-client-agent-${BUILD_NUMBER}"
+						def remoteFS = "/space/jenkins_home"
+						def labels = "java-client-agent-${BUILD_NUMBER}"
+						def instanceIp = env.EC2_PRIVATE_IP
+
+						// Attach volumes
+						def volumeResult = attachInstanceVolumes([
+							instanceIp: instanceIp,
+							remoteFS  : remoteFS,
+							branch    : 'master'
+						])
+
+						echo "✅ Volume attachment completed: ${volumeResult.volumeAttached}"
+						echo "✅ Java installed: ${volumeResult.javaInstalled}"
+
+						//Install dependencies AND run init scripts
+						def depsResult = installDependenciesAndInitScripts([
+							instanceIp     : instanceIp,
+							packageFile    : 'Packagedependencies',
+							packageDir     : 'terraform-templates/java-client-api',
+							initScriptsDir : 'terraform-templates/java-client-api/scripts',
+							initScriptsFile: 'terraform-templates/java-client-api/initscripts'
+						])
+
+						echo "✅ Dependencies installed: ${depsResult.dependenciesInstalled}"
+						if (depsResult.initScriptsExecuted) {
+							echo "✅ Init scripts executed: ${depsResult.initScriptsCount} scripts"
+						} else {
+							echo "ℹ️ No init scripts configured or executed"
+						}
+
+						// Use shared library to create Jenkins agent
+						def agentResult = createJenkinsAgent([
+							nodeName      : nodeName,
+							instanceIp    : instanceIp,
+							remoteFS      : remoteFS,
+							labels        : labels,
+							timeoutMinutes: 5,
+							credentialsId : 'qa-builder-aws'
+						])
+
+						echo "✅ Jenkins agent created: ${agentResult.nodeName}"
+						echo "✅ Agent status: ${agentResult.status}"
+					}
+				}
+			}
+		}
+
+		stage('regressions-11 arm infrastructure') {
+			when {
+				beforeAgent true
+				branch 'develop'
+				expression { return params.regressions }
+				expression { return env.EC2_PRIVATE_IP != null }
+			}
+			agent { label "java-client-agent-${BUILD_NUMBER}" }
+			environment {
+				JAVA_HOME_DIR = getJavaHomePathForARM()
+				PLATFORM = "linux/arm64"
+				MARKLOGIC_INSTALL_CONVERTERS = "false"
+			}
+			steps {
+				checkout([$class                           : 'GitSCM',
+									branches                         : scm.branches,
+									doGenerateSubmoduleConfigurations: false,
+									extensions                       : [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'java-client-api']],
+									submoduleCfg                     : [],
+									userRemoteConfigs                : scm.userRemoteConfigs])
+
+				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi9-arm:latest-11")
+			}
+			post {
+				always {
+					archiveArtifacts artifacts: 'java-client-api/**/build/reports/**/*.html'
+					junit '**/build/**/TEST*.xml'
+					updateWorkspacePermissions()
+					tearDownDocker()
+				}
+			}
+		}
+	}
+
+	post {
+		always {
+			script {
+				echo "🧹 Starting cleanup process..."
+
+				try {
+					// Cleanup Terraform infrastructure
+					if (env.EC2_PRIVATE_IP) {
+						echo "🗑️ Cleaning up Terraform resources..."
+						node('javaClientLinuxPool') {
+							try {
+								//`sleep 60` allows AWS resources to stabilize before Terraform destroys them, preventing "resource in use" errors
+								sleep 60
+								unstash "terraform-${BUILD_NUMBER}"
+								withCredentials([
+									string(credentialsId: 'aws-region-us-west', variable: 'AWS_REGION'),
+									string(credentialsId: 'aws-role-headless-testing', variable: 'AWS_ROLE'),
+									string(credentialsId: 'aws-role-account-headless', variable: 'AWS_ROLE_ACCOUNT')
+								]) {
+									withAWS(credentials: 'headlessDbUserEC2', region: env.AWS_REGION, role: env.AWS_ROLE, roleAccount: env.AWS_ROLE_ACCOUNT, duration: 3600) {
+										sh '''#!/bin/bash
+											export PATH=/home/builder/terraform:$PATH
+											cd ${WORKSPACE}/${DEPLOYMENT_TERRAFORM_DIR}
+											terraform workspace select dev
+											terraform destroy -auto-approve
+										'''
+									}
+								}
+								echo "✅ Terraform resources destroyed successfully."
+								// Cleanup Jenkins agent using shared library function
+								def nodeName = "java-client-agent-${BUILD_NUMBER}"
+								echo "🗑️ Cleaning up Jenkins agent: ${nodeName}"
+								try {
+									def cleanupResult = cleanupJenkinsAgent(nodeName)
+									echo "✅ Cleanup result: ${cleanupResult.status} for node: ${cleanupResult.nodeName}"
+								} catch (Exception jenkinsCleanupException) {
+									echo "⚠️ Warning: Jenkins agent cleanup failed: ${jenkinsCleanupException.message}"
+								}
+								echo "✅ Pipeline cleanup completed successfully."
+							} catch (Exception terraformException) {
+								echo "⚠️ Warning: Terraform cleanup failed: ${terraformException.message}"
+							}
+						}
+					} else {
+						echo "ℹ️ No EC2 instance IP found, skipping Terraform cleanup"
+					}
+				} catch (Exception cleanupException) {
+					echo "⚠️ Warning: Cleanup encountered an error: ${cleanupException.message}"
+					echo "📋 Continuing with pipeline completion despite cleanup issues..."
+				}
+			}
+		}
 	}
 }
+
