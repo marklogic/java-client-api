@@ -4,6 +4,7 @@
 package com.marklogic.client.datamovement.filter;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.document.*;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.*;
@@ -128,10 +129,22 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 		writeTenDocuments();
 
 		assertNotNull(batchFailure.get());
-		String message = batchFailure.get().getMessage();
-		assertTrue(message.contains("Unable to query for existing incremental write hashes") && message.contains("XDMP-FIELDRIDXNOTFOUND"),
+		assertTrue(batchFailure.get() instanceof FilterException,
+			"If the filter fails, the exception should be wrapped in a FilterException so that WriteBatcher " +
+				"failure listeners can distinguish the difference between a filter failure and a write failure. " +
+				"If the filter fails, there is likely no reason to retry the request. Actual exception class: " + batchFailure.get().getClass());
+
+		FilterException filterException = (FilterException) batchFailure.get();
+		String message = filterException.getMessage();
+		assertTrue(message.startsWith("Unable to apply filter to batch 1; cause: "),
+			"The filter exception message should provide context that the error happened when a filter was applied. " +
+				"Actual message: " + message);
+
+		assertTrue(filterException.getCause() instanceof FailedRequestException);
+		String causeMessage = filterException.getCause().getMessage();
+		assertTrue(causeMessage.contains("Unable to query for existing incremental write hashes") && causeMessage.contains("XDMP-FIELDRIDXNOTFOUND"),
 			"When the user tries to use the incremental write feature without the required range index, we should " +
-				"fail with a helpful error message. Actual message: " + message);
+				"fail with a helpful error message. Actual message: " + causeMessage);
 	}
 
 	@Test

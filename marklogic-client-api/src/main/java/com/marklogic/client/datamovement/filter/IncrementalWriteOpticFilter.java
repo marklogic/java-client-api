@@ -53,6 +53,10 @@ class IncrementalWriteOpticFilter extends IncrementalWriteFilter {
 				}
 			);
 
+			if (logger.isDebugEnabled()) {
+				logger.debug("Retrieved {} existing hashes for batch of size {}", existingHashes.size(), uris.length);
+			}
+
 			return filterDocuments(context, uri -> existingHashes.get(uri));
 		} catch (FailedRequestException e) {
 			String message = "Unable to query for existing incremental write hashes; cause: " + e.getMessage();
