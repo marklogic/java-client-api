@@ -1,12 +1,14 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.datamovement.DocumentWriteSetFilter;
+import com.marklogic.client.datamovement.filter.FilterException;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.impl.IoUtil;
 import com.marklogic.client.io.Format;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,29 +27,36 @@ record BatchWriter(BatchWriteSet batchWriteSet, DocumentWriteSetFilter filter) i
 			return;
 		}
 
-		try {
+		if (logger.isTraceEnabled()) {
 			logger.trace("Begin write batch {} to forest on host '{}'", batchWriteSet.getBatchNumber(), batchWriteSet.getClient().getHost());
+		}
+		
+		DocumentWriteSet documentWriteSet = batchWriteSet.getDocumentWriteSet();
 
-			DocumentWriteSet documentWriteSet = batchWriteSet.getDocumentWriteSet();
-			if (filter != null) {
+		if (filter != null) {
+			try {
 				documentWriteSet = filter.apply(batchWriteSet);
-				if (documentWriteSet == null || documentWriteSet.isEmpty()) {
-					logger.debug("Filter returned empty write set for batch {}, skipping write", batchWriteSet.getBatchNumber());
-					closeAllHandles();
-					return;
-				}
-				batchWriteSet.updateWithFilteredDocumentWriteSet(documentWriteSet);
+			} catch (Exception e) {
+				closeAllHandles();
+				String message = String.format("Unable to apply filter to batch %d; cause: %s", batchWriteSet.getBatchNumber(), e.getMessage());
+				onFailure(new FilterException(message, e));
+				return;
 			}
+			if (documentWriteSet == null || documentWriteSet.isEmpty()) {
+				closeAllHandles();
+				logger.debug("Filter returned empty write set for batch {}, skipping write", batchWriteSet.getBatchNumber());
+				return;
+			}
+			batchWriteSet.updateWithFilteredDocumentWriteSet(documentWriteSet);
+		}
 
+		try {
 			writeDocuments(documentWriteSet);
-
-			// This seems like it should be part of a finally block - but it's able to throw an exception. Which implies
-			// that onFailure() should occur when this fails, which seems odd???
-			closeAllHandles();
-
 			onSuccess();
 		} catch (Throwable t) {
 			onFailure(t);
+		} finally {
+			closeAllHandles();
 		}
 	}
 
@@ -79,21 +88,21 @@ record BatchWriter(BatchWriteSet batchWriteSet, DocumentWriteSetFilter filter) i
 		}
 	}
 
-	private void closeAllHandles() throws Throwable {
-		Throwable lastThrowable = null;
+	/**
+	 * This used to throw a Throwable... but it's not clear what a user would ever do with that if a content handle
+	 * cannot be closed. Instead, this has been altered to use closeQuietly.
+	 */
+	private void closeAllHandles() {
 		for (DocumentWriteOperation doc : batchWriteSet.getDocumentWriteSet()) {
-			try {
-				if (doc.getContent() instanceof Closeable closeable) {
-					closeable.close();
-				}
-				if (doc.getMetadata() instanceof Closeable closeable) {
-					closeable.close();
-				}
-			} catch (Throwable t) {
-				logger.error("Error closing all handles in BatchWriter", t);
-				lastThrowable = t;
+			if (doc == null) {
+				continue;
+			}
+			if (doc.getContent() instanceof Closeable closeable) {
+				IoUtil.closeQuietly(closeable);
+			}
+			if (doc.getMetadata() instanceof Closeable closeable) {
+				IoUtil.closeQuietly(closeable);
 			}
 		}
-		if (lastThrowable != null) throw lastThrowable;
 	}
 }
