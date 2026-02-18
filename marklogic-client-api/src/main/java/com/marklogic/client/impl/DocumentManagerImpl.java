@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -48,24 +48,29 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   static final private Logger logger = LoggerFactory
     .getLogger(DocumentManagerImpl.class);
 
-  private boolean isProcessedMetadataModified = false;
-  final private Set<Metadata> processedMetadata = new HashSet<Metadata>() {
+	// UGH. This state variable is used to track if the user modifies the metadataCategories set. That's because the
+	// default value of "ALL" means something different than if the user sets it to "ALL". Specifically, on a bulk read,
+	// the expectation is that no metadata is retrieved. So if the value is "ALL" and the user didn't set that, we
+	// don't get metadata. But if the value is "ALL" and the user did set that, we get all the metadata. UGH!
+	private boolean isMetadataCategoriesModified;
+
+  final private Set<Metadata> metadataCategories = new HashSet<>() {
     @Override
     public boolean add(Metadata e) {
-      isProcessedMetadataModified = true;
+      isMetadataCategoriesModified = true;
       return super.add(e);
     }
 
     @Override
     public boolean addAll(Collection<? extends Metadata> c) {
-      isProcessedMetadataModified = true;
+      isMetadataCategoriesModified = true;
       return super.addAll(c);
     }
   };
   {
-    processedMetadata.add(Metadata.ALL);
+    metadataCategories.add(Metadata.ALL);
     // we need to know if the user modifies after us
-    isProcessedMetadataModified = false;
+    isMetadataCategoriesModified = false;
   }
 
   private RESTServices services;
@@ -113,24 +118,24 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   @Override
   public void setMetadataCategories(Set<Metadata> categories) {
     clearMetadataCategories();
-    processedMetadata.addAll(categories);
+    metadataCategories.addAll(categories);
   }
 
   @Override
   public void setMetadataCategories(Metadata... categories) {
     clearMetadataCategories();
     for (Metadata category : categories)
-      processedMetadata.add(category);
+      metadataCategories.add(category);
   }
 
   @Override
   public Set<Metadata> getMetadataCategories() {
-    return processedMetadata;
+    return metadataCategories;
   }
 
   @Override
   public void clearMetadataCategories() {
-    processedMetadata.clear();
+    metadataCategories.clear();
   }
 
   @Override
@@ -374,7 +379,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       requestLogger,
       desc,
       transaction,
-      (metadataHandle != null) ? processedMetadata : null,
+      (metadataHandle != null) ? metadataCategories : null,
       mergeTransformParameters((transform != null) ? transform
         : getReadTransform(), extraParams), metadataHandle, contentHandle);
 
@@ -448,7 +453,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       transaction,
       // the default for bulk is no metadata, which differs from the normal
       // default of ALL
-      (isProcessedMetadataModified || !withContent) ? processedMetadata : null,
+      (isMetadataCategoriesModified || !withContent) ? metadataCategories : null,
       nonDocumentFormat,
       mergeTransformParameters((transform != null) ? transform : getReadTransform(), extraParams),
       withContent,
@@ -544,7 +549,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
     // the default for bulk is no metadata, which differs from the normal
     // default of ALL
-    Set<Metadata> metadata = isProcessedMetadataModified ? processedMetadata
+    Set<Metadata> metadata = isMetadataCategoriesModified ? metadataCategories
       : null;
     return services.getBulkDocuments(requestLogger, serverTimestamp, querydef, start,
       getPageLength(), transaction, searchHandle, searchView, metadata,
@@ -943,7 +948,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       requestLogger,
       desc,
       transaction,
-      (metadataHandle != null) ? processedMetadata : null,
+      (metadataHandle != null) ? metadataCategories : null,
       mergeTransformParameters((transform != null) ? transform
         : getWriteTransform(), extraParams), metadataHandle, contentHandle);
   }
@@ -1266,7 +1271,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       requestLogger,
       template,
       transaction,
-      (metadataHandle != null) ? processedMetadata : null,
+      (metadataHandle != null) ? metadataCategories : null,
       mergeTransformParameters((transform != null) ? transform
         : getWriteTransform(), extraParams), metadataHandle, contentHandle);
   }
@@ -1326,7 +1331,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     DocumentPatchHandleImpl builtPatch = (patch instanceof DocumentPatchHandleImpl) ? (DocumentPatchHandleImpl) patch
       : null;
     services.patchDocument(requestLogger, desc, transaction,
-      (builtPatch != null) ? builtPatch.getMetadata() : processedMetadata,
+      (builtPatch != null) ? builtPatch.getMetadata() : metadataCategories,
       (builtPatch != null) ? builtPatch.isOnContent() : true, patch);
   }
 
@@ -1360,7 +1365,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     extraParams = addTemporalParams(extraParams, temporalCollection, temporalDocumentURI, null);
     DocumentPatchHandleImpl builtPatch = (patch instanceof DocumentPatchHandleImpl) ? (DocumentPatchHandleImpl) patch
       : null;
-    services.patchDocument(requestLogger, new DocumentDescriptorImpl(uri, true), transaction, (builtPatch != null) ? builtPatch.getMetadata() : processedMetadata,
+    services.patchDocument(requestLogger, new DocumentDescriptorImpl(uri, true), transaction, (builtPatch != null) ? builtPatch.getMetadata() : metadataCategories,
       (builtPatch != null) ? builtPatch.isOnContent() : true, extraParams, sourceDocumentURI, patch);
   }
 
@@ -1416,7 +1421,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       logger.info("Resetting metadata for {}", uri);
 
     services.deleteDocument(requestLogger,
-      new DocumentDescriptorImpl(uri, true), transaction, processedMetadata,
+      new DocumentDescriptorImpl(uri, true), transaction, metadataCategories,
       getWriteParams());
   }
 
@@ -1433,7 +1438,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     if (uris.length == 0)
       throw new IllegalArgumentException(
               "Resetting document metadata with empty identifier list");
-    services.delete(requestLogger, transaction, processedMetadata, uris);
+    services.delete(requestLogger, transaction, metadataCategories, uris);
   }
 
   @Override

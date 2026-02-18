@@ -17,34 +17,37 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Disabled("See MLE-27191 for description of the server bug")
 class ReadJsonAsBinaryTest extends AbstractClientTest {
 
+	private static final String URI = "/a.json";
+
 	@Test
-	@Disabled("See MLE-27191 for description of the server bug")
-	void test() {
+	void genericDocumentManager() {
 		try (DatabaseClient client = Common.newClient()) {
-			final String uri = "/a.json";
-			writeJsonAsBinary(uri, client);
+			writeJsonAsBinary(URI, client);
+
+			GenericDocumentManager docManager = client.newDocumentManager();
+			// A bulk read works...
+			verifyBulkRead(docManager);
+			// But a request for a single URI does not!
+			verifySingleRead(docManager);
+		}
+	}
+
+	@Test
+	void managerWithModifiedMetadataCategories() {
+		try (DatabaseClient client = Common.newClient()) {
+			writeJsonAsBinary(URI, client);
 
 			GenericDocumentManager docManager = client.newDocumentManager();
 
-			// A multipart request returns the correct document format.
-			try (DocumentPage page = docManager.read(uri)) {
-				DocumentRecord record = page.next();
-				assertEquals(uri, record.getUri());
-				assertEquals("application/json", record.getMimetype());
-				assertEquals(Format.BINARY, record.getFormat());
-			}
+			// With a default manager, metadata shouldn't be read by default, so this should work.
+			verifyBulkRead(docManager);
 
-			// But a request for a single URI does not!
-			try (InputStreamHandle handle = docManager.read(uri, new InputStreamHandle())) {
-				assertEquals("application/json", handle.getMimetype());
-				assertEquals(Format.BINARY, handle.getFormat(), "Unfortunately due to MLE-27191, the " +
-					"format is JSON instead of binary. So this assertion will fail until that bug is fixed. " +
-					"For a Java Client user, the workaround is to use the read method above and get a DocumentPage " +
-					"back, as a multipart response seems to identify the correct headers.");
-			}
-
+			// Setting metadata categories to anything will cause the bug.
+			docManager.setMetadataCategories(DocumentManager.Metadata.PERMISSIONS);
+			verifyBulkRead(docManager);
 		}
 	}
 
@@ -55,5 +58,24 @@ class ReadJsonAsBinaryTest extends AbstractClientTest {
 
 		jsonDocManager.setWriteTransform(new ServerTransform("toBinary"));
 		jsonDocManager.write(uri, metadata, new JacksonHandle(new ObjectMapper().createObjectNode().put("a", 1)));
+	}
+
+	private void verifySingleRead(GenericDocumentManager docManager) {
+		try (InputStreamHandle handle = docManager.read(URI, new InputStreamHandle())) {
+			assertEquals("application/json", handle.getMimetype());
+			assertEquals(Format.BINARY, handle.getFormat(), "Unfortunately due to MLE-27191, the " +
+				"format is JSON instead of binary. So this assertion will fail until that bug is fixed. " +
+				"For a Java Client user, the workaround is to use the read method above and get a DocumentPage " +
+				"back, as a multipart response seems to identify the correct headers.");
+		}
+	}
+
+	private void verifyBulkRead(GenericDocumentManager docManager) {
+		try (DocumentPage page = docManager.read(URI)) {
+			DocumentRecord record = page.next();
+			assertEquals(URI, record.getUri());
+			assertEquals("application/json", record.getMimetype());
+			assertEquals(Format.BINARY, record.getFormat());
+		}
 	}
 }
