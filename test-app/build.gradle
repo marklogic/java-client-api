@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 buildscript {
@@ -24,6 +24,11 @@ plugins {
 }
 
 apply plugin: "com.marklogic.ml-gradle"
+
+// Sometimes, 3 x 20 isn't enough on Jenkins.
+mlWaitTillReady {
+	maxAttempts = 40
+}
 
 dependencies {
 	implementation "io.undertow:undertow-core:2.3.20.Final"
