@@ -150,8 +150,8 @@ pipeline {
 				}
 			}
 			steps {
-				setupDockerMarkLogic("progressofficial/marklogic-db:latest")
-				
+				setupDockerMarkLogic("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi:latest-12")
+
 				sh label: 'run marklogic-client-api tests', script: '''#!/bin/bash
 					export JAVA_HOME=$JAVA_HOME_DIR
 					export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR

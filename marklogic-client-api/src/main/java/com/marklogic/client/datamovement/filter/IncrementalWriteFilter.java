@@ -227,7 +227,7 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		return config;
 	}
 
-	protected final DocumentWriteSet filterDocuments(Context context, Function<String, String> hashRetriever) {
+	protected final DocumentWriteSet filterDocuments(Context context, Function<String, Long> hashRetriever) {
 		final DocumentWriteSet newWriteSet = context.getDatabaseClient().newDocumentManager().newWriteSet();
 		final List<DocumentWriteOperation> skippedDocuments = new ArrayList<>();
 		final String timestamp = Instant.now().toString();
@@ -246,8 +246,8 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 				continue;
 			}
 
-			final String contentHash = computeHash(serializedContent);
-			final String existingHash = hashRetriever.apply(doc.getUri());
+			final long contentHash = computeHash(serializedContent);
+			final Long existingHash = hashRetriever.apply(doc.getUri());
 			if (logger.isTraceEnabled()) {
 				logger.trace("URI: {}, existing Hash: {}, new Hash: {}", doc.getUri(), existingHash, contentHash);
 			}
@@ -317,13 +317,12 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		return trimmed.startsWith("{") || trimmed.startsWith("[");
 	}
 
-	private String computeHash(String content) {
+	private long computeHash(String content) {
 		byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
-		long hash = hashFunction.hashBytes(bytes);
-		return Long.toHexString(hash);
+		return hashFunction.hashBytes(bytes);
 	}
 
-	protected static DocumentWriteOperation addHashToMetadata(DocumentWriteOperation op, String hashKeyName, String hash,
+	protected static DocumentWriteOperation addHashToMetadata(DocumentWriteOperation op, String hashKeyName, long hash,
 															  String timestampKeyName, String timestamp) {
 		DocumentMetadataHandle newMetadata = new DocumentMetadataHandle();
 		if (op.getMetadata() != null) {
@@ -335,7 +334,7 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 			newMetadata.getMetadataValues().putAll(originalMetadata.getMetadataValues());
 		}
 
-		newMetadata.getMetadataValues().put(hashKeyName, hash);
+		newMetadata.getMetadataValues().put(hashKeyName, Long.toUnsignedString(hash));
 		newMetadata.getMetadataValues().put(timestampKeyName, timestamp);
 
 		return new DocumentWriteOperationImpl(op.getUri(), newMetadata, op.getContent(), op.getTemporalDocumentURI());

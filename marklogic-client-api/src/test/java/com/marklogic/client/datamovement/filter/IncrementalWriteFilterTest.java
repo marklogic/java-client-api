@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.datamovement.filter;
 
@@ -35,7 +35,7 @@ class IncrementalWriteFilterTest {
 		DocumentWriteOperation doc2 = new DocumentWriteOperationImpl("/2.xml", metadata, new StringHandle("<doc2/>"));
 
 		final String timestamp = Instant.now().toString();
-		doc2 = IncrementalWriteFilter.addHashToMetadata(doc2, "theField", "abc123", "theTimestamp", timestamp);
+		doc2 = IncrementalWriteFilter.addHashToMetadata(doc2, "theField", 12345, "theTimestamp", timestamp);
 
 		assertEquals(metadata, doc1.getMetadata(), "doc1 should still have the original metadata object");
 
@@ -46,7 +46,7 @@ class IncrementalWriteFilterTest {
 		assertEquals("value1", metadata2.getProperties().get("prop1"), "property should be preserved");
 
 		assertEquals("value1", metadata2.getMetadataValues().get("meta1"), "metadata value should be preserved");
-		assertEquals("abc123", metadata2.getMetadataValues().get("theField"), "hash field should be added");
+		assertEquals("12345", metadata2.getMetadataValues().get("theField"), "hash field should be added");
 		assertEquals(timestamp, metadata2.getMetadataValues().get("theTimestamp"), "timestamp should be added");
 	}
 }

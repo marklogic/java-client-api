@@ -252,6 +252,50 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 	}
 
 	@Test
+	void loadWithEvalFilterThenVerifyOpticFilterSkipsAll() {
+		filter = IncrementalWriteFilter.newBuilder()
+			.useEvalQuery(true)
+			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
+			.build();
+
+		writeTenDocuments();
+		assertEquals(10, writtenCount.get());
+		assertEquals(0, skippedCount.get());
+
+		// Switch to the Optic fromLexicons filter.
+		writtenCount.set(0);
+		skippedCount.set(0);
+		filter = IncrementalWriteFilter.newBuilder()
+			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
+			.build();
+
+		writeTenDocuments();
+		assertEquals(0, writtenCount.get(), "No documents should be written since the hashes stored by the eval " +
+			"filter should be recognized as unchanged by the Optic filter.");
+		assertEquals(10, skippedCount.get());
+	}
+
+	@Test
+	void loadWithOpticFilterThenVerifyEvalFilterSkipsAll() {
+		writeTenDocuments();
+		assertEquals(10, writtenCount.get());
+		assertEquals(0, skippedCount.get());
+
+		// Switch to the eval filter.
+		writtenCount.set(0);
+		skippedCount.set(0);
+		filter = IncrementalWriteFilter.newBuilder()
+			.useEvalQuery(true)
+			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
+			.build();
+
+		writeTenDocuments();
+		assertEquals(0, writtenCount.get(), "No documents should be written since the hashes stored by the Optic " +
+			"filter should be recognized as unchanged by the eval filter.");
+		assertEquals(10, skippedCount.get());
+	}
+
+	@Test
 	void emptyValuesForFromView() {
 		filter = IncrementalWriteFilter.newBuilder()
 			// Empty/null values are ignored, as long as both schema/view are empty/null. This makes life a little
@@ -332,8 +376,8 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 
 			String hash = metadata.getMetadataValues().get("incrementalWriteHash");
 			try {
-				// Can use Java's support for parsing unsigned longs in base 16 to verify the hash is valid.
-				Long.parseUnsignedLong(hash, 16);
+				// Verify the hash is a valid unsigned long in base 10 decimal.
+				Long.parseUnsignedLong(hash);
 			} catch (NumberFormatException e) {
 				fail("Document " + doc.getUri() + " has an invalid incrementalWriteHash value: " + hash);
 			}

@@ -13,7 +13,10 @@ import java.util.Map;
 
 /**
  * Uses an Optic query with fromView to get the existing hash values for a set of URIs from a TDE view.
- * This implementation requires a TDE template to be deployed that extracts the URI and hash metadata.
+ * This implementation requires a TDE template to be deployed that contains at minimum a "uri" column
+ * and a column matching the configured hash key name, plus any other columns desired.
+ * The query uses a {@code where} with a {@code cts.documentQuery} to filter rows by URI, which is
+ * significantly faster than filtering via {@code op.in}.
  *
  * @since 8.1.0
  */
@@ -33,20 +36,22 @@ class IncrementalWriteViewFilter extends IncrementalWriteFilter {
 		RowTemplate rowTemplate = new RowTemplate(context.getDatabaseClient());
 
 		try {
-			Map<String, String> existingHashes = rowTemplate.query(op ->
-					op.fromView(getConfig().getSchemaName(), getConfig().getViewName())
-						.where(op.in(op.col("uri"), op.xs.stringSeq(uris))),
-
+			Map<String, Long> existingHashes = rowTemplate.query(op ->
+					op.fromView(getConfig().getSchemaName(), getConfig().getViewName(), "")
+						.where(op.cts.documentQuery(op.xs.stringSeq(uris)))
+				,
 				rows -> {
-					Map<String, String> map = new HashMap<>();
+					Map<String, Long> map = new HashMap<>();
 					rows.forEach(row -> {
 						String uri = row.getString("uri");
-						String existingHash = row.getString("hash");
-						map.put(uri, existingHash);
+						String hashString = row.getString(getConfig().getHashKeyName());
+						if (hashString != null && !hashString.isEmpty()) {
+							long existingHash = Long.parseUnsignedLong(hashString);
+							map.put(uri, existingHash);
+						}
 					});
 					return map;
-				}
-			);
+				});
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("Retrieved {} existing hashes for batch of size {}", existingHashes.size(), uris.length);
