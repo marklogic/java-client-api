@@ -224,15 +224,13 @@
 			"invalid-values": "reject"
 		},
 		{
-			"scalar-type": "string",
-			"collation": "http://marklogic.com/collation/",
+			"scalar-type": "unsignedLong",
 			"field-name": "incrementalWriteHash",
 			"range-value-positions": false,
 			"invalid-values": "reject"
 		},
 		{
-			"scalar-type": "string",
-			"collation": "http://marklogic.com/collation/",
+			"scalar-type": "unsignedLong",
 			"field-name": "myWriteHash",
 			"range-value-positions": false,
 			"invalid-values": "reject"

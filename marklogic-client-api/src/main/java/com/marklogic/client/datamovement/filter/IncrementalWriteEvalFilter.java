@@ -19,11 +19,16 @@ import com.marklogic.client.io.JacksonHandle;
  */
 class IncrementalWriteEvalFilter extends IncrementalWriteFilter {
 
+	// The hash value is cast to a String based on this analysis from Copilot:
+	// "The hash field index is xs:unsignedLong, which JavaScript represents as an
+	// IEEE 754 double. To avoid loss of precision for large integers (e.g., above
+	// 2^53−1), the value is converted to a String in JavaScript and then parsed
+	// back to an unsigned long when it is read from the JSON response."
 	private static final String EVAL_SCRIPT = """
 		const tuples = cts.valueTuples([cts.uriReference(), cts.fieldReference(hashKeyName)], null, cts.documentQuery(uris));
 		const response = {};
 		for (var tuple of tuples) {
-		  response[tuple[0]] = tuple[1];
+		  response[tuple[0]] = String(tuple[1]);
 		}
 		response
 		""";
@@ -49,7 +54,7 @@ class IncrementalWriteEvalFilter extends IncrementalWriteFilter {
 
 			return filterDocuments(context, uri -> {
 				if (response.has(uri)) {
-					return response.get(uri).asText();
+					return Long.parseUnsignedLong(response.get(uri).asText());
 				}
 				return null;
 			});

@@ -13,8 +13,8 @@
 						"val": "xdmp:node-uri(.)"
 					},
 					{
-						"name": "hash",
-						"scalarType": "string",
+						"name": "incrementalWriteHash",
+						"scalarType": "unsignedLong",
 						"val": "xdmp:node-metadata-value(., 'incrementalWriteHash')",
 						"nullable": true
 					}

@@ -34,7 +34,7 @@ class IncrementalWriteOpticFilter extends IncrementalWriteFilter {
 		RowTemplate rowTemplate = new RowTemplate(context.getDatabaseClient());
 
 		try {
-			Map<String, String> existingHashes = rowTemplate.query(op ->
+			Map<String, Long> existingHashes = rowTemplate.query(op ->
 					op.fromLexicons(Map.of(
 						"uri", op.cts.uriReference(),
 						"hash", op.cts.fieldReference(getConfig().getHashKeyName())
@@ -43,10 +43,10 @@ class IncrementalWriteOpticFilter extends IncrementalWriteFilter {
 					),
 
 				rows -> {
-					Map<String, String> map = new HashMap<>();
+					Map<String, Long> map = new HashMap<>();
 					rows.forEach(row -> {
 						String uri = row.getString("uri");
-						String existingHash = row.getString("hash");
+						long existingHash = Long.parseUnsignedLong(row.getString("hash"));
 						map.put(uri, existingHash);
 					});
 					return map;
