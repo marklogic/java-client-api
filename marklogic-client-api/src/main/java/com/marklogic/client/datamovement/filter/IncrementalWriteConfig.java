@@ -14,17 +14,10 @@ import java.util.function.Consumer;
  *
  * @since 8.1.0
  */
-public class IncrementalWriteConfig {
-
-	private final String hashKeyName;
-	private final String timestampKeyName;
-	private final boolean canonicalizeJson;
-	private final Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer;
-	private final String[] jsonExclusions;
-	private final String[] xmlExclusions;
-	private final Map<String, String> xmlNamespaces;
-	private final String schemaName;
-	private final String viewName;
+public record IncrementalWriteConfig(String hashKeyName, String timestampKeyName, boolean canonicalizeJson,
+									 Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer,
+									 String[] jsonExclusions, String[] xmlExclusions, Map<String, String> xmlNamespaces,
+									 String schemaName, String viewName) {
 
 	public IncrementalWriteConfig(String hashKeyName, String timestampKeyName, boolean canonicalizeJson,
 								  Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer,
@@ -41,39 +34,11 @@ public class IncrementalWriteConfig {
 		this.viewName = viewName;
 	}
 
-	public String getHashKeyName() {
-		return hashKeyName;
-	}
 
-	public String getTimestampKeyName() {
-		return timestampKeyName;
-	}
-
-	public boolean isCanonicalizeJson() {
-		return canonicalizeJson;
-	}
-
-	public Consumer<DocumentWriteOperation[]> getSkippedDocumentsConsumer() {
-		return skippedDocumentsConsumer;
-	}
-
-	public String[] getJsonExclusions() {
-		return jsonExclusions;
-	}
-
-	public String[] getXmlExclusions() {
-		return xmlExclusions;
-	}
-
-	public Map<String, String> getXmlNamespaces() {
+	@Override
+	public Map<String, String> xmlNamespaces() {
 		return xmlNamespaces != null ? xmlNamespaces : Collections.emptyMap();
 	}
 
-	public String getSchemaName() {
-		return schemaName;
-	}
 
-	public String getViewName() {
-		return viewName;
-	}
 }
