@@ -31,7 +31,7 @@ class IncrementalWriteFromLexiconsFilter extends IncrementalWriteFilter {
 			Map<String, Long> existingHashes = new RowTemplate(context.getDatabaseClient()).query(op ->
 					op.fromLexicons(Map.of(
 						"uri", op.cts.uriReference(),
-						"hash", op.cts.fieldReference(getConfig().hashKeyName())
+						"hash", op.cts.fieldReference(getConfig().getHashKeyName())
 					)).where(
 						op.cts.documentQuery(op.xs.stringSeq(uris))
 					),

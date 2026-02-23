@@ -29,14 +29,14 @@ class IncrementalWriteFromViewFilter extends IncrementalWriteFilter {
 
 		try {
 			Map<String, Long> existingHashes = new RowTemplate(context.getDatabaseClient()).query(op ->
-					op.fromView(getConfig().schemaName(), getConfig().viewName(), "")
+					op.fromView(getConfig().getSchemaName(), getConfig().getViewName(), "")
 						.where(op.cts.documentQuery(op.xs.stringSeq(uris)))
 				,
 				rows -> {
 					Map<String, Long> map = new HashMap<>();
 					rows.forEach(row -> {
 						String uri = row.getString("uri");
-						String hashString = row.getString(getConfig().hashKeyName());
+						String hashString = row.getString(getConfig().getHashKeyName());
 						if (hashString != null && !hashString.isEmpty()) {
 							long existingHash = Long.parseUnsignedLong(hashString);
 							map.put(uri, existingHash);
@@ -51,7 +51,8 @@ class IncrementalWriteFromViewFilter extends IncrementalWriteFilter {
 
 			return filterDocuments(context, uri -> existingHashes.get(uri));
 		} catch (FailedRequestException e) {
-			String message = "Unable to query for existing incremental write hashes from view " + getConfig().schemaName() + "." + getConfig().viewName() + "; cause: " + e.getMessage();
+			String message = "Unable to query for existing incremental write hashes from view "
+				+ getConfig().getSchemaName() + "." + getConfig().getViewName() + "; cause: " + e.getMessage();
 			throw new FailedRequestException(message, e.getFailedRequest());
 		}
 	}
