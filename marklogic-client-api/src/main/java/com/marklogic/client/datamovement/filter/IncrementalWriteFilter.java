@@ -48,7 +48,6 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		private String hashKeyName = "incrementalWriteHash";
 		private String timestampKeyName = "incrementalWriteTimestamp";
 		private boolean canonicalizeJson = true;
-		private boolean useEvalQuery = false;
 		private Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer;
 		private String[] jsonExclusions;
 		private String[] xmlExclusions;
@@ -84,14 +83,6 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		 */
 		public Builder canonicalizeJson(boolean canonicalizeJson) {
 			this.canonicalizeJson = canonicalizeJson;
-			return this;
-		}
-
-		/**
-		 * @param useEvalQuery if true, evaluate server-side JavaScript instead of an Optic query for retrieving hash values; defaults to false.
-		 */
-		public Builder useEvalQuery(boolean useEvalQuery) {
-			this.useEvalQuery = useEvalQuery;
 			return this;
 		}
 
@@ -161,12 +152,9 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 				skippedDocumentsConsumer, jsonExclusions, xmlExclusions, xmlNamespaces, schemaName, viewName);
 
 			if (schemaName != null && viewName != null) {
-				return new IncrementalWriteViewFilter(config);
+				return new IncrementalWriteFromViewFilter(config);
 			}
-			if (useEvalQuery) {
-				return new IncrementalWriteEvalFilter(config);
-			}
-			return new IncrementalWriteOpticFilter(config);
+			return new IncrementalWriteFromLexiconsFilter(config);
 		}
 
 		private void validateJsonExclusions() {
@@ -254,19 +242,19 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 
 			if (existingHash != null) {
 				if (!existingHash.equals(contentHash)) {
-					newWriteSet.add(addHashToMetadata(doc, config.getHashKeyName(), contentHash, config.getTimestampKeyName(), timestamp));
-				} else if (config.getSkippedDocumentsConsumer() != null) {
+					newWriteSet.add(addHashToMetadata(doc, config.hashKeyName(), contentHash, config.timestampKeyName(), timestamp));
+				} else if (config.skippedDocumentsConsumer() != null) {
 					skippedDocuments.add(doc);
 				} else {
 					// No consumer, so skip the document silently.
 				}
 			} else {
-				newWriteSet.add(addHashToMetadata(doc, config.getHashKeyName(), contentHash, config.getTimestampKeyName(), timestamp));
+				newWriteSet.add(addHashToMetadata(doc, config.hashKeyName(), contentHash, config.timestampKeyName(), timestamp));
 			}
 		}
 
-		if (!skippedDocuments.isEmpty() && config.getSkippedDocumentsConsumer() != null) {
-			config.getSkippedDocumentsConsumer().accept(skippedDocuments.toArray(new DocumentWriteOperation[0]));
+		if (!skippedDocuments.isEmpty() && config.skippedDocumentsConsumer() != null) {
+			config.skippedDocumentsConsumer().accept(skippedDocuments.toArray(new DocumentWriteOperation[0]));
 		}
 
 		return newWriteSet;
@@ -283,11 +271,11 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 			format = baseHandle.getFormat();
 		}
 
-		if (config.isCanonicalizeJson() && (Format.JSON.equals(format) || isPossiblyJsonContent(content))) {
+		if (config.canonicalizeJson() && (Format.JSON.equals(format) || isPossiblyJsonContent(content))) {
 			JsonCanonicalizer jc;
 			try {
-				if (config.getJsonExclusions() != null && config.getJsonExclusions().length > 0) {
-					content = ContentExclusionUtil.applyJsonExclusions(doc.getUri(), content, config.getJsonExclusions());
+				if (config.jsonExclusions() != null && config.jsonExclusions().length > 0) {
+					content = ContentExclusionUtil.applyJsonExclusions(doc.getUri(), content, config.jsonExclusions());
 				}
 				jc = new JsonCanonicalizer(content);
 				return jc.getEncodedString();
@@ -298,9 +286,9 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 				logger.warn("Unable to canonicalize JSON content for URI {}, using original content for hashing; cause: {}",
 					doc.getUri(), e.getMessage());
 			}
-		} else if (config.getXmlExclusions() != null && config.getXmlExclusions().length > 0) {
+		} else if (config.xmlExclusions() != null && config.xmlExclusions().length > 0) {
 			try {
-				content = ContentExclusionUtil.applyXmlExclusions(doc.getUri(), content, config.getXmlNamespaces(), config.getXmlExclusions());
+				content = ContentExclusionUtil.applyXmlExclusions(doc.getUri(), content, config.xmlNamespaces(), config.xmlExclusions());
 			} catch (Exception e) {
 				logger.warn("Unable to apply XML exclusions for URI {}, using original content for hashing; cause: {}",
 					doc.getUri(), e.getMessage());
@@ -341,4 +329,10 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 	}
 
 
+	protected static String[] getUrisInBatch(DocumentWriteSet writeSet) {
+		return writeSet.stream()
+			.filter(op -> DocumentWriteOperation.OperationType.DOCUMENT_WRITE.equals(op.getOperationType()))
+			.map(DocumentWriteOperation::getUri)
+			.toArray(String[]::new);
+	}
 }

@@ -12,32 +12,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Uses an Optic query to get the existing hash values for a set of URIs.
+ * Uses an Optic fromLexicons query that depends on a field range index to retrieve URIs and
+ * hash values.
  *
  * @since 8.1.0
  */
-class IncrementalWriteOpticFilter extends IncrementalWriteFilter {
+class IncrementalWriteFromLexiconsFilter extends IncrementalWriteFilter {
 
-	IncrementalWriteOpticFilter(IncrementalWriteConfig config) {
+	IncrementalWriteFromLexiconsFilter(IncrementalWriteConfig config) {
 		super(config);
 	}
 
 	@Override
 	public DocumentWriteSet apply(Context context) {
-		final String[] uris = context.getDocumentWriteSet().stream()
-			.filter(op -> DocumentWriteOperation.OperationType.DOCUMENT_WRITE.equals(op.getOperationType()))
-			.map(DocumentWriteOperation::getUri)
-			.toArray(String[]::new);
-
-		// It doesn't seem possible yet to use a DSL query and bind an array of strings to a "uris" param, so using
-		// a serialized query instead. That doesn't allow a user to override the query though.
-		RowTemplate rowTemplate = new RowTemplate(context.getDatabaseClient());
+		final String[] uris = getUrisInBatch(context.getDocumentWriteSet());
 
 		try {
-			Map<String, Long> existingHashes = rowTemplate.query(op ->
+			Map<String, Long> existingHashes = new RowTemplate(context.getDatabaseClient()).query(op ->
 					op.fromLexicons(Map.of(
 						"uri", op.cts.uriReference(),
-						"hash", op.cts.fieldReference(getConfig().getHashKeyName())
+						"hash", op.cts.fieldReference(getConfig().hashKeyName())
 					)).where(
 						op.cts.documentQuery(op.xs.stringSeq(uris))
 					),

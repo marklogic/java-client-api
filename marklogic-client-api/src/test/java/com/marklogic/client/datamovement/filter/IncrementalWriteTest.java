@@ -24,16 +24,6 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 	}
 
 	@Test
-	void evalFilter() {
-		filter = IncrementalWriteFilter.newBuilder()
-			.useEvalQuery(true)
-			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
-			.build();
-
-		verifyIncrementalWriteWorks();
-	}
-
-	@Test
 	void jsonKeysOutOfOrder() {
 		for (int i = 1; i <= 10; i++) {
 			ObjectNode doc = objectMapper.createObjectNode();
@@ -148,22 +138,6 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 	}
 
 	@Test
-	void noRangeIndexForFieldWithEval() {
-		filter = IncrementalWriteFilter.newBuilder()
-			.hashKeyName("non-existent-field")
-			.useEvalQuery(true)
-			.build();
-
-		writeTenDocuments();
-
-		assertNotNull(batchFailure.get());
-		String message = batchFailure.get().getMessage();
-		assertTrue(message.contains("Unable to query for existing incremental write hashes") && message.contains("XDMP-FIELDRIDXNOTFOUND"),
-			"When the user tries to use the incremental write feature without the required range index, we should " +
-				"fail with a helpful error message. Actual message: " + message);
-	}
-
-	@Test
 	void customTimestampKeyName() {
 		filter = IncrementalWriteFilter.newBuilder()
 			.hashKeyName("myWriteHash")
@@ -252,9 +226,9 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 	}
 
 	@Test
-	void loadWithEvalFilterThenVerifyOpticFilterSkipsAll() {
+	void loadWithViewFilterThenVerifyLexiconFilterSkipsAll() {
 		filter = IncrementalWriteFilter.newBuilder()
-			.useEvalQuery(true)
+			.fromView("javaClient", "incrementalWriteHash")
 			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
 			.build();
 
@@ -276,16 +250,16 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 	}
 
 	@Test
-	void loadWithOpticFilterThenVerifyEvalFilterSkipsAll() {
+	void loadWithLexiconsFilterThenVerifyViewFilterSkipsAll() {
 		writeTenDocuments();
 		assertEquals(10, writtenCount.get());
 		assertEquals(0, skippedCount.get());
 
-		// Switch to the eval filter.
+		// Switch to the fromView filter.
 		writtenCount.set(0);
 		skippedCount.set(0);
 		filter = IncrementalWriteFilter.newBuilder()
-			.useEvalQuery(true)
+			.fromView("javaClient", "incrementalWriteHash")
 			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
 			.build();
 
