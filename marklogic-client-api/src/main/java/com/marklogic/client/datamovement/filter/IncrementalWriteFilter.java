@@ -46,7 +46,7 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 	public static class Builder {
 
 		private String hashKeyName = "incrementalWriteHash";
-		private String timestampKeyName = "incrementalWriteTimestamp";
+		private String timestampKeyName;
 		private boolean canonicalizeJson = true;
 		private Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer;
 		private String[] jsonExclusions;
@@ -67,13 +67,11 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		}
 
 		/**
-		 * @param keyName the name of the MarkLogic metadata key that will hold the timestamp value; defaults to "incrementalWriteTimestamp".
+		 * @param keyName the name of the MarkLogic metadata key that will hold the timestamp value;
+		 *                defaults to null, which means no timestamp will be stored.
 		 */
 		public Builder timestampKeyName(String keyName) {
-			// Don't let user shoot themselves in the foot with an empty key name.
-			if (keyName != null && !keyName.trim().isEmpty()) {
-				this.timestampKeyName = keyName;
-			}
+			this.timestampKeyName = keyName;
 			return this;
 		}
 
@@ -323,7 +321,9 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		}
 
 		newMetadata.getMetadataValues().put(hashKeyName, Long.toUnsignedString(hash));
-		newMetadata.getMetadataValues().put(timestampKeyName, timestamp);
+		if (timestampKeyName != null && !timestampKeyName.trim().isEmpty()) {
+			newMetadata.getMetadataValues().put(timestampKeyName, timestamp);
+		}
 
 		return new DocumentWriteOperationImpl(op.getUri(), newMetadata, op.getContent(), op.getTemporalDocumentURI());
 	}

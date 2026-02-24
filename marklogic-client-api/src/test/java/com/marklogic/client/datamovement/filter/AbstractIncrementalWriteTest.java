@@ -37,6 +37,7 @@ abstract class AbstractIncrementalWriteTest extends AbstractClientTest {
 		// Default filter implementation, should be suitable for most tests.
 		filter = IncrementalWriteFilter.newBuilder()
 			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
+			.timestampKeyName("incrementalWriteTimestamp")
 			.build();
 	}
 

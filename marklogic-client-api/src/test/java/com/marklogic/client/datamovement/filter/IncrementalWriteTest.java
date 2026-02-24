@@ -157,7 +157,8 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 
 	/**
 	 * The thought for this test is that if the user passes null in (which could happen via our Spark connector),
-	 * they're breaking the feature. So don't let them do that - ignore null and use the default values.
+	 * they're breaking the feature. So don't let them do that - ignore null and use the default value for the hash
+	 * key name - but null is still valid for the timestamp key name as that's an optional value to set.
 	 */
 	@Test
 	void nullIsIgnoredForKeyNames() {
@@ -172,7 +173,7 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 			new DocumentMetadataHandle());
 
 		assertNotNull(metadata.getMetadataValues().get("incrementalWriteHash"));
-		assertNotNull(metadata.getMetadataValues().get("incrementalWriteTimestamp"));
+		assertFalse(metadata.getMetadataValues().containsKey("incrementalWriteTimestamp"));
 	}
 
 	@Test
@@ -219,6 +220,7 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 	void fromView() {
 		filter = IncrementalWriteFilter.newBuilder()
 			.fromView("javaClient", "incrementalWriteHash")
+			.timestampKeyName("incrementalWriteTimestamp")
 			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
 			.build();
 
@@ -275,6 +277,7 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 			// Empty/null values are ignored, as long as both schema/view are empty/null. This makes life a little
 			// easier for a connector in that the connector does not need to check for empty/null values.
 			.fromView("", null)
+			.timestampKeyName("incrementalWriteTimestamp")
 			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
 			.build();
 
