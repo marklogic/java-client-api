@@ -33,15 +33,24 @@ class RetryContext {
 	}
 
 	boolean shouldContinueRetrying(int minAttempts, int maxDelay) {
+		// Stop retrying if thread has been interrupted
+		if (Thread.currentThread().isInterrupted()) {
+			return false;
+		}
 		return retry < minAttempts || (System.currentTimeMillis() - startTime) < maxDelay;
 	}
 
-	void sleepIfNeeded() throws InterruptedException {
+	void sleepIfNeeded() {
 		if (nextDelay > 0) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Retrying request after {} ms delay (attempt {})", nextDelay, retry);
 			}
-			Thread.sleep(nextDelay);
+			try {
+				Thread.sleep(nextDelay);
+			} catch (InterruptedException e) {
+				// Restore interrupt status for higher-level cancellation/shutdown logic
+				Thread.currentThread().interrupt();
+			}
 		}
 	}
 
