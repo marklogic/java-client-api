@@ -515,20 +515,18 @@ public class OkHttpServices implements RESTServices {
 	private Response sendRequestWithRetry(
 		Request.Builder requestBldr, boolean isRetryable, Function<Request.Builder, Response> doFunction, Consumer<Boolean> resendableConsumer
 	) {
+		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::checkFirstRequest);
 		Response response = null;
 		int status = -1;
-		long startTime = System.currentTimeMillis();
-		int nextDelay = 0;
-		int retry = 0;
+
 		/*
 		 * This loop is for retrying the request if the service is unavailable
 		 */
-		for (; retry < minRetryAttempts || (System.currentTimeMillis() - startTime) < maxDelayForRetries; retry++) {
-			if (nextDelay > 0) {
-				try {
-					Thread.sleep(nextDelay);
-				} catch (InterruptedException e) {
-				}
+		for (; retryContext.shouldContinueRetrying(minRetryAttempts, maxDelayForRetries); retryContext.incrementRetry()) {
+			try {
+				retryContext.sleepIfNeeded();
+			} catch (InterruptedException e) {
+				// Ignore interruption
 			}
 
 			/*
@@ -567,19 +565,15 @@ public class OkHttpServices implements RESTServices {
 			/*
 			 * Calculate the delay before which we shouldn't retry
 			 */
-			nextDelay = Math.max(getRetryAfterTime(response), calculateDelay(retry));
+			retryContext.calculateNextDelay(getRetryAfterTime(response), calculateDelay(retryContext.getRetry()));
 		}
 		/*
 		 * If the service is still unavailable after all the retries, we throw a
 		 * FailedRetryException indicating that the service is unavailable.
 		 */
 		if (RETRYABLE_STATUS_CODES.contains(status)) {
-			checkFirstRequest();
 			closeResponse(response);
-			throw new FailedRetryException(
-				"Service unavailable and maximum retry period elapsed: " +
-					((System.currentTimeMillis() - startTime) / 1000) +
-					" seconds after " + retry + " retries");
+			retryContext.throwIfMaxRetriesExceeded(status);
 		}
 		/*
 		 * Once we break from the retry loop, we just return the Response
@@ -1197,18 +1191,15 @@ public class OkHttpServices implements RESTServices {
 		}
 		boolean isResendable = handleBase.isResendable();
 
+		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::checkFirstRequest);
 		Response response = null;
 		int status = -1;
 		Headers responseHeaders = null;
-		long startTime = System.currentTimeMillis();
-		int nextDelay = 0;
-		int retry = 0;
-		for (; retry < minRetryAttempts || (System.currentTimeMillis() - startTime) < maxDelayForRetries; retry++) {
-			if (nextDelay > 0) {
-				try {
-					Thread.sleep(nextDelay);
-				} catch (InterruptedException e) {
-				}
+		for (; retryContext.shouldContinueRetrying(minRetryAttempts, maxDelayForRetries); retryContext.incrementRetry()) {
+			try {
+				retryContext.sleepIfNeeded();
+			} catch (InterruptedException e) {
+				// Ignore interruption
 			}
 
 			Object value = handleBase.sendContent();
@@ -1218,8 +1209,11 @@ public class OkHttpServices implements RESTServices {
 			}
 
 			if (isFirstRequest() && !isResendable && isStreaming(value)) {
-				nextDelay = makeFirstRequest(retry);
-				if (nextDelay != 0) continue;
+				int firstRequestDelay = makeFirstRequest(retryContext.getRetry());
+				if (firstRequestDelay != 0) {
+					retryContext.calculateNextDelay(0, firstRequestDelay);
+					continue;
+				}
 			}
 
 			MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
@@ -1260,15 +1254,11 @@ public class OkHttpServices implements RESTServices {
 			}
 
 			int retryAfter = Utilities.parseInt(retryAfterRaw);
-			nextDelay = Math.max(retryAfter, calculateDelay(retry));
+			retryContext.calculateNextDelay(retryAfter, calculateDelay(retryContext.getRetry()));
 		}
 		if (RETRYABLE_STATUS_CODES.contains(status)) {
-			checkFirstRequest();
 			closeResponse(response);
-			throw new FailedRetryException(
-				"Service unavailable and maximum retry period elapsed: " +
-					((System.currentTimeMillis() - startTime) / 1000) +
-					" seconds after " + retry + " retries");
+			retryContext.throwIfMaxRetriesExceeded(status);
 		}
 		if (status == STATUS_NOT_FOUND) {
 			throw new ResourceNotFoundException(
@@ -1358,18 +1348,15 @@ public class OkHttpServices implements RESTServices {
 			requestBldr = addVersionHeader(desc, requestBldr, "If-Match");
 		}
 
+		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::checkFirstRequest);
 		Response response = null;
 		int status = -1;
 		Headers responseHeaders = null;
-		long startTime = System.currentTimeMillis();
-		int nextDelay = 0;
-		int retry = 0;
-		for (; retry < minRetryAttempts || (System.currentTimeMillis() - startTime) < maxDelayForRetries; retry++) {
-			if (nextDelay > 0) {
-				try {
-					Thread.sleep(nextDelay);
-				} catch (InterruptedException e) {
-				}
+		for (; retryContext.shouldContinueRetrying(minRetryAttempts, maxDelayForRetries); retryContext.incrementRetry()) {
+			try {
+				retryContext.sleepIfNeeded();
+			} catch (InterruptedException e) {
+				// Ignore interruption
 			}
 
 			MultipartBody.Builder multiPart = new MultipartBody.Builder();
@@ -1378,8 +1365,11 @@ public class OkHttpServices implements RESTServices {
 				new AbstractWriteHandle[]{metadataHandle, contentHandle});
 
 			if (isFirstRequest() && hasStreamingPart) {
-				nextDelay = makeFirstRequest(retry);
-				if (nextDelay != 0) continue;
+				int firstRequestDelay = makeFirstRequest(retryContext.getRetry());
+				if (firstRequestDelay != 0) {
+					retryContext.calculateNextDelay(0, firstRequestDelay);
+					continue;
+				}
 			}
 
 			requestBldr = ("put".equals(method)) ? requestBldr.put(multiPart.build()) : requestBldr.post(multiPart.build());
@@ -1402,15 +1392,11 @@ public class OkHttpServices implements RESTServices {
 			}
 
 			int retryAfter = Utilities.parseInt(retryAfterRaw);
-			nextDelay = Math.max(retryAfter, calculateDelay(retry));
+			retryContext.calculateNextDelay(retryAfter, calculateDelay(retryContext.getRetry()));
 		}
 		if (RETRYABLE_STATUS_CODES.contains(status)) {
-			checkFirstRequest();
 			closeResponse(response);
-			throw new FailedRetryException(
-				"Service unavailable and maximum retry period elapsed: " +
-					((System.currentTimeMillis() - startTime) / 1000) +
-					" seconds after " + retry + " retries");
+			retryContext.throwIfMaxRetriesExceeded(status);
 		}
 		if (status == STATUS_NOT_FOUND) {
 			closeResponse(response);
@@ -2126,17 +2112,14 @@ public class OkHttpServices implements RESTServices {
 		}
 
 		Response getResponse() {
+			RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, OkHttpServices.this::checkFirstRequest);
 			Response response = null;
 			int status = -1;
-			long startTime = System.currentTimeMillis();
-			int nextDelay = 0;
-			int retry = 0;
-			for (; retry < minRetryAttempts || (System.currentTimeMillis() - startTime) < maxDelayForRetries; retry++) {
-				if (nextDelay > 0) {
-					try {
-						Thread.sleep(nextDelay);
-					} catch (InterruptedException e) {
-					}
+			for (; retryContext.shouldContinueRetrying(minRetryAttempts, maxDelayForRetries); retryContext.incrementRetry()) {
+				try {
+					retryContext.sleepIfNeeded();
+				} catch (InterruptedException e) {
+					// Ignore interruption
 				}
 
 				if (queryDef instanceof StructuredQueryDefinition && !(queryDef instanceof RawQueryDefinition)) {
@@ -2171,15 +2154,11 @@ public class OkHttpServices implements RESTServices {
 
 				closeResponse(response);
 
-				nextDelay = Math.max(retryAfter, calculateDelay(retry));
+				retryContext.calculateNextDelay(retryAfter, calculateDelay(retryContext.getRetry()));
 			}
 			if (RETRYABLE_STATUS_CODES.contains(status)) {
-				checkFirstRequest();
 				closeResponse(response);
-				throw new FailedRetryException(
-					"Service unavailable and maximum retry period elapsed: " +
-						((System.currentTimeMillis() - startTime) / 1000) +
-						" seconds after " + retry + " retries");
+				retryContext.throwIfMaxRetriesExceeded(status);
 			}
 			if (status == STATUS_NOT_FOUND) {
 				closeResponse(response);
@@ -2665,17 +2644,14 @@ public class OkHttpServices implements RESTServices {
 		String connectPath = null;
 		Request.Builder requestBldr = null;
 
+		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::checkFirstRequest);
 		Response response = null;
 		int status = -1;
-		long startTime = System.currentTimeMillis();
-		int nextDelay = 0;
-		int retry = 0;
-		for (; retry < minRetryAttempts || (System.currentTimeMillis() - startTime) < maxDelayForRetries; retry++) {
-			if (nextDelay > 0) {
-				try {
-					Thread.sleep(nextDelay);
-				} catch (InterruptedException e) {
-				}
+		for (; retryContext.shouldContinueRetrying(minRetryAttempts, maxDelayForRetries); retryContext.incrementRetry()) {
+			try {
+				retryContext.sleepIfNeeded();
+			} catch (InterruptedException e) {
+				// Ignore interruption
 			}
 
 			Object nextValue = (handle != null) ? handle.sendContent() : value;
@@ -2685,7 +2661,7 @@ public class OkHttpServices implements RESTServices {
 				sentValue = new StreamingOutputImpl(
 					(OutputStreamSender) nextValue, reqlog, mediaType);
 			} else {
-				if (reqlog != null && retry == 0) {
+				if (reqlog != null && retryContext.getRetry() == 0) {
 					sentValue = new ObjectRequestBody(reqlog.copyContent(nextValue), mediaType);
 				} else {
 					sentValue = new ObjectRequestBody(nextValue, mediaType);
@@ -2697,8 +2673,11 @@ public class OkHttpServices implements RESTServices {
 			boolean isResendable = (handle == null) ? !isStreaming : handle.isResendable();
 
 			if (isFirstRequest() && !isResendable && isStreaming) {
-				nextDelay = makeFirstRequest(retry);
-				if (nextDelay != 0) continue;
+				int firstRequestDelay = makeFirstRequest(retryContext.getRetry());
+				if (firstRequestDelay != 0) {
+					retryContext.calculateNextDelay(0, firstRequestDelay);
+					continue;
+				}
 			}
 
 			if ("put".equals(method)) {
@@ -2747,15 +2726,11 @@ public class OkHttpServices implements RESTServices {
 			}
 
 			int retryAfter = Utilities.parseInt(retryAfterRaw);
-			nextDelay = Math.max(retryAfter, calculateDelay(retry));
+			retryContext.calculateNextDelay(retryAfter, calculateDelay(retryContext.getRetry()));
 		}
 		if (RETRYABLE_STATUS_CODES.contains(status)) {
-			checkFirstRequest();
 			closeResponse(response);
-			throw new FailedRetryException(
-				"Service unavailable and maximum retry period elapsed: " +
-					((System.currentTimeMillis() - startTime) / 1000) +
-					" seconds after " + retry + " retries");
+			retryContext.throwIfMaxRetriesExceeded(status);
 		}
 		if (status == STATUS_FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to write "
@@ -3098,17 +3073,14 @@ public class OkHttpServices implements RESTServices {
 		String outputMimetype = outputBase.getMimetype();
 		Class as = outputBase.receiveAs();
 
+		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::checkFirstRequest);
 		Response response = null;
 		int status = -1;
-		long startTime = System.currentTimeMillis();
-		int nextDelay = 0;
-		int retry = 0;
-		for (; retry < minRetryAttempts || (System.currentTimeMillis() - startTime) < maxDelayForRetries; retry++) {
-			if (nextDelay > 0) {
-				try {
-					Thread.sleep(nextDelay);
-				} catch (InterruptedException e) {
-				}
+		for (; retryContext.shouldContinueRetrying(minRetryAttempts, maxDelayForRetries); retryContext.incrementRetry()) {
+			try {
+				retryContext.sleepIfNeeded();
+			} catch (InterruptedException e) {
+				// Ignore interruption
 			}
 
 			MultipartBody.Builder multiPart = new MultipartBody.Builder();
@@ -3137,15 +3109,11 @@ public class OkHttpServices implements RESTServices {
 			}
 
 			int retryAfter = Utilities.parseInt(retryAfterRaw);
-			nextDelay = Math.max(retryAfter, calculateDelay(retry));
+			retryContext.calculateNextDelay(retryAfter, calculateDelay(retryContext.getRetry()));
 		}
 		if (RETRYABLE_STATUS_CODES.contains(status)) {
-			checkFirstRequest();
 			closeResponse(response);
-			throw new FailedRetryException(
-				"Service unavailable and maximum retry period elapsed: " +
-					((System.currentTimeMillis() - startTime) / 1000) +
-					" seconds after " + retry + " retries");
+			retryContext.throwIfMaxRetriesExceeded(status);
 		}
 
 		checkStatus(response, status, "write", "resource", path,
@@ -3272,17 +3240,14 @@ public class OkHttpServices implements RESTServices {
 		String outputMimetype = outputBase != null ? outputBase.getMimetype() : null;
 		Class as = outputBase != null ? outputBase.receiveAs() : null;
 
+		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::checkFirstRequest);
 		Response response = null;
 		int status = -1;
-		long startTime = System.currentTimeMillis();
-		int nextDelay = 0;
-		int retry = 0;
-		for (; retry < minRetryAttempts || (System.currentTimeMillis() - startTime) < maxDelayForRetries; retry++) {
-			if (nextDelay > 0) {
-				try {
-					Thread.sleep(nextDelay);
-				} catch (InterruptedException e) {
-				}
+		for (; retryContext.shouldContinueRetrying(minRetryAttempts, maxDelayForRetries); retryContext.incrementRetry()) {
+			try {
+				retryContext.sleepIfNeeded();
+			} catch (InterruptedException e) {
+				// Ignore interruption
 			}
 
 			MultipartBody.Builder multiPart = new MultipartBody.Builder();
@@ -3311,15 +3276,11 @@ public class OkHttpServices implements RESTServices {
 			}
 
 			int retryAfter = Utilities.parseInt(retryAfterRaw);
-			nextDelay = Math.max(retryAfter, calculateDelay(retry));
+			retryContext.calculateNextDelay(retryAfter, calculateDelay(retryContext.getRetry()));
 		}
 		if (RETRYABLE_STATUS_CODES.contains(status)) {
-			checkFirstRequest();
 			closeResponse(response);
-			throw new FailedRetryException(
-				"Service unavailable and maximum retry period elapsed: " +
-					((System.currentTimeMillis() - startTime) / 1000) +
-					" seconds after " + retry + " retries");
+			retryContext.throwIfMaxRetriesExceeded(status);
 		}
 
 		checkStatus(response, status, "apply", "resource", path,
@@ -3882,17 +3843,14 @@ public class OkHttpServices implements RESTServices {
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		if (params == null) params = new RequestParameters();
 		if (transaction != null) params.add("txid", transaction.getTransactionId());
+		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::checkFirstRequest);
 		Response response = null;
 		int status = -1;
-		long startTime = System.currentTimeMillis();
-		int nextDelay = 0;
-		int retry = 0;
-		for (; retry < minRetryAttempts || (System.currentTimeMillis() - startTime) < maxDelayForRetries; retry++) {
-			if (nextDelay > 0) {
-				try {
-					Thread.sleep(nextDelay);
-				} catch (InterruptedException e) {
-				}
+		for (; retryContext.shouldContinueRetrying(minRetryAttempts, maxDelayForRetries); retryContext.incrementRetry()) {
+			try {
+				retryContext.sleepIfNeeded();
+			} catch (InterruptedException e) {
+				// Ignore interruption
 			}
 
 			MultipartBody.Builder multiPart = new MultipartBody.Builder();
@@ -3924,15 +3882,11 @@ public class OkHttpServices implements RESTServices {
 			}
 
 			int retryAfter = Utilities.parseInt(retryAfterRaw);
-			nextDelay = Math.max(retryAfter, calculateDelay(retry));
+			retryContext.calculateNextDelay(retryAfter, calculateDelay(retryContext.getRetry()));
 		}
 		if (RETRYABLE_STATUS_CODES.contains(status)) {
-			checkFirstRequest();
 			closeResponse(response);
-			throw new FailedRetryException(
-				"Service unavailable and maximum retry period elapsed: " +
-					((System.currentTimeMillis() - startTime) / 1000) +
-					" seconds after " + retry + " retries");
+			retryContext.throwIfMaxRetriesExceeded(status);
 		}
 
 		checkStatus(response, status, "apply", "resource", path,
@@ -5001,17 +4955,14 @@ public class OkHttpServices implements RESTServices {
 
 		MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
 
+		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::checkFirstRequest);
 		Response response = null;
 		int status = -1;
-		long startTime = System.currentTimeMillis();
-		int nextDelay = 0;
-		int retry = 0;
-		for (; retry < minRetryAttempts || (System.currentTimeMillis() - startTime) < maxDelayForRetries; retry++) {
-			if (nextDelay > 0) {
-				try {
-					Thread.sleep(nextDelay);
-				} catch (InterruptedException e) {
-				}
+		for (; retryContext.shouldContinueRetrying(minRetryAttempts, maxDelayForRetries); retryContext.incrementRetry()) {
+			try {
+				retryContext.sleepIfNeeded();
+			} catch (InterruptedException e) {
+				// Ignore interruption
 			}
 
 			if (queryDef instanceof StructuredQueryDefinition) {
@@ -5037,15 +4988,11 @@ public class OkHttpServices implements RESTServices {
 
 			closeResponse(response);
 
-			nextDelay = Math.max(retryAfter, calculateDelay(retry));
+			retryContext.calculateNextDelay(retryAfter, calculateDelay(retryContext.getRetry()));
 		}
 		if (RETRYABLE_STATUS_CODES.contains(status)) {
-			checkFirstRequest();
 			closeResponse(response);
-			throw new FailedRetryException(
-				"Service unavailable and maximum retry period elapsed: " +
-					((System.currentTimeMillis() - startTime) / 1000) +
-					" seconds after " + retry + " retries");
+			retryContext.throwIfMaxRetriesExceeded(status);
 		}
 		if (status == STATUS_FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to match",
