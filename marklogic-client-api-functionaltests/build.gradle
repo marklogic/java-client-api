@@ -4,7 +4,7 @@
 
 dependencies {
 	testImplementation project(':marklogic-client-api')
-	testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.4"
+	testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.5"
 	testImplementation 'org.skyscreamer:jsonassert:1.5.3'
 	testImplementation 'org.slf4j:slf4j-api:2.0.17'
 	testImplementation 'commons-io:commons-io:2.21.0'
@@ -17,7 +17,7 @@ dependencies {
 
 	testImplementation "com.marklogic:ml-app-deployer:6.2-SNAPSHOT"
 
-	testImplementation 'ch.qos.logback:logback-classic:1.5.19'
+	testImplementation "ch.qos.logback:logback-classic:${logbackVersion}"
 	testImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
 	testImplementation 'org.xmlunit:xmlunit-legacy:2.11.0'
 

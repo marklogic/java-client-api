@@ -9,21 +9,21 @@ plugins {
 	id 'maven-publish'
 	id "com.gradle.plugin-publish" version "1.2.1"
 	id "java-gradle-plugin"
-	id 'org.jetbrains.kotlin.jvm' version '2.1.0'
+	id 'org.jetbrains.kotlin.jvm' version '2.2.21'
 }
 
 dependencies {
 	compileOnly gradleApi()
 
 	// This is a runtime dependency of marklogic-client-api but is needed for compiling.
-	compileOnly "jakarta.xml.bind:jakarta.xml.bind-api:4.0.4"
+	compileOnly "jakarta.xml.bind:jakarta.xml.bind-api:4.0.5"
 
 	// Gradle 9 does not like for a plugin to have a project dependency; trying to publish it results in a
 	// NoSuchMethodError pertaining to getProjectDependency. So treating this as a 3rd party dependency. This creates
 	// additional work during development, though we rarely modify the code in this plugin anymore.
 	implementation "com.marklogic:marklogic-client-api:${version}"
 
-	implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.20'
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21'
 	implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
 
 	// Sticking with this older version for now as the latest 1.x version introduces breaking changes.

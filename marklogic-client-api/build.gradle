@@ -17,7 +17,7 @@ dependencies {
 	// This is now an implementation dependency as opposed to an api dependency in 7.x and earlier.
 	// The only time it appears in the public API is when a user uses JAXBHandle.
 	// But in that scenario, the user would already be using JAXB in their application.
-	implementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.4"
+	implementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.5"
 	implementation "org.glassfish.jaxb:jaxb-runtime:4.0.6"
 
 	implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
@@ -40,14 +40,14 @@ dependencies {
 	// Dependencies for hash generation. Can be safely omitted if not using the incremental write feature. But neither
 	// has any transitive dependencies, and thus their impact on the dependency tree is minimal.
 	implementation "io.github.erdtman:java-json-canonicalization:1.1"
-	implementation "net.openhft:zero-allocation-hashing:0.27ea1"
+	implementation "net.openhft:zero-allocation-hashing:2026.0"
 
 	// Only used by extras (which some examples then depend on)
 	compileOnly 'org.jdom:jdom2:2.0.6.1'
 	compileOnly 'org.dom4j:dom4j:2.2.0'
 	compileOnly 'com.google.code.gson:gson:2.13.2'
 
-	testImplementation "com.marklogic:marklogic-junit5:2.0-SNAPSHOT"
+	testImplementation "com.marklogic:marklogic-junit5:2.0.0"
 
 	testImplementation 'org.xmlunit:xmlunit-legacy:2.11.0'
 	testImplementation project(':examples')
@@ -57,13 +57,13 @@ dependencies {
 	// Allows talking to the Manage API.
 	testImplementation "com.marklogic:ml-app-deployer:6.2-SNAPSHOT"
 
-	testImplementation "org.mockito:mockito-core:5.21.0"
-	testImplementation "org.mockito:mockito-inline:5.2.0"
+	testImplementation "org.mockito:mockito-core:5.22.0"
+//	testImplementation "org.mockito:mockito-inline:5.2.0"
 
 	testImplementation "com.squareup.okhttp3:mockwebserver3:${okhttpVersion}"
 
 	testImplementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jacksonVersion}"
-	testImplementation 'ch.qos.logback:logback-classic:1.5.23'
+	testImplementation "ch.qos.logback:logback-classic:${logbackVersion}"
 
 	// Using this to avoid a schema validation issue with the regular xercesImpl
 	testImplementation 'org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115'
