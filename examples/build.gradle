@@ -1,10 +1,6 @@
-/*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
- */
-
 dependencies {
 	implementation project(':marklogic-client-api')
-	implementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.4"
+	implementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.5"
 
 	// The 'api' configuration is used so that the test configuration in marklogic-client-api doesn't have to declare
 	// all of these dependencies. This library project won't otherwise be depended on by anything else as it's not
@@ -23,5 +19,5 @@ dependencies {
 		// passes without this on the classpath.
 		exclude module: "commons-beanutils"
 	}
-	api 'org.apache.commons:commons-lang3:3.19.0'
+	api 'org.apache.commons:commons-lang3:3.20.0'
 }

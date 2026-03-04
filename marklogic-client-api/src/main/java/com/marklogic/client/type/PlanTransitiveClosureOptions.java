@@ -8,6 +8,8 @@ package com.marklogic.client.type;
 /**
  * Options for controlling transitive closure operations, including minimum and maximum
  * path lengths.
+ *
+ * @since 8.1.0
  */
 public interface PlanTransitiveClosureOptions {
     XsLongVal getMinLength();

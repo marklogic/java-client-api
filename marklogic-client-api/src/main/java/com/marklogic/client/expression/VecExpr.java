@@ -151,7 +151,7 @@ public interface VecExpr {
   * Returns a new vector which is a copy of the input vector with reduced precision. The precision reduction is achieved by clearing the bottom (32 - precision) bits of the mantissa for each dimension's float value. This can be useful for reducing storage requirements or for creating approximate vector representations.
   *
   * <a name="ml-server-type-precision"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/vec:precision" target="mlserverdoc">vec:precision</a> server function.
   * @param vector  The input vector to reduce precision. Can be a vector or an empty sequence.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
@@ -207,7 +207,7 @@ public interface VecExpr {
   * Returns a new vector which is a copy of the input vector with each element truncated to a specific number of digits.
   *
   * <a name="ml-server-type-trunc"></a>
-  
+
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/vec:trunc" target="mlserverdoc">vec:trunc</a> server function.
   * @param vector  The input vector to truncate.  (of <a href="{@docRoot}/doc-files/types/vec_vector.html">vec:vector</a>)
@@ -253,6 +253,8 @@ public interface VecExpr {
   * @param score  The cts:score of the matching document.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
   * @param distance  The distance between the vector in the matching document and the query vector. Examples, the result of a call to ovec:cosine-distance() or ovec:euclidean-distance().  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
+ *
+ * @since 8.1.0, requires MarkLogic 12.1
   */
   public ServerExpression vectorScore(ServerExpression score, double distance);
 /**
@@ -262,6 +264,7 @@ public interface VecExpr {
   * @param score  The cts:score of the matching document.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
   * @param distance  The distance between the vector in the matching document and the query vector. Examples, the result of a call to ovec:cosine-distance() or ovec:euclidean-distance().  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
+ * @since 8.1.0, requires MarkLogic 12.1
   */
   public ServerExpression vectorScore(ServerExpression score, ServerExpression distance);
 /**
