@@ -362,6 +362,7 @@ public interface PlanBuilderBase {
      * operator.  Use the fluent methods of the transitive closure option object
      * to set the configuration.
      * @return  the configuration object
+	 * @since 8.1.0; requires MarkLogic 12.1 or higher
      */
     PlanTransitiveClosureOptions transitiveClosureOptions();
 

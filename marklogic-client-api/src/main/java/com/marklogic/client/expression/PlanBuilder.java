@@ -249,6 +249,8 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   /**
   * Create column definitions which can be used in op:from-docs. Below functions are used to create column definitions. op:add-column, op:type, op:xpath, op:expr, op:nullable, op:default, op:dimension, op:coordinate-system, op:units, op:collation.
   * @return  a PlanColumnBuilder object
+   *
+   * @since 8.1.0; requires MarkLogic 12.1 or higher
   */
   public abstract PlanColumnBuilder columnBuilder();
   /**
@@ -1189,6 +1191,8 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   /**
   * This helper function returns the node from the current processing row. It is to be used in op:xpath, to reference the 'current item' instead of a doc column.
   * @return  a PlanContextExprCall object
+   *
+   * @since 8.1.0; requires MarkLogic 12.1 or higher
   */
   public abstract PlanContextExprCall context();
   /**
@@ -1236,6 +1240,8 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param expression  The server expression (such as op:context()) from which to extract the child nodes.
   * @param path  An XPath (specified as a string) to apply to each node.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/node.html">node</a> server data type
+   *
+   * @since 8.1.0; requires MarkLogic 12.1 or higher
   */
   public abstract ServerExpression xpath(ServerExpression expression, String path);
   /**
@@ -1245,6 +1251,8 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param expression  The server expression (such as op:context()) from which to extract the child nodes.
   * @param path  An XPath to apply to each node.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/node.html">node</a> server data type
+   *
+   * @since 8.1.0; requires MarkLogic 12.1 or higher
   */
 public abstract ServerExpression xpath(ServerExpression expression, ServerExpression path);
   /**
