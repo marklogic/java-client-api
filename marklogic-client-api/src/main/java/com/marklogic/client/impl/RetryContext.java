@@ -5,6 +5,7 @@ package com.marklogic.client.impl;
 
 import com.marklogic.client.FailedRetryException;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
@@ -13,7 +14,9 @@ import java.util.Set;
  * Tracks retry state, calculates delays, handles sleeping, and logs retry attempts.
  */
 class RetryContext {
-	private final Logger logger;
+
+	static final private Logger logger = LoggerFactory.getLogger(RetryContext.class);
+
 	private final Set<Integer> retryableStatusCodes;
 	private final Runnable onMaxRetriesCallback;
 
@@ -22,12 +25,10 @@ class RetryContext {
 	private int nextDelay = 0;
 
 	/**
-	 * @param logger                Logger for debug output
 	 * @param retryableStatusCodes  Set of HTTP status codes that trigger retries
 	 * @param onMaxRetriesCallback  Callback to invoke when max retries is exceeded (e.g., to reset first request flag)
 	 */
-	RetryContext(Logger logger, Set<Integer> retryableStatusCodes, Runnable onMaxRetriesCallback) {
-		this.logger = logger;
+	RetryContext(Set<Integer> retryableStatusCodes, Runnable onMaxRetriesCallback) {
 		this.retryableStatusCodes = retryableStatusCodes;
 		this.onMaxRetriesCallback = onMaxRetriesCallback;
 	}
