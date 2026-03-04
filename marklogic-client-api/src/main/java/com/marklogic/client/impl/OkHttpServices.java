@@ -523,7 +523,7 @@ public class OkHttpServices implements RESTServices {
 			throw new MarkLogicIOException("Request cancelled: thread was interrupted before request could be sent");
 		}
 
-		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
+		RetryContext retryContext = new RetryContext(RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
 		Response response = null;
 		int status = -1;
 
@@ -1195,7 +1195,7 @@ public class OkHttpServices implements RESTServices {
 		}
 		boolean isResendable = handleBase.isResendable();
 
-		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
+		RetryContext retryContext = new RetryContext(RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
 		Response response = null;
 		int status = -1;
 		Headers responseHeaders = null;
@@ -1348,7 +1348,7 @@ public class OkHttpServices implements RESTServices {
 			requestBldr = addVersionHeader(desc, requestBldr, "If-Match");
 		}
 
-		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
+		RetryContext retryContext = new RetryContext(RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
 		Response response = null;
 		int status = -1;
 		Headers responseHeaders = null;
@@ -2107,7 +2107,7 @@ public class OkHttpServices implements RESTServices {
 		}
 
 		Response getResponse() {
-			RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, OkHttpServices.this::resetFirstRequestFlag);
+			RetryContext retryContext = new RetryContext(RETRYABLE_STATUS_CODES, OkHttpServices.this::resetFirstRequestFlag);
 			Response response = null;
 			int status = -1;
 			for (; retryContext.shouldContinueRetrying(minRetryAttempts, maxDelayForRetries); retryContext.incrementRetry()) {
@@ -2635,7 +2635,7 @@ public class OkHttpServices implements RESTServices {
 		String connectPath = null;
 		Request.Builder requestBldr = null;
 
-		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
+		RetryContext retryContext = new RetryContext(RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
 		Response response = null;
 		int status = -1;
 		for (; retryContext.shouldContinueRetrying(minRetryAttempts, maxDelayForRetries); retryContext.incrementRetry()) {
@@ -3060,7 +3060,7 @@ public class OkHttpServices implements RESTServices {
 		String outputMimetype = outputBase.getMimetype();
 		Class as = outputBase.receiveAs();
 
-		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
+		RetryContext retryContext = new RetryContext(RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
 		Response response = null;
 		int status = -1;
 		for (; retryContext.shouldContinueRetrying(minRetryAttempts, maxDelayForRetries); retryContext.incrementRetry()) {
@@ -3223,7 +3223,7 @@ public class OkHttpServices implements RESTServices {
 		String outputMimetype = outputBase != null ? outputBase.getMimetype() : null;
 		Class as = outputBase != null ? outputBase.receiveAs() : null;
 
-		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
+		RetryContext retryContext = new RetryContext(RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
 		Response response = null;
 		int status = -1;
 		for (; retryContext.shouldContinueRetrying(minRetryAttempts, maxDelayForRetries); retryContext.incrementRetry()) {
@@ -3822,7 +3822,7 @@ public class OkHttpServices implements RESTServices {
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		if (params == null) params = new RequestParameters();
 		if (transaction != null) params.add("txid", transaction.getTransactionId());
-		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
+		RetryContext retryContext = new RetryContext(RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
 		Response response = null;
 		int status = -1;
 		for (; retryContext.shouldContinueRetrying(minRetryAttempts, maxDelayForRetries); retryContext.incrementRetry()) {
@@ -4928,7 +4928,7 @@ public class OkHttpServices implements RESTServices {
 		}
 		requestBldr = addTelemetryAgentId(requestBldr);
 
-		RetryContext retryContext = new RetryContext(logger, RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
+		RetryContext retryContext = new RetryContext(RETRYABLE_STATUS_CODES, this::resetFirstRequestFlag);
 		Response response = null;
 		int status = -1;
 		for (; retryContext.shouldContinueRetrying(minRetryAttempts, maxDelayForRetries); retryContext.incrementRetry()) {
