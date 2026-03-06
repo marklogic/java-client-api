@@ -76,6 +76,9 @@ dependencies {
 
 	testImplementation 'org.skyscreamer:jsonassert:1.5.3'
 
+	// ArchUnit for verifying certain classes aren't used
+	testImplementation 'com.tngtech.archunit:archunit-junit5:1.4.1'
+
 	// Automatic loading of test framework implementation dependencies is deprecated.
 	// https://docs.gradle.org/current/userguide/upgrading_version_8.html#test_framework_implementation_dependencies
 	// Without this, once using JUnit 5.12 or higher, Gradle will not find any tests and report an error of:

@@ -37,8 +37,8 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.ContentDisposition;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.internet.ParseException;
-import jakarta.mail.util.ByteArrayDataSource;
 import jakarta.xml.bind.DatatypeConverter;
+import com.marklogic.client.impl.okhttp.InputStreamDataSource;
 import okhttp3.*;
 import okhttp3.MultipartBody.Part;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -5305,7 +5305,9 @@ public class OkHttpServices implements RESTServices {
 			} else if (as == MimeMultipart.class) {
 				MediaType mediaType = body.contentType();
 				String contentType = (mediaType != null) ? mediaType.toString() : "application/x-unknown-content-type";
-				ByteArrayDataSource dataSource = new ByteArrayDataSource(body.byteStream(), contentType);
+				// Use custom DataSource to avoid reading document into memory. Allows a user to use an
+				// InputStreamHandle to fetch the content without being surprised that all the data is in memory already.
+				InputStreamDataSource dataSource = new InputStreamDataSource(body.byteStream(), contentType);
 				return (T) new MimeMultipart(dataSource);
 			} else if (as == File.class) {
 				// write out the response body to a temp file in the system temp folder
@@ -6055,12 +6057,10 @@ public class OkHttpServices implements RESTServices {
 					setNull(true);
 					return;
 				}
-				ByteArrayDataSource dataSource = new ByteArrayDataSource(
-					responseBody.byteStream(), contentType.toString()
-				);
+				// Use custom DataSource to avoid reading document into memory. Allows a user to use an
+				// InputStreamHandle to fetch the content without being surprised that all the data is in memory already.
+				InputStreamDataSource dataSource = new InputStreamDataSource(responseBody.byteStream(), contentType.toString());
 				setMultipart(new MimeMultipart(dataSource));
-			} catch (IOException e) {
-				throw new MarkLogicIOException(e);
 			} catch (MessagingException e) {
 				throw new MarkLogicIOException(e);
 			}
