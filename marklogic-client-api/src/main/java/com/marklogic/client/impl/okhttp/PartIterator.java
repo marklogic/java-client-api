@@ -4,12 +4,10 @@
 package com.marklogic.client.impl.okhttp;
 
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.impl.IoUtil;
 import jakarta.activation.DataHandler;
 import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeBodyPart;
-import jakarta.mail.util.ByteArrayDataSource;
 import okhttp3.Headers;
 import okhttp3.MultipartReader;
 
@@ -63,10 +61,10 @@ public class PartIterator implements Iterator<BodyPart> {
 		MimeBodyPart bodyPart = new MimeBodyPart();
 
 		try {
-			try (InputStream inputStream = part.body().inputStream()) {
-				byte[] bytes = IoUtil.streamToBytes(inputStream);
-				bodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(bytes, part.headers().get("Content-Type"))));
-			}
+			// Stream the part content without reading it all into memory. This is critical for large documents.
+			// We DON'T close the InputStream here because the BodyPart needs to keep it open for reading later.
+			InputStream inputStream = part.body().inputStream();
+			bodyPart.setDataHandler(new DataHandler(new InputStreamDataSource(inputStream, part.headers().get("Content-Type"))));
 
 			// part.headers.toMultimap() is lowercasing header names, which causes later issues.
 			Headers headers = part.headers();
@@ -77,10 +75,8 @@ public class PartIterator implements Iterator<BodyPart> {
 			}
 			return bodyPart;
 		} finally {
-			// Looking at the OkHttp source code, this does not appear necessary, as closing the InputStream above should
-			// achieve the same effect. But there is no downside to doing this, as it may be required by a future version
-			// of OkHttp.
-			part.close();
+			// Do NOT close the part here - it needs to stay open for the InputStream to work.
+			// The part will be closed when the Response is closed.
 		}
 	}
 }

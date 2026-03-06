@@ -37,8 +37,8 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.ContentDisposition;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.internet.ParseException;
-import jakarta.mail.util.ByteArrayDataSource;
 import jakarta.xml.bind.DatatypeConverter;
+import com.marklogic.client.impl.okhttp.InputStreamDataSource;
 import okhttp3.*;
 import okhttp3.MultipartBody.Part;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -4313,45 +4313,54 @@ public class OkHttpServices implements RESTServices {
 		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
 	}
 
-	static private List<BodyPart> readMultipartBodyParts(ResponseBody body) {
-		long length = body.contentLength();
-		MimeMultipart entity = length != 0 ? getEntity(body, MimeMultipart.class) : null;
-		try {
-			if (length == -1 && entity != null) entity.getCount();
-		} catch (MessagingException e) {
-			entity = null;
-		}
-		return getPartList(entity);
-	}
-
 	private <U extends OkHttpResultIterator> U makeResults(ResultIteratorConstructor<U> constructor, RequestLogger reqlog,
 														   String operation, String entityType, Response response) {
 		if (response == null) return null;
-		final List<BodyPart> partList = readMultipartBodyParts(response.body());
-		throwExceptionIfErrorInTrailers(operation, entityType, response);
-		return makeResults(constructor, reqlog, operation, entityType, partList, response, response);
-	}
-
-	static private void throwExceptionIfErrorInTrailers(String operation, String entityType, Response response) {
-		String mlErrorCode = null;
-		String mlErrorMessage = null;
+		// Use streaming approach to avoid loading all parts into memory at once. This is similar to evalAndStreamResults.
+		// Trade-off: We cannot check HTTP trailers for errors until the body is consumed, but this prevents OutOfMemoryErrors.
 		try {
-			Headers trailers = response.trailers();
-			mlErrorCode = trailers.get("ml-error-code");
-			mlErrorMessage = trailers.get("ml-error-message");
-		} catch (IOException e) {
-			// This does not seem worthy of causing the entire operation to fail; we also don't expect this to occur, as it
-			// should only occur due to a programming error where the response body has already been consumed
-			logger.warn("Unexpected IO error while getting HTTP response trailers: " + e.getMessage());
-		}
+			MultipartReader reader = new MultipartReader(response.body());
+			PartIterator partIterator = new PartIterator(reader);
+			// Create the result iterator by calling the constructor directly with the streaming iterator
+			U result = constructor.construct(reqlog, null, null); // temp instance to get the right type
+			// Now create the real one with the iterator
+			if (result instanceof OkHttpServiceResultIterator) {
+				result = (U) new OkHttpServiceResultIterator(reqlog, partIterator, () -> {
+					try {
+						reader.close();
+					} catch (IOException e) {
+						// Ignore
+					}
+					response.close();
+				});
+			} else {
+				result = (U) new DefaultOkHttpResultIterator(reqlog, partIterator, () -> {
+					try {
+						reader.close();
+					} catch (IOException e) {
+						// Ignore
+					}
+					response.close();
+				});
+			}
 
-		if (mlErrorCode != null && !"N/A".equals(mlErrorCode)) {
-			FailedRequest failure = new FailedRequest();
-			failure.setMessageString(mlErrorCode);
-			failure.setStatusString(mlErrorMessage);
-			failure.setStatusCode(500);
-			String message = String.format("failed to %s %s at rows: %s, %s", operation, entityType, mlErrorCode, mlErrorMessage);
-			throw new FailedRequestException(message, failure);
+			// Set pagination headers
+			Headers headers = response.headers();
+			long pageStart = Utilities.parseLong(headers.get(HEADER_VND_MARKLOGIC_START));
+			if (pageStart > -1l) {
+				result.setStart(pageStart);
+			}
+			long pageLength = Utilities.parseLong(headers.get(HEADER_VND_MARKLOGIC_PAGELENGTH));
+			if (pageLength > -1l) {
+				result.setPageSize(pageLength);
+			}
+			long totalSize = Utilities.parseLong(headers.get(HEADER_VND_MARKLOGIC_RESULT_ESTIMATE));
+			if (totalSize > -1l) {
+				result.setTotalSize(totalSize);
+			}
+			return result;
+		} catch (IOException e) {
+			throw new MarkLogicIOException(e);
 		}
 	}
 
@@ -4641,6 +4650,11 @@ public class OkHttpServices implements RESTServices {
 		OkHttpServiceResultIterator(RequestLogger reqlog,
 									List<BodyPart> partList, Closeable closeable) {
 			super(reqlog, partList, closeable);
+		}
+
+		OkHttpServiceResultIterator(RequestLogger reqlog,
+									Iterator<BodyPart> partIterator, Closeable closeable) {
+			super(reqlog, partIterator, closeable);
 		}
 
 		OkHttpServiceResult constructNext(RequestLogger logger, BodyPart part) {
@@ -5305,7 +5319,12 @@ public class OkHttpServices implements RESTServices {
 			} else if (as == MimeMultipart.class) {
 				MediaType mediaType = body.contentType();
 				String contentType = (mediaType != null) ? mediaType.toString() : "application/x-unknown-content-type";
-				ByteArrayDataSource dataSource = new ByteArrayDataSource(body.byteStream(), contentType);
+				// Use custom DataSource to avoid reading document into memory. Allows a user to use an
+				// InputStreamHandle to fetch the content without being surprised that all the data is in memory already.
+				long start = System.currentTimeMillis();
+				System.out.println("Using ISDS");
+				InputStreamDataSource dataSource = new InputStreamDataSource(body.byteStream(), contentType);
+				System.out.println("Created ISDS in " + (System.currentTimeMillis() - start) + "ms");
 				return (T) new MimeMultipart(dataSource);
 			} else if (as == File.class) {
 				// write out the response body to a temp file in the system temp folder
@@ -6055,12 +6074,10 @@ public class OkHttpServices implements RESTServices {
 					setNull(true);
 					return;
 				}
-				ByteArrayDataSource dataSource = new ByteArrayDataSource(
-					responseBody.byteStream(), contentType.toString()
-				);
+				// Use custom DataSource to avoid reading document into memory. Allows a user to use an
+				// InputStreamHandle to fetch the content without being surprised that all the data is in memory already.
+				InputStreamDataSource dataSource = new InputStreamDataSource(responseBody.byteStream(), contentType.toString());
 				setMultipart(new MimeMultipart(dataSource));
-			} catch (IOException e) {
-				throw new MarkLogicIOException(e);
 			} catch (MessagingException e) {
 				throw new MarkLogicIOException(e);
 			}
