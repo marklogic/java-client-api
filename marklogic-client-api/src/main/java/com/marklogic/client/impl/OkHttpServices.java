@@ -2643,7 +2643,7 @@ public class OkHttpServices implements RESTServices {
 
 			Object nextValue = (handle != null) ? handle.sendContent() : value;
 
-			RequestBody sentValue = null;
+			RequestBody sentValue;
 			if (nextValue instanceof OutputStreamSender) {
 				sentValue = new StreamingOutputImpl(
 					(OutputStreamSender) nextValue, reqlog, mediaType);
@@ -2676,9 +2676,7 @@ public class OkHttpServices implements RESTServices {
 					requestBldr = addTelemetryAgentId(requestBldr);
 				}
 
-				response = (sentValue == null) ?
-					sendRequestOnce(requestBldr.put(null).build()) :
-					sendRequestOnce(requestBldr.put(sentValue).build());
+				response = sendRequestOnce(requestBldr.put(sentValue).build());
 			} else if ("post".equals(method)) {
 				if (requestBldr == null) {
 					connectPath = type;
@@ -2688,9 +2686,7 @@ public class OkHttpServices implements RESTServices {
 					requestBldr = addTelemetryAgentId(requestBldr);
 				}
 
-				response = (sentValue == null) ?
-					sendRequestOnce(requestBldr.post(RequestBody.create("", null)).build()) :
-					sendRequestOnce(requestBldr.post(sentValue).build());
+				response = sendRequestOnce(requestBldr.post(sentValue).build());
 			} else {
 				throw new MarkLogicInternalException("unknown method type "
 					+ method);
