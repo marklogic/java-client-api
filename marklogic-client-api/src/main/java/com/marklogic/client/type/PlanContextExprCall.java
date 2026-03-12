@@ -8,6 +8,8 @@ package com.marklogic.client.type;
 /**
  * An instance of a context expression call returned by the context() method
  * in a row pipeline.
+ *
+ * @since 8.1.0; requires MarkLogic 12.1 or higher
  */
 public interface PlanContextExprCall extends ServerExpression {
 }
