@@ -8,6 +8,8 @@ package com.marklogic.client.type;
 /**
  * An instance of a column builder returned by the columnBuilder() method
  * in a row pipeline. Used to create column definitions for op:from-docs.
+ *
+ * @since 8.1.0; requires MarkLogic 12.1 or higher
  */
 public interface PlanColumnBuilder extends ServerExpression {
 
