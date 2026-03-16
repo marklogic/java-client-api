@@ -3,121 +3,119 @@
  */
 package com.marklogic.client.datamovement.impl;
 
-import java.util.function.Consumer;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.ServerTransform;
+import com.marklogic.client.datamovement.DocumentWriteSetFilter;
 import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.WriteEvent;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.ServerTransform;
 
-public class BatchWriteSet {
-  private WriteBatcher batcher;
-  private DocumentWriteSet writeSet;
-  private long batchNumber;
-  private long itemsSoFar;
-  private DatabaseClient client;
-  private ServerTransform transform;
-  private String temporalCollection;
-  private Runnable onSuccess;
-  private Consumer<Throwable> onFailure;
-  private Runnable onBeforeWrite;
+import java.util.function.Consumer;
 
-  public BatchWriteSet(WriteBatcher batcher, DocumentWriteSet writeSet, DatabaseClient client,
-    ServerTransform transform, String temporalCollection)
-  {
-    this.batcher = batcher;
-    this.writeSet = writeSet;
-    this.client = client;
-    this.transform = transform;
-    this.temporalCollection = temporalCollection;
-  }
+/**
+ * Mutable class that captures the documents to be written. Documents are added via calls to "getDocumentWriteSet()", where the
+ * DocumentWriteSet is empty when this class is constructed.
+ */
+class BatchWriteSet implements DocumentWriteSetFilter.Context {
 
-  public DocumentWriteSet getWriteSet() {
-    return writeSet;
-  }
+	private final WriteBatcher batcher;
+	private final long batchNumber;
+	private final DatabaseClient client;
+	private final ServerTransform transform;
+	private final String temporalCollection;
 
-  public void setWriteSet(DocumentWriteSet writeSet) {
-    this.writeSet = writeSet;
-  }
+	// Can be overridden after creation
+	private DocumentWriteSet documentWriteSet;
 
-  public long getBatchNumber() {
-    return batchNumber;
-  }
+	private long itemsSoFar;
+	private Runnable onSuccess;
+	private Consumer<Throwable> onFailure;
 
-  public void setBatchNumber(long batchNumber) {
-    this.batchNumber = batchNumber;
-  }
+	BatchWriteSet(WriteBatcher batcher, DatabaseClient hostClient, ServerTransform transform, String temporalCollection, long batchNumber) {
+		this.batcher = batcher;
+		this.documentWriteSet = hostClient.newDocumentManager().newWriteSet();
+		this.client = hostClient;
+		this.transform = transform;
+		this.temporalCollection = temporalCollection;
+		this.batchNumber = batchNumber;
+	}
 
-  public void setItemsSoFar(long itemsSoFar) {
-    this.itemsSoFar = itemsSoFar;
-  }
+	/**
+	 * Must be called if a DocumentWriteSetFilter modified the DocumentWriteSet owned by this class.
+	 *
+	 * @since 8.1.0
+	 */
+	void updateWithFilteredDocumentWriteSet(DocumentWriteSet filteredDocumentWriteSet) {
+		this.documentWriteSet = filteredDocumentWriteSet;
+	}
 
-  public DatabaseClient getClient() {
-    return client;
-  }
+	@Override
+	public DocumentWriteSet getDocumentWriteSet() {
+		return documentWriteSet;
+	}
 
-  public void setClient(DatabaseClient client) {
-    this.client = client;
-  }
+	@Override
+	public long getBatchNumber() {
+		return batchNumber;
+	}
 
-  public ServerTransform getTransform() {
-    return transform;
-  }
+	public void setItemsSoFar(long itemsSoFar) {
+		this.itemsSoFar = itemsSoFar;
+	}
 
-  public void setTransform(ServerTransform transform) {
-    this.transform = transform;
-  }
+	@Override
+	public DatabaseClient getDatabaseClient() {
+		return client;
+	}
 
-  public String getTemporalCollection() {
-    return temporalCollection;
-  }
+	public DatabaseClient getClient() {
+		return client;
+	}
 
-  public void setTemporalCollection(String temporalCollection) {
-    this.temporalCollection = temporalCollection;
-  }
+	public ServerTransform getTransform() {
+		return transform;
+	}
 
-  public Runnable getOnSuccess() {
-    return onSuccess;
-  }
+	@Override
+	public String getTemporalCollection() {
+		return temporalCollection;
+	}
 
-  public void onSuccess(Runnable onSuccess) {
-    this.onSuccess = onSuccess;
-  }
+	public Runnable getOnSuccess() {
+		return onSuccess;
+	}
 
-  public Consumer<Throwable> getOnFailure() {
-    return onFailure;
-  }
+	public void onSuccess(Runnable onSuccess) {
+		this.onSuccess = onSuccess;
+	}
 
-  public void onFailure(Consumer<Throwable>  onFailure) {
-    this.onFailure = onFailure;
-  }
+	public Consumer<Throwable> getOnFailure() {
+		return onFailure;
+	}
 
-  public Runnable getOnBeforeWrite() {
-    return onBeforeWrite;
-  }
+	public void onFailure(Consumer<Throwable> onFailure) {
+		this.onFailure = onFailure;
+	}
 
-  public void onBeforeWrite(Runnable onBeforeWrite) {
-    this.onBeforeWrite = onBeforeWrite;
-  }
+	public WriteBatch getBatchOfWriteEvents() {
+		WriteBatchImpl batch = new WriteBatchImpl()
+			.withBatcher(batcher)
+			.withClient(client)
+			.withJobBatchNumber(batchNumber)
+			.withJobWritesSoFar(itemsSoFar)
+			.withJobTicket(batcher.getJobTicket());
 
-  public WriteBatch getBatchOfWriteEvents() {
-    WriteBatchImpl batch = new WriteBatchImpl()
-      .withBatcher(batcher)
-      .withClient(client)
-      .withJobBatchNumber(batchNumber)
-      .withJobWritesSoFar(itemsSoFar)
-      .withJobTicket(batcher.getJobTicket());
-    WriteEvent[] writeEvents = getWriteSet().stream()
-      .map(writeOperation ->
-        new WriteEventImpl()
-          .withTargetUri(writeOperation.getUri())
-          .withContent(writeOperation.getContent())
-          .withMetadata(writeOperation.getMetadata())
-      )
-      .toArray(WriteEventImpl[]::new);
-    batch.withItems(writeEvents);
-    return batch;
-  }
+		WriteEvent[] writeEvents = getDocumentWriteSet().stream()
+			.map(writeOperation ->
+				new WriteEventImpl()
+					.withTargetUri(writeOperation.getUri())
+					.withContent(writeOperation.getContent())
+					.withMetadata(writeOperation.getMetadata())
+			)
+			.toArray(WriteEventImpl[]::new);
+
+		batch.withItems(writeEvents);
+		return batch;
+	}
 }

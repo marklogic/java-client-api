@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.datamovement.impl;
 
@@ -23,7 +23,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 public class DataMovementServices {
-  private static Logger logger = LoggerFactory.getLogger(DataMovementServices.class);
+
+  private static final Logger logger = LoggerFactory.getLogger(DataMovementServices.class);
 
   private DatabaseClient client;
 
@@ -36,59 +37,65 @@ public class DataMovementServices {
     return this;
   }
 
-  QueryConfig initConfig(String method, SearchQueryDefinition qdef) {
-    logger.debug("initializing forest configuration with query");
-    if (qdef == null) throw new IllegalArgumentException("null query definition");
+	QueryConfig initConfig(String method, SearchQueryDefinition qdef) {
+		logger.debug("initializing forest configuration with query");
+		if (qdef == null) throw new IllegalArgumentException("null query definition");
 
-    JsonNode result = ((DatabaseClientImpl) this.client).getServices()
-      .forestInfo(null, method, new RequestParameters(), qdef, new JacksonHandle())
-      .get();
-    // System.out.println(result.toPrettyString());
+		JsonNode result = ((DatabaseClientImpl) this.client).getServices()
+			.forestInfo(null, method, new RequestParameters(), qdef, new JacksonHandle())
+			.get();
 
-    QueryConfig queryConfig = new QueryConfig();
+		JsonNode queryResult = result.get("query");
 
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      JsonNode queryResult = result.get("query");
-      if (queryResult != null && queryResult.isObject() && queryResult.has("ctsquery")) {
-        queryConfig.serializedCtsQuery = mapper.writeValueAsString(queryResult);
-        logger.debug("initialized query to: {}", queryConfig.serializedCtsQuery);
-      }
-      JsonNode filteredResult = result.get("filtered");
-      if (filteredResult != null && filteredResult.isBoolean()) {
-        queryConfig.filtered = filteredResult.asBoolean();
-        logger.debug("initialized filtering to: {}", queryConfig.filtered.toString());
-      }
-      JsonNode maxDocToUriBatchRatio = result.get("maxDocToUriBatchRatio");
-      if (maxDocToUriBatchRatio != null && maxDocToUriBatchRatio.isInt()) {
-        queryConfig.maxDocToUriBatchRatio = maxDocToUriBatchRatio.asInt();
-        logger.debug("initialized maxDocToUriBatchRatio to : {}", queryConfig.maxDocToUriBatchRatio);
-      } else {
-        queryConfig.maxDocToUriBatchRatio = -1;
-      }
-      JsonNode defaultDocBatchSize = result.get("defaultDocBatchSize");
-      if (defaultDocBatchSize != null && defaultDocBatchSize.isInt()) {
-        queryConfig.defaultDocBatchSize = defaultDocBatchSize.asInt();
-        logger.debug("initialized defaultDocBatchSize to : {}", queryConfig.defaultDocBatchSize);
-      } else {
-        queryConfig.defaultDocBatchSize = -1;
-      }
-      JsonNode maxUriBatchSize = result.get("maxUriBatchSize");
-      if (maxUriBatchSize != null && maxUriBatchSize.isInt()) {
-        queryConfig.maxUriBatchSize = maxUriBatchSize.asInt();
-        logger.debug("initialized maxUriBatchSize to : {}", queryConfig.maxUriBatchSize);
-      } else {
-        queryConfig.maxUriBatchSize = -1;
-      }
+		String serializedCtsQuery = null;
+		if (queryResult != null && queryResult.isObject() && queryResult.has("ctsquery")) {
+			try {
+				serializedCtsQuery = new ObjectMapper().writeValueAsString(queryResult);
+				logger.debug("initialized query to: {}", serializedCtsQuery);
+			} catch (JsonProcessingException e) {
+				logger.warn("Unable to serialize query result while initializing QueryBatcher; cause: {}", e.getMessage());
+			}
+		}
 
-    } catch (JsonProcessingException e) {
-      logger.error("failed to initialize query", e);
-    }
+		JsonNode filteredResult = result.get("filtered");
+		Boolean filtered = null;
+		if (filteredResult != null && filteredResult.isBoolean()) {
+			filtered = filteredResult.asBoolean();
+			logger.debug("initialized filtering to: {}", filtered);
+		}
 
-    queryConfig.forestConfig = makeForestConfig(result.has("forests") ? result.get("forests") : result);
+		JsonNode maxDocToUriBatchRatioNode = result.get("maxDocToUriBatchRatio");
+		int maxDocToUriBatchRatio = -1;
+		if (maxDocToUriBatchRatioNode != null && maxDocToUriBatchRatioNode.isInt()) {
+			maxDocToUriBatchRatio = maxDocToUriBatchRatioNode.asInt();
+			logger.debug("initialized maxDocToUriBatchRatio to : {}", maxDocToUriBatchRatio);
+		}
 
-    return queryConfig;
-  }
+		// Per GitHub bug 1872 and MLE-26460, the server may return -1 when there are fewer server threads than forests.
+		// A value of -1 will cause later problems when constructing a LinkedBlockingQueue with a negative capacity.
+		// So defaulting this to 1 to avoid later errors.
+		if (maxDocToUriBatchRatio <= 0) {
+			maxDocToUriBatchRatio = 1;
+		}
+
+		JsonNode defaultDocBatchSizeNode = result.get("defaultDocBatchSize");
+		int defaultDocBatchSize = -1;
+		if (defaultDocBatchSizeNode != null && defaultDocBatchSizeNode.isInt()) {
+			defaultDocBatchSize = defaultDocBatchSizeNode.asInt();
+			logger.debug("initialized defaultDocBatchSize to : {}", defaultDocBatchSize);
+		}
+
+		JsonNode maxUriBatchSizeNode = result.get("maxUriBatchSize");
+		int maxUriBatchSize = -1;
+		if (maxUriBatchSizeNode != null && maxUriBatchSizeNode.isInt()) {
+			maxUriBatchSize = maxUriBatchSizeNode.asInt();
+			logger.debug("initialized maxUriBatchSize to : {}", maxUriBatchSize);
+		}
+
+		ForestConfiguration forestConfig = makeForestConfig(result.has("forests") ? result.get("forests") : result);
+		return new QueryConfig(serializedCtsQuery, forestConfig, filtered,
+			maxDocToUriBatchRatio, defaultDocBatchSize, maxUriBatchSize);
+	}
 
   ForestConfigurationImpl readForestConfig() {
     logger.debug("initializing forest configuration");
@@ -183,12 +190,4 @@ public class DataMovementServices {
     return UUID.randomUUID().toString();
   }
 
-  static class QueryConfig {
-    String serializedCtsQuery;
-    ForestConfiguration forestConfig;
-    Boolean filtered;
-    int maxDocToUriBatchRatio;
-    int defaultDocBatchSize;
-    int maxUriBatchSize;
-  }
 }

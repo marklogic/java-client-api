@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.impl.OutputStreamTee;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
@@ -20,11 +21,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RequestLoggerTest {
   @BeforeAll
@@ -81,13 +82,10 @@ public class RequestLoggerTest {
   }
 
   @Test
-  public void testWriteReadLog() throws IOException, ParserConfigurationException {
+  public void testWriteReadLog() throws ParserConfigurationException {
     String docId = "/test/testWrite1.xml";
 
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setValidating(false);
-    DocumentBuilder documentBldr = factory.newDocumentBuilder();
+    DocumentBuilder documentBldr = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder();
     Document domDocument = documentBldr.newDocument();
     Element root = domDocument.createElement("root");
     root.setAttribute("xml:lang", "en");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.impl;
@@ -94,6 +94,18 @@ class VecExprImpl implements VecExpr {
 
   
   @Override
+  public ServerExpression precision(ServerExpression vector) {
+    return new VectorCallImpl("vec", "precision", new Object[]{ vector });
+  }
+
+  
+  @Override
+  public ServerExpression precision(ServerExpression vector, ServerExpression precision) {
+    return new VectorCallImpl("vec", "precision", new Object[]{ vector, precision });
+  }
+
+  
+  @Override
   public ServerExpression subtract(ServerExpression vector1, ServerExpression vector2) {
     return new VectorCallImpl("vec", "subtract", new Object[]{ vector1, vector2 });
   }
@@ -112,32 +124,62 @@ class VecExprImpl implements VecExpr {
 
   
   @Override
+  public ServerExpression trunc(ServerExpression vector) {
+    return new VectorCallImpl("vec", "trunc", new Object[]{ vector });
+  }
+
+  
+  @Override
+  public ServerExpression trunc(ServerExpression vector, int n) {
+    return trunc(vector, xs.intVal(n));
+  }
+
+  
+  @Override
+  public ServerExpression trunc(ServerExpression vector, ServerExpression n) {
+    return new VectorCallImpl("vec", "trunc", new Object[]{ vector, n });
+  }
+
+  
+  @Override
   public ServerExpression vector(ServerExpression values) {
     return new VectorCallImpl("vec", "vector", new Object[]{ values });
   }
 
   
   @Override
-  public ServerExpression vectorScore(ServerExpression score, double similarity) {
-    return vectorScore(score, xs.doubleVal(similarity));
+  public ServerExpression vectorScore(ServerExpression score, double distance) {
+    return vectorScore(score, xs.doubleVal(distance));
   }
 
   
   @Override
-  public ServerExpression vectorScore(ServerExpression score, ServerExpression similarity) {
-    return new XsExprImpl.UnsignedLongCallImpl("vec", "vector-score", new Object[]{ score, similarity });
+  public ServerExpression vectorScore(ServerExpression score, ServerExpression distance) {
+    return new XsExprImpl.UnsignedLongCallImpl("vec", "vector-score", new Object[]{ score, distance });
   }
 
   
   @Override
-  public ServerExpression vectorScore(ServerExpression score, double similarity, double similarityWeight) {
-    return vectorScore(score, xs.doubleVal(similarity), xs.doubleVal(similarityWeight));
+  public ServerExpression vectorScore(ServerExpression score, double distance, double distanceWeight) {
+    return vectorScore(score, xs.doubleVal(distance), xs.doubleVal(distanceWeight));
   }
 
   
   @Override
-  public ServerExpression vectorScore(ServerExpression score, ServerExpression similarity, ServerExpression similarityWeight) {
-    return new XsExprImpl.UnsignedLongCallImpl("vec", "vector-score", new Object[]{ score, similarity, similarityWeight });
+  public ServerExpression vectorScore(ServerExpression score, ServerExpression distance, ServerExpression distanceWeight) {
+    return new XsExprImpl.UnsignedLongCallImpl("vec", "vector-score", new Object[]{ score, distance, distanceWeight });
+  }
+
+  
+  @Override
+  public ServerExpression vectorScore(ServerExpression score, double distance, double distanceWeight, double weight) {
+    return vectorScore(score, xs.doubleVal(distance), xs.doubleVal(distanceWeight), xs.doubleVal(weight));
+  }
+
+  
+  @Override
+  public ServerExpression vectorScore(ServerExpression score, ServerExpression distance, ServerExpression distanceWeight, ServerExpression weight) {
+    return new XsExprImpl.UnsignedLongCallImpl("vec", "vector-score", new Object[]{ score, distance, distanceWeight, weight });
   }
 
   static class VectorSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
@@ -27,7 +27,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
@@ -81,10 +80,7 @@ public class XMLDocumentTest {
   {
     String docId = "/test/testWrite1.xml";
 
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setValidating(false);
-    Document domDocument = factory.newDocumentBuilder().newDocument();
+    Document domDocument = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder().newDocument();
     Element root = domDocument.createElement("root");
     root.setAttribute("xml:lang", "en");
     root.setAttribute("foo", "bar");
@@ -355,10 +351,7 @@ public class XMLDocumentTest {
 
     DocumentPatchHandle patchHandle = patchBldr.build();
 
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setValidating(false);
-    DocumentBuilder documentBldr = factory.newDocumentBuilder();
+    DocumentBuilder documentBldr = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder();
     for (int i=0; i < 2; i++) {
       Document domDocument = documentBldr.newDocument();
       Element root    = domDocument.createElement("root");

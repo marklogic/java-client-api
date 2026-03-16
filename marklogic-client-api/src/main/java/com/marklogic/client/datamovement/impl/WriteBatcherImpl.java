@@ -3,45 +3,25 @@
  */
 package com.marklogic.client.datamovement.impl;
 
-import java.io.Closeable;
-import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.datamovement.*;
 import com.marklogic.client.document.DocumentWriteOperation;
-import com.marklogic.client.document.ServerTransform;
-import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.document.DocumentWriteOperation.OperationType;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.Format;
+import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.impl.Utilities;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.datamovement.DataMovementException;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.Forest;
-import com.marklogic.client.datamovement.ForestConfiguration;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.WriteBatch;
-import com.marklogic.client.datamovement.WriteBatchListener;
-import com.marklogic.client.datamovement.WriteEvent;
-import com.marklogic.client.datamovement.WriteFailureListener;
-import com.marklogic.client.datamovement.WriteBatcher;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 
 /**
  * The implementation of WriteBatcher.
@@ -146,6 +126,7 @@ public class WriteBatcherImpl
   private boolean initialized = false;
   private CompletableThreadPoolExecutor threadPool = null;
   private DocumentMetadataHandle defaultMetadata;
+  private DocumentWriteSetFilter documentWriteSetFilter;
 
   public WriteBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super(moveMgr);
@@ -208,7 +189,7 @@ public class WriteBatcherImpl
       BatchWriteSet writeSet = newBatchWriteSet();
       int minBatchSize = 0;
       if(defaultMetadata != null) {
-        writeSet.getWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
+        writeSet.getDocumentWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
         minBatchSize = 1;
       }
       for (int i=0; i < getBatchSize(); i++ ) {
@@ -217,10 +198,10 @@ public class WriteBatcherImpl
           // strange, there should have been a full batch of docs in the queue...
           break;
         }
-        writeSet.getWriteSet().add(doc);
+        writeSet.getDocumentWriteSet().add(doc);
       }
-      if ( writeSet.getWriteSet().size() > minBatchSize ) {
-        threadPool.submit( new BatchWriter(writeSet) );
+      if ( writeSet.getDocumentWriteSet().size() > minBatchSize ) {
+        threadPool.submit( new BatchWriter(writeSet, documentWriteSetFilter) );
       }
     }
     return this;
@@ -258,19 +239,19 @@ public class WriteBatcherImpl
   }
 
   private void requireInitialized() {
-    if ( initialized == false ) {
+    if (!initialized) {
       throw new IllegalStateException("This operation must be called after starting this job");
     }
   }
 
   private void requireNotInitialized() {
-    if ( initialized == true ) {
+    if (initialized) {
       throw new IllegalStateException("Configuration cannot be changed after starting this job or calling add or addAs");
     }
   }
 
   private void requireNotStopped() {
-    if ( isStopped() == true ) throw new IllegalStateException("This instance has been stopped");
+    if (isStopped()) throw new IllegalStateException("This instance has been stopped");
   }
 
   private BatchWriteSet newBatchWriteSet() {
@@ -281,16 +262,9 @@ public class WriteBatcherImpl
   private BatchWriteSet newBatchWriteSet(long batchNum) {
     int hostToUse = (int) (batchNum % hostInfos.length);
     HostInfo host = hostInfos[hostToUse];
-    DatabaseClient hostClient = host.client;
-    BatchWriteSet batchWriteSet = new BatchWriteSet(this, hostClient.newDocumentManager().newWriteSet(),
-      hostClient, getTransform(), getTemporalCollection());
-    batchWriteSet.setBatchNumber(batchNum);
-    batchWriteSet.onSuccess( () -> {
-      sendSuccessToListeners(batchWriteSet);
-    });
-    batchWriteSet.onFailure( (throwable) -> {
-      sendThrowableToListeners(throwable, "Error writing batch: {}", batchWriteSet);
-    });
+    BatchWriteSet batchWriteSet = new BatchWriteSet(this, host.client, getTransform(), getTemporalCollection(), batchNum);
+    batchWriteSet.onSuccess( () -> sendSuccessToListeners(batchWriteSet));
+    batchWriteSet.onFailure(throwable -> sendThrowableToListeners(throwable, batchWriteSet));
     return batchWriteSet;
   }
 
@@ -318,7 +292,7 @@ public class WriteBatcherImpl
   }
 
   private void retry(WriteBatch batch, boolean callFailListeners) {
-    if ( isStopped() == true ) {
+    if (isStopped()) {
       logger.warn("Job is now stopped, aborting the retry");
       return;
     }
@@ -333,9 +307,9 @@ public class WriteBatcherImpl
       });
     }
     for (WriteEvent doc : batch.getItems()) {
-      writeSet.getWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
+      writeSet.getDocumentWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
     }
-    BatchWriter runnable = new BatchWriter(writeSet);
+    BatchWriter runnable = new BatchWriter(writeSet, documentWriteSetFilter);
     runnable.run();
   }
   @Override
@@ -392,28 +366,28 @@ public class WriteBatcherImpl
 	}
     Iterator<DocumentWriteOperation> iter = docs.iterator();
     for ( int i=0; iter.hasNext(); i++ ) {
-      if ( isStopped() == true ) {
+      if (isStopped()) {
         logger.warn("Job is now stopped, preventing the flush of {} queued docs", docs.size() - i);
-        if ( waitForCompletion == true ) awaitCompletion();
+        if (waitForCompletion) awaitCompletion();
         return;
       }
       BatchWriteSet writeSet = newBatchWriteSet();
       if(defaultMetadata != null) {
-          writeSet.getWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
+          writeSet.getDocumentWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
         }
       int j=0;
       for ( ; j < getBatchSize() && iter.hasNext(); j++ ) {
         DocumentWriteOperation doc = iter.next();
-        writeSet.getWriteSet().add(doc);
+        writeSet.getDocumentWriteSet().add(doc);
       }
-      threadPool.submit( new BatchWriter(writeSet) );
+      threadPool.submit( new BatchWriter(writeSet, documentWriteSetFilter) );
     }
 
-    if ( waitForCompletion == true ) awaitCompletion();
+    if (waitForCompletion) awaitCompletion();
   }
 
   private void sendSuccessToListeners(BatchWriteSet batchWriteSet) {
-    batchWriteSet.setItemsSoFar(itemsSoFar.addAndGet(batchWriteSet.getWriteSet().size()));
+    batchWriteSet.setItemsSoFar(itemsSoFar.addAndGet(batchWriteSet.getDocumentWriteSet().size()));
     WriteBatch batch = batchWriteSet.getBatchOfWriteEvents();
     for ( WriteBatchListener successListener : successListeners ) {
       try {
@@ -424,7 +398,7 @@ public class WriteBatcherImpl
     }
   }
 
-  private void sendThrowableToListeners(Throwable t, String message, BatchWriteSet batchWriteSet) {
+  private void sendThrowableToListeners(Throwable t, BatchWriteSet batchWriteSet) {
     batchWriteSet.setItemsSoFar(itemsSoFar.get());
     WriteBatch batch = batchWriteSet.getBatchOfWriteEvents();
     for ( WriteFailureListener failureListener : failureListeners ) {
@@ -434,7 +408,7 @@ public class WriteBatcherImpl
         logger.error("Exception thrown by an onBatchFailure listener", t2);
       }
     }
-    if ( message != null ) logger.warn(message, t.toString());
+    logger.warn("Error writing batch: {}", t.toString());
   }
 
   @Override
@@ -613,18 +587,18 @@ public class WriteBatcherImpl
       for ( Runnable task : tasks ) {
         if ( task instanceof BatchWriter ) {
           BatchWriter writerTask = (BatchWriter) task;
-          if ( removedHostInfos.containsKey(writerTask.writeSet.getClient().getHost()) ) {
+          if ( removedHostInfos.containsKey(writerTask.batchWriteSet().getClient().getHost()) ) {
             // this batch was targeting a host that's no longer on the list
             // if we re-add these docs they'll now be in batches that target acceptable hosts
-            BatchWriteSet writeSet = newBatchWriteSet(writerTask.writeSet.getBatchNumber());
+            BatchWriteSet writeSet = newBatchWriteSet(writerTask.batchWriteSet().getBatchNumber());
             writeSet.onFailure(throwable -> {
               if ( throwable instanceof RuntimeException ) throw (RuntimeException) throwable;
               else throw new DataMovementException("Failed to retry batch after failover", throwable);
             });
-            for ( WriteEvent doc : writerTask.writeSet.getBatchOfWriteEvents().getItems() ) {
-              writeSet.getWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
+            for ( WriteEvent doc : writerTask.batchWriteSet().getBatchOfWriteEvents().getItems() ) {
+              writeSet.getDocumentWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
             }
-            BatchWriter retryWriterTask = new BatchWriter(writeSet);
+            BatchWriter retryWriterTask = new BatchWriter(writeSet, documentWriteSetFilter);
             Runnable fretryWriterTask = (Runnable) threadPool.submit(retryWriterTask);
             threadPool.replaceTask(writerTask, fretryWriterTask);
             // jump to the next task
@@ -647,71 +621,6 @@ public class WriteBatcherImpl
   public static class HostInfo {
     public String hostName;
     public DatabaseClient client;
-  }
-
-  public static class BatchWriter implements Runnable {
-    private BatchWriteSet writeSet;
-
-    public BatchWriter(BatchWriteSet writeSet) {
-      if ( writeSet.getWriteSet().size() == 0 ) {
-        throw new IllegalStateException("Attempt to write an empty batch");
-      }
-      this.writeSet = writeSet;
-    }
-
-    @Override
-    public void run() {
-      try {
-        Runnable onBeforeWrite = writeSet.getOnBeforeWrite();
-        if ( onBeforeWrite != null ) {
-          onBeforeWrite.run();
-        }
-        logger.trace("begin write batch {} to forest on host \"{}\"", writeSet.getBatchNumber(), writeSet.getClient().getHost());
-        if ( writeSet.getTemporalCollection() == null ) {
-          writeSet.getClient().newDocumentManager().write(
-                  writeSet.getWriteSet(), writeSet.getTransform(), null
-          );
-        } else {
-          // to get access to the TemporalDocumentManager write overload we need to instantiate
-          // a JSONDocumentManager or XMLDocumentManager, but we don't want to make assumptions about content
-          // format, so we'll set the default content format to unknown
-          XMLDocumentManager docMgr = writeSet.getClient().newXMLDocumentManager();
-          docMgr.setContentFormat(Format.UNKNOWN);
-          docMgr.write(
-                  writeSet.getWriteSet(), writeSet.getTransform(), null, writeSet.getTemporalCollection()
-          );
-        }
-        closeAllHandles();
-        Runnable onSuccess = writeSet.getOnSuccess();
-        if ( onSuccess != null ) {
-          onSuccess.run();
-        }
-      } catch (Throwable t) {
-        logger.trace("failed batch sent to forest on host \"{}\"", writeSet.getClient().getHost());
-        Consumer<Throwable> onFailure = writeSet.getOnFailure();
-        if ( onFailure != null ) {
-          onFailure.accept(t);
-        }
-      }
-    }
-
-    private void closeAllHandles() throws Throwable {
-      Throwable lastThrowable = null;
-      for ( DocumentWriteOperation doc : writeSet.getWriteSet() ) {
-        try {
-          if ( doc.getContent() instanceof Closeable ) {
-            ((Closeable) doc.getContent()).close();
-          }
-          if ( doc.getMetadata() instanceof Closeable ) {
-            ((Closeable) doc.getMetadata()).close();
-          }
-        } catch (Throwable t) {
-          logger.error("error calling close()", t);
-          lastThrowable = t;
-        }
-      }
-      if ( lastThrowable != null ) throw lastThrowable;
-    }
   }
 
   /**
@@ -938,4 +847,10 @@ public class WriteBatcherImpl
   public DocumentMetadataHandle getDocumentMetadata() {
   return defaultMetadata;
 }
+
+  @Override
+  public WriteBatcher withDocumentWriteSetFilter(DocumentWriteSetFilter filter) {
+    this.documentWriteSetFilter = filter;
+    return this;
+  }
 }

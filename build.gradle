@@ -17,14 +17,15 @@ subprojects {
 		all {
 			resolutionStrategy {
 				// Forcing the latest commons-lang3 version to eliminate CVEs.
-				force "org.apache.commons:commons-lang3:3.19.0"
+				force "org.apache.commons:commons-lang3:3.20.0"
 			}
 		}
 	}
 
 	repositories {
-		mavenLocal()
 		mavenCentral()
+
+		mavenLocal()
 
 		// Needed so that ml-development-tools can resolve snapshots of marklogic-client-api.
 		maven {

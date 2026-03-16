@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
@@ -19,7 +20,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,10 +54,7 @@ public class GeospatialRegionQueriesTest {
     XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
     DocumentWriteSet writeset =docMgr.newWriteSet();
 
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setValidating(false);
-    DocumentBuilder documentBldr = factory.newDocumentBuilder();
+    DocumentBuilder documentBldr = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder();
 
     Document domDocument = documentBldr.newDocument();
     Element root = domDocument.createElement("country");

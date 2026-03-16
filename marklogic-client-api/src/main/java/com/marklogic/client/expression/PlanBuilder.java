@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.expression;
@@ -247,6 +247,13 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PatchBuilder patchBuilder(XsStringVal contextPath, Map<String,String> namespaces);
   /**
+  * Create column definitions which can be used in op:from-docs. Below functions are used to create column definitions. op:add-column, op:type, op:xpath, op:expr, op:nullable, op:default, op:dimension, op:coordinate-system, op:units, op:collation.
+  * @return  a PlanColumnBuilder object
+   *
+   * @since 8.1.0; requires MarkLogic 12.1 or higher
+  */
+  public abstract PlanColumnBuilder columnBuilder();
+  /**
   * This function creates a placeholder for a literal value in an expression or as the offset or max for a limit. The op:result function throws in an error if the binding parameter does not specify a literal value for the parameter.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:param" target="mlserverdoc">op:param</a> server function.
@@ -402,6 +409,58 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromView(XsStringVal schema, XsStringVal view, XsStringVal qualifierName, PlanSystemColumn sysCols);
+  /**
+  * This function dynamically maps semi-structured data (JSON/XML) into rows and columns without deploying a TDE template. It enables ad-hoc queries similar to Virtual Template Views but with additional flexibility, such as node output and advanced column customization.
+  * @param query  Query to select documents for row generation. The query can be a cts:query or a string as a shortcut for a cts:word-query.
+  * @param contextPath  XPath applied to each matched document; each result becomes a row.
+  * @param columnSpec  The column definitions created by using op:column-builder.
+  * @return  a AccessPlan object
+  * @since 8.1.0; requires MarkLogic 12.1 or higher.
+  */
+  public abstract AccessPlan fromDocs(String query, String contextPath, PlanColumnBuilder columnSpec);
+  /**
+  * This function dynamically maps semi-structured data (JSON/XML) into rows and columns without deploying a TDE template. It enables ad-hoc queries similar to Virtual Template Views but with additional flexibility, such as node output and advanced column customization.
+  * @param query  Query to select documents for row generation. The query can be a cts:query or a string as a shortcut for a cts:word-query.
+  * @param contextPath  XPath applied to each matched document; each result becomes a row.
+  * @param columnSpec  The column definitions created by using op:column-builder.
+  * @param qualifier  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
+  * @return  a AccessPlan object
+  * @since 8.1.0; requires MarkLogic 12.1 or higher.
+  */
+  public abstract AccessPlan fromDocs(String query, String contextPath, PlanColumnBuilder columnSpec, String qualifier);
+  /**
+  * This function dynamically maps semi-structured data (JSON/XML) into rows and columns without deploying a TDE template. It enables ad-hoc queries similar to Virtual Template Views but with additional flexibility, such as node output and advanced column customization.
+  * @param query  Query to select documents for row generation. The query can be a cts:query or a string as a shortcut for a cts:word-query.
+  * @param contextPath  XPath applied to each matched document; each result becomes a row.
+  * @param columnSpec  The column definitions created by using op:column-builder.
+  * @param qualifier  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
+  * @return  a AccessPlan object
+  * @since 8.1.0; requires MarkLogic 12.1 or higher.
+  */
+  public abstract AccessPlan fromDocs(CtsQueryExpr query, String contextPath, PlanColumnBuilder columnSpec, String qualifier);
+  /**
+  * This function dynamically maps semi-structured data (JSON/XML) into rows and columns without deploying a TDE template. It enables ad-hoc queries similar to Virtual Template Views but with additional flexibility, such as node output and advanced column customization.
+  * @param query  Query to select documents for row generation. The query can be a cts:query or a string as a shortcut for a cts:word-query.
+  * @param contextPath  XPath applied to each matched document; each result becomes a row.
+  * @param columnSpec  The column definitions created by using op:column-builder.
+  * @param qualifier  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
+  * @param systemCol  An optional named fragment id column returned by op:fragment-id-col. One use case for fragment ids is in joins with lexicons or document content.
+  * @return  a AccessPlan object
+  * @since 8.1.0; requires MarkLogic 12.1 or higher.
+  */
+  public abstract AccessPlan fromDocs(String query, String contextPath, PlanColumnBuilder columnSpec, String qualifier, PlanSystemColumn systemCol);
+  /**
+  * This function dynamically maps semi-structured data (JSON/XML) into rows and columns without deploying a TDE template. It enables ad-hoc queries similar to Virtual Template Views but with additional flexibility, such as node output and advanced column customization.
+  * @param query  Query to select documents for row generation. The query can be a cts:query or a string as a shortcut for a cts:word-query.
+  * @param contextPath  XPath applied to each matched document; each result becomes a row.
+  * @param columnSpec  The column definitions created by using op:column-builder.
+  * @param qualifier  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
+  * @param systemCol  An optional named fragment id column returned by op:fragment-id-col. One use case for fragment ids is in joins with lexicons or document content.
+  * @param namespaces  Namespaces prefix (key) and uri (value).
+  * @return  a AccessPlan object
+  * @since 8.1.0; requires MarkLogic 12.1 or higher.
+  */
+  public abstract AccessPlan fromDocs(String query, String contextPath, PlanColumnBuilder columnSpec, String qualifier, PlanSystemColumn systemCol, PlanNamespaceBindingsSeq namespaces);
   /**
   * This function factory returns a new function that takes a name parameter and returns a sem:iri, prepending the specified base URI onto the name.
   * @param base  The base URI to be prepended to the name.
@@ -1130,6 +1189,13 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanCase when(ServerExpression condition, ServerExpression... value);
   /**
+  * This helper function returns the node from the current processing row. It is to be used in op:xpath, to reference the 'current item' instead of a doc column.
+  * @return  a PlanContextExprCall object
+   *
+   * @since 8.1.0; requires MarkLogic 12.1 or higher
+  */
+  public abstract PlanContextExprCall context();
+  /**
   * This function extracts a sequence of child nodes from a column with node values -- especially, the document nodes from a document join. The path is an XPath (specified as a string) to apply to each node to generate a sequence of nodes as an expression value.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:xpath" target="mlserverdoc">op:xpath</a> server function.
@@ -1167,6 +1233,28 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/node.html">node</a> server data type
   */
   public abstract ServerExpression xpath(PlanColumn column, ServerExpression path, PlanNamespaceBindingsSeq namespaceBindings);
+  /**
+  * This function extracts a sequence of child nodes from a server expression (such as op:context()) with node values. The path is an XPath (specified as a string) to apply to each node to generate a sequence of nodes as an expression value.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xpath" target="mlserverdoc">op:xpath</a> server function.
+  * @param expression  The server expression (such as op:context()) from which to extract the child nodes.
+  * @param path  An XPath (specified as a string) to apply to each node.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/node.html">node</a> server data type
+   *
+   * @since 8.1.0; requires MarkLogic 12.1 or higher
+  */
+  public abstract ServerExpression xpath(ServerExpression expression, String path);
+  /**
+  * This function extracts a sequence of child nodes from a server expression (such as op:context()) with node values. The path is an XPath to apply to each node to generate a sequence of nodes as an expression value.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xpath" target="mlserverdoc">op:xpath</a> server function.
+  * @param expression  The server expression (such as op:context()) from which to extract the child nodes.
+  * @param path  An XPath to apply to each node.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/node.html">node</a> server data type
+   *
+   * @since 8.1.0; requires MarkLogic 12.1 or higher
+  */
+public abstract ServerExpression xpath(ServerExpression expression, ServerExpression path);
   /**
   * This function constructs a JSON document with the root content, which must be exactly one JSON object or array node.
   * <p>
@@ -2043,6 +2131,40 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @since 7.2.0; requires MarkLogic 12
   */
   public abstract ModifyPlan shortestPath(PlanExprCol start, PlanExprCol end, PlanExprCol path, PlanExprCol length, PlanExprCol weight);
+/**
+  * This method performs a transitive closure operation over a graph-like structure, identifying all reachable node pairs from a given start node to an end node through one or more intermediate steps. A set of (start, end) node pairs where a path exists between them with a length between minLength and maxLength, inclusive. This models the SPARQL one-or-more (+) operator, enabling recursive or chained relationships to be queried efficiently.
+  * @param start  The column is the starting node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @param end  The column is the end node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  * @since 8.1.0; requires MarkLogic 12.1 or higher.
+  */
+  public abstract ModifyPlan transitiveClosure(String start, String end);
+/**
+  * This method performs a transitive closure operation over a graph-like structure, identifying all reachable node pairs from a given start node to an end node through one or more intermediate steps. A set of (start, end) node pairs where a path exists between them with a length between minLength and maxLength, inclusive. This models the SPARQL one-or-more (+) operator, enabling recursive or chained relationships to be queried efficiently.
+  * @param start  The column is the starting node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @param end  The column is the end node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  * @since 8.1.0; requires MarkLogic 12.1 or higher.
+  */
+  public abstract ModifyPlan transitiveClosure(PlanExprCol start, PlanExprCol end);
+/**
+  * This method performs a transitive closure operation over a graph-like structure, identifying all reachable node pairs from a given start node to an end node through one or more intermediate steps. A set of (start, end) node pairs where a path exists between them with a length between minLength and maxLength, inclusive. This models the SPARQL one-or-more (+) operator, enabling recursive or chained relationships to be queried efficiently.
+  * @param start  The column is the starting node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @param end  The column is the end node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @param options  This is either an array of strings or an object containing keys and values for the options to this operator. Options include: min-length This option is the minimum number of steps (edges) required in the path. It should be a non-negative integer, and the default is 1.max-length This option Maximum number of steps (edges) allowed in the path. It should be a non-negative integer, and the default is unlimited.
+  * @return  a ModifyPlan object
+  * @since 8.1.0; requires MarkLogic 12.1 or higher.
+  */
+  public abstract ModifyPlan transitiveClosure(String start, String end, PlanTransitiveClosureOptions options);
+/**
+  * This method performs a transitive closure operation over a graph-like structure, identifying all reachable node pairs from a given start node to an end node through one or more intermediate steps. A set of (start, end) node pairs where a path exists between them with a length between minLength and maxLength, inclusive. This models the SPARQL one-or-more (+) operator, enabling recursive or chained relationships to be queried efficiently.
+  * @param start  The column is the starting node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @param end  The column is the end node of the traversal. The column can be named with a string or a column function such as op:col, op:view-col, or op:schema-col, or constructed from an expression with the op:as function. See {@link PlanBuilder#col(XsStringVal)}
+  * @param options  This is either an array of strings or an object containing keys and values for the options to this operator. Options include: min-length This option is the minimum number of steps (edges) required in the path. It should be a non-negative integer, and the default is 1.max-length This option Maximum number of steps (edges) allowed in the path. It should be a non-negative integer, and the default is unlimited.
+  * @return  a ModifyPlan object
+  * @since 8.1.0; requires MarkLogic 12.1 or higher.
+  */
+  public abstract ModifyPlan transitiveClosure(PlanExprCol start, PlanExprCol end, PlanTransitiveClosureOptions options);
   }
 
 

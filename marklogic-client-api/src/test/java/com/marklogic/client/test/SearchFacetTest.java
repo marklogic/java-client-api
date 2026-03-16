@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
@@ -8,6 +8,7 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.query.FacetResult;
@@ -21,7 +22,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.StringReader;
@@ -124,10 +124,7 @@ public class SearchFacetTest {
     throws IOException, ParserConfigurationException, SAXException, FailedRequestException, ForbiddenUserException,
            ResourceNotFoundException, ResourceNotResendableException
   {
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setValidating(false);
-    DocumentBuilder builder = factory.newDocumentBuilder();
+    DocumentBuilder builder = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder();
     Document document = builder.parse(new InputSource(new StringReader(options)));
 
     mgr = Common.restAdminClient.newServerConfigManager().newQueryOptionsManager();

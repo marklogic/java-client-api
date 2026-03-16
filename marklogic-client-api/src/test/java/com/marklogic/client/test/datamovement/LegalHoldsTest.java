@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test.datamovement;
 
@@ -88,7 +88,7 @@ public class LegalHoldsTest {
 //	 TODO This test failed when 2022 became 2023; increasing -7 to a higher number fixed it. The test could obviously
 //	  use some rework to ensure that it doesn't fail every time the year changes, but this comment is being left here
 //	  so that if/when this does fail in the future, it'll be easy to fix.
-    date.roll(Calendar.YEAR, -10);
+    date.roll(Calendar.YEAR, -11);
     StructuredQueryBuilder sqb = new StructuredQueryBuilder();
     StructuredQueryDefinition query =
       sqb.and(

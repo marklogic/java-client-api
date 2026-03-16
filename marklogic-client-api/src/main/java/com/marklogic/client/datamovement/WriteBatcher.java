@@ -3,14 +3,14 @@
  */
 package com.marklogic.client.datamovement;
 
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 /**
  * <p>To facilitate long-running write jobs, batches documents added by many
@@ -182,12 +182,7 @@ public interface WriteBatcher extends Batcher {
    *
    * @param queryEvent the information about the batch that failed
    */
-  public void retry(WriteBatch queryEvent);
-
-  /*
-  public WriteBatcher withTransactionSize(int transactionSize);
-  public int getTransactionSize();
-  */
+  void retry(WriteBatch queryEvent);
 
   /**
    * Get the array of WriteBatchListener instances registered via
@@ -361,5 +356,18 @@ public interface WriteBatcher extends Batcher {
    *
    * @param writeBatch the information about the batch that failed
    */
-  public void retryWithFailureListeners(WriteBatch writeBatch);
+  void retryWithFailureListeners(WriteBatch writeBatch);
+
+  /**
+   * Sets a filter to modify or replace the DocumentWriteSet before it is written.
+   * The filter can return either the modified DocumentWriteSet or a new one.
+   * If the filter returns null or an empty DocumentWriteSet, no write will occur.
+   *
+   * @param filter the function to apply before writing
+   * @return this instance for method chaining
+   * @since 8.1.0
+   */
+  default WriteBatcher withDocumentWriteSetFilter(DocumentWriteSetFilter filter) {
+	  return this;
+  }
 }

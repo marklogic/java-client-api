@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -7,24 +7,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.xpath.XPathFactory;
 import java.lang.ref.SoftReference;
+import java.util.function.Supplier;
 
 public final class XmlFactories {
 
 	private static final Logger logger = LoggerFactory.getLogger(XmlFactories.class);
 
   private static final CachedInstancePerThreadSupplier<XMLOutputFactory> cachedOutputFactory =
-    new CachedInstancePerThreadSupplier<XMLOutputFactory>(new Supplier<XMLOutputFactory>() {
-      @Override
-      public XMLOutputFactory get() {
-        return makeNewOutputFactory();
-      }
-    });
+    new CachedInstancePerThreadSupplier<>(XmlFactories::makeNewOutputFactory);
+
+  private static final CachedInstancePerThreadSupplier<DocumentBuilderFactory> cachedDocumentBuilderFactory =
+    new CachedInstancePerThreadSupplier<>(XmlFactories::makeNewDocumentBuilderFactory);
+
+  private static final CachedInstancePerThreadSupplier<XPathFactory> cachedXPathFactory =
+    new CachedInstancePerThreadSupplier<>(XPathFactory::newInstance);
+
+  private static final CachedInstancePerThreadSupplier<TransformerFactory> cachedTransformerFactory =
+    new CachedInstancePerThreadSupplier<>(XmlFactories::makeNewTransformerFactory);
 
   private XmlFactories() {} // preventing instances of utility class
 
@@ -62,19 +71,76 @@ public final class XmlFactories {
 		try {
 			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		} catch (TransformerConfigurationException e) {
-			logger.warn("Unable to set {} on TransformerFactory; cause: {}", XMLConstants.FEATURE_SECURE_PROCESSING, e.getMessage());
+			logTransformerWarning(XMLConstants.FEATURE_SECURE_PROCESSING, e.getMessage());
 		}
 		try {
 			factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
 		} catch (IllegalArgumentException e) {
-			logger.warn("Unable to set {} on TransformerFactory; cause: {}", XMLConstants.ACCESS_EXTERNAL_DTD, e.getMessage());
+			logTransformerWarning(XMLConstants.ACCESS_EXTERNAL_DTD, e.getMessage());
 		}
 		try {
 			factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
 		} catch (IllegalArgumentException e) {
-			logger.warn("Unable to set {} on TransformerFactory; cause: {}", XMLConstants.ACCESS_EXTERNAL_STYLESHEET, e.getMessage());
+			logTransformerWarning(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, e.getMessage());
 		}
 		return factory;
+	}
+
+	private static void logTransformerWarning(String xmlConstant, String errorMessage) {
+		logger.warn("Unable to set {} on TransformerFactory; cause: {}", xmlConstant, errorMessage);
+	}
+
+	private static DocumentBuilderFactory makeNewDocumentBuilderFactory() {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		// Default to best practices for conservative security including recommendations per
+		// https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
+		try {
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		} catch (ParserConfigurationException e) {
+			logger.warn("Unable to set FEATURE_SECURE_PROCESSING on DocumentBuilderFactory; cause: {}", e.getMessage());
+		}
+		try {
+			factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		} catch (ParserConfigurationException e) {
+			logger.warn("Unable to set disallow-doctype-decl on DocumentBuilderFactory; cause: {}", e.getMessage());
+		}
+		try {
+			factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		} catch (ParserConfigurationException e) {
+			logger.warn("Unable to set external-general-entities on DocumentBuilderFactory; cause: {}", e.getMessage());
+		}
+		try {
+			factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+		} catch (ParserConfigurationException e) {
+			logger.warn("Unable to set external-parameter-entities on DocumentBuilderFactory; cause: {}", e.getMessage());
+		}
+		try {
+			factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+		} catch (ParserConfigurationException e) {
+			logger.warn("Unable to set load-external-dtd on DocumentBuilderFactory; cause: {}", e.getMessage());
+		}
+		factory.setXIncludeAware(false);
+		factory.setExpandEntityReferences(false);
+		factory.setNamespaceAware(true);
+		factory.setValidating(false);
+
+		return factory;
+	}
+
+	/**
+	 * Returns a shared {@link DocumentBuilderFactory} configured with secure defaults.
+	 * <p>
+	 * Creating XML factories is potentially a pretty expensive operation. Using a shared instance helps to amortize
+	 * this initialization cost via reuse.
+	 *
+	 * @return  a securely configured {@link DocumentBuilderFactory}
+	 *
+	 * @since 8.1.0
+	 *
+	 * @see #makeNewDocumentBuilderFactory()  if you really (really?) need a non-shared instance
+	 */
+	public static DocumentBuilderFactory getDocumentBuilderFactory() {
+		return cachedDocumentBuilderFactory.get();
 	}
 
   /**
@@ -88,30 +154,52 @@ public final class XmlFactories {
    *
    * @throws FactoryConfigurationError  see {@link XMLOutputFactory#newInstance()}
    *
-   * @see #makeNewOutputFactory()  if you really (really?) need an non-shared instance
+   * @see #makeNewOutputFactory()  if you really (really?) need a non-shared instance
    */
   public static XMLOutputFactory getOutputFactory() {
     return cachedOutputFactory.get();
   }
 
-  /**
-   * Represents a supplier of results.
-   *
-   * <p>There is no requirement that a new or distinct result be returned each
-   * time the supplier is invoked.
-   *
-   * @param <T> the type of results supplied by this supplier
-   */
-   // TODO replace with java.util.function.Supplier<T> after Java 8 migration
-  interface Supplier<T> {
+	/**
+	 * Returns a shared {@link XPathFactory}.
+	 * <p>
+	 * Creating XML factories is potentially a pretty expensive operation. Using a shared instance helps to amortize
+	 * this initialization cost via reuse.
+	 *
+	 * @return  a {@link XPathFactory}
+	 *
+	 * @since 8.1.0
+	 */
+	public static XPathFactory getXPathFactory() {
+		return cachedXPathFactory.get();
+	}
 
-    /**
-     * Gets a result.
-     *
-     * @return a result
-     */
-    T get();
-  }
+	/**
+	 * Returns a shared {@link TransformerFactory} configured with secure defaults.
+	 * <p>
+	 * Creating XML factories is potentially a pretty expensive operation. Using a shared instance helps to amortize
+	 * this initialization cost via reuse.
+	 *
+	 * @return  a securely configured {@link TransformerFactory}
+	 *
+	 * @since 8.1.0
+	 */
+	public static TransformerFactory getTransformerFactory() {
+		return cachedTransformerFactory.get();
+	}
+
+	/**
+	 * Creates a new {@link Transformer} from the shared {@link TransformerFactory}.
+	 *
+	 * @since 8.1.0
+	 */
+	public static Transformer newTransformer() {
+		try {
+			return getTransformerFactory().newTransformer();
+		} catch (TransformerConfigurationException e) {
+			throw new RuntimeException("Unable to create new Transformer from TransformerFactory", e);
+		}
+	}
 
   /**
    * A supplier that caches results per thread.
@@ -129,7 +217,7 @@ public final class XmlFactories {
    */
   private static class CachedInstancePerThreadSupplier<T> implements Supplier<T> {
 
-    private final ThreadLocal<SoftReference<T>> cachedInstances = new ThreadLocal<SoftReference<T>>();
+    private final ThreadLocal<SoftReference<T>> cachedInstances = new ThreadLocal<>();
 
     /**
      * The underlying supplier, invoked to originally retrieve the per-thread result
@@ -167,7 +255,7 @@ public final class XmlFactories {
         }
 
         // ... and retain it for later re-use
-        cachedInstances.set(new SoftReference<T>(cachedInstance));
+        cachedInstances.set(new SoftReference<>(cachedInstance));
       }
 
       return cachedInstance;

@@ -16,4 +16,8 @@
 		<appender-ref ref="STDOUT" />
 	</logger>
 
+	<logger name="com.marklogic.client.impl.RetryContext" level="DEBUG" additivity="false">
+		<appender-ref ref="STDOUT" />
+	</logger>
+
 </configuration>

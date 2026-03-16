@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -487,6 +487,10 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   public PlanSparqlOptions sparqlOptions() {
     return new PlanSparqlOptionsImpl(this);
   }
+  @Override
+  public PlanTransitiveClosureOptions transitiveClosureOptions() {
+    return new PlanTransitiveClosureOptionsImpl(this);
+  }
   static class PlanSparqlOptionsImpl implements PlanSparqlOptions {
     private PlanBuilderBaseImpl pb;
     private XsBooleanVal deduplicate;
@@ -523,6 +527,45 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     @Override
     public PlanSparqlOptions withDeduplicated(XsBooleanVal deduplicate) {
       return new PlanSparqlOptionsImpl(this.pb, deduplicate, this.base);
+    }
+  }
+
+  static class PlanTransitiveClosureOptionsImpl implements PlanTransitiveClosureOptions {
+    private PlanBuilderBaseImpl pb;
+    private XsLongVal minLength;
+    private XsLongVal maxLength;
+    PlanTransitiveClosureOptionsImpl(PlanBuilderBaseImpl pb) {
+      this.pb = pb;
+    }
+    PlanTransitiveClosureOptionsImpl(PlanBuilderBaseImpl pb, XsLongVal minLength, XsLongVal maxLength) {
+      this(pb);
+      this.minLength = minLength;
+      this.maxLength = maxLength;
+    }
+
+    @Override
+    public XsLongVal getMinLength() {
+      return minLength;
+    }
+    @Override
+    public PlanTransitiveClosureOptions withMinLength(long minLength) {
+      return withMinLength(pb.xs.longVal(minLength));
+    }
+    @Override
+    public PlanTransitiveClosureOptions withMinLength(XsLongVal minLength) {
+      return new PlanTransitiveClosureOptionsImpl(this.pb, minLength, this.maxLength);
+    }
+    @Override
+    public XsLongVal getMaxLength() {
+      return maxLength;
+    }
+    @Override
+    public PlanTransitiveClosureOptions withMaxLength(long maxLength) {
+      return withMaxLength(pb.xs.longVal(maxLength));
+    }
+    @Override
+    public PlanTransitiveClosureOptions withMaxLength(XsLongVal maxLength) {
+      return new PlanTransitiveClosureOptionsImpl(this.pb, this.minLength, maxLength);
     }
   }
 
@@ -740,6 +783,29 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
       } else {
         mapdef.put("base", base.getString());
       }
+    }
+
+    return mapdef;
+  }
+  static Map<String,Object> makeMap(PlanTransitiveClosureOptions options) {
+    if (options == null) {
+      return null;
+    }
+
+    Map<String,Object> mapdef = null;
+
+    XsLongVal minLength = options.getMinLength();
+    if (minLength != null) {
+      mapdef = new HashMap<>();
+      mapdef.put("minLength", minLength.getLong());
+    }
+
+    XsLongVal maxLength = options.getMaxLength();
+    if (maxLength != null) {
+      if (mapdef == null) {
+        mapdef = new HashMap<>();
+      }
+      mapdef.put("maxLength", maxLength.getLong());
     }
 
     return mapdef;
@@ -1180,6 +1246,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
         case "from-doc-uris":
         case "from-param":
         case "from-doc-descriptors":
+        case "from-docs":
           if (fnArgs.length < 1) {
             throw new IllegalArgumentException("accessor constructor without parameters: "+fnArgs.length);
           }

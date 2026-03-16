@@ -185,7 +185,7 @@ public class DatabaseClientPropertySource {
 				return newBasicAuthContext(connectionString);
 			case DatabaseClientBuilder.AUTH_TYPE_DIGEST:
 				return newDigestAuthContext(connectionString);
-			case DatabaseClientBuilder.AUTH_TYPE_MARKLOGIC_CLOUD:
+			case DatabaseClientBuilder.AUTH_TYPE_CLOUD:
 				return newCloudAuthContext();
 			case DatabaseClientBuilder.AUTH_TYPE_KERBEROS:
 				return newKerberosAuthContext();
@@ -400,7 +400,7 @@ public class DatabaseClientPropertySource {
 		}
 		// For convenience for Progress Data Cloud users, assume the JVM's default SSLContext should trust the certificate
 		// used by Progress Data Cloud. A user can always override this default behavior by providing their own SSLContext.
-		if ((sslProtocol == null || sslProtocol.length() == 0) && DatabaseClientBuilder.AUTH_TYPE_MARKLOGIC_CLOUD.equalsIgnoreCase(authType)) {
+		if ((sslProtocol == null || sslProtocol.length() == 0) && DatabaseClientBuilder.AUTH_TYPE_CLOUD.equalsIgnoreCase(authType)) {
 			sslProtocol = "default";
 		}
 		return sslProtocol;

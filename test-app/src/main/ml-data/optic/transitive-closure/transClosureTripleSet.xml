@@ -1,0 +1,107 @@
+<?xml  version="1.0" encoding="UTF-8"?>
+<tripleSets xmlns:sem="http://marklogic.com/semantics">
+<masterRelated>
+<sem:triples>
+<sem:triple>
+<sem:subject>http://test.optic.tc#Alice</sem:subject>
+<sem:predicate>http://marklogic.com/transitiveClosure/parent</sem:predicate>
+<sem:object>http://test.optic.tc#Bob</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#Bob</sem:subject>
+<sem:predicate>http://marklogic.com/transitiveClosure/parent</sem:predicate>
+<sem:object>http://test.optic.tc#Carol</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#Carol</sem:subject>
+<sem:predicate>http://marklogic.com/transitiveClosure/parent</sem:predicate>
+<sem:object>http://test.optic.tc#David</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#David</sem:subject>
+<sem:predicate>http://marklogic.com/transitiveClosure/parent</sem:predicate>
+<sem:object>http://test.optic.tc#Eve</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#Eve</sem:subject>
+<sem:predicate>http://marklogic.com/transitiveClosure/parent</sem:predicate>
+<sem:object>http://test.optic.tc#Frank</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#George</sem:subject>
+<sem:predicate>http://marklogic.com/transitiveClosure/parent</sem:predicate>
+<sem:object>http://test.optic.tc#Helen</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#Helen</sem:subject>
+<sem:predicate>http://marklogic.com/transitiveClosure/parent</sem:predicate>
+<sem:object>http://test.optic.tc#Ian</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#Alice</sem:subject>
+<sem:predicate>http://marklogic.com/transitiveClosure/parent</sem:predicate>
+<sem:object>http://test.optic.tc#Cindy</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#Cindy</sem:subject>
+<sem:predicate>http://marklogic.com/transitiveClosure/parent</sem:predicate>
+<sem:object>http://test.optic.tc#John</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#Alice</sem:subject>
+<sem:predicate>http://test.optic.tc#label</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Alice</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#Bob</sem:subject>
+<sem:predicate>http://test.optic.tc#label</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Bob</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#Eve</sem:subject>
+<sem:predicate>http://test.optic.tc#label</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Eve</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#Cindy</sem:subject>
+<sem:predicate>http://test.optic.tc#label</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Cindy</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#Helen</sem:subject>
+<sem:predicate>http://test.optic.tc#label</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Helen</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#Ian</sem:subject>
+<sem:predicate>http://test.optic.tc#label</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Ian</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#John</sem:subject>
+<sem:predicate>http://test.optic.tc#label</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#string">John</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#David</sem:subject>
+<sem:predicate>http://test.optic.tc#label</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#string">David</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#George</sem:subject>
+<sem:predicate>http://test.optic.tc#label</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#string">George</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#Carol</sem:subject>
+<sem:predicate>http://test.optic.tc#label</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Carol</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject>http://test.optic.tc#Frank</sem:subject>
+<sem:predicate>http://test.optic.tc#label</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Frank</sem:object>
+</sem:triple>
+</sem:triples>
+</masterRelated>
+</tripleSets>

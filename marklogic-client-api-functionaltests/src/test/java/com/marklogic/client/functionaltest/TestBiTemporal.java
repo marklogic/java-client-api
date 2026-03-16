@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.functionaltest;
@@ -37,7 +37,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestBiTemporal extends BasicJavaClientREST {
+class TestBiTemporal extends BasicJavaClientREST {
 
   private static String dbName = "TestBiTemporalJava";
   private static String[] fNames = { "TestBiTemporalJava-1" };
@@ -251,11 +251,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
         System.out.println("validStartDate = " + validStartDate);
         System.out.println("validEndDate = " + validEndDate);
 
-        assertTrue(
-            (validStartDate.equals("2001-01-01T00:00:00") &&
-                validEndDate.equals("2011-12-31T23:59:59") &&
-                systemStartDate.equals("2005-01-01T00:00:01-08:00") &&
-            systemEndDate.equals("2010-01-01T00:00:01-08:00")));
+		  assertEquals("2001-01-01T00:00:00", validStartDate);
+		  assertEquals("2011-12-31T23:59:59", validEndDate);
+		  assertTrue(systemStartDate.startsWith("2005-01-01T00:00:01"), "Unexpected system start date: " + systemStartDate);
+		  assertTrue(systemEndDate.startsWith("2010-01-01T00:00:01"), "Unexpected system end date: " + systemEndDate);
       }
     }
 
@@ -591,8 +590,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   private JacksonDatabindHandle<ObjectNode> getJSONDocumentHandle(
-      String startValidTime, String endValidTime, String address, String uri)
-      throws Exception {
+      String startValidTime, String endValidTime, String address, String uri) {
 
     // Setup for JSON document
     /**
@@ -1421,11 +1419,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
   @Test
   public void testAdvancingLSQT() throws Exception {
       try {
-          System.out.println("Inside testAdvancingLSQT");
           ConnectedRESTQA.disableAutomationOnTemporalCollection(dbName, temporalLsqtCollectionName, true);
 
           String docId = "javaSingleJSONDoc.json";
-          String afterLSQTAdvance = null;
 
           Calendar firstInsertTime = DatatypeConverter.parseDateTime("2010-01-01T00:00:01");
           JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
@@ -1455,65 +1451,59 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
           long startLSQT = 1;
           JSONDocumentManager docMgrQy = adminClient.newJSONDocumentManager();
-          String WithoutAdvaceSetExceptMsg = "Timestamp 2007-01-01T00:00:01-08:00 provided is greater than LSQT 1601-01-01T00:00:00Z";
           String actualNoAdvanceMsg = null;
-          DocumentPage termQueryResultsLSQT = null;
           try {
-              termQueryResultsLSQT = docMgrQy.search(periodQueryLSQT, startLSQT);
-          }
-          catch(Exception ex) {
+              docMgrQy.search(periodQueryLSQT, startLSQT);
+          } catch(Exception ex) {
               actualNoAdvanceMsg = ex.getMessage();
-              System.out.println("Exception message for LSQT without advance set is " + actualNoAdvanceMsg);
           }
-          assertTrue(actualNoAdvanceMsg.contains(WithoutAdvaceSetExceptMsg));
+          assertTrue(actualNoAdvanceMsg.contains("please provide a timestamp before LSQT"),
+			  "Unexpected message: " + actualNoAdvanceMsg);
 
           // Set the Advance manually.
           docMgr.advanceLsqt(temporalLsqtCollectionName);
-          termQueryResultsLSQT = docMgrQy.search(periodQueryLSQT, startLSQT);
+		  DocumentPage termQueryResultsLSQT = docMgrQy.search(periodQueryLSQT, startLSQT);
 
-          assertTrue(termQueryResultsLSQT.getTotalPages() == 0);
-          assertTrue(termQueryResultsLSQT.size() == 0);
+          assertEquals(0, termQueryResultsLSQT.getTotalPages());
+          assertEquals(0, termQueryResultsLSQT.size());
 
           // After Advance of the LSQT, query again with new query time greater than LSQT
-
-          afterLSQTAdvance = desc.getTemporalSystemTime();
+          String afterLSQTAdvance = desc.getTemporalSystemTime();
           Calendar queryTimeLSQT2 = DatatypeConverter.parseDateTime(afterLSQTAdvance);
           queryTimeLSQT2.add(Calendar.YEAR, 10);
           docMgrQy = adminClient.newJSONDocumentManager();
           docMgrQy.setMetadataCategories(Metadata.ALL); // Get all meta-data
-          StructuredQueryDefinition periodQueryLSQT2 = sqbLSQT.temporalLsqtQuery(temporalLsqtCollectionName, queryTimeLSQT2, 0, new String[] {});
+          StructuredQueryDefinition periodQueryLSQT2 = sqbLSQT.temporalLsqtQuery(temporalLsqtCollectionName, queryTimeLSQT2, 0);
 
-          String excepMsgGrtr = "Timestamp 2020-01-01T00:00:01-08:00 provided is greater than LSQT 2010-01-01T08:00:01Z";
           String actGrMsg = null;
-          DocumentPage termQueryResultsLSQT2 = null;
           try {
-              termQueryResultsLSQT2 = docMgrQy.search(periodQueryLSQT2, startLSQT);
+              docMgrQy.search(periodQueryLSQT2, startLSQT);
           }
           catch(Exception ex) {
               actGrMsg = ex.getMessage();
           }
-          assertTrue(actGrMsg.contains(excepMsgGrtr));
+          assertTrue(actGrMsg.contains("provided is greater than LSQT"));
 
           // Query again with query time less than LSQT. 10 minutes less than the LSQT
           Calendar lessTime = DatatypeConverter.parseDateTime("2009-01-01T00:00:01");
 
-          periodQueryLSQT2 = sqbLSQT.temporalLsqtQuery(temporalLsqtCollectionName, lessTime, 0, new String[] {});
-          termQueryResultsLSQT2 = docMgrQy.search(periodQueryLSQT2, startLSQT);
+          periodQueryLSQT2 = sqbLSQT.temporalLsqtQuery(temporalLsqtCollectionName, lessTime, 0);
+          DocumentPage termQueryResultsLSQT2 = docMgrQy.search(periodQueryLSQT2, startLSQT);
 
           System.out.println("LSQT Query results (Total Pages) after advance " + termQueryResultsLSQT2.getTotalPages());
           System.out.println("LSQT Query results (Size) after advance " + termQueryResultsLSQT2.size());
-          assertTrue(termQueryResultsLSQT2.getTotalPages() == 0);
-          assertTrue(termQueryResultsLSQT2.size() == 0);
+          assertEquals(0, termQueryResultsLSQT2.getTotalPages());
+          assertEquals(0, termQueryResultsLSQT2.size());
 
           // Query again with query time equal to LSQT.
           queryTimeLSQT2 = DatatypeConverter.parseDateTime(afterLSQTAdvance);
-          periodQueryLSQT2 = sqbLSQT.temporalLsqtQuery(temporalLsqtCollectionName, queryTimeLSQT2, 0, new String[] {});
+          periodQueryLSQT2 = sqbLSQT.temporalLsqtQuery(temporalLsqtCollectionName, queryTimeLSQT2, 0);
           termQueryResultsLSQT2 = docMgrQy.search(periodQueryLSQT2, startLSQT);
 
           System.out.println("LSQT Query results (Total Pages) after advance " + termQueryResultsLSQT2.getTotalPages());
           System.out.println("LSQT Query results (Size) after advance " + termQueryResultsLSQT2.size());
-          assertTrue(termQueryResultsLSQT2.getTotalPages() == 1);
-          assertTrue(termQueryResultsLSQT2.size() == 1);
+		  assertEquals(1, termQueryResultsLSQT2.getTotalPages());
+		  assertEquals(1, termQueryResultsLSQT2.size());
 
           while (termQueryResultsLSQT2.hasNext()) {
               DocumentRecord record = termQueryResultsLSQT2.next();
@@ -1621,7 +1611,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
           docMgr.advanceLsqt(temporalLsqtCollectionName);
           afterLSQTAdvance = desc.getTemporalSystemTime();
           System.out.println("LSQT on collection after update and manual advance is " + afterLSQTAdvance);
-          assertTrue(desc.getTemporalSystemTime().trim().contains("2010-01-06T00:00:01-08:00"));
+          assertTrue(desc.getTemporalSystemTime().trim().contains("2010-01-06T00:00:01"),
+			  "Unexpected time: " + desc.getTemporalSystemTime().trim());
 
           // Verify that the document was updated
           // Make sure there are 1 documents in latest collection
@@ -1678,13 +1669,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
                       ObjectNode.class);
               recordContains.getContent(recordContainsHandle);
               String docContents = recordContainsHandle.toString();
-              System.out.println("Content = " + docContents);
-              assertTrue(docContents.contains("\"javaValidStartERI\":\"2001-01-01T00:00:00\",\"javaValidEndERI\":\"2011-12-31T23:59:59\""));
+              assertTrue(docContents.contains("\"javaValidStartERI\":\"2001-01-01T00:00:00\",\"javaValidEndERI\":\"2011-12-31T23:59:59\""),
+				  "Unexpected docContents: " + docContents);
           }
       }
-    catch (Exception ex) {
-        System.out.println("Exception thrown from testAdvacingLSQT method " + ex.getMessage() );
-    }
     finally {
         ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName, temporalLsqtCollectionName, true);
     }
@@ -3605,13 +3593,12 @@ public class TestBiTemporal extends BasicJavaClientREST {
   Similar to testAdvancingLSQT - using CtsQueryBuilder.
    */
   @Test
-  public void testAdvancingLSQTWithCtsQueryBuilder() throws Exception {
+  public void testAdvancingLSQTWithCtsQueryBuilder() {
       try {
         System.out.println("Inside testAdvancingLSQTWithCtsQueryBuilder");
         ConnectedRESTQA.disableAutomationOnTemporalCollection(dbName, temporalLsqtCollectionName, true);
 
         String docId = "javaSingleJSONDoc.json";
-        String afterLSQTAdvance = null;
 
         Calendar firstInsertTime = DatatypeConverter.parseDateTime("2010-01-01T00:00:01");
         JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
@@ -3637,38 +3624,33 @@ public class TestBiTemporal extends BasicJavaClientREST {
         CtsQueryBuilder sqbLSQT = queryMgrLSQT.newCtsSearchBuilder();
 
         XsStringVal collName = sqbLSQT.xs.string(temporalLsqtCollectionName);
-        XsStringSeqVal options = sqbLSQT.xs.stringSeq("", "");
         Calendar calTimeLSQT = DatatypeConverter.parseDateTime("2007-01-01T00:00:01");
 
         XsDateTimeVal queryTimeLSQT = sqbLSQT.xs.dateTime(calTimeLSQT);
-        XsDoubleVal weight = sqbLSQT.xs.doubleVal(0.0);
 
         CtsQueryExpr ctsQueryExpr = sqbLSQT.cts.lsqtQuery(collName, queryTimeLSQT);
         CtsQueryDefinition periodQueryLSQT = sqbLSQT.newCtsQueryDefinition(ctsQueryExpr);
 
         long startLSQT = 1;
         JSONDocumentManager docMgrQy = adminClient.newJSONDocumentManager();
-        String WithoutAdvaceSetExceptMsg = "Timestamp 2007-01-01T00:00:01-08:00 provided is greater than LSQT 1601-01-01T00:00:00Z";
         String actualNoAdvanceMsg = null;
-        DocumentPage termQueryResultsLSQT = null;
         try {
-          termQueryResultsLSQT = docMgrQy.search(periodQueryLSQT, startLSQT);
+          docMgrQy.search(periodQueryLSQT, startLSQT);
         } catch (Exception ex) {
           actualNoAdvanceMsg = ex.getMessage();
-          System.out.println("Exception message for LSQT without advance set is " + actualNoAdvanceMsg);
         }
-        assertTrue(actualNoAdvanceMsg.contains(WithoutAdvaceSetExceptMsg));
+        assertTrue(actualNoAdvanceMsg.contains("please provide a timestamp before LSQT"),
+			"Unexpected message: " + actualNoAdvanceMsg);
 
         // Set the Advance manually.
         docMgr.advanceLsqt(temporalLsqtCollectionName);
-        termQueryResultsLSQT = docMgrQy.search(periodQueryLSQT, startLSQT);
+        DocumentPage termQueryResultsLSQT = docMgrQy.search(periodQueryLSQT, startLSQT);
 
         assertTrue(termQueryResultsLSQT.getTotalPages() == 0);
         assertTrue(termQueryResultsLSQT.size() == 0);
 
         // After Advance of the LSQT, query again with new query time greater than LSQT
-
-        afterLSQTAdvance = desc.getTemporalSystemTime();
+        String afterLSQTAdvance = desc.getTemporalSystemTime();
         Calendar calTimeLSQT2 = DatatypeConverter.parseDateTime(afterLSQTAdvance);
         calTimeLSQT2.add(Calendar.YEAR, 10);
         XsDateTimeVal queryTimeLSQT2 = sqbLSQT.xs.dateTime(calTimeLSQT2);
@@ -3678,15 +3660,13 @@ public class TestBiTemporal extends BasicJavaClientREST {
         CtsQueryExpr ctsQueryExpr2 = sqbLSQT.cts.lsqtQuery(collName, queryTimeLSQT2);
         CtsQueryDefinition periodQueryLSQT2 = sqbLSQT.newCtsQueryDefinition(ctsQueryExpr2);
 
-        String excepMsgGrtr = "Timestamp 2020-01-01T00:00:01-08:00 provided is greater than LSQT 2010-01-01T08:00:01Z";
         String actGrMsg = null;
-        DocumentPage termQueryResultsLSQT2 = null;
         try {
-          termQueryResultsLSQT2 = docMgrQy.search(periodQueryLSQT2, startLSQT);
+          docMgrQy.search(periodQueryLSQT2, startLSQT);
         } catch (Exception ex) {
           actGrMsg = ex.getMessage();
         }
-        assertTrue(actGrMsg.contains(excepMsgGrtr));
+        assertTrue(actGrMsg.contains("provided is greater than LSQT"), "Unexpected message: " + actGrMsg);
 
         // Query again with query time less than LSQT. 10 minutes less than the LSQT
         Calendar callessTime = DatatypeConverter.parseDateTime("2009-01-01T00:00:01");
@@ -3694,14 +3674,12 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
         CtsQueryExpr ctsQueryExprLess = sqbLSQT.cts.lsqtQuery(collName, lessTime/*, options, weight*/);
         CtsQueryDefinition lessDef = sqbLSQT.newCtsQueryDefinition(ctsQueryExprLess);
-        termQueryResultsLSQT2 = docMgrQy.search(lessDef, startLSQT);
+        DocumentPage termQueryResultsLSQT2 = docMgrQy.search(lessDef, startLSQT);
 
         System.out.println("LSQT Query results (Total Pages) after advance " + termQueryResultsLSQT2.getTotalPages());
         System.out.println("LSQT Query results (Size) after advance " + termQueryResultsLSQT2.size());
-        assertTrue(termQueryResultsLSQT2.getTotalPages() == 0);
-        assertTrue(termQueryResultsLSQT2.size() == 0);
-      } catch (Exception ex) {
-        System.out.println("Exception thrown from testAdvacingLSQT method " + ex.getMessage());
+        assertEquals(0, termQueryResultsLSQT2.getTotalPages());
+		assertEquals(0, termQueryResultsLSQT2.size());
       } finally {
         ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName, temporalLsqtCollectionName, true);
       }

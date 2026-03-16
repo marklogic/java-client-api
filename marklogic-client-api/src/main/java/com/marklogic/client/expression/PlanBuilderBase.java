@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.expression;
 
@@ -355,6 +355,16 @@ public interface PlanBuilderBase {
      * @return  the configuration object
      */
     PlanSparqlOptions sparqlOptions();
+
+    /**
+     * Provides a transitive closure option object to configure the execution of the
+     * {@link PlanBuilder.ModifyPlan#transitiveClosure(PlanExprCol, PlanExprCol, PlanTransitiveClosureOptions)}
+     * operator.  Use the fluent methods of the transitive closure option object
+     * to set the configuration.
+     * @return  the configuration object
+	 * @since 8.1.0; requires MarkLogic 12.1 or higher
+     */
+    PlanTransitiveClosureOptions transitiveClosureOptions();
 
     /**
      * Specifies a JavaScript or XQuery function installed on the server for use
