@@ -1,0 +1,50 @@
+%%{init: {"theme": "neutral"}}%%
+graph TD
+    subgraph callers["Calling Code"]
+        APP["Java Application / Examples"]
+    end
+
+    subgraph core["marklogic-client-api (core)"]
+        DatabaseClient["DatabaseClient\n(entry-point factory)"]
+        DocMgr["Document Managers\n(JSON / XML / Text / Binary / Generic)"]
+        QueryMgr["QueryManager\n(search, cts, SPARQL)"]
+        TxMgr["TransactionManager\n(ACID multi-statement)"]
+        RowMgr["RowManager\n(Optic / SQL)"]
+        DataSvc["Data Services\n(generated proxies)"]
+        RESTServices["RESTServices\n(OkHttp transport layer)"]
+    end
+
+    subgraph devtools["ml-development-tools"]
+        CodeGen["Proxy Code Generator\n(Kotlin)"]
+    end
+
+    subgraph testapp["test-app"]
+        MLConfig["ml-config\n(DB, forests, REST server)"]
+        MLModules["ml-modules\n(XQuery / SJS modules)"]
+        MLSchemas["ml-schemas\n(TDE templates)"]
+    end
+
+    subgraph server["MarkLogic Server (Docker / remote)"]
+        REST["REST Client API\n(port 8000 / 8002)"]
+        XDBC["e-node internal"]
+    end
+
+    APP --> DatabaseClient
+    DatabaseClient --> DocMgr
+    DatabaseClient --> QueryMgr
+    DatabaseClient --> TxMgr
+    DatabaseClient --> RowMgr
+    DatabaseClient --> DataSvc
+    DocMgr --> RESTServices
+    QueryMgr --> RESTServices
+    TxMgr --> RESTServices
+    RowMgr --> RESTServices
+    DataSvc --> RESTServices
+    RESTServices -->|"HTTP Digest / Cert auth"| REST
+    REST --> XDBC
+
+    CodeGen -->|"generates Java proxy classes"| DataSvc
+
+    MLConfig -->|"mlDeploy"| REST
+    MLModules -->|"mlDeploy"| REST
+    MLSchemas -->|"mlReloadSchemas"| REST
