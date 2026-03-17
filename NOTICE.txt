@@ -1,4 +1,4 @@
-Progress MarkLogic Java Client
+Progress MarkLogic Java Client 8.1.0
 
 Portions of the Products include certain open source and commercial third-party
 components listed below ("Third-Party Components"). The authors of the
@@ -71,9 +71,9 @@ conditions:
 
 (1) Apache License 2.0:
 
-Progress MarkLogic Java Client incorporates Jetbrains annotations
-13.0, OkHttp 5.3.2, OkHttp Logging Interceptor 5.3.2, Zero-allocation Hashing
-2026.0, jackson-annotations 2.21, jackson-bom 2.21.1, jackson-core 2.21.1,
+Progress MarkLogic Java Client 8.1.0 incorporates Jetbrains annotations 13.0,
+OkHttp 5.3.2, OkHttp Logging Interceptor 5.3.2, Zero-allocation Hashing 2026.0,
+jackson-annotations 2.21, jackson-bom 2.21.1, jackson-core 2.21.1,
 jackson-databind 2.21.1, jackson-dataformat-csv 2.21.1, jackson-dataformat-yaml
 2.21.1, jackson-module-kotlin 2.21.1, java-json-canonicalization 1.1,
 kotlin-reflect 2.1.21, okhttp-digest 3.1.1, and squareokio 3.16.4.
@@ -386,7 +386,7 @@ Contents of NOTICE text file for jackson-module-kotlin 2.21.1:
 
 (2) BSD 3-Clause "New" or "Revised" License:
 
-Progress MarkLogic Java Client incorporates Jakarta Activation 2.0.1.
+Progress MarkLogic Java Client 8.1.0 incorporates Jakarta Activation 2.0.1.
 
   Copyright (c) , Oracle and/or its affiliates All rights reserved.
 
@@ -421,9 +421,9 @@ Progress MarkLogic Java Client incorporates Jakarta Activation 2.0.1.
 
 (3) Eclipse Distribution License - v 1.0:
 
-Progress MarkLogic Java Client incorporates Angus Activation
-Registries 2.0.3, JAXB CORE 4.0.6, JAXB Runtime 4.0.6, Jakarta Activation API
-2.1.4, TXW2 Runtime 4.0.6, istack common utility code runtime 4.1.2, and
+Progress MarkLogic Java Client 8.1.0 incorporates Angus Activation Registries
+2.0.3, JAXB CORE 4.0.6, JAXB Runtime 4.0.6, Jakarta Activation API 2.1.4, TXW2
+Runtime 4.0.6, istack common utility code runtime 4.1.2, and
 jakarta.xml.bind:jakarta.xml.bind-api 4.0.5.
 
   Eclipse Distribution License - v 1.0
@@ -462,7 +462,7 @@ jakarta.xml.bind:jakarta.xml.bind-api 4.0.5.
 
 (4) Eclipse Public License 2.0:
 
-Progress MarkLogic Java Client incorporates Jakarta Mail 2.0.2.
+Progress MarkLogic Java Client 8.1.0 incorporates Jakarta Mail 2.0.2.
 
   Eclipse Public License - v 2.0
   ==============================
@@ -736,7 +736,7 @@ Progress MarkLogic Java Client incorporates Jakarta Mail 2.0.2.
 
 (5) MIT License:
 
-Progress MarkLogic Java Client incorporates SLF4J API Module 2.0.17.
+Progress MarkLogic Java Client 8.1.0 incorporates SLF4J API Module 2.0.17.
 
   The MIT License
   ===============
