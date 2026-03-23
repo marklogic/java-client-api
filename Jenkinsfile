@@ -198,6 +198,22 @@ pipeline {
 					./gradlew publish
         '''
 			}
+			post {
+				always {
+					sh label: 'generate-javadoc', script: '''#!/bin/bash
+						export JAVA_HOME=$JAVA_HOME_DIR
+						export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+						export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+						cd java-client-api
+						./gradlew javadoc
+						echo "Zipping javadocs for easy download..."
+						cd marklogic-client-api/build/docs
+						zip -r javadoc.zip javadoc/
+						mv javadoc.zip $WORKSPACE/
+	        '''
+					archiveArtifacts artifacts: 'javadoc.zip', fingerprint: true
+				}
+			}
 		}
 
 		stage('regressions') {
