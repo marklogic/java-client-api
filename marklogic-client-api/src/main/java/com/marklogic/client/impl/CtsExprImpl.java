@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.impl;
@@ -16,6 +16,7 @@ import com.marklogic.client.type.XsStringVal;
 import com.marklogic.client.type.XsUnsignedLongVal;
 
 import com.marklogic.client.type.ServerExpression;
+import com.marklogic.client.type.PlanParamExpr;
 import com.marklogic.client.type.CtsBoxExpr;
 import com.marklogic.client.type.CtsBoxSeqExpr;
 import com.marklogic.client.type.CtsCircleExpr;
@@ -2174,6 +2175,12 @@ class CtsExprImpl implements CtsExpr {
 
   @Override
   public CtsQueryExpr wordQuery(ServerExpression text) {
+    return new QueryCallImpl("cts", "word-query", new Object[]{ text });
+  }
+
+
+  @Override
+  public CtsQueryExpr wordQuery(PlanParamExpr text) {
     return new QueryCallImpl("cts", "word-query", new Object[]{ text });
   }
 
