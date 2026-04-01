@@ -55,7 +55,7 @@ dependencies {
 	testImplementation 'org.apache.commons:commons-lang3:3.20.0'
 
 	// Allows talking to the Manage API.
-	testImplementation "com.marklogic:ml-app-deployer:6.2-SNAPSHOT"
+	testImplementation "com.marklogic:ml-app-deployer:6.2.0"
 
 	testImplementation "org.mockito:mockito-core:5.22.0"
 
