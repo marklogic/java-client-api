@@ -361,6 +361,39 @@ pipeline {
 				}
 			}
 		}
+
+		stage('regressions-12 arm infrastructure') {
+			when {
+				beforeAgent true
+				branch 'develop'
+				expression { return params.regressions }
+				expression { return env.EC2_PRIVATE_IP != null }
+			}
+			agent { label "java-client-agent-${BUILD_NUMBER}" }
+			environment {
+				JAVA_HOME_DIR = getJavaHomePathForARM()
+				PLATFORM = "linux/arm64"
+				MARKLOGIC_INSTALL_CONVERTERS = "false"
+			}
+			steps {
+				checkout([$class                           : 'GitSCM',
+									branches                         : scm.branches,
+									doGenerateSubmoduleConfigurations: false,
+									extensions                       : [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'java-client-api']],
+									submoduleCfg                     : [],
+									userRemoteConfigs                : scm.userRemoteConfigs])
+
+				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi9-arm:latest-12")
+			}
+			post {
+				always {
+					archiveArtifacts artifacts: 'java-client-api/**/build/reports/**/*.html'
+					junit '**/build/**/TEST*.xml'
+					updateWorkspacePermissions()
+					tearDownDocker()
+				}
+			}
+		}
 	}
 
 	post {
