@@ -329,7 +329,7 @@ pipeline {
 			}
 		}
 
-		stage('regressions-11 arm infrastructure') {
+		stage('regressions-arm infrastructure') {
 			when {
 				beforeAgent true
 				branch 'develop'
@@ -350,14 +350,22 @@ pipeline {
 									submoduleCfg                     : [],
 									userRemoteConfigs                : scm.userRemoteConfigs])
 
-				runTests("ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi9-arm:latest-11")
-			}
-			post {
-				always {
-					archiveArtifacts artifacts: 'java-client-api/**/build/reports/**/*.html'
-					junit '**/build/**/TEST*.xml'
-					updateWorkspacePermissions()
-					tearDownDocker()
+				script {
+					def imagePrefix = 'ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/marklogic-server-ubi9-arm:'
+
+					['latest-11', 'latest-12'].each { tag ->
+						def fullImage = imagePrefix + tag
+						stage("regressions-arm-${tag}") {
+							try {
+								runTests(fullImage)
+							} finally {
+								archiveArtifacts artifacts: 'java-client-api/**/build/reports/**/*.html'
+								junit '**/build/**/TEST*.xml'
+								updateWorkspacePermissions()
+								tearDownDocker()
+							}
+						}
+					}
 				}
 			}
 		}
