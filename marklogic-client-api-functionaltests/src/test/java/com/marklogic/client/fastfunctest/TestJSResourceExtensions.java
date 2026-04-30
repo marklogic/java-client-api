@@ -112,7 +112,7 @@ public class TestJSResourceExtensions extends AbstractFunctionalTest {
 
   @BeforeAll
   public static void setUpBeforeClass() throws Exception {
-    createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:value", "xdmp:eval", "xdmp:eval-in", "any-uri", "xdbc:invoke");
+    createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:value", "xdmp:eval", "xdmp:eval-in", "any-uri", "xdbc:invoke", "xdmp-login");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "rest-extension-user");
   }
 

@@ -121,7 +121,7 @@ class TestBiTemporal extends BasicJavaClientREST {
   @BeforeEach
   public void setUp() throws Exception {
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri",
-        "xdbc:invoke", "temporal:statement-set-system-time");
+        "xdbc:invoke", "temporal:statement-set-system-time", "xdmp-login");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "temporal-admin");
 
     adminClient = getDatabaseClient("rest-admin", "x", getConnType());

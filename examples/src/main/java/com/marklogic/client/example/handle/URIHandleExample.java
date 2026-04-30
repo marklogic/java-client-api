@@ -12,6 +12,7 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.InputStreamHandle;
 
 /**
@@ -82,7 +83,11 @@ public class URIHandleExample {
     InputStreamHandle handle = new InputStreamHandle();
     handle.set(docStream);
 
-    docMgr.write(docId, handle);
+    DocumentMetadataHandle metadata = new DocumentMetadataHandle();
+    metadata.getPermissions().add("rest-writer",
+      DocumentMetadataHandle.Capability.READ, DocumentMetadataHandle.Capability.UPDATE);
+
+    docMgr.write(docId, metadata, handle);
   }
 
   // clean up by deleting the documents for the example

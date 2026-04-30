@@ -5,7 +5,8 @@
     "test-rest-writer",
     "java-test-delete-graph",
     "rest-extension-user",
-    "rest-reader"
+    "rest-reader",
+    "java-test-xdmp-login"
   ],
   "password": "x"
 }

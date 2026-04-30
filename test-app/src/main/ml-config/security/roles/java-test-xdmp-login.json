@@ -1,10 +1,10 @@
 {
-  "role-name": "test-rest-writer",
-  "description": "Role for test users that can write documents; does not inherit the OOTB rest-writer role so as to avoid having default permissions",
+  "role-name": "java-test-xdmp-login",
+  "description": "Grants privileges required in ML 11 for invoking server-side transforms and resource extensions",
   "privilege": [
     {
-      "privilege-name": "rest-writer",
-      "action": "http://marklogic.com/xdmp/privileges/rest-writer",
+      "privilege-name": "xdmp-login",
+      "action": "http://marklogic.com/xdmp/privileges/xdmp-login",
       "kind": "execute"
     },
     {
@@ -13,13 +13,13 @@
       "kind": "execute"
     },
     {
-      "privilege-name": "rest-tracer",
-      "action": "http://marklogic.com/xdmp/privileges/rest-tracer",
+      "privilege-name": "xdmp:xslt-eval",
+      "action": "http://marklogic.com/xdmp/privileges/xslt-eval",
       "kind": "execute"
     },
     {
-      "privilege-name": "xdmp-login",
-      "action": "http://marklogic.com/xdmp/privileges/xdmp-login",
+      "privilege-name": "xdmp:xslt-invoke",
+      "action": "http://marklogic.com/xdmp/privileges/xslt-invoke",
       "kind": "execute"
     },
     {
@@ -35,6 +35,11 @@
     {
       "privilege-name": "unprotected-collections",
       "action": "http://marklogic.com/xdmp/privileges/unprotected-collections",
+      "kind": "execute"
+    },
+    {
+      "privilege-name": "xdmp:value",
+      "action": "http://marklogic.com/xdmp/privileges/xdmp-value",
       "kind": "execute"
     }
   ]
