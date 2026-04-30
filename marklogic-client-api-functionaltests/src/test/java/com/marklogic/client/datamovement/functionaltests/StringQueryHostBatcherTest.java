@@ -92,7 +92,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     };
     addRangePathIndex(dbName, rangePaths);
 
-    createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
+    createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke", "xdmp-login");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "rest-extension-user", "manage-user");
   }
 
