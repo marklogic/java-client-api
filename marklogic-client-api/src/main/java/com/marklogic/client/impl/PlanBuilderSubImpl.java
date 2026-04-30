@@ -694,6 +694,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   public PlanParamExpr param(String name) {
     return new PlanParamBase(name);
   }
+  
   @Override
   public PlanParamExpr param(XsStringVal name) {
     if (name == null) {

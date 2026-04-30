@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -150,7 +150,7 @@ public class BaseTypeImpl {
   }
   static class ServerExpressionCallImpl extends BaseCallImpl<BaseArgImpl> implements ServerExpression {
     ServerExpressionCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, convertList(fnArgs));
+      super(fnPrefix, fnName, convertList(validateNoOpticParamInCtsCall(fnPrefix, fnName, fnArgs)));
     }
   }
 
@@ -392,6 +392,46 @@ public class BaseTypeImpl {
       strb.append(value.toString());
       strb.append("\"");
     }
+  }
+
+  static private Object[] validateNoOpticParamInCtsCall(String fnPrefix, String fnName, Object[] fnArgs) {
+    if (!"cts".equals(fnPrefix) || fnArgs == null) {
+      return fnArgs;
+    }
+    if (containsPlanParam(fnArgs)) {
+      throw new IllegalArgumentException(
+        "Cannot pass op:param() to cts:" + fnName + "(). Use cts:param() for cts namespace expressions."
+      );
+    }
+    return fnArgs;
+  }
+
+  static private boolean containsPlanParam(Object value) {
+    if (value == null) {
+      return false;
+    }
+    if (value instanceof PlanParamExpr) {
+      return true;
+    }
+    if (value instanceof Object[]) {
+      for (Object item : (Object[]) value) {
+        if (containsPlanParam(item)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    if (value instanceof BaseListImpl) {
+      return containsPlanParam(((BaseListImpl<?>) value).getArgsImpl());
+    }
+    if (value instanceof BaseMapImpl) {
+      return containsPlanParam(((BaseMapImpl) value).getMap().values().toArray());
+    }
+    if (value instanceof java.util.Map<?, ?>) {
+      java.util.Map<?, ?> mapValue = (java.util.Map<?, ?>) value;
+      return containsPlanParam(mapValue.keySet().toArray()) || containsPlanParam(mapValue.values().toArray());
+    }
+    return false;
   }
 
   static BaseArgImpl[] convertList(Object[] items) {

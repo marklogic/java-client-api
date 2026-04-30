@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.expression;
@@ -38,6 +38,7 @@ import com.marklogic.client.type.CtsRegionSeqExpr;
 // 2023-10-24 Exception: Manual changes have been made to this to expose the string constructors for cts.point and
 // cts.polygon. These changes can be removed once optic-defs.json in the xdmp repository is updated to define these
 // constructors.
+// 2026-04-15 Exception: Manual changes have been made to expose cts:param prior to generator support.
 
 /**
  * Builds expressions to call functions in the cts server library for a row
@@ -2545,6 +2546,26 @@ public interface CtsExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a> server data type
   */
   public CtsQueryExpr orQuery(ServerExpression queries, XsStringSeqVal options);
+/**
+  * Returns a parameter placeholder for a cts expression.
+  *
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:param" target="mlserverdoc">cts:param</a> server function.
+  * @param name  The parameter name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
+  * @since 8.2.0
+  */
+  public ServerExpression param(String name);
+/**
+  * Returns a parameter placeholder for a cts expression.
+  *
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:param" target="mlserverdoc">cts:param</a> server function.
+  * @param name  The parameter name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
+  * @since 8.2.0
+  */
+  public ServerExpression param(XsStringVal name);
 /**
   * Returns the part of speech for a cts:token, if any.
   *
