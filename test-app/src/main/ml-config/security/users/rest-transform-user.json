@@ -1,6 +1,7 @@
 {
 	"user-name": "rest-transform-user",
 	"description": "REST API transform execution user",
+	"password": "x",
 	"role": [
 		"rest-transform-internal",
 		"rest-reader",
