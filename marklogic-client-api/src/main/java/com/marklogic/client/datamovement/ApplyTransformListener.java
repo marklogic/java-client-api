@@ -253,10 +253,8 @@ public class ApplyTransformListener implements QueryBatchListener {
     REPLACE,
 
     /** Run the transform on each document, but ignore the value returned by
-     * the transform because the transform will do any necessary database
-     * modifications or other processing.  For example, a transform might call
-     * out to an external REST service or perhaps write multiple additional
-     * documents.
+     * the transform because the transform will do any necessary other processing.
+	 * For example, a transform might call out to an external REST service.
      */
     IGNORE
   };

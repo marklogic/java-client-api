@@ -25,7 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -92,17 +94,19 @@ public class ApplyTransformTest {
     StructuredQueryDefinition query = sqb.value(sqb.jsonProperty("testProperty"), "test2");
     ServerTransform transform = new ServerTransform(transformName2)
       .addParameter("newValue", "test2a");
+	AtomicReference<Throwable> e = new AtomicReference<>();
     ApplyTransformListener listener = new ApplyTransformListener()
       .withTransform(transform)
-      .withApplyResult(ApplyResult.IGNORE);
+      .withApplyResult(ApplyResult.IGNORE).onFailure((batch, throwable) -> e.set(throwable));
     QueryBatcher batcher = moveMgr.newQueryBatcher(query)
       .onUrisReady(listener);
     JobTicket ticket = moveMgr.startJob( batcher );
     batcher.awaitCompletion();
     moveMgr.stopJob(ticket);
 
+    assertNotNull(e.get());
     JsonNode docContents = docMgr.readAs(collection + "/test2.json", JsonNode.class);
-    assertEquals("test2a", docContents.get("testProperty").textValue() );
+    assertEquals("test2", docContents.get("testProperty").textValue() );
   }
 
   @Test
