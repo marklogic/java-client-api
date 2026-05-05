@@ -1,15 +1,15 @@
 {
-	"user-name": "rest-transform-user",
-	"description": "REST API transform execution user",
-	"password": "x",
-	"role": [
-		"rest-transform-internal",
-		"rest-reader",
-		"rest-writer",
-		"java-test-xdmp-login"
-	],
-	"permission": [
-		{ "role-name": "rest-reader", "capability": "read" },
-		{ "role-name": "rest-writer", "capability": "update" }
-	]
+  "user-name": "rest-transform-user",
+  "description": "REST API transform execution user",
+  "password": "x",
+  "role": [
+    "rest-transform-internal",
+    "rest-reader",
+    "rest-writer",
+    "java-test-xdmp-login"
+  ],
+  "permission": [
+    { "role-name": "rest-reader", "capability": "read" },
+    { "role-name": "rest-writer", "capability": "update" }
+  ]
 }
