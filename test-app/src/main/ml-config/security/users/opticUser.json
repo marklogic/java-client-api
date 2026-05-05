@@ -1,6 +1,6 @@
 {
   "user-name": "opticUser",
-  "description": "user discription",
+  "description": "user description",
   "password": "0pt1c",
   "role": [
     "tde-admin",

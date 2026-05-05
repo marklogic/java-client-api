@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.fastfunctest;
@@ -112,7 +112,7 @@ public class TestJSResourceExtensions extends AbstractFunctionalTest {
 
   @BeforeAll
   public static void setUpBeforeClass() throws Exception {
-    createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:value", "xdmp:eval", "xdmp:eval-in", "any-uri", "xdbc:invoke");
+    createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:value", "xdmp:eval", "xdmp:eval-in", "any-uri", "xdbc:invoke", "xdmp-login");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "rest-extension-user");
   }
 

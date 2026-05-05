@@ -1,9 +1,6 @@
 {
   "user-name": "rest-writer",
   "description": "rest-writer user",
-  "role": [
-    "rest-writer",
-    "java-test-delete-graph"
-  ],
+  "role": ["rest-writer", "java-test-delete-graph", "java-test-xdmp-login"],
   "password": "x"
 }
