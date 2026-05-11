@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.impl;
@@ -41,6 +41,7 @@ import com.marklogic.client.impl.BaseTypeImpl;
 // 2023-10-24 Exception: Manual changes have been made to this to expose the string constructors for cts.point and
 // cts.polygon. These changes can be removed once optic-defs.json in the xdmp repository is updated to define these
 // constructors.
+// 2026-04-15 Exception: Manual changes have been made to expose cts:param prior to generator support.
 
 class CtsExprImpl implements CtsExpr {
 
@@ -1681,6 +1682,24 @@ class CtsExprImpl implements CtsExpr {
   @Override
   public CtsQueryExpr orQuery(ServerExpression queries, XsStringSeqVal options) {
     return new QueryCallImpl("cts", "or-query", new Object[]{ queries, options });
+  }
+
+
+  @Override
+  public ServerExpression param(String name) {
+    if (name == null) {
+      throw new IllegalArgumentException("name parameter for param() cannot be null");
+    }
+    return param(new XsValueImpl.StringValImpl(name));
+  }
+
+
+  @Override
+  public ServerExpression param(XsStringVal name) {
+    if (name == null) {
+      throw new IllegalArgumentException("name parameter for param() cannot be null");
+    }
+    return new XsExprImpl.AnyAtomicTypeCallImpl("cts", "param", new Object[]{ name });
   }
 
 
