@@ -1,11 +1,15 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.type;
 
 /**
- * An option controlling the scoring and weighting of fromSearch()
- * for a row pipeline.
+ * Options controlling the scoring, weighting, and fragment scope for {@code fromSearch()} and
+ * {@code fromSearchDocs()} in a row pipeline. Use {@link #withFragment(Fragment)} to select which
+ * fragment types (document, properties, locks, or any) are searched and returned.
+ *
+ * <p>Fragment scope support was added in release 8.2.0 and requires MarkLogic 12.1 or higher.
+ * Scoring and weighting options apply to all supported MarkLogic versions.</p>
  */
 public interface PlanSearchOptions {
 
@@ -37,6 +41,34 @@ public interface PlanSearchOptions {
 	 * @since 7.0.0; requires MarkLogic 12 or higher.
 	 */
 	PlanSearchOptions withBm25LengthWeight(double bm25LengthWeight);
+
+	/**
+	 * @since 8.2.0; requires MarkLogic 12.1 or higher.
+	 */
+	Fragment getFragment();
+
+	/**
+	 * Specifies the type of fragment to search and return. Defaults to {@link Fragment#DOCUMENT} when no option
+	 * is specified. Applies to both {@code fromSearch()} and {@code fromSearchDocs()}.
+	 *
+	 * @param fragment the fragment scope to select
+	 * @return a new PlanSearchOptions with the fragment set
+	 * @since 8.2.0; requires MarkLogic 12.1 or higher.
+	 */
+	PlanSearchOptions withFragment(Fragment fragment);
+
+	/**
+	 * Controls which type of fragments are searched and returned by {@code fromSearch()} and
+	 * {@code fromSearchDocs()}.
+	 *
+	 * @since 8.2.0; requires MarkLogic 12.1 or higher.
+	 */
+	enum Fragment {
+		DOCUMENT,
+		ANY,
+		PROPERTIES,
+		LOCKS
+	}
 
 	enum ScoreMethod {
 		LOGTFIDF,

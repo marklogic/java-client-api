@@ -48,7 +48,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
   @Override
   public PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query, String qualifierName) {
-	  return fromSearchDocs(query, null, null);
+	  return fromSearchDocs(query, qualifierName, null);
   }
   @Override
   public PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query, String qualifierName, PlanSearchOptions options) {
@@ -694,7 +694,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   public PlanParamExpr param(String name) {
     return new PlanParamBase(name);
   }
-  
+
   @Override
   public PlanParamExpr param(XsStringVal name) {
     if (name == null) {
