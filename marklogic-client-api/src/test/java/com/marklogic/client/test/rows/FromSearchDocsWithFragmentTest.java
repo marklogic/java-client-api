@@ -5,11 +5,8 @@ package com.marklogic.client.test.rows;
 
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.RequiresML12Dot1;
 import com.marklogic.client.type.PlanSearchOptions;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -30,42 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @see FromSearchWithFragmentTest for equivalent tests using {@code op.fromSearch()}.
  */
 @ExtendWith(RequiresML12Dot1.class)
-class FromSearchDocsWithFragmentTest extends AbstractOpticUpdateTest {
-
-	private static final String SETUP_XQUERY =
-		"xquery version '1.0-ml';" +
-		"let $jsondoc1 := object-node {'AllDataTypes': array-node {object-node {'word':'dog'}, object-node {'rank':1}, object-node {'score':4}}}" +
-		"let $jsondoc2 := object-node {'AllDataTypes': array-node {object-node {'word':'cat'}, object-node {'rank':2}, object-node {'score':5}}}" +
-		"let $jsondoc3 := object-node {'AllDataTypes': array-node {object-node {'word':'duck'}, object-node {'rank':3}, object-node {'score':6}}}" +
-		"return (" +
-		"xdmp:document-insert('range-prop-1.json', $jsondoc1, xdmp:default-permissions(), ('elemCol','jsondoc-range','from-search-fragment-test'))," +
-		"xdmp:document-insert('range-prop-2.json', $jsondoc2, xdmp:default-permissions(), ('elemCol','jsondoc-range','from-search-fragment-test'))," +
-		"xdmp:document-insert('range-prop-3.json', $jsondoc3, xdmp:default-permissions(), ('elemCol','jsondoc-range','from-search-fragment-test'))," +
-		"xdmp:document-set-properties('range-prop-1.json', (<my-prop>opticfragmentpropvalue prop1value</my-prop>))," +
-		"xdmp:document-set-properties('range-prop-2.json', (<my-prop>opticfragmentpropvalue prop2value</my-prop>))," +
-		"xdmp:document-set-properties('range-prop-3.json', (<my-prop>opticfragmentpropvalue prop3value</my-prop>))," +
-		"xdmp:lock-acquire('range-prop-1.json', 'exclusive', '0', 'dog rose',  xs:unsignedLong(120))," +
-		"xdmp:lock-acquire('range-prop-2.json', 'exclusive', '0', 'cat tulip', xs:unsignedLong(120))," +
-		"xdmp:lock-acquire('range-prop-3.json', 'exclusive', '0', 'duck lily', xs:unsignedLong(120))" +
-		")";
-
-	private static final String TEARDOWN_XQUERY =
-		"xquery version '1.0-ml';" +
-		"for $uri in ('range-prop-1.json', 'range-prop-2.json', 'range-prop-3.json') return xdmp:document-delete($uri)";
-
-	private static final List<String> EXPECTED_URIS = List.of(
-		"range-prop-1.json", "range-prop-2.json", "range-prop-3.json");
-
-	@BeforeEach
-	void setupTest() {
-		rowManager.withUpdate(false);
-		Common.newEvalClient().newServerEval().xquery(SETUP_XQUERY).evalAs(String.class);
-	}
-
-	@AfterEach
-	void teardownTest() {
-		Common.newEvalClient().newServerEval().xquery(TEARDOWN_XQUERY).evalAs(String.class);
-	}
+class FromSearchDocsWithFragmentTest extends AbstractFromSearchFragmentTest {
 
 	/**
 	 * Test case: Verifies the default {@code fromSearchDocs} behavior when no {@code fragment} option

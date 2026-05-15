@@ -56,11 +56,12 @@ public interface PlanBuilderBase {
 	 * @param query  The cts.query expression for matching the documents.
 	 * @param qualifierName Specifies a name for qualifying the column names similar to a view name.
 	 * @param options  Specifies scoring options and the fragment type to search. Use
-	 *                 {@link PlanBuilder#searchOptions()} with
-	 *                 {@link PlanSearchOptions#withFragment(PlanSearchOptions.Fragment)} to control
-	 *                 the fragment scope.
+	 *                 {@link PlanBuilder#searchOptions()} to create the options. Support for
+	 *                 controlling fragment scope with
+	 *                 {@link PlanSearchOptions#withFragment(PlanSearchOptions.Fragment)} was added
+	 *                 in 8.2.0 and requires MarkLogic 12.1 or higher.
 	 * @return  an AccessPlan object
-	 * @since 8.2.0; requires MarkLogic 12.1 or higher.
+	 * @since 7.0.0
 	 */
 	PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query, String qualifierName, PlanSearchOptions options);
     /**
