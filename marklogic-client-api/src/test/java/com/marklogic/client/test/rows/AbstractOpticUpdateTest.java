@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test.rows;
 
@@ -37,13 +37,15 @@ public abstract class AbstractOpticUpdateTest extends AbstractClientTest {
 
 	private final static String XML_PREAMBLE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
+	protected static final String TEST_USER = "writer-no-default-permissions";
+
 	protected RowManager rowManager;
 	protected PlanBuilder op;
 	protected ObjectMapper mapper = new ObjectMapper();
 
 	@BeforeEach
 	public void setup() {
-		Common.client = Common.newClientBuilder().withUsername("writer-no-default-permissions").build();
+		Common.client = Common.newClientBuilder().withUsername(TEST_USER).build();
 		rowManager = Common.client.newRowManager().withUpdate(true);
 		op = rowManager.newPlanBuilder();
 	}

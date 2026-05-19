@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test.rows;
 
@@ -153,20 +153,20 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
 			.bind(op.as(
 				op.col("doc"),
 				op.jsonObject(
-					op.prop("header", op.jsonObject(op.prop("user", op.xdmp.getCurrentUser()))),
+					op.prop("header", op.jsonObject(op.prop("user", op.xs.string(op.param("currentUser"))))),
 					op.prop("body", op.col("doc"))
 				)
 			));
 
-		rowManager.execute(plan.write());
+		rowManager.execute(plan.write().bindParam("currentUser", TEST_USER));
 
 		verifyJsonDoc("/acme/1.json", doc -> {
-			assertEquals("writer-no-default-permissions", doc.get("header").get("user").asText());
+			assertEquals(TEST_USER, doc.get("header").get("user").asText());
 			assertEquals(1, doc.get("body").get("value").asInt());
 		});
 
 		verifyJsonDoc("/acme/2.json", doc -> {
-			assertEquals("writer-no-default-permissions", doc.get("header").get("user").asText());
+			assertEquals(TEST_USER, doc.get("header").get("user").asText());
 			assertEquals(2, doc.get("body").get("value").asInt());
 		});
 	}
