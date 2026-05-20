@@ -43,17 +43,25 @@ public interface PlanBuilderBase {
      */
     PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query, String qualifierName);
 	/**
-	 * Provides a convenience for matching documents and constructing rows with the score,
-	 * document URI, and document content. The convenience is equivalent to chaining
+	 * Matches documents and constructs rows with the score, document URI, and document content,
+	 * with control over which fragment types are searched via {@link PlanSearchOptions#withFragment(PlanSearchOptions.Fragment)}.
+	 * <p>When no {@code fragment} option is set, behavior is equivalent to chaining
 	 * {@link PlanBuilder#fromSearch(CtsQueryExpr)},
 	 * {@link PlanBuilder.ModifyPlan#joinDocUri(String, String)},
 	 * and {@link PlanBuilder.ModifyPlan#joinDoc(String, String)}.
-	 * <p>The documents can be ordered by the score and limited for the most relevant
-	 * documents.</p>
+	 * When a non-default fragment type such as {@link PlanSearchOptions.Fragment#LOCKS} or
+	 * {@link PlanSearchOptions.Fragment#PROPERTIES} is specified, the search targets those fragment
+	 * types and the returned {@code uri} column resolves to the URI of the associated document.</p>
+	 * <p>The documents can be ordered by the score and limited for the most relevant documents.</p>
 	 * @param query  The cts.query expression for matching the documents.
 	 * @param qualifierName Specifies a name for qualifying the column names similar to a view name.
-	 * @return  a ModifyPlan object
-	 * @since 7.0.0; requires MarkLogic 12 or higher.
+	 * @param options  Specifies scoring options and the fragment type to search. Use
+	 *                 {@link PlanBuilder#searchOptions()} to create the options. Support for
+	 *                 controlling fragment scope with
+	 *                 {@link PlanSearchOptions#withFragment(PlanSearchOptions.Fragment)} was added
+	 *                 in 8.2.0 and requires MarkLogic 12.1 or higher.
+	 * @return  an AccessPlan object
+	 * @since 7.0.0
 	 */
 	PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query, String qualifierName, PlanSearchOptions options);
     /**
@@ -131,7 +139,9 @@ public interface PlanBuilderBase {
      * @param query  The cts.query expression for matching the documents.
      * @param columns  The columns to project for the documents. See {@link PlanBuilder#colSeq(String...)}
      * @param qualifierName Specifies a name for qualifying the column names similar to a view name.
-     * @param options  Specifies how to calculate the score for the matching documents. See {@link PlanBuilder#searchOptions()}
+     * @param options  Specifies how to calculate the score for the matching documents and which fragment
+     *                 types to return. Use {@link PlanBuilder#searchOptions()} with
+     *                 {@link PlanSearchOptions#withFragment(PlanSearchOptions.Fragment)} to control the fragment scope.
      * @return  an AccessPlan object
      */
     PlanBuilder.AccessPlan fromSearch(CtsQueryExpr query, PlanExprColSeq columns, XsStringVal qualifierName, PlanSearchOptions options);
