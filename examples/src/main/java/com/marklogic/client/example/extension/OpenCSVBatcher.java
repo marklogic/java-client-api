@@ -8,8 +8,9 @@ import java.io.Reader;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import com.marklogic.client.impl.XmlFactories;
 
 import com.opencsv.exceptions.CsvValidationException;
 import org.w3c.dom.Document;
@@ -88,10 +89,7 @@ public class OpenCSVBatcher
       }
     }
 
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setValidating(false);
-    DocumentBuilder docBuilder = factory.newDocumentBuilder();
+    DocumentBuilder docBuilder = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder();
 
     String path = directory + rowName;
 

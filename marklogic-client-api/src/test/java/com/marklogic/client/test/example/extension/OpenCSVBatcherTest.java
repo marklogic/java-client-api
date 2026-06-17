@@ -4,7 +4,15 @@
 package com.marklogic.client.test.example.extension;
 
 import com.marklogic.client.example.extension.OpenCSVBatcherExample;
+import com.marklogic.client.impl.XmlFactories;
 import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class OpenCSVBatcherTest {
 
@@ -12,5 +20,21 @@ class OpenCSVBatcherTest {
 	void testMain() throws Exception {
 		// This is a simple smoke test to ensure that the main method runs without exceptions.
 		OpenCSVBatcherExample.main(new String[0]);
+	}
+
+	@Test
+	void documentBuilderShouldRejectDoctype() throws Exception {
+		// Verifies that the DocumentBuilder produced by XmlFactories.getDocumentBuilderFactory()
+		// — the same factory now used by OpenCSVBatcher.write() — rejects DOCTYPE declarations,
+		// confirming that XXE / DTD processing is disabled (CWE-611).
+		DocumentBuilder builder = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder();
+		String xmlWithDoctype =
+			"<?xml version=\"1.0\"?>" +
+			"<!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]>" +
+			"<foo>&xxe;</foo>";
+
+		assertThrows(SAXException.class, () ->
+			builder.parse(new ByteArrayInputStream(xmlWithDoctype.getBytes(StandardCharsets.UTF_8)))
+		);
 	}
 }
