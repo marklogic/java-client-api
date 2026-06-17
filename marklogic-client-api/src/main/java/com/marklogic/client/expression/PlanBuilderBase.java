@@ -675,6 +675,47 @@ public interface PlanBuilderBase {
          */
         PlanBuilder.Plan bindParam(PlanParamExpr param, String  literal);
         /**
+         * Specifies a CTS query expression to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
+         * @param paramName the name of a placeholder parameter as defined by {@code cts.param()}
+         *                  or {@code param()} (i.e. op:param)
+         * @param query the CTS query expression to replace the parameter
+         * @return a new instance of the Plan object with the parameter binding
+         * @since 8.2.0; requires MarkLogic 12.1 or higher
+         */
+        PlanBuilder.Plan bindParam(String paramName, CtsQueryExpr query);
+        /**
+         * Specifies a CTS query expression to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
+         * @param param a placeholder parameter as constructed by cts:param()
+         * @param query the CTS query expression to replace the parameter
+         * @return a new instance of the Plan object with the parameter binding
+         * @since 8.2.0; requires MarkLogic 12.1 or higher
+         */
+        PlanBuilder.Plan bindParam(CtsParamExpr param, CtsQueryExpr query);
+        /**
+         * Specifies a CTS query expression to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * <p>Pass the same {@code PlanParamExpr} returned by {@code param()} to both
+         * a plan step (such as {@code where()}) and this method. The client substitutes
+         * the query expression into the serialised plan AST before it is sent to the
+         * server.</p>
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
+         * @param param a placeholder parameter as constructed by {@code param()}
+         * @param query the CTS query expression to replace the parameter
+         * @return a new instance of the Plan object with the parameter binding
+         * @since 8.2.0; requires MarkLogic 12.1 or higher
+         */
+        PlanBuilder.Plan bindParam(PlanParamExpr param, CtsQueryExpr query);
+        /**
          * Specifies a set of documents to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
          * <p>As when building a plan, binding a parameter constructs a new instance

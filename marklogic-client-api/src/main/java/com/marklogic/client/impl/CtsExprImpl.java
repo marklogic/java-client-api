@@ -20,6 +20,7 @@ import com.marklogic.client.type.CtsBoxExpr;
 import com.marklogic.client.type.CtsBoxSeqExpr;
 import com.marklogic.client.type.CtsCircleExpr;
 import com.marklogic.client.type.CtsCircleSeqExpr;
+import com.marklogic.client.type.CtsParamExpr;
 import com.marklogic.client.type.CtsPeriodExpr;
 import com.marklogic.client.type.CtsPeriodSeqExpr;
 import com.marklogic.client.type.CtsPointExpr;
@@ -1686,7 +1687,7 @@ class CtsExprImpl implements CtsExpr {
 
 
   @Override
-  public ServerExpression param(String name) {
+  public CtsParamExpr param(String name) {
     if (name == null) {
       throw new IllegalArgumentException("name parameter for param() cannot be null");
     }
@@ -1695,11 +1696,11 @@ class CtsExprImpl implements CtsExpr {
 
 
   @Override
-  public ServerExpression param(XsStringVal name) {
+  public CtsParamExpr param(XsStringVal name) {
     if (name == null) {
       throw new IllegalArgumentException("name parameter for param() cannot be null");
     }
-    return new XsExprImpl.AnyAtomicTypeCallImpl("cts", "param", new Object[]{ name });
+    return new ParamCallImpl("cts", "param", new Object[]{ name });
   }
 
 
@@ -2336,6 +2337,11 @@ class CtsExprImpl implements CtsExpr {
   }
   static class QueryCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsQueryExpr {
     QueryCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+  static class ParamCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsParamExpr {
+    ParamCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }

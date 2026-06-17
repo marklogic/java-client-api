@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test.rows;
 
@@ -589,6 +589,128 @@ public class RowManagerTest {
     }
     assertEquals( 2, rowNum);
   }
+  @Test
+  public void testSearchWithCtsParamQueryBindingByName() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    PlanSystemColumn viewDocId = p.fragmentIdCol("viewDocId");
+
+    PlanBuilder.ExportablePlan builtPlan =
+      p.fromSearch(p.cts.andQuery(p.cts.param("searchQuery")))
+        .joinInner(
+          p.fromView("opticUnitTest", VIEW_NAME, "", viewDocId),
+          p.on(p.fragmentIdCol("fragmentId"), viewDocId)
+        )
+        .orderBy(p.col("lastName"));
+
+    PlanBuilder.Plan boundPlan = builtPlan.bindParam(
+      "searchQuery",
+      p.cts.jsonPropertyValueQuery("instrument", "trumpet")
+    );
+
+    String[] lastName  = {"Armstrong", "Davis"};
+    String[] firstName = {"Louis", "Miles"};
+
+    int rowNum = 0;
+    for (RowRecord row: rowMgr.resultRows(boundPlan)) {
+      assertEquals(lastName[rowNum], row.getString("lastName"));
+      assertEquals(firstName[rowNum], row.getString("firstName"));
+      rowNum++;
+    }
+    assertEquals(2, rowNum);
+  }
+
+  @Test
+  public void testSearchWithCtsParamQueryBindingByExpression() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    PlanSystemColumn viewDocId = p.fragmentIdCol("viewDocId");
+    CtsParamExpr searchQueryParam = p.cts.param("searchQuery");
+
+    PlanBuilder.ExportablePlan builtPlan =
+      p.fromSearch(p.cts.andQuery(searchQueryParam))
+        .joinInner(
+          p.fromView("opticUnitTest", VIEW_NAME, "", viewDocId),
+          p.on(p.fragmentIdCol("fragmentId"), viewDocId)
+        )
+        .orderBy(p.col("lastName"));
+
+    PlanBuilder.Plan boundPlan = builtPlan.bindParam(
+      searchQueryParam,
+      p.cts.jsonPropertyValueQuery("instrument", "trumpet")
+    );
+
+    String[] lastName  = {"Armstrong", "Davis"};
+    String[] firstName = {"Louis", "Miles"};
+
+    int rowNum = 0;
+    for (RowRecord row: rowMgr.resultRows(boundPlan)) {
+      assertEquals(lastName[rowNum], row.getString("lastName"));
+      assertEquals(firstName[rowNum], row.getString("firstName"));
+      rowNum++;
+    }
+    assertEquals(2, rowNum);
+  }
+
+  @Test
+  public void testSearchWithTwoCtsParamBindings() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    PlanSystemColumn viewDocId = p.fragmentIdCol("viewDocId");
+
+    // Build a plan parameterized by two independent cts:param() placeholders.
+    // Binding both to queries that together restrict results to a single row
+    // verifies each substitution is applied independently.
+    //
+    // CtsParamExpr extends ServerExpression but not CtsQueryExpr, so each param is wrapped
+    // in a single-arg andQuery(ServerExpression) to produce a CtsQueryExpr, then composed
+    // in the outer varargs andQuery(CtsQueryExpr...).
+    PlanBuilder.ExportablePlan builtPlan =
+      p.fromSearch(p.cts.andQuery(
+          p.cts.andQuery(p.cts.param("instrumentQuery")),
+          p.cts.andQuery(p.cts.param("lastNameQuery"))
+        ))
+        .joinInner(
+          p.fromView("opticUnitTest", VIEW_NAME, "", viewDocId),
+          p.on(p.fragmentIdCol("fragmentId"), viewDocId)
+        )
+        .orderBy(p.col("lastName"));
+
+    PlanBuilder.Plan boundPlan = builtPlan
+      .bindParam("instrumentQuery", p.cts.jsonPropertyValueQuery("instrument", "trumpet"))
+      .bindParam("lastNameQuery", p.cts.jsonPropertyValueQuery("lastName", "Armstrong"));
+
+    int rowNum = 0;
+    for (RowRecord row : rowMgr.resultRows(boundPlan)) {
+      assertEquals("Armstrong", row.getString("lastName"));
+      assertEquals("Louis", row.getString("firstName"));
+      rowNum++;
+    }
+    assertEquals(1, rowNum);
+  }
+
+  @Test
+  public void testRawPlanThrowsForCtsQueryBinding() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    PlanBuilder.ExportablePlan builtPlan = p.fromView("opticUnitTest", VIEW_NAME);
+    StringHandle planHandle = builtPlan.export(new StringHandle()).withFormat(Format.JSON);
+    RawPlanDefinition rawPlan = rowMgr.newRawPlanDefinition(planHandle);
+
+    assertThrows(UnsupportedOperationException.class,
+      () -> rawPlan.bindParam("searchQuery", p.cts.wordQuery("trumpet"))
+    );
+
+    CtsParamExpr param = p.cts.param("searchQuery");
+    assertThrows(UnsupportedOperationException.class,
+      () -> rawPlan.bindParam(param, p.cts.wordQuery("trumpet"))
+    );
+  }
+
   @Test
   public void testSearchDocs() {
     RowManager rowMgr = Common.client.newRowManager();
