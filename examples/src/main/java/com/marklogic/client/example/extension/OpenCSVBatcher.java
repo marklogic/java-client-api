@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.example.extension;
 
@@ -10,16 +10,14 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
-import com.marklogic.client.impl.XmlFactories;
-
 import com.opencsv.exceptions.CsvValidationException;
+import com.marklogic.client.io.DOMHandle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.opencsv.CSVReader;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.io.DOMHandle;
 
 /**
  * An OpenCSV Batcher writes a CSV stream to the database in XML document batches.
@@ -89,7 +87,7 @@ public class OpenCSVBatcher
       }
     }
 
-    DocumentBuilder docBuilder = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder();
+    DocumentBuilder docBuilder = new DOMHandle().getFactory().newDocumentBuilder();
 
     String path = directory + rowName;
 

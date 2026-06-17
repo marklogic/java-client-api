@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test.example.extension;
 
 import com.marklogic.client.example.extension.OpenCSVBatcherExample;
-import com.marklogic.client.impl.XmlFactories;
+import com.marklogic.client.io.DOMHandle;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
@@ -24,14 +24,14 @@ class OpenCSVBatcherTest {
 
 	@Test
 	void documentBuilderShouldRejectDoctype() throws Exception {
-		// Verifies that the DocumentBuilder produced by XmlFactories.getDocumentBuilderFactory()
+		// Verifies that the DocumentBuilder produced by DOMHandle.getFactory()
 		// — the same factory now used by OpenCSVBatcher.write() — rejects DOCTYPE declarations,
 		// confirming that XXE / DTD processing is disabled (CWE-611).
-		DocumentBuilder builder = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder();
+		DocumentBuilder builder = new DOMHandle().getFactory().newDocumentBuilder();
 		String xmlWithDoctype =
 			"<?xml version=\"1.0\"?>" +
-			"<!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]>" +
-			"<foo>&xxe;</foo>";
+			"<!DOCTYPE foo []>" +
+			"<foo/>";
 
 		assertThrows(SAXException.class, () ->
 			builder.parse(new ByteArrayInputStream(xmlWithDoctype.getBytes(StandardCharsets.UTF_8)))
