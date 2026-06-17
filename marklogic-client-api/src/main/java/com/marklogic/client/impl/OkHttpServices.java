@@ -85,9 +85,9 @@ public class OkHttpServices implements RESTServices {
 	 *
 	 * <p><strong>Security warning:</strong> {@code HEADERS} and {@code BODY} levels log HTTP request and response
 	 * headers and/or bodies, which may contain MarkLogic credentials, OAuth/SAML tokens, or sensitive document
-	 * content. These levels must <em>never</em> be enabled in production environments. {@code Authorization} header
-	 * values are automatically redacted from log output, but body content (including MarkLogic document data) is
-	 * not redacted.
+	 * content. These levels must <em>never</em> be enabled in production environments. {@code Authorization} and
+	 * {@code x-auth-token} header values are automatically redacted from log output, but body content (including
+	 * MarkLogic document data) is not redacted.
 	 */
 	private static final String OKHTTP_LOGGINGINTERCEPTOR_LEVEL = "com.marklogic.client.okhttp.httplogginginterceptor.level";
 
