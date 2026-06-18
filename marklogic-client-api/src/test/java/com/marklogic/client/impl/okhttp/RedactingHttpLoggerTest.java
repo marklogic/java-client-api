@@ -1,22 +1,22 @@
 /*
  * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
-package com.marklogic.client.impl;
+package com.marklogic.client.impl.okhttp;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for {@link OkHttpServices#redactSensitiveHeaders(String)}.
+ * Unit tests for {@link RedactingHttpLogger#redactSensitiveHeaders(String)}.
  * No MarkLogic instance or network connectivity is required.
  */
-class RedactSensitiveHeadersTest {
+class RedactingHttpLoggerTest {
 
 	@Test
 	void basicAuthHeaderIsRedacted() {
 		String message = "Authorization: Basic dXNlcjpwYXNzd29yZA==";
-		String result = OkHttpServices.redactSensitiveHeaders(message);
+		String result = RedactingHttpLogger.redactSensitiveHeaders(message);
 		assertEquals("Authorization: [REDACTED]", result);
 		assertFalse(result.contains("dXNlcjpwYXNzd29yZA=="),
 			"Base64 credential must not appear in redacted output");
@@ -25,7 +25,7 @@ class RedactSensitiveHeadersTest {
 	@Test
 	void bearerTokenIsRedacted() {
 		String message = "Authorization: Bearer eyJhbGciOiJSUzI1NiJ9.payload.signature";
-		String result = OkHttpServices.redactSensitiveHeaders(message);
+		String result = RedactingHttpLogger.redactSensitiveHeaders(message);
 		assertEquals("Authorization: [REDACTED]", result);
 		assertFalse(result.contains("eyJhbGciOiJSUzI1NiJ9"),
 			"Bearer token must not appear in redacted output");
@@ -34,7 +34,7 @@ class RedactSensitiveHeadersTest {
 	@Test
 	void negotiateKerberosTokenIsRedacted() {
 		String message = "Authorization: Negotiate YIIGmgYGKwYBBQUCBg==";
-		String result = OkHttpServices.redactSensitiveHeaders(message);
+		String result = RedactingHttpLogger.redactSensitiveHeaders(message);
 		assertEquals("Authorization: [REDACTED]", result);
 		assertFalse(result.contains("YIIGmgYGKwYBBQUCBg=="));
 	}
@@ -42,7 +42,7 @@ class RedactSensitiveHeadersTest {
 	@Test
 	void samlTokenIsRedacted() {
 		String message = "Authorization: SAML token=abc123samlvalue";
-		String result = OkHttpServices.redactSensitiveHeaders(message);
+		String result = RedactingHttpLogger.redactSensitiveHeaders(message);
 		assertEquals("Authorization: [REDACTED]", result);
 		assertFalse(result.contains("abc123samlvalue"));
 	}
@@ -50,14 +50,14 @@ class RedactSensitiveHeadersTest {
 	@Test
 	void digestAuthIsRedacted() {
 		String message = "Authorization: Digest username=\"user\", realm=\"MarkLogic\", nonce=\"abc\", uri=\"/v1/documents\"";
-		String result = OkHttpServices.redactSensitiveHeaders(message);
+		String result = RedactingHttpLogger.redactSensitiveHeaders(message);
 		assertEquals("Authorization: [REDACTED]", result);
 	}
 
 	@Test
 	void xAuthTokenHeaderIsRedacted() {
 		String message = "x-auth-token: someSessionTokenValue";
-		String result = OkHttpServices.redactSensitiveHeaders(message);
+		String result = RedactingHttpLogger.redactSensitiveHeaders(message);
 		assertEquals("x-auth-token: [REDACTED]", result);
 		assertFalse(result.contains("someSessionTokenValue"));
 	}
@@ -66,14 +66,14 @@ class RedactSensitiveHeadersTest {
 	void headerNameMatchIsCaseInsensitive() {
 		String upper = "AUTHORIZATION: Basic dXNlcjpwYXNzd29yZA==";
 		String mixed = "Authorization: Basic dXNlcjpwYXNzd29yZA==";
-		assertEquals("AUTHORIZATION: [REDACTED]", OkHttpServices.redactSensitiveHeaders(upper));
-		assertEquals("Authorization: [REDACTED]", OkHttpServices.redactSensitiveHeaders(mixed));
+		assertEquals("AUTHORIZATION: [REDACTED]", RedactingHttpLogger.redactSensitiveHeaders(upper));
+		assertEquals("Authorization: [REDACTED]", RedactingHttpLogger.redactSensitiveHeaders(mixed));
 	}
 
 	@Test
 	void nonSensitiveHeadersAreNotRedacted() {
 		String message = "Content-Type: application/json";
-		assertEquals(message, OkHttpServices.redactSensitiveHeaders(message));
+		assertEquals(message, RedactingHttpLogger.redactSensitiveHeaders(message));
 	}
 
 	@Test
@@ -82,7 +82,7 @@ class RedactSensitiveHeadersTest {
 			"Content-Type: application/json\n" +
 			"Authorization: Basic dXNlcjpwYXNzd29yZA==\n" +
 			"Content-Length: 42";
-		String result = OkHttpServices.redactSensitiveHeaders(message);
+		String result = RedactingHttpLogger.redactSensitiveHeaders(message);
 		assertTrue(result.contains("Content-Type: application/json"));
 		assertTrue(result.contains("Authorization: [REDACTED]"));
 		assertFalse(result.contains("dXNlcjpwYXNzd29yZA=="));

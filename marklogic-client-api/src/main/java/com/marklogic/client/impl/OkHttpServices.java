@@ -22,6 +22,7 @@ import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.impl.okhttp.HttpUrlBuilder;
 import com.marklogic.client.impl.okhttp.OkHttpUtil;
 import com.marklogic.client.impl.okhttp.PartIterator;
+import com.marklogic.client.impl.okhttp.RedactingHttpLogger;
 import com.marklogic.client.impl.okhttp.RetryableRequestBody;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.*;
@@ -60,7 +61,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.regex.Pattern;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -96,14 +96,6 @@ public class OkHttpServices implements RESTServices {
 	 * {@code STDERR}, or leave unset for stdout.
 	 */
 	private static final String OKHTTP_LOGGINGINTERCEPTOR_OUTPUT = "com.marklogic.client.okhttp.httplogginginterceptor.output";
-
-	// Regex pattern used to redact sensitive HTTP header values from log output. Matches the Authorization header
-	// and x-auth-token header (case-insensitively) and replaces the entire value with [REDACTED]. The pattern
-	// intentionally uses .* (not \S+) so that multi-word values such as "Basic <token>", "Bearer <token>",
-	// "Negotiate <token>", and "Digest username=..." are fully captured. The . metacharacter does not match \n in
-	// Java by default, so the replacement never crosses line boundaries in multi-line log messages.
-	private static final Pattern SENSITIVE_HEADER_REDACTION_PATTERN = Pattern.compile("(?i)(authorization|x-auth-token):.*");
-	private static final String SENSITIVE_HEADER_REDACTION_REPLACEMENT = "$1: [REDACTED]";
 
 	private static final String DOCUMENT_URI_PREFIX = "/documents?uri=";
 
@@ -249,16 +241,8 @@ public class OkHttpServices implements RESTServices {
 	private void configureOkHttpLogging(OkHttpClient.Builder clientBuilder, Properties props) {
 		final boolean useLogger = "LOGGER".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_OUTPUT));
 		final boolean useStdErr = "STDERR".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_OUTPUT));
-		HttpLoggingInterceptor networkInterceptor = new HttpLoggingInterceptor(message -> {
-			String redacted = redactSensitiveHeaders(message);
-			if (useLogger) {
-				logger.debug(redacted);
-			} else if (useStdErr) {
-				System.err.println(redacted);
-			} else {
-				System.out.println(redacted);
-			}
-		});
+		HttpLoggingInterceptor networkInterceptor =
+			new HttpLoggingInterceptor(new RedactingHttpLogger(useLogger, useStdErr));
 		if ("BASIC".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL))) {
 			networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
 		} else if ("BODY".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL))) {
@@ -269,16 +253,6 @@ public class OkHttpServices implements RESTServices {
 			networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
 		}
 		clientBuilder.addNetworkInterceptor(networkInterceptor);
-	}
-
-	/**
-	 * Redacts the values of HTTP headers that may carry authentication credentials from a log message produced
-	 * by {@link HttpLoggingInterceptor}. Specifically, {@code Authorization} and {@code x-auth-token} header
-	 * values are replaced with {@code [REDACTED]} so that credentials are never written to log output regardless
-	 * of which output target (logger, stderr, stdout) is configured.
-	 */
-	static String redactSensitiveHeaders(String message) {
-		return SENSITIVE_HEADER_REDACTION_PATTERN.matcher(message).replaceAll(SENSITIVE_HEADER_REDACTION_REPLACEMENT);
 	}
 
 	private void configureDelayAndRetry(Properties props) {

@@ -55,19 +55,3 @@ You can also undeploy the test application if you do not wish to keep it around 
 
 To test the `ml-development-tools` Gradle plugin, see the README.md file located at
 `ml-development-tools/src/test/example-project`.
-
-## HTTP Logging (Debugging Only)
-
-The Java Client supports optional HTTP traffic logging via the system property
-`com.marklogic.client.okhttp.httplogginginterceptor.level`. Accepted values are
-`BASIC`, `HEADERS`, `BODY`, and `NONE`.
-
-> **Security warning:** `HEADERS` and `BODY` levels write HTTP headers and/or
-> request/response bodies to stdout, stderr, or your application logger.
-> `Authorization` and `x-auth-token` header values are automatically redacted
-> in the output, but body content may include MarkLogic document data and must
-> **never** be enabled in production environments. Use these levels only during
-> local debugging sessions.
-
-Set the output target via `com.marklogic.client.okhttp.httplogginginterceptor.output`:
-`LOGGER` (routes to SLF4J at DEBUG level), `STDERR`, or leave unset for stdout.
