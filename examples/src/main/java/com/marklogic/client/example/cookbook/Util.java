@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.example.cookbook;
 
@@ -29,6 +29,8 @@ public class Util {
     public String         jdbcUrl;
     public String         jdbcUser;
     public String         jdbcPassword;
+    public String         trustStorePath;
+    public String         trustStorePassword;
     public ExampleProperties(Properties props) {
       super();
       host           = System.getProperty("EXAMPLE_HOST", props.getProperty("example.host"));
@@ -43,6 +45,8 @@ public class Util {
       jdbcUrl = props.getProperty("example.jdbc.url");
       jdbcUser = props.getProperty("example.jdbc.user");
       jdbcPassword = props.getProperty("example.jdbc.password");
+      trustStorePath     = props.getProperty("example.truststore.path");
+      trustStorePassword = props.getProperty("example.truststore.password");
     }
   }
 
