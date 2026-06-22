@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.datamovement.functionaltests;
 
@@ -55,6 +55,23 @@ public class QBFailover extends BasicJavaClientREST {
 	private static String[] hostNames;
 	private static JobTicket ticket;
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
+	private static final Pattern HOSTNAME_PATTERN = Pattern.compile("[A-Za-z0-9._-]+");
+	private static final ProcessStarter DEFAULT_PROCESS_STARTER =
+			(server, commandToRun) -> new ProcessBuilder("ssh", server, commandToRun).start();
+	private static ProcessStarter processStarter = DEFAULT_PROCESS_STARTER;
+
+	@FunctionalInterface
+	interface ProcessStarter {
+		Process start(String server, String commandToRun) throws Exception;
+	}
+
+	static void setProcessStarterForTest(ProcessStarter starter) {
+		processStarter = starter;
+	}
+
+	static void resetProcessStarterForTest() {
+		processStarter = DEFAULT_PROCESS_STARTER;
+	}
 
 	@BeforeAll
 	public static void setUpBeforeClass() throws Exception {
@@ -999,21 +1016,26 @@ public class QBFailover extends BasicJavaClientREST {
 
 	private void serverStartStop(String server, String command) throws Exception {
 		System.out.println("Preparing to " + command + " " + server);
-		String commandtoRun = null;
+		if (command == null) {
+			throw new IllegalArgumentException("Invalid command: null");
+		}
+		if (server == null || !HOSTNAME_PATTERN.matcher(server).matches()) {
+			throw new IllegalArgumentException("Suspicious hostname: " + server);
+		}
+
+		String cmd = command.toLowerCase(Locale.ROOT);
+		if (!cmd.equals("start") && !cmd.equals("stop")) {
+			throw new IllegalArgumentException("Invalid command: " + command);
+		}
+
+		String commandtoRun;
 
 		if (OS.indexOf("win") >= 0) {
-			commandtoRun = "net " + command.toLowerCase() + " MarkLogic";
+			commandtoRun = "net " + cmd + " MarkLogic";
 		} else {
-			commandtoRun = "sudo mladmin " + command.toLowerCase();
+			commandtoRun = "sudo mladmin " + cmd;
 		}
-
-		if (command.toLowerCase() != "start" && command.toLowerCase() != "stop") {
-			System.out.println("Invalid Command");
-			return;
-
-		}
-		String[] temp = { "sh", "-c", "ssh " + server + " " + commandtoRun };
-		Process proc = Runtime.getRuntime().exec(temp);
+		Process proc = processStarter.start(server, commandtoRun);
 		BufferedReader stdOut = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 		BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 		String s = null;
