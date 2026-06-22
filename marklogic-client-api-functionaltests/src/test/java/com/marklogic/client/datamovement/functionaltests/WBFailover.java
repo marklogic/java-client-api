@@ -31,7 +31,8 @@ public class WBFailover extends BasicJavaClientREST {
 	private static String dbName = "WBFailover";
 	private static DataMovementManager dmManager;
 	private static final String OS = System.getProperty("os.name").toLowerCase();
-	private static final Pattern HOSTNAME_PATTERN = Pattern.compile("[A-Za-z0-9._-]+");
+	// Hostname must start with alphanumeric to prevent leading-dash SSH option injection
+	private static final Pattern HOSTNAME_PATTERN = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]*");
 
 	private static DatabaseClient dbClient;
 	private static DatabaseClient evalClient;
@@ -47,7 +48,7 @@ public class WBFailover extends BasicJavaClientREST {
 	final String query1 = "fn:count(fn:doc())";
 	private static List<String> hostLists;
 	private static final ProcessStarter DEFAULT_PROCESS_STARTER =
-			(server, commandToRun) -> new ProcessBuilder("ssh", server, commandToRun).start();
+			(server, commandToRun) -> new ProcessBuilder("ssh", "--", server, commandToRun).start();
 	private static ProcessStarter processStarter = DEFAULT_PROCESS_STARTER;
 
 	@FunctionalInterface

@@ -73,6 +73,32 @@ public class ServerStartStopSecurityTest {
 		assertEquals(0, processStartCount.get());
 	}
 
+	@Test
+	void wbServerStartStopRejectsLeadingDashHostnameBeforeProcessStart() {
+		AtomicInteger processStartCount = new AtomicInteger(0);
+		WBFailover.setProcessStarterForTest((server, commandToRun) -> {
+			processStartCount.incrementAndGet();
+			throw new AssertionError("Process creation should not be attempted for leading-dash hostname");
+		});
+
+		assertThrows(IllegalArgumentException.class,
+				() -> invokeServerStartStop(new WBFailover(), "-oProxyCommand=id", "start"));
+		assertEquals(0, processStartCount.get());
+	}
+
+	@Test
+	void qbServerStartStopRejectsLeadingDashHostnameBeforeProcessStart() {
+		AtomicInteger processStartCount = new AtomicInteger(0);
+		QBFailover.setProcessStarterForTest((server, commandToRun) -> {
+			processStartCount.incrementAndGet();
+			throw new AssertionError("Process creation should not be attempted for leading-dash hostname");
+		});
+
+		assertThrows(IllegalArgumentException.class,
+				() -> invokeServerStartStop(new QBFailover(), "-oProxyCommand=id", "start"));
+		assertEquals(0, processStartCount.get());
+	}
+
 	private void invokeServerStartStop(Object target, String server, String command) throws Throwable {
 		Method method = target.getClass().getDeclaredMethod("serverStartStop", String.class, String.class);
 		method.setAccessible(true);

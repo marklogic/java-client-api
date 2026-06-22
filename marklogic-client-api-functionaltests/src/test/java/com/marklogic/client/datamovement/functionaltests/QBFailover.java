@@ -55,9 +55,10 @@ public class QBFailover extends BasicJavaClientREST {
 	private static String[] hostNames;
 	private static JobTicket ticket;
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
-	private static final Pattern HOSTNAME_PATTERN = Pattern.compile("[A-Za-z0-9._-]+");
+	// Hostname must start with alphanumeric to prevent leading-dash SSH option injection
+	private static final Pattern HOSTNAME_PATTERN = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]*");
 	private static final ProcessStarter DEFAULT_PROCESS_STARTER =
-			(server, commandToRun) -> new ProcessBuilder("ssh", server, commandToRun).start();
+			(server, commandToRun) -> new ProcessBuilder("ssh", "--", server, commandToRun).start();
 	private static ProcessStarter processStarter = DEFAULT_PROCESS_STARTER;
 
 	@FunctionalInterface
