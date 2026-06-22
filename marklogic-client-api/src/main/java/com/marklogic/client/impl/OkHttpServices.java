@@ -22,6 +22,7 @@ import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.impl.okhttp.HttpUrlBuilder;
 import com.marklogic.client.impl.okhttp.OkHttpUtil;
 import com.marklogic.client.impl.okhttp.PartIterator;
+import com.marklogic.client.impl.okhttp.RedactingHttpLogger;
 import com.marklogic.client.impl.okhttp.RetryableRequestBody;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.*;
@@ -78,7 +79,22 @@ public class OkHttpServices implements RESTServices {
 
 	static final private Logger logger = LoggerFactory.getLogger(OkHttpServices.class);
 
+	/**
+	 * Controls the verbosity of OkHttp HTTP traffic logging. Accepted values: {@code NONE}, {@code BASIC},
+	 * {@code HEADERS}, {@code BODY}.
+	 *
+	 * <p><strong>Security warning:</strong> {@code HEADERS} and {@code BODY} levels log HTTP request and response
+	 * headers and/or bodies, which may contain MarkLogic credentials, OAuth/SAML tokens, or sensitive document
+	 * content. These levels must <em>never</em> be enabled in production environments. {@code Authorization} and
+	 * {@code x-auth-token} header values are automatically redacted from log output, but body content (including
+	 * MarkLogic document data) is not redacted.
+	 */
 	private static final String OKHTTP_LOGGINGINTERCEPTOR_LEVEL = "com.marklogic.client.okhttp.httplogginginterceptor.level";
+
+	/**
+	 * Controls where OkHttp log output is written. Accepted values: {@code LOGGER} (SLF4J debug logger),
+	 * {@code STDERR}, or leave unset for stdout.
+	 */
 	private static final String OKHTTP_LOGGINGINTERCEPTOR_OUTPUT = "com.marklogic.client.okhttp.httplogginginterceptor.output";
 
 	private static final String DOCUMENT_URI_PREFIX = "/documents?uri=";
@@ -215,20 +231,18 @@ public class OkHttpServices implements RESTServices {
 
 	/**
 	 * Based on the given properties, add a network interceptor to the given OkHttpClient.Builder to log HTTP
-	 * traffic.
+	 * traffic. {@code Authorization} and {@code x-auth-token} header values are automatically redacted from all
+	 * log output so that credentials are never written to log files or stdout/stderr.
+	 *
+	 * <p><strong>Security warning:</strong> Even with header redaction, {@code BODY}-level logging writes full
+	 * HTTP request and response bodies to the log target. This may include MarkLogic document content and must
+	 * never be enabled in production environments.
 	 */
 	private void configureOkHttpLogging(OkHttpClient.Builder clientBuilder, Properties props) {
 		final boolean useLogger = "LOGGER".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_OUTPUT));
 		final boolean useStdErr = "STDERR".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_OUTPUT));
-		HttpLoggingInterceptor networkInterceptor = new HttpLoggingInterceptor(message -> {
-			if (useLogger == true) {
-				logger.debug(message);
-			} else if (useStdErr == true) {
-				System.err.println(message);
-			} else {
-				System.out.println(message);
-			}
-		});
+		HttpLoggingInterceptor networkInterceptor =
+			new HttpLoggingInterceptor(new RedactingHttpLogger(useLogger, useStdErr));
 		if ("BASIC".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL))) {
 			networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
 		} else if ("BODY".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL))) {
