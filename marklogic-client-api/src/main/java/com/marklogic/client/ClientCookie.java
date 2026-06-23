@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client;
 
@@ -54,5 +54,10 @@ public class ClientCookie {
 
 	public String getValue() {
 		return value;
+	}
+
+	@Override
+	public String toString() {
+		return name + "=" + value;
 	}
 }
