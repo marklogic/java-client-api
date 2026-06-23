@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client;
 
@@ -10,6 +10,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
@@ -377,6 +379,54 @@ public class DatabaseClientBuilder {
 	 */
 	public DatabaseClientBuilder withTrustStoreAlgorithm(String algorithm) {
 		props.put(PREFIX + "ssl.truststore.algorithm", algorithm);
+		return this;
+	}
+
+	/**
+	 * Sets the read timeout for HTTP requests made by the underlying OkHttp client.
+	 *
+	 * <p>By default, the read timeout is zero (no timeout), which is intentional for use cases
+	 * that transfer large amounts of data (e.g., bulk exports or large document reads). Setting
+	 * a non-zero timeout is recommended for applications that do not expect large responses, as
+	 * an indefinitely blocked read thread can exhaust thread pools if the MarkLogic server
+	 * becomes unresponsive.</p>
+	 *
+	 * @param value the timeout duration; use 0 to disable the timeout
+	 * @param unit  the time unit of the duration
+	 * @return this builder
+	 * @since 8.2.0
+	 */
+	public DatabaseClientBuilder withReadTimeout(long value, TimeUnit unit) {
+		Objects.requireNonNull(unit, "unit must not be null");
+		if (value < 0) {
+			throw new IllegalArgumentException(
+				"Timeout value must be zero (no timeout) or a positive duration, but was: " + value);
+		}
+		props.put(PREFIX + "readTimeoutMillis", unit.toMillis(value));
+		return this;
+	}
+
+	/**
+	 * Sets the write timeout for HTTP requests made by the underlying OkHttp client.
+	 *
+	 * <p>By default, the write timeout is zero (no timeout), which is intentional for use cases
+	 * that transfer large amounts of data (e.g., bulk imports or large document writes). Setting
+	 * a non-zero timeout is recommended for applications that do not expect large request bodies,
+	 * as an indefinitely blocked write thread can exhaust thread pools if the MarkLogic server
+	 * becomes unresponsive.</p>
+	 *
+	 * @param value the timeout duration; use 0 to disable the timeout
+	 * @param unit  the time unit of the duration
+	 * @return this builder
+	 * @since 8.2.0
+	 */
+	public DatabaseClientBuilder withWriteTimeout(long value, TimeUnit unit) {
+		Objects.requireNonNull(unit, "unit must not be null");
+		if (value < 0) {
+			throw new IllegalArgumentException(
+				"Timeout value must be zero (no timeout) or a positive duration, but was: " + value);
+		}
+		props.put(PREFIX + "writeTimeoutMillis", unit.toMillis(value));
 		return this;
 	}
 }

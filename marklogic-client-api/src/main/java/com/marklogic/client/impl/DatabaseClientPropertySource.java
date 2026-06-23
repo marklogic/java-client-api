@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -105,6 +105,10 @@ public class DatabaseClientPropertySource {
 				DatabaseClientFactory.addConfigurator(new RemoveAcceptEncodingConfigurator());
 			}
 		});
+		connectionPropertyHandlers.put(PREFIX + "readTimeoutMillis", (bean, value) ->
+			bean.setReadTimeoutMillis(toLong(value)));
+		connectionPropertyHandlers.put(PREFIX + "writeTimeoutMillis", (bean, value) ->
+			bean.setWriteTimeoutMillis(toLong(value)));
 	}
 
 	public DatabaseClientPropertySource(Function<String, Object> propertySource) {
@@ -122,7 +126,7 @@ public class DatabaseClientPropertySource {
 		// DatabaseClientFactory.getHandleRegistry() will still impact the DatabaseClient returned by this method
 		// (and this behavior is expected by some existing tests).
 		return DatabaseClientFactory.newClient(bean.getHost(), bean.getPort(), bean.getBasePath(), bean.getDatabase(),
-			bean.getSecurityContext(), bean.getConnectionType());
+			bean.getSecurityContext(), bean.getConnectionType(), bean.getReadTimeoutMillis(), bean.getWriteTimeoutMillis());
 	}
 
 	/**
@@ -454,5 +458,18 @@ public class DatabaseClientPropertySource {
 			}
 		}
 		return new SSLUtil.SSLInputs(sslContext, userTrustManager);
+	}
+
+	private static long toLong(Object value) {
+		long millis;
+		if (value instanceof Long) millis = (Long) value;
+		else if (value instanceof Integer) millis = ((Integer) value).longValue();
+		else if (value instanceof String) millis = Long.parseLong((String) value);
+		else throw new IllegalArgumentException("Timeout value must be a Long, Integer, or String; got: " + value.getClass());
+		if (millis < 0) {
+			throw new IllegalArgumentException(
+				"Timeout value must be zero (no timeout) or a positive duration, but was: " + millis);
+		}
+		return millis;
 	}
 }

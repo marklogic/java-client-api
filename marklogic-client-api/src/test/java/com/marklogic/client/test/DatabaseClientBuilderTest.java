@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -423,5 +424,27 @@ public class DatabaseClientBuilderTest {
 		assertNotNull(context.getTrustManager());
 		assertEquals(Common.TRUST_ALL_MANAGER, context.getTrustManager());
 		assertEquals(DatabaseClientFactory.SSLHostnameVerifier.COMMON, context.getSSLHostnameVerifier());
+	}
+
+	@Test
+	void defaultTimeoutsAreZero() {
+		bean = Common.newClientBuilder()
+			.withDigestAuth("user", "password")
+			.buildBean();
+
+		assertEquals(0L, bean.getReadTimeoutMillis(), "Read timeout should default to 0 (no timeout)");
+		assertEquals(0L, bean.getWriteTimeoutMillis(), "Write timeout should default to 0 (no timeout)");
+	}
+
+	@Test
+	void readAndWriteTimeouts() {
+		bean = Common.newClientBuilder()
+			.withDigestAuth("user", "password")
+			.withReadTimeout(30, TimeUnit.SECONDS)
+			.withWriteTimeout(2, TimeUnit.MINUTES)
+			.buildBean();
+
+		assertEquals(30_000L, bean.getReadTimeoutMillis());
+		assertEquals(120_000L, bean.getWriteTimeoutMillis());
 	}
 }

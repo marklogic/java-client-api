@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client;
 
@@ -1265,19 +1265,68 @@ public class DatabaseClientFactory {
   static public DatabaseClient newClient(String host, int port, String basePath, String database,
                                          SecurityContext securityContext,
                                          DatabaseClient.ConnectionType connectionType) {
-	  // As of 6.1.0, the following optimization is made as it's guaranteed that if the user is connecting to a
-	  // Progress Data Cloud instance, then port 443 will be used. Every path for constructing a DatabaseClient goes through
-	  // this method, ensuring that this optimization will always be applied, and thus freeing the user from having to
-	  // worry about what port to configure when using Progress Data Cloud.
+	  return newClient(host, port, basePath, database, securityContext, connectionType, 0L, 0L);
+  }
+
+  /**
+   * Creates a client with configurable read and write timeouts for HTTP requests.
+   *
+   * <p>As of 6.1.0, the Progress Data Cloud port optimization is applied here: port 443 is used automatically
+   * when connecting to a Progress Data Cloud instance.</p>
+   *
+   * @param host the MarkLogic host
+   * @param port the REST server port
+   * @param basePath optional base path
+   * @param database optional database name
+   * @param securityContext the security context
+   * @param connectionType whether the client connects directly or via a gateway
+   * @param readTimeoutMillis read timeout in milliseconds; 0 means no timeout
+   * @param writeTimeoutMillis write timeout in milliseconds; 0 means no timeout
+   * @return a new client for making database requests
+   * @since 8.2.0
+   */
+  static public DatabaseClient newClient(String host, int port, String basePath, String database,
+                                         SecurityContext securityContext,
+                                         DatabaseClient.ConnectionType connectionType,
+                                         long readTimeoutMillis, long writeTimeoutMillis) {
+	  // As of 6.1.0, port 443 is forced for Progress Data Cloud connections, freeing the caller
+	  // from having to specify the port when using Progress Data Cloud.
 	  if (securityContext instanceof ProgressDataCloudAuthContext) {
 		  port = 443;
 	  }
-
-	  OkHttpServices.ConnectionConfig config = new OkHttpServices.ConnectionConfig(host, port, basePath, database, securityContext, clientConfigurators);
+	  OkHttpServices.ConnectionConfig config = new OkHttpServices.ConnectionConfig(host, port, basePath, database, securityContext, clientConfigurators, readTimeoutMillis, writeTimeoutMillis);
 	  RESTServices services = new OkHttpServices(config);
       DatabaseClientImpl client = new DatabaseClientImpl(services, host, port, basePath, database, securityContext, connectionType);
       client.setHandleRegistry(getHandleRegistry().copy());
       return client;
+  }
+
+  /**
+   * Creates a client based on the given bean's properties, including any configured read and write timeouts.
+   * Unlike the other {@code newClient} overloads, this method uses the bean's own handle registry rather than
+   * the global {@link #getHandleRegistry()} registry.
+   *
+   * @param bean the bean describing the connection and timeout configuration
+   * @return a new client for making database requests
+   * @since 8.2.0
+   */
+  static public DatabaseClient newClient(Bean bean) {
+	  String host = bean.getHost();
+	  int port = bean.getPort();
+	  SecurityContext securityContext = bean.getSecurityContext();
+	  // Port 443 is forced for Progress Data Cloud connections, freeing the caller
+	  // from having to specify the port when using Progress Data Cloud.
+	  if (securityContext instanceof ProgressDataCloudAuthContext) {
+		  port = 443;
+	  }
+	  OkHttpServices.ConnectionConfig config = new OkHttpServices.ConnectionConfig(
+		  host, port, bean.getBasePath(), bean.getDatabase(), securityContext, clientConfigurators,
+		  bean.getReadTimeoutMillis(), bean.getWriteTimeoutMillis());
+	  RESTServices services = new OkHttpServices(config);
+	  DatabaseClientImpl client = new DatabaseClientImpl(services, host, port, bean.getBasePath(),
+		  bean.getDatabase(), securityContext, bean.getConnectionType());
+	  client.setHandleRegistry(bean.getHandleRegistry().copy());
+	  return client;
   }
 
   /**
@@ -1350,6 +1399,8 @@ public class DatabaseClientFactory {
     transient private SecurityContext       securityContext;
     transient private HandleFactoryRegistry handleRegistry =
       HandleFactoryRegistryImpl.newDefault();
+    private long readTimeoutMillis = 0;
+    private long writeTimeoutMillis = 0;
 
     /**
      * Zero-argument constructor for bean applications. Other
@@ -1502,10 +1553,35 @@ public class DatabaseClientFactory {
      * @return	a new client for making database requests
      */
     public DatabaseClient newClient() {
-        DatabaseClientImpl client = (DatabaseClientImpl) DatabaseClientFactory.newClient(
-            host, port, basePath, database, securityContext, connectionType);
-        client.setHandleRegistry(getHandleRegistry().copy());
-        return client;
+        return DatabaseClientFactory.newClient(this);
     }
+
+    /**
+     * Returns the read timeout in milliseconds applied to HTTP requests. Zero means no timeout (the default).
+     * @return the read timeout in milliseconds
+     * @since 8.2.0
+     */
+    public long getReadTimeoutMillis() { return readTimeoutMillis; }
+
+    /**
+     * Sets the read timeout for HTTP requests in milliseconds. Zero means no timeout (the default).
+     * @param readTimeoutMillis the read timeout in milliseconds
+     * @since 8.2.0
+     */
+    public void setReadTimeoutMillis(long readTimeoutMillis) { this.readTimeoutMillis = readTimeoutMillis; }
+
+    /**
+     * Returns the write timeout in milliseconds applied to HTTP requests. Zero means no timeout (the default).
+     * @return the write timeout in milliseconds
+     * @since 8.2.0
+     */
+    public long getWriteTimeoutMillis() { return writeTimeoutMillis; }
+
+    /**
+     * Sets the write timeout for HTTP requests in milliseconds. Zero means no timeout (the default).
+     * @param writeTimeoutMillis the write timeout in milliseconds
+     * @since 8.2.0
+     */
+    public void setWriteTimeoutMillis(long writeTimeoutMillis) { this.writeTimeoutMillis = writeTimeoutMillis; }
   }
 }

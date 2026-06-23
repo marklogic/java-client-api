@@ -151,7 +151,8 @@ public class OkHttpServices implements RESTServices {
 		ThreadLocal.withInitial(() -> new ThreadState(useDigestAuthPing));
 
 	public record ConnectionConfig(String host, int port, String basePath, String database,
-									SecurityContext securityContext, List<OkHttpClientConfigurator> clientConfigurators) {
+								SecurityContext securityContext, List<OkHttpClientConfigurator> clientConfigurators,
+								long readTimeoutMillis, long writeTimeoutMillis) {
 	}
 
 	public OkHttpServices(ConnectionConfig connectionConfig) {
@@ -219,6 +220,13 @@ public class OkHttpServices implements RESTServices {
 		this.baseUri = HttpUrlBuilder.newBaseUrl(config.host, config.port, config.basePath, config.securityContext.getSSLContext());
 
 		OkHttpClient.Builder clientBuilder = OkHttpUtil.newOkHttpClientBuilder(config.host, config.securityContext, config.clientConfigurators);
+
+		if (config.readTimeoutMillis() > 0) {
+			clientBuilder.readTimeout(config.readTimeoutMillis(), TimeUnit.MILLISECONDS);
+		}
+		if (config.writeTimeoutMillis() > 0) {
+			clientBuilder.writeTimeout(config.writeTimeoutMillis(), TimeUnit.MILLISECONDS);
+		}
 
 		Properties props = System.getProperties();
 		if (props.containsKey(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) {

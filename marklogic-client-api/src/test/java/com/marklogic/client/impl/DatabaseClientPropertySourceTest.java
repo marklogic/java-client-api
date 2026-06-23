@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -215,5 +215,35 @@ public class DatabaseClientPropertySourceTest {
 	private DatabaseClientFactory.Bean buildBean() {
 		DatabaseClientPropertySource source = new DatabaseClientPropertySource(propertyName -> props.get(propertyName));
 		return source.newClientBean();
+	}
+
+	@Test
+	void readAndWriteTimeoutsFromPropertySource() {
+		props.put(PREFIX + "readTimeoutMillis", 5000L);
+		props.put(PREFIX + "writeTimeoutMillis", 10000L);
+		DatabaseClientFactory.Bean bean = buildBean();
+
+		assertEquals(5000L, bean.getReadTimeoutMillis());
+		assertEquals(10000L, bean.getWriteTimeoutMillis());
+	}
+
+	@Test
+	void readAndWriteTimeoutsFromPropertySourceAsStrings() {
+		props.put(PREFIX + "readTimeoutMillis", "15000");
+		props.put(PREFIX + "writeTimeoutMillis", "30000");
+		DatabaseClientFactory.Bean bean = buildBean();
+
+		assertEquals(15000L, bean.getReadTimeoutMillis());
+		assertEquals(30000L, bean.getWriteTimeoutMillis());
+	}
+
+	@Test
+	void readAndWriteTimeoutsFromPropertySourceAsIntegers() {
+		props.put(PREFIX + "readTimeoutMillis", 5000);   // Integer, not Long
+		props.put(PREFIX + "writeTimeoutMillis", 10000);
+		DatabaseClientFactory.Bean bean = buildBean();
+
+		assertEquals(5000L, bean.getReadTimeoutMillis());
+		assertEquals(10000L, bean.getWriteTimeoutMillis());
 	}
 }
