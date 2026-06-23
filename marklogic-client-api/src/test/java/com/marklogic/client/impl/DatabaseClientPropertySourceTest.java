@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -195,6 +195,18 @@ public class DatabaseClientPropertySourceTest {
 		useConnectionString("user:password@host:nonNumericPort");
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> buildBean());
 		assertEquals("Invalid value for connection string; port must be numeric, but was 'nonNumericPort'", ex.getMessage());
+	}
+
+	@Test
+	void toStringRedactsPassword() {
+		ConnectionString cs = new ConnectionString("user:secret@localhost:8000", "connection string");
+		assertEquals("user:****@localhost:8000", cs.toString());
+	}
+
+	@Test
+	void toStringRedactsPasswordWithDatabase() {
+		ConnectionString cs = new ConnectionString("user:secret@localhost:8000/Documents", "connection string");
+		assertEquals("user:****@localhost:8000/Documents", cs.toString());
 	}
 
 	@Test
