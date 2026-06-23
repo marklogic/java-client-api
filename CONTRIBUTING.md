@@ -41,7 +41,7 @@ Progress/internal developers should replace this with the appropriate internal A
 2. Start the container:
 
 ```
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 Once you have a MarkLogic instance ready, the application is then deployed via the following command:
