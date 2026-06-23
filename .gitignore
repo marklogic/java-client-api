@@ -31,6 +31,7 @@ uriCache.txt
 gradle-local.properties
 bin
 repairXMLFull.xml
+.env
 xml-with-props.xml
 
 ml-development-tools/src/test/ml-modules
@@ -42,3 +43,6 @@ docker/
 .kotlin
 
 dep.txt
+
+tmp
+documents

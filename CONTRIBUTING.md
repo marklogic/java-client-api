@@ -28,6 +28,18 @@ The tests require a MarkLogic instance with access to several ports (8000,8001,8
 be a local instance or it may be running in a Docker container. If you would like to create a Docker container with the
 instance, you may create the container with the following commands (starting in the project root directory):
 
+1. Copy `.env.example` to `.env` and fill in the appropriate values:
+
+```
+cp .env.example .env
+```
+
+The default `MARKLOGIC_IMAGE` in `.env.example` points to the public `progressofficial/marklogic-db:latest` image.
+Progress/internal developers should replace this with the appropriate internal Artifactory image before running
+`docker compose up`.
+
+2. Start the container:
+
 ```
 docker-compose up -d --build
 ```
