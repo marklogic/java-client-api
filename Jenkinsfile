@@ -233,7 +233,7 @@ pipeline {
 					// each entry is validated individually after trimming to reject empty values and tags
 					// containing spaces or other shell-injectable characters
 					def imageTags = params.MARKLOGIC_IMAGE_TAGS.split(',').collect { it.trim() }
-					def invalidTags = imageTags.findAll { it.isEmpty() || !(it ==~ /^[A-Za-z0-9][A-Za-z0-9._-]*(?::[A-Za-z0-9._-]{1,127})?$/) }
+					def invalidTags = imageTags.findAll { it.isEmpty() || !(it ==~ /^[a-z0-9]+(?:[._-][a-z0-9]+)*(?::[A-Za-z0-9_][A-Za-z0-9_.-]{0,127})?$/) }
 					if (!invalidTags.isEmpty()) {
 						error("Invalid MARKLOGIC_IMAGE_TAGS entries: ${invalidTags}. Expected comma-delimited docker image refs like 'marklogic-server-ubi:latest-12'")
 					}
