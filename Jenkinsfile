@@ -135,8 +135,6 @@ pipeline {
 	environment {
 		JAVA_HOME_DIR = getJavaHomePath()
 		GRADLE_DIR = ".gradle"
-		DMC_USER = credentials('MLBUILD_USER')
-		DMC_PASSWORD = credentials('MLBUILD_PASSWORD')
 		PLATFORM = "linux/amd64"
 		MARKLOGIC_INSTALL_CONVERTERS = "true"
 	}
@@ -189,14 +187,20 @@ pipeline {
 				}
 			}
 			steps {
-				sh label: 'publish', script: '''#!/bin/bash
-					export JAVA_HOME=$JAVA_HOME_DIR
-					export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-					export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-					cp ~/.gradle/gradle.properties $GRADLE_USER_HOME;
-					cd java-client-api
-					./gradlew publish
-        '''
+				withCredentials([usernamePassword(
+					credentialsId: 'MLBUILD_USER',
+					usernameVariable: 'DMC_USER',
+					passwordVariable: 'DMC_PASSWORD'
+				)]) {
+					sh label: 'publish', script: '''#!/bin/bash
+						export JAVA_HOME=$JAVA_HOME_DIR
+						export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+						export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+						cp ~/.gradle/gradle.properties $GRADLE_USER_HOME;
+						cd java-client-api
+						./gradlew publish
+				'''
+				}
 			}
 			post {
 				always {
@@ -226,6 +230,10 @@ pipeline {
 
 			steps {
 				script {
+					// Validate MARKLOGIC_IMAGE_TAGS to prevent argument injection via user-supplied image tag values
+					if (!(params.MARKLOGIC_IMAGE_TAGS ==~ /^[a-zA-Z0-9\-.:,\/ ]+$/)) {
+						error("Invalid MARKLOGIC_IMAGE_TAGS parameter value: must match ^[a-zA-Z0-9\\-.:,\\/ ]+\$")
+					}
 					def imageTags = params.MARKLOGIC_IMAGE_TAGS.split(',')
 					def imagePrefix = 'ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/'
 
