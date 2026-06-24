@@ -187,11 +187,10 @@ pipeline {
 				}
 			}
 			steps {
-				withCredentials([usernamePassword(
-					credentialsId: 'MLBUILD_USER',
-					usernameVariable: 'DMC_USER',
-					passwordVariable: 'DMC_PASSWORD'
-				)]) {
+				withCredentials([
+					string(credentialsId: 'MLBUILD_USER', variable: 'DMC_USER'),
+					string(credentialsId: 'MLBUILD_PASSWORD', variable: 'DMC_PASSWORD')
+				]) {
 					sh label: 'publish', script: '''#!/bin/bash
 						export JAVA_HOME=$JAVA_HOME_DIR
 						export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
@@ -230,11 +229,14 @@ pipeline {
 
 			steps {
 				script {
-					// Validate MARKLOGIC_IMAGE_TAGS to prevent argument injection via user-supplied image tag values
-					if (!(params.MARKLOGIC_IMAGE_TAGS ==~ /^[a-zA-Z0-9\-.:,\/ ]+$/)) {
-						error("Invalid MARKLOGIC_IMAGE_TAGS parameter value: must match ^[a-zA-Z0-9\\-.:,\\/ ]+\$")
+					// Validate MARKLOGIC_IMAGE_TAGS to prevent argument injection via user-supplied image tag values;
+					// each entry is validated individually after trimming to reject empty values and tags
+					// containing spaces or other shell-injectable characters
+					def imageTags = params.MARKLOGIC_IMAGE_TAGS.split(',').collect { it.trim() }
+					def invalidTags = imageTags.findAll { it.isEmpty() || !(it ==~ /^[A-Za-z0-9][A-Za-z0-9._-]*(\\/[A-Za-z0-9._-]*)*(?::[A-Za-z0-9._-]{0,127})?$/) }
+					if (!invalidTags.isEmpty()) {
+						error("Invalid MARKLOGIC_IMAGE_TAGS entries: ${invalidTags}. Expected comma-delimited docker image refs like 'marklogic-server-ubi:latest-12'")
 					}
-					def imageTags = params.MARKLOGIC_IMAGE_TAGS.split(',')
 					def imagePrefix = 'ml-docker-db-dev-tierpoint.bed-artifactory.bedford.progress.com/marklogic/'
 
 					imageTags.each { tag ->
