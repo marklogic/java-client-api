@@ -20,6 +20,7 @@ import com.marklogic.client.type.CtsBoxExpr;
 import com.marklogic.client.type.CtsBoxSeqExpr;
 import com.marklogic.client.type.CtsCircleExpr;
 import com.marklogic.client.type.CtsCircleSeqExpr;
+import com.marklogic.client.type.CtsParamExpr;
 import com.marklogic.client.type.CtsPeriodExpr;
 import com.marklogic.client.type.CtsPeriodSeqExpr;
 import com.marklogic.client.type.CtsPointExpr;
@@ -2555,7 +2556,7 @@ public interface CtsExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   * @since 8.2.0
   */
-  public ServerExpression param(String name);
+  public CtsParamExpr param(String name);
 /**
   * Returns a parameter placeholder for a cts expression.
   *
@@ -2565,7 +2566,7 @@ public interface CtsExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   * @since 8.2.0
   */
-  public ServerExpression param(XsStringVal name);
+  public CtsParamExpr param(XsStringVal name);
 /**
   * Returns the part of speech for a cts:token, if any.
   *

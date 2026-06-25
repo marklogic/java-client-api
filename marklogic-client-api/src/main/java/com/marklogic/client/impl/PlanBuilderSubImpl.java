@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.expression.*;
 import com.marklogic.client.impl.BaseTypeImpl.BaseArgImpl;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -843,6 +845,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
     private Map<PlanParamBase,BaseTypeImpl.ParamBinder> params = null;
     private List<ContentParam> contentParams;
+    private Map<String,CtsQueryExpr> queryBindings;
 
     PlanSubImpl(PlanBuilderBaseImpl.PlanBaseImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
       super(prior, fnPrefix, fnName, fnArgs);
@@ -854,10 +857,12 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     private PlanSubImpl(
       PlanBuilderBaseImpl.PlanBaseImpl prior, String fnPrefix, String fnName, Object[] fnArgs,
       Map<PlanParamBase,BaseTypeImpl.ParamBinder> params,
-      List<ContentParam> contentParams) {
+      List<ContentParam> contentParams,
+      Map<String,CtsQueryExpr> queryBindings) {
       this(prior, fnPrefix, fnName, fnArgs);
       this.params = params;
       this.contentParams = contentParams;
+      this.queryBindings = queryBindings;
     }
 
     @Override
@@ -930,6 +935,40 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
       return bindParam(param, new XsValueImpl.StringValImpl(literal));
     }
     @Override
+    public Plan bindParam(String paramName, CtsQueryExpr query) {
+      if (paramName == null) {
+        throw new IllegalArgumentException("paramName for cts query binding cannot be null");
+      }
+      if (query == null) {
+        throw new IllegalArgumentException("query for cts query binding cannot be null");
+      }
+
+      Map<String,CtsQueryExpr> nextQueryBindings = new HashMap<>();
+      if (this.queryBindings != null) {
+        nextQueryBindings.putAll(this.queryBindings);
+      }
+      nextQueryBindings.put(paramName, query);
+
+      return new PlanSubImpl(
+        this.prior, this.fnPrefix, this.fnName, this.fnArgs,
+        this.params, this.contentParams, nextQueryBindings
+      );
+    }
+    @Override
+    public Plan bindParam(CtsParamExpr param, CtsQueryExpr query) {
+      return bindParam(BaseTypeImpl.getCtsParamName(param), query);
+    }
+    @Override
+    public Plan bindParam(PlanParamExpr param, CtsQueryExpr query) {
+      if (param == null) {
+        throw new IllegalArgumentException("param for cts query binding cannot be null");
+      }
+      if (!(param instanceof PlanParamBase)) {
+        throw new IllegalArgumentException("param must be an instance of PlanParamBase");
+      }
+      return bindParam(((PlanParamBase) param).getName(), query);
+    }
+    @Override
     public Plan bindParam(PlanParamExpr param, PlanParamBindingVal literal) {
       if (!(param instanceof PlanParamBase)) {
         throw new IllegalArgumentException("param must be an instance of PlanParamBase");
@@ -950,7 +989,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
         throw new IllegalArgumentException("cannot set value with unknown implementation");
       }
 
-      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, nextParams, this.contentParams);
+      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, nextParams, this.contentParams, this.queryBindings);
     }
 
     @Override
@@ -968,7 +1007,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
         nextContentParams.addAll(this.contentParams);
       }
       nextContentParams.add(ContentParam.fromDocumentWriteSet((PlanParamBase) param, writeSet));
-      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, this.params, nextContentParams);
+      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, this.params, nextContentParams, this.queryBindings);
     }
 
     @Override
@@ -992,7 +1031,17 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
         nextContentParams.addAll(this.contentParams);
       }
       nextContentParams.add(new ContentParam(baseParam, content, columnAttachments));
-      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, this.params, nextContentParams);
+      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, this.params, nextContentParams, this.queryBindings);
+    }
+
+    @Override
+    public AbstractWriteHandle getHandle() {
+      if (queryBindings == null || queryBindings.isEmpty()) {
+        return super.getHandle();
+      }
+
+      String boundAst = BaseTypeImpl.bindCtsQueryParamsInAst(getAst(), queryBindings);
+      return new StringHandle(boundAst).withFormat(Format.JSON);
     }
     @Override
     public List<ContentParam> getContentParams() {

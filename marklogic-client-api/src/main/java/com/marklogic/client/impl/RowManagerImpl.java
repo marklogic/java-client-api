@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -32,6 +32,8 @@ import com.marklogic.client.impl.RESTServices.RESTServiceResultIterator;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.*;
 import com.marklogic.client.row.*;
+import com.marklogic.client.type.CtsQueryExpr;
+import com.marklogic.client.type.CtsParamExpr;
 import com.marklogic.client.type.PlanExprCol;
 import com.marklogic.client.type.PlanParamBindingVal;
 import com.marklogic.client.type.PlanParamExpr;
@@ -1716,6 +1718,24 @@ public class RowManagerImpl
     @Override
     public Plan bindParam(PlanParamExpr param, String literal) {
       return bindParam(param, new XsValueImpl.StringValImpl(literal));
+    }
+    @Override
+    public Plan bindParam(String paramName, CtsQueryExpr query) {
+      throw new UnsupportedOperationException(
+        "Binding CtsQueryExpr query placeholders is not supported for raw plans; use a built plan from PlanBuilder"
+      );
+    }
+    @Override
+    public Plan bindParam(CtsParamExpr param, CtsQueryExpr query) {
+      throw new UnsupportedOperationException(
+        "Binding CtsQueryExpr query placeholders is not supported for raw plans; use a built plan from PlanBuilder"
+      );
+    }
+    @Override
+    public Plan bindParam(PlanParamExpr param, CtsQueryExpr query) {
+      throw new UnsupportedOperationException(
+        "Binding CtsQueryExpr query placeholders is not supported for raw plans; use a built plan from PlanBuilder"
+      );
     }
     @Override
     public Plan bindParam(PlanParamExpr param, PlanParamBindingVal literal) {
