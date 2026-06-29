@@ -1,107 +1,86 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.example.cookbook;
 
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
-import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.StringHandle;
 
 /**
- * SSLClientCreator illustrates the basic approach for creating a client using SSL for database access.
+ * SSLClientCreator illustrates the basic approach for creating a client using
+ * SSL for database access.
  *
- * Note:  to run this example, you must modify the REST server by specifying a SSL certificate template.
+ * <p>
+ * A JKS or PKCS12 truststore containing the server's CA certificate must be
+ * configured via
+ * {@code example.truststore.path} and {@code example.truststore.password} in
+ * {@code Example.properties}
+ * (or the equivalent system properties) before running this example.
+ * </p>
+ *
+ * <p>
+ * Note: to run this example, you must also modify the REST server by specifying
+ * an SSL certificate template.
+ * </p>
  */
 public class SSLClientCreator {
-  public static void main(String[] args) throws IOException, KeyManagementException, NoSuchAlgorithmException {
+  public static void main(String[] args) throws IOException {
     run(Util.loadProperties());
   }
 
-  public static void run(ExampleProperties props) throws NoSuchAlgorithmException, KeyManagementException {
-    System.out.println("example: "+SSLClientCreator.class.getName());
+  public static void run(ExampleProperties props) {
+    System.out.println("example: " + SSLClientCreator.class.getName());
 
-    // create a trust manager
-    // (note: a real application should verify certificates. This
-    // naive trust manager which accepts all the certificates should be replaced
-    // by a valid trust manager or get a system default trust manager
-    // which would validate whether the remote authentication credentials
-    // should be trusted or not.)
-    TrustManager naiveTrustMgr[] = new X509TrustManager[] {
-        new X509TrustManager() {
-          @Override
-          public void checkClientTrusted(X509Certificate[] chain, String authType) {
-          }
+    // Configure example.truststore.path and example.truststore.password in
+    // Example.properties.
+    if (props.trustStorePath == null || props.trustStorePath.isEmpty()) {
+      throw new IllegalStateException(
+          "example.truststore.path is not configured. Set it in Example.properties to the path of a JKS or "
+              + "PKCS12 truststore containing the server's CA certificate.");
+    }
+    if (props.trustStorePassword == null) {
+      throw new IllegalStateException(
+          "example.truststore.password is not configured. Set it in Example.properties.");
+    }
 
-          @Override
-          public void checkServerTrusted(X509Certificate[] chain, String authType) {
-          }
+    // Create the client using the property-source API. SSL is configured
+    // declaratively via the
+    // truststore path and password so that the client validates the server
+    // certificate against
+    // the trusted CAs in that store. STRICT hostname verification ensures the
+    // server certificate
+    // CN/SANs are checked against the connected host.
+    try (DatabaseClient client = DatabaseClientFactory.newClient(propertyName -> switch (propertyName) {
+      case "marklogic.client.host" -> props.host;
+      case "marklogic.client.port" -> props.port;
+      case "marklogic.client.authType" -> "digest";
+      case "marklogic.client.username" -> props.writerUser;
+      case "marklogic.client.password" -> props.writerPassword;
+      case "marklogic.client.sslProtocol" -> "TLSv1.3";
+      case "marklogic.client.ssl.truststore.path" -> props.trustStorePath;
+      case "marklogic.client.ssl.truststore.password" -> props.trustStorePassword;
+      case "marklogic.client.sslHostnameVerifier" -> DatabaseClientFactory.SSLHostnameVerifier.STRICT;
+      default -> null;
+    })) {
 
-          @Override
-          public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[0];
-          }
-      }
-    };
+      // make use of the client connection
+      TextDocumentManager docMgr = client.newTextDocumentManager();
+      String docId = "/example/text.txt";
+      StringHandle handle = new StringHandle();
+      handle.set("A simple text document");
+      docMgr.write(docId, handle);
 
-    // create an SSL context
-    SSLContext sslContext = SSLContext.getInstance("TLSv1.3");
-    /*
-     * Here, we use a naive TrustManager which would accept any certificate
-     * which the server produces. But in a real application, there should be a
-     * TrustManager which is initialized with a Keystore which would determine
-     * whether the remote authentication credentials should be trusted or not.
-     *
-     * If we init the sslContext with null TrustManager, it would use the
-     * <java-home>/lib/security/cacerts file for trusted root certificates, if
-     * javax.net.ssl.trustStore system property is not set and
-     * <java-home>/lib/security/jssecacerts is not present. See this link for
-     * more information on TrustManagers -
-     * http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/
-     * JSSERefGuide.html
-     *
-     * If self signed certificates, signed by CAs created internally are used,
-     * then the internal CA's root certificate should be added to the keystore.
-     * See this link -
-     * https://docs.oracle.com/cd/E19226-01/821-0027/geygn/index.html for adding
-     * a root certificate in the keystore.
-     */
-    sslContext.init(null, naiveTrustMgr, null);
+      System.out.println(
+          "Connected by SSL to " + props.host + ":" + props.port + " as " + props.writerUser);
 
-    // create the client
-    // (note: a real application should use a COMMON, STRICT, or implemented hostname verifier)
-    DatabaseClient client = DatabaseClientFactory.newClient(
-        props.host, props.port,
-        new DigestAuthContext(props.writerUser, props.writerPassword)
-            .withSSLContext(sslContext, (X509TrustManager) naiveTrustMgr[0])
-            .withSSLHostnameVerifier(SSLHostnameVerifier.ANY));
+      // clean up the written document
+      docMgr.delete(docId);
 
-    // make use of the client connection
-    TextDocumentManager docMgr = client.newTextDocumentManager();
-    String docId = "/example/text.txt";
-    StringHandle handle = new StringHandle();
-    handle.set("A simple text document");
-    docMgr.write(docId, handle);
-
-    System.out.println(
-      "Connected by SSL to "+props.host+":"+props.port+" as "+props.writerUser);
-
-    // clean up the written document
-    docMgr.delete(docId);
-
-    // release the client
-    client.release();
+    }
   }
 }
