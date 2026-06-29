@@ -9,7 +9,7 @@ plugins {
 	id 'maven-publish'
 	id "com.gradle.plugin-publish" version "1.2.1"
 	id "java-gradle-plugin"
-	id 'org.jetbrains.kotlin.jvm' version '2.2.21'
+	id 'org.jetbrains.kotlin.jvm' version '2.4.0'
 }
 
 dependencies {
@@ -23,7 +23,7 @@ dependencies {
 	// additional work during development, though we rarely modify the code in this plugin anymore.
 	implementation "com.marklogic:marklogic-client-api:${version}"
 
-	implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21'
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.4.0'
 	implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
 
 	// Sticking with this older version for now as the latest 1.x version introduces breaking changes.
