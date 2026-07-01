@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.datamovement.functionaltests;
@@ -285,33 +285,30 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 	}
 
 	@Test
-	public void jstransformReplace() throws Exception {
+	public void testResultReplace() throws Exception {
+		String uri = "/local/result-replace.json";
+		String originalValue = "v1";
+		String updatedValue = "v1a";
+		dbClient.newDocumentManager().writeAs(uri, "{ \"c\": \"" + originalValue + "\" }");
 
-		ServerTransform transform = new ServerTransform("jsTransform");
-		transform.put("newValue", "JSON");
+		try {
+			ServerTransform transform = new ServerTransform("jsTransform");
+			transform.put("newValue", updatedValue);
 
-		ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
-				.withApplyResult(ApplyResult.REPLACE);
-		QueryBatcher batcher = dmManager
-				.newQueryBatcher(new StructuredQueryBuilder().collection("Single Match"))
-				.onUrisReady(listener).onUrisReady(batch -> {
-				});
-		JobTicket ticket = dmManager.startJob(batcher);
-		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
-		dmManager.stopJob(ticket);
-		String uri = new String("/local/quality");
-		DocumentPage page = dbClient.newDocumentManager().read(uri);
-		JacksonHandle dh = new JacksonHandle();
-		int count = 0;
-		while (page.hasNext()) {
-			DocumentRecord rec = page.next();
-			rec.getContent(dh);
-			assertEquals("JSON", dh.get().get("c").asText());
-			assertNotNull(dh.get().get("c"));
-			count++;
+			ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
+					.withApplyResult(ApplyResult.REPLACE);
+			QueryBatcher batcher = dmManager
+					.newQueryBatcher(Collections.singleton(uri).iterator())
+					.onUrisReady(listener);
+			JobTicket ticket = dmManager.startJob(batcher);
+			batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+			dmManager.stopJob(ticket);
+
+			JsonNode updatedDoc = dbClient.newDocumentManager().readAs(uri, JsonNode.class);
+			assertEquals(updatedValue, updatedDoc.get("c").asText());
+		} finally {
+			dbClient.newDocumentManager().delete(uri);
 		}
-
-		assertEquals(1, count);
 	}
 
 	@Test
@@ -353,48 +350,30 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 	}
 
 	@Test
-	public void ignoreTransformTest() throws Exception {
+	public void testResultIgnore() throws Exception {
+		String uri = "/local/result-ignore.json";
+		String originalValue = "v2";
+		String updatedValue = "v2a";
+		dbClient.newDocumentManager().writeAs(uri, "{ \"c\": \"" + originalValue + "\" }");
 
-		String beforeTransform = null;
-		String afterTransform = null;
+		try {
+			ServerTransform transform = new ServerTransform("jsTransform");
+			transform.put("newValue", updatedValue);
 
-		String uri = new String("/local/quality");
-		DocumentPage page = dbClient.newDocumentManager().read(uri);
-		JacksonHandle dh = new JacksonHandle();
-		while (page.hasNext()) {
-			DocumentRecord rec = page.next();
-			rec.getContent(dh);
-			beforeTransform = dh.get().get("c").asText();
+			ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
+					.withApplyResult(ApplyResult.IGNORE);
+			QueryBatcher batcher = dmManager
+					.newQueryBatcher(Collections.singleton(uri).iterator())
+					.onUrisReady(listener);
+			JobTicket ticket = dmManager.startJob(batcher);
+			batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+			dmManager.stopJob(ticket);
 
+			JsonNode unchangedDoc = dbClient.newDocumentManager().readAs(uri, JsonNode.class);
+			assertEquals(originalValue, unchangedDoc.get("c").asText());
+		} finally {
+			dbClient.newDocumentManager().delete(uri);
 		}
-		Set<String> urisList = new HashSet<>();
-
-		ServerTransform transform = new ServerTransform("jsTransform");
-		transform.put("newValue", "ignore");
-
-		ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
-				.withApplyResult(ApplyResult.IGNORE);
-
-		QueryBatcher batcher = dmManager
-				.newQueryBatcher(new StructuredQueryBuilder().collection("Single Match"))
-				.onUrisReady(listener).onUrisReady(batch -> {
-					System.out.println("ignoreTransformTest: URI " + batch.getItems()[0]);
-					urisList.addAll(Arrays.asList(batch.getItems()));
-				});
-		JobTicket ticket = dmManager.startJob(batcher);
-		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
-		dmManager.stopJob(ticket);
-
-		page = dbClient.newDocumentManager().read(uri);
-		dh = new JacksonHandle();
-		while (page.hasNext()) {
-			DocumentRecord rec = page.next();
-			rec.getContent(dh);
-			afterTransform = dh.get().get("c").asText();
-
-		}
-		assertEquals(1, urisList.size());
-		assertEquals(beforeTransform, afterTransform);
 	}
 
 	@Test

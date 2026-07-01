@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.*;
 import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
-import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
@@ -25,23 +24,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class ApplyTransformTest {
   private static DatabaseClient client = Common.connect();
   private static DataMovementManager moveMgr = client.newDataMovementManager();
-  private static GenericDocumentManager docMgr = client.newDocumentManager();
   private static QueryManager queryMgr = client.newQueryManager();
   private static StructuredQueryBuilder sqb = new StructuredQueryBuilder();
   private static String collection = "ApplyTransformTest_" +
     new Random().nextInt(10000);
-  private static String docContents = "";
   private static String transformName1 = "WriteBatcherTest_transform.sjs";
-  private static String transformName2 = "ApplyTransformTest_result_ignore_transform.sjs";
 
   @BeforeAll
   public static void beforeClass() {
@@ -58,55 +52,6 @@ public class ApplyTransformTest {
   public static void installModule() {
     Common.newRestAdminClient().newServerConfigManager().newTransformExtensionsManager().writeJavascriptTransform(
       transformName1, new FileHandle(new File("src/test/resources/" + transformName1)));
-    Common.newRestAdminClient().newServerConfigManager().newTransformExtensionsManager().writeJavascriptTransform(
-      transformName2, new FileHandle(new File("src/test/resources/" + transformName2)));
-  }
-
-  @Test
-  public void testResultReplace() throws Exception {
-    DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(collection);
-    // write the document
-    client.newDocumentManager().writeAs(collection + "/test1.json", meta, "{ \"testProperty\": \"test1\" }");
-
-    StructuredQueryDefinition query = sqb.value(sqb.jsonProperty("testProperty"), "test1");
-
-    ServerTransform transform = new ServerTransform(transformName1)
-      .addParameter("newValue", "test1a");
-    ApplyTransformListener listener = new ApplyTransformListener()
-      .withTransform(transform)
-      .withApplyResult(ApplyResult.REPLACE);
-    QueryBatcher batcher = moveMgr.newQueryBatcher(query)
-      .onUrisReady(listener);
-    JobTicket ticket = moveMgr.startJob( batcher );
-    batcher.awaitCompletion();
-    moveMgr.stopJob(ticket);
-
-    JsonNode docContents = docMgr.readAs(collection + "/test1.json", JsonNode.class);
-    assertEquals("test1a", docContents.get("testProperty").textValue() );
-  }
-
-  @Test
-  public void testResultIgnore() throws Exception {
-    DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(collection);
-    // write the document
-    client.newDocumentManager().writeAs(collection + "/test2.json", meta, "{ \"testProperty\": \"test2\" }");
-
-    StructuredQueryDefinition query = sqb.value(sqb.jsonProperty("testProperty"), "test2");
-    ServerTransform transform = new ServerTransform(transformName2)
-      .addParameter("newValue", "test2a");
-	AtomicReference<Throwable> e = new AtomicReference<>();
-    ApplyTransformListener listener = new ApplyTransformListener()
-      .withTransform(transform)
-      .withApplyResult(ApplyResult.IGNORE).onFailure((batch, throwable) -> e.set(throwable));
-    QueryBatcher batcher = moveMgr.newQueryBatcher(query)
-      .onUrisReady(listener);
-    JobTicket ticket = moveMgr.startJob( batcher );
-    batcher.awaitCompletion();
-    moveMgr.stopJob(ticket);
-
-    assertNotNull(e.get());
-    JsonNode docContents = docMgr.readAs(collection + "/test2.json", JsonNode.class);
-    assertEquals("test2", docContents.get("testProperty").textValue() );
   }
 
   @Test
