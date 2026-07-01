@@ -1,3 +1,5 @@
+// Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+
 function transform_function(context, params, content) {
   var document = content.toObject();
   document.c = params.newValue;
