@@ -60,6 +60,7 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 	private static JsonNode jsonNode1;
 	private static final String query1 = "fn:count(fn:doc())";
 	private static String[] hostNames;
+	private static final String APPLY_TRANSFORM_RESULT_TEST = "applyTransformResultTest";
 
 	// Number of documents to insert in each test collection
 	private final static int DOC_COUNT = 1000;
@@ -287,13 +288,15 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 	@Test
 	public void testResultReplace() throws Exception {
 		String uri = "/local/result-replace.json";
+		String markerUri = "/local/result-replace-transform-marker.json";
 		String originalValue = "v1";
 		String updatedValue = "v1a";
 		dbClient.newDocumentManager().writeAs(uri, "{ \"c\": \"" + originalValue + "\" }");
 
 		try {
-			ServerTransform transform = new ServerTransform("jsTransform");
+			ServerTransform transform = new ServerTransform(APPLY_TRANSFORM_RESULT_TEST);
 			transform.put("newValue", updatedValue);
+			transform.put("markerUri", markerUri);
 
 			ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
 					.withApplyResult(ApplyResult.REPLACE);
@@ -306,7 +309,11 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 
 			JsonNode updatedDoc = dbClient.newDocumentManager().readAs(uri, JsonNode.class);
 			assertEquals(updatedValue, updatedDoc.get("c").asText());
+			JsonNode markerDoc = dbClient.newDocumentManager().readAs(markerUri, JsonNode.class);
+			assertEquals(updatedValue, markerDoc.get("transformedValue").asText());
+			assertEquals(uri, markerDoc.get("sourceUri").asText());
 		} finally {
+			dbClient.newDocumentManager().delete(markerUri);
 			dbClient.newDocumentManager().delete(uri);
 		}
 	}
@@ -352,13 +359,15 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 	@Test
 	public void testResultIgnore() throws Exception {
 		String uri = "/local/result-ignore.json";
+		String markerUri = "/local/result-ignore-transform-marker.json";
 		String originalValue = "v2";
 		String updatedValue = "v2a";
 		dbClient.newDocumentManager().writeAs(uri, "{ \"c\": \"" + originalValue + "\" }");
 
 		try {
-			ServerTransform transform = new ServerTransform("jsTransform");
+			ServerTransform transform = new ServerTransform(APPLY_TRANSFORM_RESULT_TEST);
 			transform.put("newValue", updatedValue);
+			transform.put("markerUri", markerUri);
 
 			AtomicInteger successCount = new AtomicInteger();
 			final Throwable[] failure = new Throwable[1];
@@ -378,7 +387,11 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 			assertEquals(1, successCount.get(), "Expected ApplyTransformListener to process exactly one URI");
 			JsonNode unchangedDoc = dbClient.newDocumentManager().readAs(uri, JsonNode.class);
 			assertEquals(originalValue, unchangedDoc.get("c").asText());
+			JsonNode markerDoc = dbClient.newDocumentManager().readAs(markerUri, JsonNode.class);
+			assertEquals(updatedValue, markerDoc.get("transformedValue").asText());
+			assertEquals(uri, markerDoc.get("sourceUri").asText());
 		} finally {
+			dbClient.newDocumentManager().delete(markerUri);
 			dbClient.newDocumentManager().delete(uri);
 		}
 	}
