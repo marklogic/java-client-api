@@ -360,8 +360,13 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 			ServerTransform transform = new ServerTransform("jsTransform");
 			transform.put("newValue", updatedValue);
 
+			AtomicInteger successCount = new AtomicInteger();
+			final Throwable[] failure = new Throwable[1];
+
 			ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
-					.withApplyResult(ApplyResult.IGNORE);
+					.withApplyResult(ApplyResult.IGNORE)
+					.onSuccess(batch -> successCount.addAndGet(batch.getItems().length))
+					.onFailure((batch, throwable) -> failure[0] = throwable);
 			QueryBatcher batcher = dmManager
 					.newQueryBatcher(Collections.singleton(uri).iterator())
 					.onUrisReady(listener);
@@ -369,6 +374,8 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 			batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 			dmManager.stopJob(ticket);
 
+			assertNull(failure[0], "ApplyTransformListener failure should fail this test");
+			assertEquals(1, successCount.get(), "Expected ApplyTransformListener to process exactly one URI");
 			JsonNode unchangedDoc = dbClient.newDocumentManager().readAs(uri, JsonNode.class);
 			assertEquals(originalValue, unchangedDoc.get("c").asText());
 		} finally {
