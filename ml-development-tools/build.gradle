@@ -23,7 +23,7 @@ dependencies {
 	// additional work during development, though we rarely modify the code in this plugin anymore.
 	implementation "com.marklogic:marklogic-client-api:${version}"
 
-	implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.4.0'
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21'
 	implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
 
 	// Sticking with this older version for now as the latest 1.x version introduces breaking changes.
