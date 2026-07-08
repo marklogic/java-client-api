@@ -3,6 +3,7 @@
  */
 package com.marklogic.client.impl.okhttp;
 
+import com.marklogic.client.util.LoggingUtil;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,7 @@ import java.util.regex.Pattern;
  * the configured output target (SLF4J logger, stderr, or stdout).
  *
  * <p>When the output target is {@code LOGGER}, messages are written to the
- * SLF4J logger category {@code com.marklogic.client.okhttp.network} at
+ * SLF4J logger category {@link com.marklogic.client.util.LoggingUtil#OKHTTP_NETWORK_LOGGER} at
  * {@code INFO} level. Users can enable or disable this output without
  * touching DEBUG logging for unrelated client internals.
  *
@@ -35,14 +36,7 @@ public class RedactingHttpLogger implements HttpLoggingInterceptor.Logger {
 		Pattern.compile("(?i)(authorization|x-auth-token):.*");
 	static final String SENSITIVE_HEADER_REDACTION_REPLACEMENT = "$1: [REDACTED]";
 
-	/**
-	 * The SLF4J logger category written to when {@code output=LOGGER}. Configure this category at
-	 * {@code INFO} level in your logging framework to enable network traffic logging; for example,
-	 * in {@code logback.xml}: {@code <logger name="com.marklogic.client.okhttp.network" level="INFO"/>}.
-	 */
-	static final String NETWORK_LOGGER_NAME = "com.marklogic.client.okhttp.network";
-
-	private static final Logger logger = LoggerFactory.getLogger(NETWORK_LOGGER_NAME);
+	private static final Logger logger = LoggerFactory.getLogger(LoggingUtil.OKHTTP_NETWORK_LOGGER);
 
 	private final boolean useLogger;
 	private final boolean useStdErr;

@@ -6,6 +6,7 @@ package com.marklogic.client.impl.okhttp;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import com.marklogic.client.util.LoggingUtil;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
@@ -98,7 +99,7 @@ class RedactingHttpLoggerTest {
 	@Test
 	void loggerModeWritesToNetworkLoggerCategoryAtInfoLevel() {
 		ch.qos.logback.classic.Logger networkLogger =
-			(ch.qos.logback.classic.Logger) LoggerFactory.getLogger(RedactingHttpLogger.NETWORK_LOGGER_NAME);
+			(ch.qos.logback.classic.Logger) LoggerFactory.getLogger(LoggingUtil.OKHTTP_NETWORK_LOGGER);
 		Level originalLevel = networkLogger.getLevel();
 		boolean originalAdditive = networkLogger.isAdditive();
 		networkLogger.setAdditive(false);
@@ -114,8 +115,8 @@ class RedactingHttpLoggerTest {
 			assertEquals(1, appender.list.size(), "Expected exactly one log event");
 			ILoggingEvent event = appender.list.get(0);
 
-			assertEquals(RedactingHttpLogger.NETWORK_LOGGER_NAME, event.getLoggerName(),
-				"Log event must be published under " + RedactingHttpLogger.NETWORK_LOGGER_NAME);
+			assertEquals(LoggingUtil.OKHTTP_NETWORK_LOGGER, event.getLoggerName(),
+				"Log event must be published under " + LoggingUtil.OKHTTP_NETWORK_LOGGER);
 			assertEquals(Level.INFO, event.getLevel(),
 				"LOGGER-mode output must be emitted at INFO level");
 		} finally {
@@ -134,7 +135,7 @@ class RedactingHttpLoggerTest {
 		implLogger.setLevel(Level.WARN);
 
 		ch.qos.logback.classic.Logger networkLogger =
-			(ch.qos.logback.classic.Logger) LoggerFactory.getLogger(RedactingHttpLogger.NETWORK_LOGGER_NAME);
+			(ch.qos.logback.classic.Logger) LoggerFactory.getLogger(LoggingUtil.OKHTTP_NETWORK_LOGGER);
 		Level originalNetworkLevel = networkLogger.getLevel();
 		boolean originalNetworkAdditive = networkLogger.isAdditive();
 		networkLogger.setAdditive(false);
