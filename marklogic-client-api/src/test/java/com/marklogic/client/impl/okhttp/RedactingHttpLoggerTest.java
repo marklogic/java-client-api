@@ -136,6 +136,8 @@ class RedactingHttpLoggerTest {
 		ch.qos.logback.classic.Logger networkLogger =
 			(ch.qos.logback.classic.Logger) LoggerFactory.getLogger(RedactingHttpLogger.NETWORK_LOGGER_NAME);
 		Level originalNetworkLevel = networkLogger.getLevel();
+		boolean originalNetworkAdditive = networkLogger.isAdditive();
+		networkLogger.setAdditive(false);
 		networkLogger.setLevel(Level.INFO);
 
 		ListAppender<ILoggingEvent> appender = new ListAppender<>();
@@ -151,6 +153,7 @@ class RedactingHttpLoggerTest {
 			appender.stop();
 			networkLogger.detachAppender(appender);
 			networkLogger.setLevel(originalNetworkLevel);
+			networkLogger.setAdditive(originalNetworkAdditive);
 			implLogger.setLevel(originalImplLevel);
 		}
 	}
