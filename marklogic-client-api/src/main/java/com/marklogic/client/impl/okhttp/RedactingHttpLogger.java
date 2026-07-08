@@ -3,6 +3,7 @@
  */
 package com.marklogic.client.impl.okhttp;
 
+import com.marklogic.client.util.LoggingUtil;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,11 @@ import java.util.regex.Pattern;
  * An {@link HttpLoggingInterceptor.Logger} that redacts {@code Authorization}
  * and {@code x-auth-token} header values before writing each log message to
  * the configured output target (SLF4J logger, stderr, or stdout).
+ *
+ * <p>When the output target is {@code LOGGER}, messages are written to the
+ * SLF4J logger category {@link com.marklogic.client.util.LoggingUtil#OKHTTP_NETWORK_LOGGER} at
+ * {@code INFO} level. Users can enable or disable this output without
+ * touching DEBUG logging for unrelated client internals.
  *
  * <p><strong>Security warning:</strong> Even with header redaction,
  * {@code BODY}-level logging writes full HTTP request and response bodies to
@@ -30,7 +36,7 @@ public class RedactingHttpLogger implements HttpLoggingInterceptor.Logger {
 		Pattern.compile("(?i)(authorization|x-auth-token):.*");
 	static final String SENSITIVE_HEADER_REDACTION_REPLACEMENT = "$1: [REDACTED]";
 
-	private static final Logger logger = LoggerFactory.getLogger(RedactingHttpLogger.class);
+	private static final Logger logger = LoggerFactory.getLogger(LoggingUtil.OKHTTP_NETWORK_LOGGER);
 
 	private final boolean useLogger;
 	private final boolean useStdErr;
@@ -44,7 +50,7 @@ public class RedactingHttpLogger implements HttpLoggingInterceptor.Logger {
 	public void log(String message) {
 		String redacted = redactSensitiveHeaders(message);
 		if (useLogger) {
-			logger.debug(redacted);
+			logger.info(redacted);
 		} else if (useStdErr) {
 			System.err.println(redacted);
 		} else {

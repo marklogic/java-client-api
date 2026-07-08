@@ -30,6 +30,7 @@ import com.marklogic.client.query.*;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.semantics.*;
 import com.marklogic.client.util.EditableNamespaceContext;
+import com.marklogic.client.util.LoggingUtil;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
 import jakarta.mail.BodyPart;
@@ -78,24 +79,6 @@ public class OkHttpServices implements RESTServices {
 	}
 
 	static final private Logger logger = LoggerFactory.getLogger(OkHttpServices.class);
-
-	/**
-	 * Controls the verbosity of OkHttp HTTP traffic logging. Accepted values: {@code NONE}, {@code BASIC},
-	 * {@code HEADERS}, {@code BODY}.
-	 *
-	 * <p><strong>Security warning:</strong> {@code HEADERS} and {@code BODY} levels log HTTP request and response
-	 * headers and/or bodies, which may contain MarkLogic credentials, OAuth/SAML tokens, or sensitive document
-	 * content. These levels must <em>never</em> be enabled in production environments. {@code Authorization} and
-	 * {@code x-auth-token} header values are automatically redacted from log output, but body content (including
-	 * MarkLogic document data) is not redacted.
-	 */
-	private static final String OKHTTP_LOGGINGINTERCEPTOR_LEVEL = "com.marklogic.client.okhttp.httplogginginterceptor.level";
-
-	/**
-	 * Controls where OkHttp log output is written. Accepted values: {@code LOGGER} (SLF4J debug logger),
-	 * {@code STDERR}, or leave unset for stdout.
-	 */
-	private static final String OKHTTP_LOGGINGINTERCEPTOR_OUTPUT = "com.marklogic.client.okhttp.httplogginginterceptor.output";
 
 	private static final String DOCUMENT_URI_PREFIX = "/documents?uri=";
 
@@ -221,7 +204,7 @@ public class OkHttpServices implements RESTServices {
 		OkHttpClient.Builder clientBuilder = OkHttpUtil.newOkHttpClientBuilder(config.host, config.securityContext, config.clientConfigurators);
 
 		Properties props = System.getProperties();
-		if (props.containsKey(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) {
+		if (props.containsKey(LoggingUtil.OKHTTP_NETWORK_LEVEL)) {
 			configureOkHttpLogging(clientBuilder, props);
 		}
 		this.configureDelayAndRetry(props);
@@ -239,17 +222,17 @@ public class OkHttpServices implements RESTServices {
 	 * never be enabled in production environments.
 	 */
 	private void configureOkHttpLogging(OkHttpClient.Builder clientBuilder, Properties props) {
-		final boolean useLogger = "LOGGER".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_OUTPUT));
-		final boolean useStdErr = "STDERR".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_OUTPUT));
+		final boolean useLogger = "LOGGER".equalsIgnoreCase(props.getProperty(LoggingUtil.OKHTTP_NETWORK_OUTPUT));
+		final boolean useStdErr = "STDERR".equalsIgnoreCase(props.getProperty(LoggingUtil.OKHTTP_NETWORK_OUTPUT));
 		HttpLoggingInterceptor networkInterceptor =
 			new HttpLoggingInterceptor(new RedactingHttpLogger(useLogger, useStdErr));
-		if ("BASIC".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL))) {
+		if ("BASIC".equalsIgnoreCase(props.getProperty(LoggingUtil.OKHTTP_NETWORK_LEVEL))) {
 			networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
-		} else if ("BODY".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL))) {
+		} else if ("BODY".equalsIgnoreCase(props.getProperty(LoggingUtil.OKHTTP_NETWORK_LEVEL))) {
 			networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-		} else if ("HEADERS".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL))) {
+		} else if ("HEADERS".equalsIgnoreCase(props.getProperty(LoggingUtil.OKHTTP_NETWORK_LEVEL))) {
 			networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
-		} else if ("NONE".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL))) {
+		} else if ("NONE".equalsIgnoreCase(props.getProperty(LoggingUtil.OKHTTP_NETWORK_LEVEL))) {
 			networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
 		}
 		clientBuilder.addNetworkInterceptor(networkInterceptor);
