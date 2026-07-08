@@ -92,8 +92,13 @@ public class OkHttpServices implements RESTServices {
 	private static final String OKHTTP_LOGGINGINTERCEPTOR_LEVEL = "com.marklogic.client.okhttp.httplogginginterceptor.level";
 
 	/**
-	 * Controls where OkHttp log output is written. Accepted values: {@code LOGGER} (SLF4J debug logger),
-	 * {@code STDERR}, or leave unset for stdout.
+	 * Controls where OkHttp log output is written. Accepted values:
+	 * <ul>
+	 *   <li>{@code LOGGER} — writes to SLF4J logger category
+	 *       {@code com.marklogic.client.okhttp.network} at {@code INFO} level.</li>
+	 *   <li>{@code STDERR} — writes to {@code System.err}.</li>
+	 *   <li>unset — writes to {@code System.out}.</li>
+	 * </ul>
 	 */
 	private static final String OKHTTP_LOGGINGINTERCEPTOR_OUTPUT = "com.marklogic.client.okhttp.httplogginginterceptor.output";
 

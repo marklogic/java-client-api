@@ -14,6 +14,11 @@ import java.util.regex.Pattern;
  * and {@code x-auth-token} header values before writing each log message to
  * the configured output target (SLF4J logger, stderr, or stdout).
  *
+ * <p>When the output target is {@code LOGGER}, messages are written to the
+ * SLF4J logger category {@code com.marklogic.client.okhttp.network} at
+ * {@code INFO} level. Users can enable or disable this output without
+ * touching DEBUG logging for unrelated client internals.
+ *
  * <p><strong>Security warning:</strong> Even with header redaction,
  * {@code BODY}-level logging writes full HTTP request and response bodies to
  * the log target. This may include MarkLogic document content and must never
@@ -30,7 +35,14 @@ public class RedactingHttpLogger implements HttpLoggingInterceptor.Logger {
 		Pattern.compile("(?i)(authorization|x-auth-token):.*");
 	static final String SENSITIVE_HEADER_REDACTION_REPLACEMENT = "$1: [REDACTED]";
 
-	private static final Logger logger = LoggerFactory.getLogger(RedactingHttpLogger.class);
+	/**
+	 * The SLF4J logger category written to when {@code output=LOGGER}. Configure this category at
+	 * {@code INFO} level in your logging framework to enable network traffic logging; for example,
+	 * in {@code logback.xml}: {@code <logger name="com.marklogic.client.okhttp.network" level="INFO"/>}.
+	 */
+	static final String NETWORK_LOGGER_NAME = "com.marklogic.client.okhttp.network";
+
+	private static final Logger logger = LoggerFactory.getLogger(NETWORK_LOGGER_NAME);
 
 	private final boolean useLogger;
 	private final boolean useStdErr;
@@ -44,7 +56,7 @@ public class RedactingHttpLogger implements HttpLoggingInterceptor.Logger {
 	public void log(String message) {
 		String redacted = redactSensitiveHeaders(message);
 		if (useLogger) {
-			logger.debug(redacted);
+			logger.info(redacted);
 		} else if (useStdErr) {
 			System.err.println(redacted);
 		} else {
