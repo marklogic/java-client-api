@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test.dbfunction
 
@@ -18,7 +18,6 @@ import java.io.File
 import java.lang.Exception
 
 import java.lang.IllegalStateException
-import kotlin.system.exitProcess
 
 const val TEST_PACKAGE = "com.marklogic.client.test.dbfunction.generated"
 
@@ -515,10 +514,7 @@ fun main(args: Array<String>) {
     when (args.size) {
         1 -> dbfTestGenerate(args[0], "latest")
         2 -> dbfTestGenerate(args[0], args[1])
-        else -> {
-            System.err.println("usage: fntestgen testDir [release]")
-            exitProcess(-1)
-        }
+        else -> throw IllegalArgumentException("usage: fntestgen testDir [release]")
     }
   } catch (e: Exception) {
     e.printStackTrace()
@@ -529,11 +525,7 @@ fun getExtensions(release: String) : List<String> {
         "release4" -> listOf("sjs", "xqy")
         "release5",
         "latest"   -> listOf("mjs", "sjs", "xqy")
-        else       -> {
-            System.err.println("unknown release: $release")
-            System.err.println("valid releases are one of release4, release5, or latest")
-            exitProcess(-1)
-        }
+        else       -> throw IllegalArgumentException("unknown release: $release; valid releases are one of release4, release5, or latest")
     }
 }
 
