@@ -5,13 +5,9 @@
   </rapi:collections>
   <rapi:permissions>
     <rapi:permission>
-      <rapi:role-name>infostudio-user</rapi:role-name>
-      <rapi:capability>update</rapi:capability>
-      <rapi:capability>read</rapi:capability>
-    </rapi:permission>
-    <rapi:permission>
       <rapi:role-name>app-user</rapi:role-name>
       <rapi:capability>read</rapi:capability>
+      <rapi:capability>update</rapi:capability>
     </rapi:permission>
   </rapi:permissions>
   <prop:properties xmlns:prop="http://marklogic.com/xdmp/property">
@@ -22,5 +18,5 @@
     <Company>QA</Company>
     <Version>2</Version>
   </prop:properties>
-  <rapi:quality>23</rapi:quality>  
+  <rapi:quality>23</rapi:quality>
 </rapi:metadata>
