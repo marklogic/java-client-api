@@ -12,7 +12,6 @@ import com.marklogic.client.test.Common;
 import com.marklogic.client.test.MarkLogicVersion;
 import com.marklogic.client.test.junit5.DisabledWhenUsingReverseProxyServer;
 import com.marklogic.client.test.junit5.RequireSSLExtension;
-import com.marklogic.client.test.junit5.RequiresML11OrLower;
 import com.marklogic.client.test.junit5.RequiresML12;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
@@ -120,16 +119,25 @@ class OneWaySSLTest {
 		assertTrue(ex.getCause() instanceof SSLException, "Unexpected cause: " + ex.getCause());
 	}
 
-	@ExtendWith(RequiresML11OrLower.class)
+	/**
+	 * Verifies that MarkLogic returns a 403 Forbidden response when a plain HTTP client connects to an
+	 * app server that requires SSL. This is the expected behaviour for MarkLogic 11 and for MarkLogic 12.1+.
+	 *
+	 * <p>Note: early MarkLogic 12 builds (before 12.1) briefly changed this behaviour per MLE-17505, where
+	 * the server's openssl library would close the TCP connection abruptly instead of returning HTTP 403,
+	 * causing {@link com.marklogic.client.MarkLogicIOException} with "unexpected end of stream" to be thrown.
+	 * That change was reverted in 12.1. If this test is run against a pre-12.1 MarkLogic 12 build it will
+	 * fail because {@code checkConnection()} will throw rather than return a 403 {@code ConnectionResult}.</p>
+	 */
 	@Test
 	void noSslContext() {
 		DatabaseClient client = newSslClient(Map.of());
 
 		DatabaseClient.ConnectionResult result = client.checkConnection();
 		assertEquals("Forbidden", result.getErrorMessage(), "MarkLogic is expected to return a 403 Forbidden when the " +
-			"user tries to access an HTTPS app server using HTTP. This behavior changes in MarkLogic 12, and it may " +
-			"be considered a bit surprising with MarkLogic 11 and earlier - that is, the user probably shouldn't get " +
-			"any response back since a connection cannot be made without using SSL.");
+			"user tries to access an HTTPS app server using HTTP. If this assertion fails with a MarkLogicIOException " +
+			"containing 'unexpected end of stream', the test is likely running against a pre-12.1 MarkLogic 12 build " +
+			"that exhibited the now-reverted MLE-17505 behaviour.");
 		assertEquals(403, result.getStatusCode());
 
 		ForbiddenUserException ex = assertThrows(ForbiddenUserException.class,
@@ -141,17 +149,6 @@ class OneWaySSLTest {
 			"The user should get a clear message on why the connection failed as opposed to the previous error " +
 				"message of 'Server (not a REST instance?)'."
 		);
-	}
-
-	@ExtendWith(RequiresML12.class)
-	@Test
-	void noSslContextWithMarkLogic12() {
-		DatabaseClient client = newSslClient(Map.of());
-
-		MarkLogicIOException ex = assertThrows(MarkLogicIOException.class, () -> client.checkConnection());
-		assertTrue(ex.getMessage().contains("unexpected end of stream"), "Per MLE-17505, a change in the openssl " +
-			"library used by the server results in an IO exception when the client tries to connect to an " +
-			"app server that requires SSL, but the client does not use SSL. Actual message: " + ex.getMessage());
 	}
 
 	@Test
