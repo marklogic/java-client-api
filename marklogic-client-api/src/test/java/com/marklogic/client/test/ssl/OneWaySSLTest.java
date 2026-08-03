@@ -122,14 +122,14 @@ class OneWaySSLTest {
 		assertTrue(ex.getCause() instanceof SSLException, "Unexpected cause: " + ex.getCause());
 	}
 
-	@ExtendWith({RequiresML11OrLower.class, RequiresML12Dot1.class})
+	@ExtendWith(RequiresML11OrLower.class)
 	@Test
-	void noSslContext() {
+	void noSslContextWithMarkLogic11OrLower() {
 		DatabaseClient client = newSslClient(Map.of());
 
 		DatabaseClient.ConnectionResult result = client.checkConnection();
-		assertEquals("Forbidden", result.getErrorMessage(), "MarkLogic 11 or lower and MarkLogic 12.1 or higher is " +
-			"expected to return a 403 Forbidden when the user tries to access an HTTPS app server using HTTP.");
+		assertEquals("Forbidden", result.getErrorMessage(), "MarkLogic 11 or lower is expected to return a 403 Forbidden when the " +
+			"user tries to access an HTTPS app server using HTTP.");
 		assertEquals(403, result.getStatusCode());
 
 		ForbiddenUserException ex = assertThrows(ForbiddenUserException.class,
@@ -153,6 +153,27 @@ class OneWaySSLTest {
 			"library used by the server results in an IO exception when the client tries to connect to an " +
 			"app server that requires SSL, but the client does not use SSL. This impacts all ML 12.0.x versions as of 12.0.3. " +
 			"Actual message: " + ex.getMessage());
+	}
+
+	@ExtendWith(RequiresML12Dot1.class)
+	@Test
+	void noSslContextWithMarkLogic12Dot1OrHigher() {
+		DatabaseClient client = newSslClient(Map.of());
+
+		DatabaseClient.ConnectionResult result = client.checkConnection();
+		assertEquals("Forbidden", result.getErrorMessage(), "MarkLogic 12.1 or higher is expected to return a 403 Forbidden when the " +
+			"user tries to access an HTTPS app server using HTTP.");
+		assertEquals(403, result.getStatusCode());
+
+		ForbiddenUserException ex = assertThrows(ForbiddenUserException.class,
+			() -> client.newServerEval().javascript("fn.currentDate()").evalAs(String.class));
+
+		assertEquals(
+			"Local message: User is not allowed to apply resource at eval. Server Message: You have attempted to access an HTTPS server using HTTP.",
+			ex.getMessage(),
+			"The user should get a clear message on why the connection failed as opposed to the previous error " +
+				"message of 'Server (not a REST instance?)'."
+		);
 	}
 
 	@Test
