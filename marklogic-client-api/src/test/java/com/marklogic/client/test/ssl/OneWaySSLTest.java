@@ -13,6 +13,8 @@ import com.marklogic.client.test.MarkLogicVersion;
 import com.marklogic.client.test.junit5.DisabledWhenUsingReverseProxyServer;
 import com.marklogic.client.test.junit5.RequireSSLExtension;
 import com.marklogic.client.test.junit5.RequiresML11OrLower;
+import com.marklogic.client.test.junit5.RequiresML12Dot0;
+import com.marklogic.client.test.junit5.RequiresML12Dot1;
 import com.marklogic.client.test.junit5.RequiresML12;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
@@ -122,14 +124,12 @@ class OneWaySSLTest {
 
 	@ExtendWith(RequiresML11OrLower.class)
 	@Test
-	void noSslContext() {
+	void noSslContextWithMarkLogic11OrLower() {
 		DatabaseClient client = newSslClient(Map.of());
 
 		DatabaseClient.ConnectionResult result = client.checkConnection();
-		assertEquals("Forbidden", result.getErrorMessage(), "MarkLogic is expected to return a 403 Forbidden when the " +
-			"user tries to access an HTTPS app server using HTTP. This behavior changes in MarkLogic 12, and it may " +
-			"be considered a bit surprising with MarkLogic 11 and earlier - that is, the user probably shouldn't get " +
-			"any response back since a connection cannot be made without using SSL.");
+		assertEquals("Forbidden", result.getErrorMessage(), "MarkLogic 11 or lower is expected to return a 403 Forbidden when the " +
+			"user tries to access an HTTPS app server using HTTP.");
 		assertEquals(403, result.getStatusCode());
 
 		ForbiddenUserException ex = assertThrows(ForbiddenUserException.class,
@@ -143,15 +143,37 @@ class OneWaySSLTest {
 		);
 	}
 
-	@ExtendWith(RequiresML12.class)
+	@ExtendWith(RequiresML12Dot0.class)
 	@Test
-	void noSslContextWithMarkLogic12() {
+	void noSslContextWithMarkLogic12Dot0() {
 		DatabaseClient client = newSslClient(Map.of());
 
 		MarkLogicIOException ex = assertThrows(MarkLogicIOException.class, () -> client.checkConnection());
 		assertTrue(ex.getMessage().contains("unexpected end of stream"), "Per MLE-17505, a change in the openssl " +
 			"library used by the server results in an IO exception when the client tries to connect to an " +
-			"app server that requires SSL, but the client does not use SSL. Actual message: " + ex.getMessage());
+			"app server that requires SSL, but the client does not use SSL. This impacts all ML 12.0.x versions as of 12.0.3. " +
+			"Actual message: " + ex.getMessage());
+	}
+
+	@ExtendWith(RequiresML12Dot1.class)
+	@Test
+	void noSslContextWithMarkLogic12Dot1OrHigher() {
+		DatabaseClient client = newSslClient(Map.of());
+
+		DatabaseClient.ConnectionResult result = client.checkConnection();
+		assertEquals("Forbidden", result.getErrorMessage(), "MarkLogic 12.1 or higher is expected to return a 403 Forbidden when the " +
+			"user tries to access an HTTPS app server using HTTP.");
+		assertEquals(403, result.getStatusCode());
+
+		ForbiddenUserException ex = assertThrows(ForbiddenUserException.class,
+			() -> client.newServerEval().javascript("fn.currentDate()").evalAs(String.class));
+
+		assertEquals(
+			"Local message: User is not allowed to apply resource at eval. Server Message: You have attempted to access an HTTPS server using HTTP.",
+			ex.getMessage(),
+			"The user should get a clear message on why the connection failed as opposed to the previous error " +
+				"message of 'Server (not a REST instance?)'."
+		);
 	}
 
 	@Test
