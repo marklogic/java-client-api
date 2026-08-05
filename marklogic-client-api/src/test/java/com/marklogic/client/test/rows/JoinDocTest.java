@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test.rows;
 
@@ -9,6 +9,8 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.RequiresML11;
+import com.marklogic.client.test.junit5.RequiresML12Dot0OrLower;
+import com.marklogic.client.test.junit5.RequiresML12Dot1;
 import com.marklogic.client.type.CtsReferenceExpr;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +42,7 @@ public class JoinDocTest extends AbstractOpticUpdateTest {
      * 2022-12-12 This is now running only on ML 11, as it's consistently failing on ML 10. We have a fix slated for
      * 11.x, and it's not clear yet if it'll be backported to ML 10.
      */
+	@ExtendWith(RequiresML12Dot0OrLower.class)
     @Test
     public void propertiesFragmentShouldNotBeReturnedByFromLexicons() {
         Map<String, CtsReferenceExpr> lexicons = new HashMap<>();
@@ -50,6 +53,29 @@ public class JoinDocTest extends AbstractOpticUpdateTest {
             .joinDoc(op.col("doc"), op.col("uri"));
 
         verifyPropertiesFragmentsAreNotReturned(plan);
+    }
+
+    /**
+     * In ML 12.1+, fromLexicons enumerates both content fragments and properties fragments, so joinDoc
+     * returns twice as many rows as written documents.
+     */
+    @ExtendWith(RequiresML12Dot1.class)
+    @Test
+    public void propertiesFragmentShouldBeReturnedByFromLexicons() {
+        Map<String, CtsReferenceExpr> lexicons = new HashMap<>();
+        lexicons.put("uri", op.cts.uriReference());
+
+        PlanBuilder.ModifyPlan plan = op.fromLexicons(lexicons, "", op.fragmentIdCol("fragmentId"))
+            .where(op.cts.directoryQuery("/acme/"))
+            .joinDoc(op.col("doc"), op.col("uri"));
+
+        final int docCount = 50;
+        writeDocs(docCount);
+
+        List<RowRecord> rows = resultRows(plan);
+        assertEquals(docCount * 2, rows.size(),
+            "In ML 12.1+, fromLexicons returns both content fragments and properties fragments, so the row " +
+                "count should be twice the number of written documents.");
     }
 
     private void verifyPropertiesFragmentsAreNotReturned(PlanBuilder.ModifyPlan plan) {
