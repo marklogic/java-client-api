@@ -57,7 +57,8 @@ public class JoinDocTest extends AbstractOpticUpdateTest {
 
     /**
      * In ML 12.1+, fromLexicons enumerates both content fragments and properties fragments, so joinDoc
-     * returns twice as many rows as written documents.
+     * returns twice as many rows as written documents. This behavior was introduced in ML 12.1 as part of
+	 * MLE-27052 and intended behavior was validated in MLE-31757 comments.
      */
     @ExtendWith(RequiresML12Dot1.class)
     @Test
