@@ -23,6 +23,21 @@
 			"kind": "execute"
 		},
 		{
+			"privilege-name": "xdmp:xslt-invoke",
+			"action": "http://marklogic.com/xdmp/privileges/xslt-invoke",
+			"kind": "execute"
+		},
+		{
+			"privilege-name": "xdmp:xslt-eval",
+			"action": "http://marklogic.com/xdmp/privileges/xslt-eval",
+			"kind": "execute"
+		},
+		{
+			"privilege-name": "xdmp:value",
+			"action": "http://marklogic.com/xdmp/privileges/xdmp-value",
+			"kind": "execute"
+		},
+		{
 			"privilege-name": "unprotected-uri",
 			"action": "http://marklogic.com/xdmp/privileges/unprotected-uri",
 			"kind": "execute"
