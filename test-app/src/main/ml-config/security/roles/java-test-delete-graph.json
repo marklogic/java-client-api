@@ -6,6 +6,16 @@
       "privilege-name": "term-query",
       "action": "http://marklogic.com/xdmp/privileges/term-query",
       "kind": "execute"
+    },
+    {
+      "privilege-name": "unprotected-uri",
+      "action": "http://marklogic.com/xdmp/privileges/unprotected-uri",
+      "kind": "execute"
+    },
+    {
+      "privilege-name": "unprotected-collections",
+      "action": "http://marklogic.com/xdmp/privileges/unprotected-collections",
+      "kind": "execute"
     }
   ]
 }
