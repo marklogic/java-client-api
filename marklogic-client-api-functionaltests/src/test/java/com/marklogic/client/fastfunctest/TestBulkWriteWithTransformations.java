@@ -54,7 +54,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
   @BeforeEach
   public void setUp() throws Exception {
     // create new connection for each test below
-    createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke", "xdmp-login");
+    createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
 	client = newClientAsUser("eval-user", "x");
   }
