@@ -37,7 +37,7 @@ public abstract class AbstractOpticUpdateTest extends AbstractClientTest {
 
 	private final static String XML_PREAMBLE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
-	protected static final String TEST_USER = "writer-no-default-permissions";
+	protected static final String TEST_USER = "writer-no-default-invoke";
 
 	protected RowManager rowManager;
 	protected PlanBuilder op;

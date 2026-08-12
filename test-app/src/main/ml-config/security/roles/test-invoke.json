@@ -1,0 +1,26 @@
+{
+	"role-name": "test-invoke",
+	"description": "Role for test users that require invoke and XSLT eval privileges; not included in test-rest-writer since a typical REST writer does not need these",
+	"privilege": [
+		{
+			"privilege-name": "xdmp:invoke",
+			"action": "http://marklogic.com/xdmp/privileges/xdmp-invoke",
+			"kind": "execute"
+		},
+		{
+			"privilege-name": "xdmp:xslt-invoke",
+			"action": "http://marklogic.com/xdmp/privileges/xslt-invoke",
+			"kind": "execute"
+		},
+		{
+			"privilege-name": "xdmp:xslt-eval",
+			"action": "http://marklogic.com/xdmp/privileges/xslt-eval",
+			"kind": "execute"
+		},
+		{
+			"privilege-name": "xdmp:value",
+			"action": "http://marklogic.com/xdmp/privileges/xdmp-value",
+			"kind": "execute"
+		}
+	]
+}
