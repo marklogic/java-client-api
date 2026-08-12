@@ -18,13 +18,23 @@
 			"kind": "execute"
 		},
 		{
-			"privilege-name": "xdmp-login",
-			"action": "http://marklogic.com/xdmp/privileges/xdmp-login",
+			"privilege-name": "xdmp:invoke",
+			"action": "http://marklogic.com/xdmp/privileges/xdmp-invoke",
 			"kind": "execute"
 		},
 		{
-			"privilege-name": "xdmp:invoke",
-			"action": "http://marklogic.com/xdmp/privileges/xdmp-invoke",
+			"privilege-name": "xdmp:xslt-invoke",
+			"action": "http://marklogic.com/xdmp/privileges/xslt-invoke",
+			"kind": "execute"
+		},
+		{
+			"privilege-name": "xdmp:xslt-eval",
+			"action": "http://marklogic.com/xdmp/privileges/xslt-eval",
+			"kind": "execute"
+		},
+		{
+			"privilege-name": "xdmp:value",
+			"action": "http://marklogic.com/xdmp/privileges/xdmp-value",
 			"kind": "execute"
 		},
 		{

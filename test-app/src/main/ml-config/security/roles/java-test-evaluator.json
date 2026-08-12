@@ -34,6 +34,16 @@
       "privilege-name": "xdbc:eval-in",
       "action": "http://marklogic.com/xdmp/privileges/xdbc-eval-in",
       "kind": "execute"
+    },
+    {
+      "privilege-name": "unprotected-uri",
+      "action": "http://marklogic.com/xdmp/privileges/unprotected-uri",
+      "kind": "execute"
+    },
+    {
+      "privilege-name": "unprotected-collections",
+      "action": "http://marklogic.com/xdmp/privileges/unprotected-collections",
+      "kind": "execute"
     }
   ]
 }
