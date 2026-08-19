@@ -19,6 +19,7 @@ import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
+import com.marklogic.client.impl.okhttp.HeaderUtil;
 import com.marklogic.client.impl.okhttp.HttpUrlBuilder;
 import com.marklogic.client.impl.okhttp.OkHttpUtil;
 import com.marklogic.client.impl.okhttp.PartIterator;
@@ -36,9 +37,7 @@ import com.marklogic.client.util.RequestParameters;
 import jakarta.mail.BodyPart;
 import jakarta.mail.Header;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.ContentDisposition;
 import jakarta.mail.internet.MimeMultipart;
-import jakarta.mail.internet.ParseException;
 import jakarta.mail.util.ByteArrayDataSource;
 import jakarta.xml.bind.DatatypeConverter;
 import okhttp3.*;
@@ -67,6 +66,20 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.marklogic.client.impl.okhttp.HeaderUtil.copyDescriptor;
+import static com.marklogic.client.impl.okhttp.HeaderUtil.getHeader;
+import static com.marklogic.client.impl.okhttp.HeaderUtil.getHeaderFormat;
+import static com.marklogic.client.impl.okhttp.HeaderUtil.getHeaderLength;
+import static com.marklogic.client.impl.okhttp.HeaderUtil.getHeaderMimetype;
+import static com.marklogic.client.impl.okhttp.HeaderUtil.getHeaderUri;
+import static com.marklogic.client.impl.okhttp.HeaderUtil.getHeaderVersion;
+import static com.marklogic.client.impl.okhttp.HeaderUtil.updateDescriptor;
+import static com.marklogic.client.impl.okhttp.HeaderUtil.updateFormat;
+import static com.marklogic.client.impl.okhttp.HeaderUtil.updateLength;
+import static com.marklogic.client.impl.okhttp.HeaderUtil.updateMimetype;
+import static com.marklogic.client.impl.okhttp.HeaderUtil.updateServerTimestamp;
+import static com.marklogic.client.impl.okhttp.HeaderUtil.updateVersion;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class OkHttpServices implements RESTServices {
@@ -1641,18 +1654,7 @@ public class OkHttpServices implements RESTServices {
 			&& !((DocumentDescriptorImpl) desc).isInternal();
 	}
 
-	static private void updateDescriptor(ContentDescriptor desc,
-										 Headers headers) {
-		if (desc == null || headers == null) return;
-
-		updateFormat(desc, headers);
-		updateMimetype(desc, headers);
-		updateLength(desc, headers);
-		updateServerTimestamp(desc, headers);
-	}
-
-	static private TemporalDescriptor updateTemporalSystemTime(DocumentDescriptor desc,
-															   Headers headers) {
+	static private TemporalDescriptor updateTemporalSystemTime(DocumentDescriptor desc, Headers headers) {
 		if (headers == null) return null;
 
 		DocumentDescriptorImpl temporalDescriptor;
@@ -1663,194 +1665,6 @@ public class OkHttpServices implements RESTServices {
 		}
 		temporalDescriptor.setTemporalSystemTime(headers.get(HEADER_X_MARKLOGIC_SYSTEM_TIME));
 		return temporalDescriptor;
-	}
-
-	static private void copyDescriptor(DocumentDescriptor desc,
-									   HandleImplementation handleBase) {
-		if (handleBase == null) return;
-
-		if (desc.getFormat() != null) handleBase.setFormat(desc.getFormat());
-		if (desc.getMimetype() != null) handleBase.setMimetype(desc.getMimetype());
-		handleBase.setByteLength(desc.getByteLength());
-	}
-
-	static private void updateFormat(ContentDescriptor descriptor,
-									 Headers headers) {
-		updateFormat(descriptor, getHeaderFormat(headers));
-	}
-
-	static private void updateFormat(ContentDescriptor descriptor, Format format) {
-		if (format != null) {
-			descriptor.setFormat(format);
-		}
-	}
-
-	static private Format getHeaderFormat(Headers headers) {
-		String format = headers.get(HEADER_VND_MARKLOGIC_DOCUMENT_FORMAT);
-		if (format != null && format.length() > 0) {
-			return Format.valueOf(format.toUpperCase());
-		}
-		String contentType = headers.get(HEADER_CONTENT_TYPE);
-		if (contentType != null && contentType.length() > 0) {
-			return Format.getFromMimetype(contentType);
-		}
-		return null;
-	}
-
-	static private Format getHeaderFormat(BodyPart part) {
-		String contentDisposition = getHeader(part, HEADER_CONTENT_DISPOSITION);
-		String formatRegex = ".* format=(text|binary|xml|json).*";
-		String format = getHeader(part, HEADER_VND_MARKLOGIC_DOCUMENT_FORMAT);
-		String contentType = getHeader(part, HEADER_CONTENT_TYPE);
-		if (format != null && format.length() > 0) {
-			return Format.valueOf(format.toUpperCase());
-		} else if (contentDisposition != null && contentDisposition.matches(formatRegex)) {
-			format = contentDisposition.replaceFirst("^.*" + formatRegex + ".*$", "$1");
-			return Format.valueOf(format.toUpperCase());
-		} else if (contentType != null && contentType.length() > 0) {
-			return Format.getFromMimetype(contentType);
-		}
-		return null;
-	}
-
-	static private void updateMimetype(ContentDescriptor descriptor,
-									   Headers headers) {
-		updateMimetype(descriptor, getHeaderMimetype(headers.get(HEADER_CONTENT_TYPE)));
-	}
-
-	static private void updateMimetype(ContentDescriptor descriptor, String mimetype) {
-		if (mimetype != null) {
-			descriptor.setMimetype(mimetype);
-		}
-	}
-
-	static private String getHeader(Map<String, List<String>> headers, String name) {
-		List<String> values = headers.get(name);
-		if (values != null && values.size() > 0) {
-			return values.get(0);
-		}
-		return null;
-	}
-
-	static private String getHeader(BodyPart part, String name) {
-		if (part == null) throw new MarkLogicInternalException("part must not be null");
-		try {
-			String[] values = part.getHeader(name);
-			if (values != null && values.length > 0) {
-				return values[0];
-			}
-			return null;
-		} catch (MessagingException e) {
-			throw new MarkLogicIOException(e);
-		}
-	}
-
-	static private String getHeaderMimetype(String contentType) {
-		if (contentType != null) {
-			int offset = contentType.indexOf(";");
-			String mimetype = (offset == -1) ? contentType : contentType.substring(0, offset);
-			// TODO: if "; charset=foo" set character set
-			if (mimetype != null && mimetype.length() > 0) {
-				return mimetype;
-			}
-		}
-		return null;
-	}
-
-	static private void updateLength(ContentDescriptor descriptor,
-									 Headers headers) {
-		updateLength(descriptor, getHeaderLength(headers.get(HEADER_CONTENT_LENGTH)));
-	}
-
-	static private void updateLength(ContentDescriptor descriptor, long length) {
-		descriptor.setByteLength(length);
-	}
-
-	static private void updateServerTimestamp(ContentDescriptor descriptor,
-											  Headers headers) {
-		updateServerTimestamp(descriptor, getHeaderServerTimestamp(headers));
-	}
-
-	static private long getHeaderServerTimestamp(Headers headers) {
-		return Utilities.parseLong(headers.get(HEADER_ML_EFFECTIVE_TIMESTAMP));
-	}
-
-	static private void updateServerTimestamp(ContentDescriptor descriptor, long timestamp) {
-		if (descriptor instanceof HandleImplementation) {
-			if (descriptor != null && timestamp != -1) {
-				((HandleImplementation) descriptor).setResponseServerTimestamp(timestamp);
-			}
-		}
-	}
-
-	static private long getHeaderLength(String length) {
-		return Utilities.parseLong(length, ContentDescriptor.UNKNOWN_LENGTH);
-	}
-
-	static private String getHeaderUri(BodyPart part) {
-		try {
-			if (part == null) {
-				return null;
-			}
-
-			try {
-				String filename = part.getFileName();
-				if (filename != null) {
-					return filename;
-				}
-			} catch (ParseException e) {
-				// Jakarta Mail's parser failed due to malformed Content-Disposition header.
-				// Check if MarkLogic sent a malformed "format=" parameter at the end, which violates RFC 2183.
-				String contentDisposition = getHeader(part, "Content-Disposition");
-				if (contentDisposition != null && contentDisposition.matches(".*;\\s*format\\s*=\\s*$")) {
-					// Remove the trailing "; format=" to fix the malformed header
-					String cleaned = contentDisposition.replaceFirst(";\\s*format\\s*=\\s*$", "").trim();
-					logger.debug("Removed trailing 'format=' from malformed Content-Disposition header: {} -> {}", contentDisposition, cleaned);
-					return extractFilenameFromContentDisposition(cleaned);
-				}
-				throw e;
-			}
-
-			return null;
-		} catch (MessagingException e) {
-			throw new MarkLogicIOException(e);
-		}
-	}
-
-	static private String extractFilenameFromContentDisposition(String contentDisposition) {
-		if (contentDisposition == null) {
-			return null;
-		}
-		try {
-			// Use Jakarta Mail's ContentDisposition parser to extract the filename parameter. This is the class
-			// that throws an error when "format=" exists in the value, but that has been removed already.
-			ContentDisposition cd = new ContentDisposition(contentDisposition);
-			return cd.getParameter("filename");
-		} catch (ParseException e) {
-			logger.warn("Failed to parse cleaned Content-Disposition header: {}; cause: {}",
-				contentDisposition, e.getMessage());
-			return null;
-		}
-	}
-
-	static private void updateVersion(DocumentDescriptor descriptor, Headers headers) {
-		updateVersion(descriptor, extractVersion(headers.get(HEADER_ETAG)));
-	}
-
-	static private void updateVersion(DocumentDescriptor descriptor, String header) {
-		updateVersion(descriptor, extractVersion(header));
-	}
-
-	static private void updateVersion(DocumentDescriptor descriptor, long version) {
-		descriptor.setVersion(version);
-	}
-
-	static private long extractVersion(String header) {
-		if (header != null && header.length() > 0) {
-			// trim the double quotes
-			return Long.parseLong(header.substring(1, header.length() - 1));
-		}
-		return DocumentDescriptor.UNKNOWN_VERSION;
 	}
 
 	static private Request.Builder addVersionHeader(DocumentDescriptor desc, Request.Builder requestBldr, String name) {
@@ -1869,8 +1683,8 @@ public class OkHttpServices implements RESTServices {
 		HandleImplementation handleBase = HandleAccessor.as(handle);
 
 		updateFormat(handleBase, getHeaderFormat(part));
-		updateMimetype(handleBase, getHeaderMimetype(OkHttpServices.getHeader(part, HEADER_CONTENT_TYPE)));
-		updateLength(handleBase, getHeaderLength(OkHttpServices.getHeader(part, HEADER_CONTENT_LENGTH)));
+		updateMimetype(handleBase, getHeaderMimetype(getHeader(part, HEADER_CONTENT_TYPE)));
+		updateLength(handleBase, getHeaderLength(getHeader(part, HEADER_CONTENT_LENGTH)));
 		handleBase.receiveContent(getEntity(part, handleBase.receiveAs()));
 
 		return handle;
@@ -4436,6 +4250,7 @@ public class OkHttpServices implements RESTServices {
 		private Format format;
 		private String mimetype;
 		private long length;
+		private long version = DocumentDescriptor.UNKNOWN_VERSION;
 
 		OkHttpResult(RequestLogger reqlog, BodyPart part) {
 			this.reqlog = reqlog;
@@ -4490,6 +4305,11 @@ public class OkHttpServices implements RESTServices {
 			return length;
 		}
 
+		public long getVersion() {
+			extractHeaders();
+			return version;
+		}
+
 		public String getHeader(String name) {
 			extractHeaders();
 			List<String> values = headers.get(name);
@@ -4512,9 +4332,10 @@ public class OkHttpServices implements RESTServices {
 					headers.put(header.getName(), header.getValue());
 				}
 				format = getHeaderFormat(part);
-				mimetype = getHeaderMimetype(OkHttpServices.getHeader(part, HEADER_CONTENT_TYPE));
-				length = getHeaderLength(OkHttpServices.getHeader(part, HEADER_CONTENT_LENGTH));
+				mimetype = getHeaderMimetype(HeaderUtil.getHeader(part, HEADER_CONTENT_TYPE));
+				length = getHeaderLength(HeaderUtil.getHeader(part, HEADER_CONTENT_LENGTH));
 				uri = getHeaderUri(part);
+				version = getHeaderVersion(part);
 				extractedHeaders = true;
 			} catch (MessagingException e) {
 				throw new MarkLogicIOException(e);
@@ -4688,7 +4509,7 @@ public class OkHttpServices implements RESTServices {
 			updateFormat(descriptor, getFormat());
 			updateMimetype(descriptor, getMimetype());
 			updateLength(descriptor, getLength());
-			updateVersion(descriptor, content.getHeader(HEADER_ETAG));
+			updateVersion(descriptor, content.getVersion());
 			return descriptor;
 		}
 
