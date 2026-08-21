@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -68,6 +68,7 @@ public interface RESTServices {
   String MIMETYPE_APPLICATION_XML = "application/xml";
   String MIMETYPE_MULTIPART_MIXED = "multipart/mixed";
 
+  int STATUS_UNKNOWN = -1;
   int STATUS_OK = 200;
   int STATUS_CREATED = 201;
   int STATUS_NO_CONTENT = 204;
