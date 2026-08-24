@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
 import com.marklogic.client.*;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.impl.FailedRequest;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import org.junit.jupiter.api.Test;
@@ -99,5 +100,16 @@ public class FailedRequestTest {
     } catch (Exception e) {
       fail("Call failed with unexpected exception: "+e.getMessage());
     }
+  }
+
+  @Test
+  public void testNullFailedRequestInFailedRequestException() {
+    FailedRequestException e = new FailedRequestException("test", (FailedRequest) null);
+    assertEquals("test", e.getMessage());
+    assertEquals(-1, e.getServerStatusCode());
+    assertNull(e.getServerStatus());
+    assertNull(e.getServerMessageCode());
+    assertNull(e.getServerMessage());
+    assertNull(e.getServerStackTrace());
   }
 }

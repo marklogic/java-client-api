@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client;
 
 import com.marklogic.client.impl.FailedRequest;
+import com.marklogic.client.impl.RESTServices;
 
 /**
  * Abstract class that implements functionality for errors returned from a MarkLogic REST API instance.
@@ -51,7 +52,7 @@ public abstract class MarkLogicServerException extends RuntimeException {
    * @return  the status code
    */
   public int getServerStatusCode() {
-    return (failedRequest == null) ? null : failedRequest.getStatusCode();
+    return (failedRequest == null) ? RESTServices.STATUS_UNKNOWN : failedRequest.getStatusCode();
   }
   /**
    * Gets the HTTP status message (if any) associated with the error on the server.
