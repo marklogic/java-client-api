@@ -5,6 +5,7 @@ package com.marklogic.client.query;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.impl.AbstractQueryDefinition;
+import com.marklogic.client.impl.DOMWriter;
 import com.marklogic.client.impl.RawQueryDefinitionImpl;
 import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.BaseHandle;
@@ -20,13 +21,18 @@ import jakarta.xml.bind.DatatypeConverter;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Templates;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -287,6 +293,35 @@ public class StructuredQueryBuilder {
     return new RawQueryDefinitionImpl.Structured(
       new StructuredQueryXMLWriter(queries), builderOptionsURI
     );
+  }
+
+  /**
+   * Defines one or more annotation elements to include in the query.  An annotation is a marker
+   * element that is ignored when the query is evaluated; it can hold arbitrary XML (or plain text)
+   * and is typically used to document a query or to mark parts of a query so they can be located and
+   * manipulated later.  When the structured query is turned into a
+   * <a href="http://docs.marklogic.com/guide/search-dev/cts_query#id_28038">cts:query</a> by the
+   * server, each annotation becomes a {@code cts:annotation} element.
+   * <p>
+   * Each argument becomes the content of a separate {@code annotation} element and may be a well-formed
+   * XML fragment (including elements in their own namespaces) or plain text.  Annotations are valid at
+   * the top level of a query, so the resulting query definition should be passed to
+   * {@link #build(StructuredQueryDefinition...)} alongside the other query definitions, for example:
+   * <pre>{@code
+   * qb.build(
+   *     qb.and(qb.term("hello"), qb.term("world")),
+   *     qb.annotation("<a:marker xmlns:a='http://example.org/annotations'>roles-and-rights</a:marker>"));
+   * }</pre>
+   * @param annotations    the content of one or more annotation elements
+   * @return    the StructuredQueryDefinition for the annotations
+   * @see <a href="http://docs.marklogic.com/guide/search-dev/cts_query#id_28038">
+   *      Composing cts:query Expressions: cts:annotation</a>
+   */
+  public StructuredQueryDefinition annotation(String... annotations) {
+    if (annotations == null) {
+      throw new IllegalArgumentException("annotations cannot be null");
+    }
+    return new AnnotationQuery(annotations);
   }
 
   /**
@@ -1269,6 +1304,65 @@ public class StructuredQueryBuilder {
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
       writeQueryList(serializer, "and-query", convertQueries(queries));
+    }
+  }
+
+  protected class AnnotationQuery
+    extends AbstractStructuredQuery {
+    private String[] annotations;
+
+    public AnnotationQuery(String... annotations) {
+      super();
+      this.annotations = annotations;
+    }
+
+    @Override
+    public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
+      if (annotations == null) {
+        return;
+      }
+      for (String annotation: annotations) {
+        writeSearchElement(serializer, "annotation");
+        if (annotation != null) {
+          writeAnnotationContent(serializer, annotation);
+        }
+        serializer.writeEndElement();
+      }
+    }
+
+    // The content of an annotation is arbitrary XML (or plain text).  Attempt to parse it as an XML
+    // fragment and copy the resulting nodes into the serializer; if it is not well-formed XML, fall
+    // back to writing it as text so plain-text annotations are still supported.
+    private void writeAnnotationContent(XMLStreamWriter serializer, String annotation)
+      throws XMLStreamException
+    {
+      Document document = parseAnnotationContent(annotation);
+      if (document == null) {
+        serializer.writeCharacters(annotation);
+        return;
+      }
+      new DOMWriter(serializer).serializeNodeList(document.getDocumentElement().getChildNodes());
+    }
+
+    private Document parseAnnotationContent(String annotation) {
+      String wrapped = "<annotation-content>" + annotation + "</annotation-content>";
+      try {
+        DocumentBuilder builder = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder();
+        return builder.parse(
+          new ByteArrayInputStream(wrapped.getBytes(StandardCharsets.UTF_8)));
+      } catch (SAXException e) {
+        // Not well-formed XML; treat the content as plain text.
+        return null;
+      } catch (IOException | RuntimeException | javax.xml.parsers.ParserConfigurationException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+
+    @Override
+    public boolean canSerializeQueryAsJSON() {
+      // Annotations carry arbitrary XML content that has no JSON structured-query representation,
+      // so force the XML serialization path.
+      return false;
     }
   }
 
@@ -2600,7 +2694,16 @@ public class StructuredQueryBuilder {
             }
           }
           for (AbstractStructuredQuery query: (AbstractStructuredQuery[]) objects) {
-            query.innerSerialize(serializer);
+            if (!(query instanceof AnnotationQuery)) {
+              query.innerSerialize(serializer);
+            }
+          }
+          // The search schema requires annotation elements to follow the query elements within the
+          // top-level query element, so serialize any annotations last regardless of caller order.
+          for (AbstractStructuredQuery query: (AbstractStructuredQuery[]) objects) {
+            if (query instanceof AnnotationQuery) {
+              query.innerSerialize(serializer);
+            }
           }
         } else if (objects instanceof RegionImpl[]) {
           for (RegionImpl region: (RegionImpl[]) objects) {

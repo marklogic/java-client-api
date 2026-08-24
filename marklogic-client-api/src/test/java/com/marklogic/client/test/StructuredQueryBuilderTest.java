@@ -562,6 +562,75 @@ public class StructuredQueryBuilderTest {
     }
   }
 
+  @Test
+  public void testAnnotation() throws Exception {
+    StructuredQueryBuilder qb = new StructuredQueryBuilder();
+
+    SAXParser parser = newValidatingParser();
+    ParseHandler handler = new ParseHandler();
+
+    // Annotation containing a namespaced marker element, following a query.
+    String q = qb.build(
+      qb.and(qb.term("one")),
+      qb.annotation("<a:marker xmlns:a=\"http://example.org/annotations\">roles-and-rights</a:marker>")
+    ).toString();
+    parser.parse(new StringInputStream(q), handler);
+    assertXMLEqual("<query xmlns=\"http://marklogic.com/appservices/search\">"
+      + "<and-query><term-query><text>one</text></term-query></and-query>"
+      + "<annotation><a:marker xmlns:a=\"http://example.org/annotations\">roles-and-rights</a:marker></annotation>"
+      + "</query>", q);
+
+    // Annotation-only query.
+    q = qb.build(qb.annotation("<marker/>")).toString();
+    parser.parse(new StringInputStream(q), handler);
+    assertXMLEqual("<query xmlns=\"http://marklogic.com/appservices/search\">"
+      + "<annotation><marker/></annotation></query>", q);
+
+    // The serialize() convenience method on the annotation query definition itself.
+    q = qb.annotation("<marker/>").serialize();
+    parser.parse(new StringInputStream(q), handler);
+    assertXMLEqual("<query xmlns=\"http://marklogic.com/appservices/search\">"
+      + "<annotation><marker/></annotation></query>", q);
+
+    // Plain-text annotation content.
+    q = qb.build(qb.term("one"), qb.annotation("a plain text note")).toString();
+    parser.parse(new StringInputStream(q), handler);
+    assertXMLEqual("<query xmlns=\"http://marklogic.com/appservices/search\">"
+      + "<term-query><text>one</text></term-query>"
+      + "<annotation>a plain text note</annotation></query>", q);
+
+    // Multiple annotation elements from a single call.
+    q = qb.build(qb.term("one"), qb.annotation("<a/>", "<b/>")).toString();
+    parser.parse(new StringInputStream(q), handler);
+    assertXMLEqual("<query xmlns=\"http://marklogic.com/appservices/search\">"
+      + "<term-query><text>one</text></term-query>"
+      + "<annotation><a/></annotation><annotation><b/></annotation></query>", q);
+
+    // Annotations must serialize after the queries even when passed before them.
+    q = qb.build(qb.annotation("<marker/>"), qb.and(qb.term("one"))).toString();
+    parser.parse(new StringInputStream(q), handler);
+    assertXMLEqual("<query xmlns=\"http://marklogic.com/appservices/search\">"
+      + "<and-query><term-query><text>one</text></term-query></and-query>"
+      + "<annotation><marker/></annotation></query>", q);
+  }
+
+  private static SAXParser newValidatingParser() throws Exception {
+    File schemaFile = new File("src/test/resources/search.xsd");
+    try (InputStream fileInputStream = new FileInputStream(schemaFile)) {
+      StreamSource[] sources = new StreamSource[1];
+      sources[0] = new StreamSource(fileInputStream);
+      sources[0].setSystemId(schemaFile);
+
+      SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/XML/XMLSchema/v1.1");
+      Schema schema = schemaFactory.newSchema(sources);
+
+      SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+      parserFactory.setNamespaceAware(true);
+      parserFactory.setSchema(schema);
+      return parserFactory.newSAXParser();
+    }
+  }
+
   static private class ParseHandler extends DefaultHandler {
     @Override
     public void fatalError(SAXParseException spe) throws SAXParseException {
