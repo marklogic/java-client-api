@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.document;
 
@@ -9,6 +9,11 @@ import com.marklogic.client.io.Format;
  * A Document Descriptor describes a database document. If content versioning is enabled on the app server used
  * to retrieve a document via an instance of this class, note that you may receive a null return value if the
  * corresponding document has not been modified. 
+ *
+ * When passed to one of the {@link DocumentManager} write() methods, a DocumentDescriptor is also
+ * updated in place with the version and metadata assigned by the server, so it can be reused
+ * afterward (for example, for a later optimistic read) without a separate read() or exists() call
+ * to learn the new version.
  */
 public interface DocumentDescriptor extends ContentDescriptor {
   /**

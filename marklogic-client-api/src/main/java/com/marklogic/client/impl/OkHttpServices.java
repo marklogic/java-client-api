@@ -1321,10 +1321,13 @@ public class OkHttpServices implements RESTServices {
 						"document create produced location without uri: " + location);
 				}
 				desc.setUri(uri);
-				updateVersion(desc, responseHeaders);
-				updateDescriptor(desc, responseHeaders);
 			}
 		}
+		// The write response itself carries no version/ETag header (unlike a GET response), so the
+		// only way to hand the caller an up-to-date DocumentDescriptor is a follow-up HEAD request.
+		// Refresh the caller's descriptor with the version and metadata now current on the server,
+		// so callers holding a DocumentDescriptor can rely on it without a separate read() or exists().
+		refreshDescriptorAfterWrite(reqlog, desc, transaction, categories);
 		TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
 		closeResponse(response);
 		return temporalDesc;
@@ -1452,10 +1455,13 @@ public class OkHttpServices implements RESTServices {
 						"document create produced location without uri: " + location);
 				}
 				desc.setUri(uri);
-				updateVersion(desc, responseHeaders);
-				updateDescriptor(desc, responseHeaders);
 			}
 		}
+		// The write response itself carries no version/ETag header (unlike a GET response), so the
+		// only way to hand the caller an up-to-date DocumentDescriptor is a follow-up HEAD request.
+		// Refresh the caller's descriptor with the version and metadata now current on the server,
+		// so callers holding a DocumentDescriptor can rely on it without a separate read() or exists().
+		refreshDescriptorAfterWrite(reqlog, desc, transaction, categories);
 		TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
 		closeResponse(response);
 		return temporalDesc;
@@ -1654,7 +1660,39 @@ public class OkHttpServices implements RESTServices {
 			&& !((DocumentDescriptorImpl) desc).isInternal();
 	}
 
-	static private TemporalDescriptor updateTemporalSystemTime(DocumentDescriptor desc, Headers headers) {
+	// MarkLogic's write response (PUT/POST /v1/documents) doesn't carry a version/ETag header,
+	// so a follow-up HEAD is the only way to learn the version assigned to the document just
+	// written. Only issued for a caller-supplied (external) descriptor, so that write() overloads
+	// which discard their internal descriptor (e.g. those taking a plain uri String) don't pay
+	// for a HEAD request whose result nobody can observe.
+	private void refreshDescriptorAfterWrite(RequestLogger reqlog, DocumentDescriptor desc,
+											 Transaction transaction, Set<Metadata> categories) {
+		if (!isExternalDescriptor(desc)) return;
+
+		String uri = desc.getUri();
+		Response response = headImpl(reqlog, uri, transaction,
+			makeDocumentResource(makeDocumentParams(uri, categories, transaction, null)));
+		if (response == null) return;
+
+		Headers responseHeaders = response.headers();
+		closeResponse(response);
+
+		updateVersion(desc, responseHeaders);
+		updateDescriptor(desc, responseHeaders);
+	}
+
+	static private void updateDescriptor(ContentDescriptor desc,
+										 Headers headers) {
+		if (desc == null || headers == null) return;
+
+		updateFormat(desc, headers);
+		updateMimetype(desc, headers);
+		updateLength(desc, headers);
+		updateServerTimestamp(desc, headers);
+	}
+
+	static private TemporalDescriptor updateTemporalSystemTime(DocumentDescriptor desc,
+															   Headers headers) {
 		if (headers == null) return null;
 
 		DocumentDescriptorImpl temporalDescriptor;

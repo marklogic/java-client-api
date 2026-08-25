@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 /* * Copyright © 2024 MarkLogic Corporation. All Rights Reserved.
  *
@@ -888,7 +888,11 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    *
    * To call write(), an application must authenticate as rest-writer or rest-admin.
    *
-   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document.
+   *             After a successful write, this method updates the descriptor with the
+   *             version and metadata now current on the server (an extra internal request),
+   *             so the same descriptor can be reused for a later optimistic read or write
+   *             without a separate read() or exists() call to learn the new version.
    * @param contentHandle	a handle for writing the content of the document
    */
   void write(DocumentDescriptor desc, W contentHandle)
@@ -898,7 +902,11 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    *
    * To call write(), an application must authenticate as rest-writer or rest-admin.
    *
-   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document.
+   *             After a successful write, this method updates the descriptor with the
+   *             version and metadata now current on the server (an extra internal request),
+   *             so the same descriptor can be reused for a later optimistic read or write
+   *             without a separate read() or exists() call to learn the new version.
    * @param contentHandle	a handle for writing the content of the document
    * @param transform	a server transform to modify the document content
    */
@@ -933,7 +941,11 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    *
    * To call write(), an application must authenticate as rest-writer or rest-admin.
    *
-   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document.
+   *             After a successful write, this method updates the descriptor with the
+   *             version and metadata now current on the server (an extra internal request),
+   *             so the same descriptor can be reused for a later optimistic read or write
+   *             without a separate read() or exists() call to learn the new version.
    * @param metadataHandle	a handle for writing the metadata of the document
    * @param contentHandle	a handle for writing the content of the document
    */
@@ -944,7 +956,11 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    *
    * To call write(), an application must authenticate as rest-writer or rest-admin.
    *
-   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document.
+   *             After a successful write, this method updates the descriptor with the
+   *             version and metadata now current on the server (an extra internal request),
+   *             so the same descriptor can be reused for a later optimistic read or write
+   *             without a separate read() or exists() call to learn the new version.
    * @param metadataHandle	a handle for writing the metadata of the document
    * @param contentHandle	a handle for writing the content of the document
    * @param transform	a server transform to modify the document content
@@ -980,7 +996,11 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    *
    * To call write(), an application must authenticate as rest-writer or rest-admin.
    *
-   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document.
+   *             After a successful write, this method updates the descriptor with the
+   *             version and metadata now current on the server (an extra internal request),
+   *             so the same descriptor can be reused for a later optimistic read or write
+   *             without a separate read() or exists() call to learn the new version.
    * @param contentHandle	a handle for writing the content of the document
    * @param transaction	a open transaction under which the document may have been created or deleted
    */
@@ -991,7 +1011,11 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    *
    * To call write(), an application must authenticate as rest-writer or rest-admin.
    *
-   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document.
+   *             After a successful write, this method updates the descriptor with the
+   *             version and metadata now current on the server (an extra internal request),
+   *             so the same descriptor can be reused for a later optimistic read or write
+   *             without a separate read() or exists() call to learn the new version.
    * @param contentHandle	a handle for writing the content of the document
    * @param transform	a server transform to modify the document content
    * @param transaction	a open transaction under which the document may have been created or deleted
@@ -1029,7 +1053,11 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    *
    * To call write(), an application must authenticate as rest-writer or rest-admin.
    *
-   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document.
+   *             After a successful write, this method updates the descriptor with the
+   *             version and metadata now current on the server (an extra internal request),
+   *             so the same descriptor can be reused for a later optimistic read or write
+   *             without a separate read() or exists() call to learn the new version.
    * @param metadataHandle	a handle for writing the metadata of the document
    * @param contentHandle	a handle for writing the content of the document
    * @param transaction	a open transaction under which the document may have been created or deleted
@@ -1041,7 +1069,11 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    *
    * To call write(), an application must authenticate as rest-writer or rest-admin.
    *
-   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+   * @param desc	a descriptor for the URI identifier, format, and mimetype of the document.
+   *             After a successful write, this method updates the descriptor with the
+   *             version and metadata now current on the server (an extra internal request),
+   *             so the same descriptor can be reused for a later optimistic read or write
+   *             without a separate read() or exists() call to learn the new version.
    * @param metadataHandle	a handle for writing the metadata of the document
    * @param contentHandle	a handle for writing the content of the document
    * @param transform	a server transform to modify the document content

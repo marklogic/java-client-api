@@ -91,9 +91,12 @@ public class ConditionalDocumentTest {
     desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
     docMgr.write(desc, contentHandle);
 
-    String result = docMgr.read(desc, new StringHandle()).get();
+    // write() now refreshes desc with the version the server just assigned, so desc.getVersion()
+    // already matches the server and a conditional read(desc, ...) would return null (not
+    // modified). Verify the content with a version-agnostic read instead.
     long goodVersion = desc.getVersion();
     assertTrue( goodVersion != DocumentDescriptor.UNKNOWN_VERSION);
+    String result = docMgr.read(docId, new StringHandle()).get();
     assertXMLEqual("Failed to read document content",result,GenericDocumentTest.content);
 
     desc.setVersion(badVersion);
@@ -182,6 +185,49 @@ public class ConditionalDocumentTest {
 
 
     desc.setVersion(goodVersion);
+    docMgr.delete(desc);
+  }
+
+  // https://github.com/marklogic/java-client-api/issues/1939
+  // write() should update the caller's DocumentDescriptor with the version assigned by the
+  // server, so callers doing optimistic locking don't need a follow-up read() or exists() call
+  // just to learn the new version.
+  @Test
+  public void testWriteUpdatesDescriptorVersion()
+    throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException
+  {
+    String docId = "/test/writeUpdatesVersion.xml";
+
+    XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+
+    DocumentDescriptor existing = docMgr.exists(docId);
+    if (existing != null) {
+      docMgr.delete(existing);
+    }
+
+    StringHandle contentHandle = new StringHandle().with(GenericDocumentTest.content);
+
+    DocumentDescriptor desc = docMgr.newDescriptor(docId);
+    desc.setFormat(Format.XML);
+    assertEquals(DocumentDescriptor.UNKNOWN_VERSION, desc.getVersion());
+
+    docMgr.write(desc, contentHandle);
+
+    long versionAfterCreate = desc.getVersion();
+    assertNotEquals(DocumentDescriptor.UNKNOWN_VERSION, versionAfterCreate,
+      "write() should populate the descriptor's version after creating a document");
+    assertEquals(versionAfterCreate, docMgr.exists(docId).getVersion(),
+      "the version on the descriptor should match the server's version after write()");
+
+    // Update again using optimistic locking with the version write() just gave us.
+    docMgr.write(desc, contentHandle);
+
+    long versionAfterUpdate = desc.getVersion();
+    assertNotEquals(versionAfterCreate, versionAfterUpdate,
+      "write() should update the descriptor with the new version after an update");
+    assertEquals(versionAfterUpdate, docMgr.exists(docId).getVersion(),
+      "the version on the descriptor should match the server's version after a second write()");
+
     docMgr.delete(desc);
   }
 
