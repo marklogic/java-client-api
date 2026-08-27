@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 plugins {
@@ -136,7 +136,7 @@ javadoc {
 	options.overview = "src/main/javadoc/overview.html"
 	options.windowTitle = "MarkLogic Java Client API $rootProject.version"
 	options.docTitle = "MarkLogic Java Client API $rootProject.version"
-	options.bottom = "Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved."
+	options.bottom = "Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved."
 	options.use = true
 	exclude([
 		'**/impl/**', '**/jaxb/**', '**/test/**'
