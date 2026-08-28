@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 plugins {
@@ -118,6 +118,13 @@ tasks.register("runXmlSmokeTests", Test) {
 	include "com/marklogic/client/test/JAXBHandleTest.class"
 }
 
+processResources {
+	from(rootProject.file("sbom.spdx.json")) {
+		into "META-INF/sbom"
+		rename { "marklogic-client-api-${project.version}.spdx.json" }
+	}
+}
+
 // Publishing setup - see https://docs.gradle.org/current/userguide/publishing_setup.html .
 java {
 	withJavadocJar()
@@ -129,7 +136,7 @@ javadoc {
 	options.overview = "src/main/javadoc/overview.html"
 	options.windowTitle = "MarkLogic Java Client API $rootProject.version"
 	options.docTitle = "MarkLogic Java Client API $rootProject.version"
-	options.bottom = "Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved."
+	options.bottom = "Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved."
 	options.use = true
 	exclude([
 		'**/impl/**', '**/jaxb/**', '**/test/**'
@@ -147,6 +154,9 @@ publishing {
 	publications {
 		mainJava(MavenPublication) {
 			from components.java
+			artifact(rootProject.file("sbom.spdx.json")) {
+				extension = "spdx.json"
+			}
 			pom {
 				name = "${project.group}:${project.name}"
 				description = "The MarkLogic Java Client API"
