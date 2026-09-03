@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.test;
@@ -1441,6 +1441,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
         executeTester("testXdmpFormatNumber8", p.xdmp.formatNumber(p.col("1"), p.col("2"), p.col("3"), p.col("4"), p.col("5"), p.col("6"), p.col("7"), p.col("8")), false, null, null, null, "NINE", new ServerExpression[]{ p.xs.doubleVal(9), p.xs.string("W"), p.xs.string("en"), p.xs.string(""), p.xs.string(""), p.xs.string(""), p.xs.string(","), p.xs.integer(3) });
     }
 
+	@ExtendWith(RequiresML11OrLower.class)
     @Test
     public void testXdmpGetCurrentUser0Exec() {
         executeTester("testXdmpGetCurrentUser0", p.xdmp.getCurrentUser(), true, null, null, null, "admin", new ServerExpression[]{  });
@@ -1677,11 +1678,13 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 		executeTester("testXdmpUnquote1", p.xdmp.unquote(p.col("1")), false, null, "array", Format.JSON, "[123]", new ServerExpression[]{p.xs.string("[123]")});
     }
 
+	@ExtendWith(RequiresML11OrLower.class)
     @Test
     public void testXdmpUriContentType1Exec() {
         executeTester("testXdmpUriContentType1", p.xdmp.uriContentType(p.col("1")), false, null, null, null, "application/json", new ServerExpression[]{ p.xs.string("a.json") });
     }
 
+	@ExtendWith(RequiresML11OrLower.class)
     @Test
     public void testXdmpUriFormat1Exec() {
         executeTester("testXdmpUriFormat1", p.xdmp.uriFormat(p.col("1")), false, null, null, null, "json", new ServerExpression[]{ p.xs.string("a.json") });

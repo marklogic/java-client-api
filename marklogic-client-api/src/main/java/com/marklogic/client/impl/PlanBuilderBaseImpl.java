@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -51,17 +51,20 @@ abstract class PlanBuilderBaseImpl extends PlanBuilder {
     private PlanBuilderBaseImpl pb;
     private XsFloatVal qualityWeight;
     private ScoreMethod scoreMethod;
-	private XsDoubleVal bm25LengthWeight;
+    private XsDoubleVal bm25LengthWeight;
+    private Fragment fragment;
     PlanSearchOptionsImpl(PlanBuilderBaseImpl pb) {
       this.pb = pb;
     }
-	PlanSearchOptionsImpl(PlanBuilderBaseImpl pb, XsFloatVal qualityWeight,
-						  ScoreMethod scoreMethod, XsDoubleVal bm25LengthWeight) {
-		  this(pb);
-		  this.qualityWeight = qualityWeight;
-		  this.scoreMethod   = scoreMethod;
-		  this.bm25LengthWeight = bm25LengthWeight;
-	}
+    PlanSearchOptionsImpl(PlanBuilderBaseImpl pb, XsFloatVal qualityWeight,
+                          ScoreMethod scoreMethod, XsDoubleVal bm25LengthWeight,
+                          Fragment fragment) {
+      this(pb);
+      this.qualityWeight = qualityWeight;
+      this.scoreMethod   = scoreMethod;
+      this.bm25LengthWeight = bm25LengthWeight;
+      this.fragment = fragment;
+    }
 
     @Override
     public XsFloatVal getQualityWeight() {
@@ -71,43 +74,55 @@ abstract class PlanBuilderBaseImpl extends PlanBuilder {
     public ScoreMethod getScoreMethod() {
       return scoreMethod;
     }
-	@Override
-	public XsDoubleVal getBm25LengthWeight() {
-		  return bm25LengthWeight;
-	  }
+    @Override
+    public XsDoubleVal getBm25LengthWeight() {
+      return bm25LengthWeight;
+    }
+    @Override
+    public Fragment getFragment() {
+      return fragment;
+    }
     @Override
     public PlanSearchOptions withQualityWeight(float qualityWeight) {
       return withQualityWeight(pb.xs.floatVal(qualityWeight));
     }
     @Override
     public PlanSearchOptions withQualityWeight(XsFloatVal qualityWeight) {
-      return new PlanSearchOptionsImpl(pb, qualityWeight, getScoreMethod(), getBm25LengthWeight());
+      return new PlanSearchOptionsImpl(pb, qualityWeight, getScoreMethod(), getBm25LengthWeight(), getFragment());
     }
     @Override
     public PlanSearchOptions withScoreMethod(ScoreMethod scoreMethod) {
-      return new PlanSearchOptionsImpl(pb, getQualityWeight(), scoreMethod, getBm25LengthWeight());
+      return new PlanSearchOptionsImpl(pb, getQualityWeight(), scoreMethod, getBm25LengthWeight(), getFragment());
     }
 
-	  @Override
-	  public PlanSearchOptions withBm25LengthWeight(double bm25LengthWeight) {
-		  return new PlanSearchOptionsImpl(pb, getQualityWeight(), getScoreMethod(), pb.xs.doubleVal(bm25LengthWeight));
-	  }
+    @Override
+    public PlanSearchOptions withBm25LengthWeight(double bm25LengthWeight) {
+      return new PlanSearchOptionsImpl(pb, getQualityWeight(), getScoreMethod(), pb.xs.doubleVal(bm25LengthWeight), getFragment());
+    }
 
-	  Map<String,Object> makeMap() {
-	      if (qualityWeight == null && scoreMethod == null && bm25LengthWeight == null) return null;
+    @Override
+    public PlanSearchOptions withFragment(Fragment fragment) {
+      return new PlanSearchOptionsImpl(pb, getQualityWeight(), getScoreMethod(), getBm25LengthWeight(), fragment);
+    }
 
-	      Map<String, Object> map = new HashMap<>();
-    	  if (qualityWeight != null) {
-			  map.put("qualityWeight", qualityWeight);
-		  }
-		  if (scoreMethod != null) {
-			  map.put("scoreMethod", scoreMethod.name().toLowerCase());
-		  }
-		  if (bm25LengthWeight != null) {
-			  map.put("bm25LengthWeight", bm25LengthWeight);
-		  }
-		  return map;
-	}
+    Map<String,Object> makeMap() {
+      if (qualityWeight == null && scoreMethod == null && bm25LengthWeight == null && fragment == null) return null;
+
+      Map<String, Object> map = new HashMap<>();
+      if (qualityWeight != null) {
+        map.put("qualityWeight", qualityWeight);
+      }
+      if (scoreMethod != null) {
+        map.put("scoreMethod", scoreMethod.name().toLowerCase());
+      }
+      if (bm25LengthWeight != null) {
+        map.put("bm25LengthWeight", bm25LengthWeight);
+      }
+      if (fragment != null) {
+        map.put("fragment", fragment.name().toLowerCase());
+      }
+      return map;
+    }
   }
 
   static class PlanParamBase extends BaseTypeImpl.BaseCallImpl<XsValueImpl.StringValImpl> implements PlanParamExpr {

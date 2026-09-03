@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.impl;
@@ -20,6 +20,7 @@ import com.marklogic.client.type.CtsBoxExpr;
 import com.marklogic.client.type.CtsBoxSeqExpr;
 import com.marklogic.client.type.CtsCircleExpr;
 import com.marklogic.client.type.CtsCircleSeqExpr;
+import com.marklogic.client.type.CtsParamExpr;
 import com.marklogic.client.type.CtsPeriodExpr;
 import com.marklogic.client.type.CtsPeriodSeqExpr;
 import com.marklogic.client.type.CtsPointExpr;
@@ -41,6 +42,7 @@ import com.marklogic.client.impl.BaseTypeImpl;
 // 2023-10-24 Exception: Manual changes have been made to this to expose the string constructors for cts.point and
 // cts.polygon. These changes can be removed once optic-defs.json in the xdmp repository is updated to define these
 // constructors.
+// 2026-04-15 Exception: Manual changes have been made to expose cts:param prior to generator support.
 
 class CtsExprImpl implements CtsExpr {
 
@@ -1685,6 +1687,24 @@ class CtsExprImpl implements CtsExpr {
 
 
   @Override
+  public CtsParamExpr param(String name) {
+    if (name == null) {
+      throw new IllegalArgumentException("name parameter for param() cannot be null");
+    }
+    return param(new XsValueImpl.StringValImpl(name));
+  }
+
+
+  @Override
+  public CtsParamExpr param(XsStringVal name) {
+    if (name == null) {
+      throw new IllegalArgumentException("name parameter for param() cannot be null");
+    }
+    return new ParamCallImpl("cts", "param", new Object[]{ name });
+  }
+
+
+  @Override
   public ServerExpression partOfSpeech(ServerExpression token) {
     if (token == null) {
       throw new IllegalArgumentException("token parameter for partOfSpeech() cannot be null");
@@ -2317,6 +2337,11 @@ class CtsExprImpl implements CtsExpr {
   }
   static class QueryCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsQueryExpr {
     QueryCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+  static class ParamCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsParamExpr {
+    ParamCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }

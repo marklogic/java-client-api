@@ -1,0 +1,12 @@
+{
+  "user-name": "writer-no-default-invoke",
+  "description": "Test user for operations requiring invoke/XSLT eval privileges; only used in tests where those privileges are explicitly needed",
+  "role": [
+    "test-rest-writer",
+    "test-invoke",
+    "java-test-delete-graph",
+    "rest-extension-user",
+    "rest-reader"
+  ],
+  "password": "x"
+}

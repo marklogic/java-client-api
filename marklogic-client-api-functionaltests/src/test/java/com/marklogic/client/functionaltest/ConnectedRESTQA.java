@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.functionaltest;
@@ -40,7 +40,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.fail;
@@ -71,6 +70,8 @@ public abstract class ConnectedRESTQA {
 	private static String admin_password = null;
 	private static String ml_certificate_password = null;
 	private static String ml_certificate_file = null;
+	private static String ml_truststore_file = null;
+	private static String ml_truststore_password = null;
 	private static String mlDataConfigDirPath = null;
 	private static Boolean isLBHost = false;
 
@@ -782,23 +783,6 @@ public abstract class ConnectedRESTQA {
 	 */
 	public static SSLContext getSslContext() throws IOException, NoSuchAlgorithmException, KeyManagementException,
 			KeyStoreException, CertificateException, UnrecoverableKeyException {
-		// create a trust manager
-		// (note: a real application should verify certificates)
-
-		TrustManager tm = new X509TrustManager() {
-			public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
-				// nothing to do
-			}
-
-			public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
-				// nothing to do
-			}
-
-			public X509Certificate[] getAcceptedIssuers() {
-				return new X509Certificate[0];
-			}
-		};
-
 		// get the client certificate. In case we need to modify path.
 		String mlCertFile = new String(ml_certificate_file);
 
@@ -816,9 +800,32 @@ public abstract class ConnectedRESTQA {
 		keyManagerFactory.init(keyStore, ml_certificate_password.toCharArray());
 		KeyManager[] keyMgr = keyManagerFactory.getKeyManagers();
 
+		// Build a trust manager that validates the server's certificate.
+		// When ml_truststore_file is configured, a TrustManagerFactory is initialised
+		// from that truststore (which must contain the MarkLogic server's CA certificate).
+		// Otherwise the JVM's default trust managers are used as a safe fallback.
+		final TrustManager[] trustManagers;
+		if (ml_truststore_file != null && !ml_truststore_file.trim().isEmpty()) {
+			KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+			char[] tsPassword = ml_truststore_password != null ? ml_truststore_password.toCharArray() : new char[0];
+			InputStream tsInput = ConnectedRESTQA.class.getResourceAsStream(ml_truststore_file);
+			if (tsInput == null) {
+				throw new IOException("Truststore resource not found on classpath: " + ml_truststore_file
+						+ ". Ensure the file exists under the test resources directory.");
+			}
+			try {
+				trustStore.load(tsInput, tsPassword);
+			} finally {
+				tsInput.close();
+			}
+			trustManagers = SSLUtil.getTrustManagers(TrustManagerFactory.getDefaultAlgorithm(), trustStore);
+		} else {
+			trustManagers = SSLUtil.getDefaultTrustManagers();
+		}
+
 		// create an SSL context
 		SSLContext mlsslContext = SSLContext.getInstance(SSLUtil.DEFAULT_PROTOCOL);
-		mlsslContext.init(keyMgr, new TrustManager[] { tm }, null);
+		mlsslContext.init(keyMgr, trustManagers, null);
 
 		return mlsslContext;
 	}
@@ -991,6 +998,8 @@ public abstract class ConnectedRESTQA {
 		ssl_enabled = properties.getProperty("restSSLset");
 		ml_certificate_password = properties.getProperty("ml_certificate_password");
 		ml_certificate_file = properties.getProperty("ml_certificate_file");
+		ml_truststore_file = properties.getProperty("ml_truststore_file");
+		ml_truststore_password = properties.getProperty("ml_truststore_password");
 		mlDataConfigDirPath = properties.getProperty("mlDataConfigDirPath");
 		isLBHost = "gateway".equalsIgnoreCase(properties.getProperty("marklogic.client.connectionType"));
 		PROPERTY_WAIT = Integer.parseInt(isLBHost ? "15000" : "0");

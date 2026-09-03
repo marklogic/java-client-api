@@ -2,28 +2,11 @@
  * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
-buildscript {
-	repositories {
-		mavenCentral()
-
-		mavenLocal()
-
-		// Needed for ml-gradle 6.2-SNAPSHOT
-		maven {
-			url = "https://bed-artifactory.bedford.progress.com:443/artifactory/ml-maven-snapshots/"
-		}
-	}
-	dependencies {
-		classpath "com.marklogic:ml-gradle:6.2-SNAPSHOT"
-	}
-}
-
 plugins {
 	id "net.saliman.properties" version "1.5.2"
+	id "com.marklogic.ml-gradle" version "6.2.0"
 	id "com.github.psxpaul.execfork" version "0.2.2"
 }
-
-apply plugin: "com.marklogic.ml-gradle"
 
 // Sometimes, 3 x 20 isn't enough on Jenkins.
 mlWaitTillReady {
@@ -31,8 +14,8 @@ mlWaitTillReady {
 }
 
 dependencies {
-	implementation "io.undertow:undertow-core:2.3.23.Final"
-	implementation "io.undertow:undertow-servlet:2.3.23.Final"
+	implementation "io.undertow:undertow-core:2.3.24.Final"
+	implementation "io.undertow:undertow-servlet:2.3.24.Final"
 	implementation 'org.slf4j:slf4j-api:2.0.17'
 	implementation "ch.qos.logback:logback-classic:${logbackVersion}"
 	implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"

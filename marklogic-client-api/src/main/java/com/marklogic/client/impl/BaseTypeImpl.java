@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -13,6 +20,8 @@ import java.util.regex.Pattern;
 import com.marklogic.client.type.*;
 
 public class BaseTypeImpl {
+  private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+
   public static interface BaseArgImpl {
     public StringBuilder exportAst(StringBuilder strb);
   }
@@ -150,7 +159,7 @@ public class BaseTypeImpl {
   }
   static class ServerExpressionCallImpl extends BaseCallImpl<BaseArgImpl> implements ServerExpression {
     ServerExpressionCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, convertList(fnArgs));
+      super(fnPrefix, fnName, convertList(validateNoOpticParamInCtsCall(fnPrefix, fnName, fnArgs)));
     }
   }
 
@@ -392,6 +401,159 @@ public class BaseTypeImpl {
       strb.append(value.toString());
       strb.append("\"");
     }
+  }
+
+  static private Object[] validateNoOpticParamInCtsCall(String fnPrefix, String fnName, Object[] fnArgs) {
+    if (!"cts".equals(fnPrefix) || fnArgs == null) {
+      return fnArgs;
+    }
+    if (containsPlanParam(fnArgs)) {
+      throw new IllegalArgumentException(
+        "Cannot pass op:param() to cts:" + fnName + "(). Use cts:param() for cts namespace expressions."
+      );
+    }
+    return fnArgs;
+  }
+
+  static private boolean containsPlanParam(Object value) {
+    if (value == null) {
+      return false;
+    }
+    if (value instanceof PlanParamExpr) {
+      return true;
+    }
+    if (value instanceof Object[]) {
+      for (Object item : (Object[]) value) {
+        if (containsPlanParam(item)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    if (value instanceof BaseListImpl) {
+      return containsPlanParam(((BaseListImpl<?>) value).getArgsImpl());
+    }
+    if (value instanceof BaseMapImpl) {
+      return containsPlanParam(((BaseMapImpl) value).getMap().values().toArray());
+    }
+    if (value instanceof java.util.Map<?, ?>) {
+      java.util.Map<?, ?> mapValue = (java.util.Map<?, ?>) value;
+      return containsPlanParam(mapValue.keySet().toArray()) || containsPlanParam(mapValue.values().toArray());
+    }
+    return false;
+  }
+
+  static String getCtsParamName(CtsParamExpr param) {
+    if (param == null) {
+      throw new IllegalArgumentException("param for cts query binding cannot be null");
+    }
+    if (!(param instanceof BaseCallImpl)) {
+      throw new IllegalArgumentException("param for cts query binding must be of type CtsParamExpr");
+    }
+
+    BaseCallImpl<?> paramCall = (BaseCallImpl<?>) param;
+    if (!"cts".equals(paramCall.fnPrefix) || !"param".equals(paramCall.fnName)) {
+      throw new IllegalArgumentException("param for cts query binding must be of type CtsParamExpr");
+    }
+
+    BaseArgImpl[] args = paramCall.getArgsImpl();
+    if (args == null || args.length != 1 || !(args[0] instanceof XsStringVal)) {
+      throw new IllegalArgumentException("CtsParamExpr must have exactly one XsStringVal argument");
+    }
+
+    String paramName = ((XsStringVal) args[0]).getString();
+    if (paramName == null) {
+      throw new IllegalArgumentException("CtsParamExpr name cannot be null");
+    }
+
+    return paramName;
+  }
+
+  static String bindCtsQueryParamsInAst(String planAst, Map<String, CtsQueryExpr> queryBindings) {
+    if (planAst == null || queryBindings == null || queryBindings.isEmpty()) {
+      return planAst;
+    }
+
+    try {
+      JsonNode root = JSON_MAPPER.readTree(planAst);
+
+      Map<String, JsonNode> bindingNodes = new HashMap<>();
+      for (Map.Entry<String, CtsQueryExpr> binding : queryBindings.entrySet()) {
+        String bindingName = binding.getKey();
+        if (bindingName == null) {
+          continue;
+        }
+        StringBuilder queryAst = new StringBuilder();
+        ((BaseArgImpl) binding.getValue()).exportAst(queryAst);
+        JsonNode queryNode = JSON_MAPPER.readTree(queryAst.toString());
+        bindingNodes.put(bindingName, queryNode);
+      }
+
+      JsonNode replacedRoot = replaceCtsParamNodes(root, bindingNodes);
+      return JSON_MAPPER.writeValueAsString(replacedRoot);
+    } catch (JsonProcessingException ex) {
+      throw new IllegalArgumentException("Unable to bind cts:param() query placeholder", ex);
+    }
+  }
+
+  private static JsonNode replaceCtsParamNodes(JsonNode node, Map<String, JsonNode> bindingNodes) {
+    if (node == null) {
+      return null;
+    }
+
+    if (node.isObject()) {
+      ObjectNode objectNode = (ObjectNode) node;
+
+      if (isQueryParamNode(objectNode)) {
+        String paramName = getCtsParamNameFromAst(objectNode);
+        JsonNode replacement = bindingNodes.get(paramName);
+        if (replacement != null) {
+          return replacement.deepCopy();
+        }
+      }
+
+      objectNode.fieldNames().forEachRemaining(fieldName -> {
+        JsonNode child = objectNode.get(fieldName);
+        JsonNode replacedChild = replaceCtsParamNodes(child, bindingNodes);
+        if (replacedChild != child) {
+          objectNode.set(fieldName, replacedChild);
+        }
+      });
+      return objectNode;
+    }
+
+    if (node.isArray()) {
+      ArrayNode arrayNode = (ArrayNode) node;
+      for (int i = 0; i < arrayNode.size(); i++) {
+        JsonNode child = arrayNode.get(i);
+        JsonNode replacedChild = replaceCtsParamNodes(child, bindingNodes);
+        if (replacedChild != child) {
+          arrayNode.set(i, replacedChild);
+        }
+      }
+      return arrayNode;
+    }
+
+    return node;
+  }
+
+  /**
+   * Returns true for both {@code cts:param} and {@code op:param} AST nodes, both of which
+   * represent named query placeholders that can be bound to a {@code CtsQueryExpr} via
+   * {@code bindParam}.
+   */
+  private static boolean isQueryParamNode(ObjectNode node) {
+    String fn = node.path("fn").asText();
+    if (!"param".equals(fn)) {
+      return false;
+    }
+    String ns = node.path("ns").asText();
+    return "cts".equals(ns) || "op".equals(ns);
+  }
+
+  private static String getCtsParamNameFromAst(ObjectNode node) {
+    JsonNode nameNode = node.path("args").path(0).path("args").path(0);
+    return nameNode.isTextual() ? nameNode.asText() : null;
   }
 
   static BaseArgImpl[] convertList(Object[] items) {

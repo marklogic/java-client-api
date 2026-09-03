@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.example.cookbook.datamovement;
 
@@ -20,6 +20,7 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.row.RowSet;
 
 /**
  * An extension of OpticExportListener which facilitates writing all row records
@@ -92,28 +93,30 @@ public class OpticExportToWriterListener extends OpticExportListener {
     try {
       PlanBuilder.Plan exportPlan = exportFunction.apply(batch);
       synchronized (writer) {
-        for (RowRecord record : rowManager.resultRows(exportPlan)) {
-          try {
-            if (prefix != null)
-              writer.write(prefix);
-            if (outputListeners.size() > 0) {
-              for (OpticOutputListener listener : outputListeners) {
-                String output = null;
-                try {
-                  output = listener.generateOutput(record);
-                } catch (Throwable t) {
-                  logger.error("Exception thrown by an onGenerateOutput listener", t);
+        try (RowSet<RowRecord> rows = rowManager.resultRows(exportPlan)) {
+          for (RowRecord record : rows) {
+            try {
+              if (prefix != null)
+                writer.write(prefix);
+              if (outputListeners.size() > 0) {
+                for (OpticOutputListener listener : outputListeners) {
+                  String output = null;
+                  try {
+                    output = listener.generateOutput(record);
+                  } catch (Throwable t) {
+                    logger.error("Exception thrown by an onGenerateOutput listener", t);
+                  }
+                  if (output != null)
+                    writer.write(output);
                 }
-                if (output != null)
-                  writer.write(output);
+              } else {
+                writer.write(record.toString());
               }
-            } else {
-              writer.write(record.toString());
+              if (suffix != null)
+                writer.write(suffix);
+            } catch (IOException e) {
+              throw new DataMovementException("Failed to write the Optic API records", e);
             }
-            if (suffix != null)
-              writer.write(suffix);
-          } catch (IOException e) {
-            throw new DataMovementException("Failed to write the Optic API records", e);
           }
         }
       }

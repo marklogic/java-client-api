@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.example.cookbook.datamovement;
 
@@ -18,6 +18,7 @@ import com.marklogic.client.datamovement.QueryBatchListener;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.row.RowSet;
 
 /**
  * Takes in a Function which takes QueryBatch as argument and converts it into a
@@ -74,12 +75,14 @@ public class OpticExportListener implements QueryBatchListener {
   public void processEvent(QueryBatch batch) {
     try {
       PlanBuilder.Plan exportPlan = exportFunction.apply(batch);
-      for (RowRecord record : rowManager.resultRows(exportPlan)) {
-        for (Consumer<RowRecord> listener : opticExportListeners) {
-          try {
-            listener.accept(record);
-          } catch (Throwable t) {
-            logger.error("Exception thrown by an onRowRecordReady listener ", t);
+      try (RowSet<RowRecord> rows = rowManager.resultRows(exportPlan)) {
+        for (RowRecord record : rows) {
+          for (Consumer<RowRecord> listener : opticExportListeners) {
+            try {
+              listener.accept(record);
+            } catch (Throwable t) {
+              logger.error("Exception thrown by an onRowRecordReady listener ", t);
+            }
           }
         }
       }

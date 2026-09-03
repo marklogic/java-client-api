@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test;
 
@@ -192,21 +192,26 @@ public class ConditionalDocumentTest {
 
     XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 
-    verifyDescriptors(docList, docMgr.read(docIds));
+    verifyDescriptors(docList, docMgr.read(docIds), docMgr);
 
     verifyDescriptors(
             docList,
-            docMgr.search(new StructuredQueryBuilder().document(docIds), 1)
+            docMgr.search(new StructuredQueryBuilder().document(docIds), 1),
+            docMgr
     );
   }
-  void verifyDescriptors(List<String> docList, DocumentPage page) {
+
+  void verifyDescriptors(List<String> docList, DocumentPage page, XMLDocumentManager docMgr) {
     for (DocumentRecord record: page) {
       DocumentDescriptor desc = record.getDescriptor();
       assertTrue( docList.contains(desc.getUri()));
       assertEquals( Format.XML, desc.getFormat());
       assertTrue( desc.getMimetype().startsWith("application/xml"));
       assertTrue( desc.getByteLength() >= 0);
-      assertTrue( desc.getVersion() >= -1);
+      // bulk read() should report the same version as exists() for each document
+      assertNotEquals( DocumentDescriptor.UNKNOWN_VERSION, desc.getVersion());
+      long existsVersion = docMgr.exists(record.getUri()).getVersion();
+      assertEquals( existsVersion, desc.getVersion());
     }
   }
 }

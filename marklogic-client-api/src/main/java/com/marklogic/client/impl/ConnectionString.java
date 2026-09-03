@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -85,5 +85,12 @@ public class ConnectionString {
 
 	public String getDatabase() {
 		return database;
+	}
+
+	// Override toString() to avoid printing the password in logs or error messages
+	@Override
+	public String toString() {
+		String db = (database != null) ? "/" + database : "";
+		return username + ":****@" + host + ":" + port + db;
 	}
 }
