@@ -17,6 +17,7 @@ import java.util.function.Consumer;
 public class IncrementalWriteConfig {
 
 	private final String hashKeyName;
+	private final String sourceUriKeyName;
 	private final String timestampKeyName;
 	private final boolean canonicalizeJson;
 	private final Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer;
@@ -26,11 +27,24 @@ public class IncrementalWriteConfig {
 	private final String schemaName;
 	private final String viewName;
 
-	public IncrementalWriteConfig(String hashKeyName, String timestampKeyName, boolean canonicalizeJson,
+	// This was mistakenly exposed as a public constructor but there's no need for clients to access it, while clients
+	// should be able to access this class and its getters.
+	@Deprecated(since = "8.3.0", forRemoval = true)
+	public IncrementalWriteConfig(String hashKeyName, String timestampKeyName,
+								  boolean canonicalizeJson,
 								  Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer,
 								  String[] jsonExclusions, String[] xmlExclusions, Map<String, String> xmlNamespaces,
 								  String schemaName, String viewName) {
+		this(hashKeyName, null, timestampKeyName, canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions, xmlNamespaces, schemaName, viewName);
+	}
+
+	IncrementalWriteConfig(String hashKeyName, String sourceUriKeyName, String timestampKeyName,
+						   boolean canonicalizeJson,
+						   Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer,
+						   String[] jsonExclusions, String[] xmlExclusions, Map<String, String> xmlNamespaces,
+						   String schemaName, String viewName) {
 		this.hashKeyName = hashKeyName;
+		this.sourceUriKeyName = sourceUriKeyName;
 		this.timestampKeyName = timestampKeyName;
 		this.canonicalizeJson = canonicalizeJson;
 		this.skippedDocumentsConsumer = skippedDocumentsConsumer;
@@ -43,6 +57,13 @@ public class IncrementalWriteConfig {
 
 	public String getHashKeyName() {
 		return hashKeyName;
+	}
+
+	/**
+	 * @since 8.3.0
+	 */
+	public String getSourceUriKeyName() {
+		return sourceUriKeyName;
 	}
 
 	public String getTimestampKeyName() {
