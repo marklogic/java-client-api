@@ -32,6 +32,12 @@ import java.util.function.Function;
 /**
  * A DocumentWriteSetFilter that skips writing documents whose content has not changed since the last write
  * based on a hash value stored in a MarkLogic field.
+ * <p>
+ * By default, matching against a previous write is based on a document's URI, so a document must be written
+ * to the same URI every time to be recognized as unchanged. If a document is later moved to a different URI
+ * by a process outside of this filter, configure {@link Builder#sourceUriKeyName(String)} so that matching
+ * is based on a stable "source URI" metadata value - stamped onto each document automatically by this filter -
+ * instead of the document's current URI.
  *
  * @since 8.1.0
  */
@@ -46,6 +52,7 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 	public static class Builder {
 
 		private String hashKeyName = "incrementalWriteHash";
+		private String sourceUriKeyName;
 		private String timestampKeyName;
 		private boolean canonicalizeJson = true;
 		private Consumer<DocumentWriteOperation[]> skippedDocumentsConsumer;
@@ -72,6 +79,24 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		 */
 		public Builder timestampKeyName(String keyName) {
 			this.timestampKeyName = keyName;
+			return this;
+		}
+
+		/**
+		 * Configures this filter to match existing documents by a stable "source URI" metadata
+		 * value instead of the document's actual/current URI. Useful when a document may be
+		 * relocated to a different URI after this filter writes it, since matching by URI alone
+		 * would otherwise stop working.
+		 *
+		 * @param keyName the name of the MarkLogic metadata key that will hold each document's
+		 *                source URI; defaults to null, which means matching is based on the
+		 *                document's actual URI, as it has always worked.
+		 * @since 8.3.0
+		 */
+		public Builder sourceUriKeyName(String keyName) {
+			if (keyName != null && !keyName.trim().isEmpty()) {
+				this.sourceUriKeyName = keyName;
+			}
 			return this;
 		}
 
@@ -146,8 +171,9 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		public IncrementalWriteFilter build() {
 			validateJsonExclusions();
 			validateXmlExclusions();
-			IncrementalWriteConfig config = new IncrementalWriteConfig(hashKeyName, timestampKeyName, canonicalizeJson,
-				skippedDocumentsConsumer, jsonExclusions, xmlExclusions, xmlNamespaces, schemaName, viewName);
+			IncrementalWriteConfig config = new IncrementalWriteConfig(hashKeyName, sourceUriKeyName, timestampKeyName,
+				canonicalizeJson, skippedDocumentsConsumer, jsonExclusions, xmlExclusions, xmlNamespaces,
+				schemaName, viewName);
 
 			if (schemaName != null && viewName != null) {
 				return new IncrementalWriteFromViewFilter(config);
@@ -240,14 +266,16 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 
 			if (existingHash != null) {
 				if (!existingHash.equals(contentHash)) {
-					newWriteSet.add(addHashToMetadata(doc, config.getHashKeyName(), contentHash, config.getTimestampKeyName(), timestamp));
+					newWriteSet.add(addHashToMetadata(doc, config.getHashKeyName(), config.getSourceUriKeyName(),
+						contentHash, config.getTimestampKeyName(), timestamp));
 				} else if (config.getSkippedDocumentsConsumer() != null) {
 					skippedDocuments.add(doc);
 				} else {
 					// No consumer, so skip the document silently.
 				}
 			} else {
-				newWriteSet.add(addHashToMetadata(doc, config.getHashKeyName(), contentHash, config.getTimestampKeyName(), timestamp));
+				newWriteSet.add(addHashToMetadata(doc, config.getHashKeyName(), config.getSourceUriKeyName(),
+					contentHash, config.getTimestampKeyName(), timestamp));
 			}
 		}
 
@@ -310,6 +338,24 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 
 	protected static DocumentWriteOperation addHashToMetadata(DocumentWriteOperation op, String hashKeyName, long hash,
 															  String timestampKeyName, String timestamp) {
+		return addHashToMetadata(op, hashKeyName, null, hash, timestampKeyName, timestamp);
+	}
+
+	/**
+	 * @param op               the write operation to add hash (and optionally source-URI) metadata to.
+	 * @param hashKeyName      the metadata key that will hold the content hash.
+	 * @param sourceUriKeyName the metadata key that will hold the document's source URI, or null if this
+	 *                         feature is not in use. If the operation's existing metadata already has a
+	 *                         value for this key, it is preserved rather than overwritten with
+	 *                         {@code op.getUri()}.
+	 * @param hash             the newly computed content hash.
+	 * @param timestampKeyName the metadata key that will hold the write timestamp, or null if timestamps
+	 *                         are not in use.
+	 * @param timestamp        the timestamp to store, if {@code timestampKeyName} is not null.
+	 */
+	protected static DocumentWriteOperation addHashToMetadata(DocumentWriteOperation op, String hashKeyName,
+															  String sourceUriKeyName, long hash,
+															  String timestampKeyName, String timestamp) {
 		DocumentMetadataHandle newMetadata = new DocumentMetadataHandle();
 		if (op.getMetadata() != null) {
 			DocumentMetadataHandle originalMetadata = (DocumentMetadataHandle) op.getMetadata();
@@ -323,6 +369,12 @@ public abstract class IncrementalWriteFilter implements DocumentWriteSetFilter {
 		newMetadata.getMetadataValues().put(hashKeyName, Long.toUnsignedString(hash));
 		if (timestampKeyName != null && !timestampKeyName.trim().isEmpty()) {
 			newMetadata.getMetadataValues().put(timestampKeyName, timestamp);
+		}
+		if (sourceUriKeyName != null && !sourceUriKeyName.trim().isEmpty()
+			&& !newMetadata.getMetadataValues().containsKey(sourceUriKeyName)) {
+			// Only stamp this automatically if the caller hasn't already supplied an explicit value -
+			// e.g. via metadata set directly on the incoming write operation.
+			newMetadata.getMetadataValues().put(sourceUriKeyName, op.getUri());
 		}
 
 		return new DocumentWriteOperationImpl(op.getUri(), newMetadata, op.getContent(), op.getTemporalDocumentURI());

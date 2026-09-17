@@ -186,6 +186,19 @@ publishing {
 		}
 	}
 	repositories {
+		// Supports publishing to a GH packages repository for GH Action workflows that are not able to access our
+		// internal repository.
+		if (project.hasProperty("ghToken") && project.hasProperty("ghPackagesUrl")) {
+			maven {
+				name = "GitHubPackages"
+				url = uri(ghPackagesUrl)
+				credentials {
+					username = ghActor
+					password = ghToken
+				}
+			}
+		}
+
 		maven {
 			if (project.hasProperty("mavenUser")) {
 				credentials {
