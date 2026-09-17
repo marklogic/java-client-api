@@ -199,6 +199,15 @@
 			"fast-diacritic-sensitive-searches": false
 		},
 		{
+			"field-name": "incrementalWriteSourceUri",
+			"metadata": "",
+			"stemmed-searches": "off",
+			"word-searches": false,
+			"fast-phrase-searches": false,
+			"fast-case-sensitive-searches": false,
+			"fast-diacritic-sensitive-searches": false
+		},
+		{
 			"field-name": "myWriteHash",
 			"metadata": "",
 			"stemmed-searches": "off",
@@ -226,6 +235,13 @@
 		{
 			"scalar-type": "unsignedLong",
 			"field-name": "incrementalWriteHash",
+			"range-value-positions": false,
+			"invalid-values": "reject"
+		},
+		{
+			"scalar-type": "string",
+			"field-name": "incrementalWriteSourceUri",
+			"collation": "http://marklogic.com/collation/",
 			"range-value-positions": false,
 			"invalid-values": "reject"
 		},
