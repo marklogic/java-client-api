@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl;
 
@@ -52,5 +52,14 @@ class StreamingOutputImpl extends RequestBody implements RetryableRequestBody {
 	public boolean isRetryable() {
 		// Added in 8.0.0; streaming output cannot be retried as the stream is consumed on first write.
 		return false;
+	}
+
+	@Override
+	public boolean isOneShot() {
+		// Declares this body as one-shot via OkHttp's own contract so that when this body is nested inside another
+		// RequestBody (e.g. a MultipartBody part for a Data Services call), OkHttp and RetryIOExceptionInterceptor
+		// both recognize the outer body as non-retryable too; isRetryable() above is only checked when this is the
+		// top-level request body and would otherwise be bypassed for a nested streaming part.
+		return true;
 	}
 }
