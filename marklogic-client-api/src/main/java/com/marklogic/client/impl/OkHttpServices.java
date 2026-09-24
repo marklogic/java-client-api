@@ -5194,7 +5194,7 @@ public class OkHttpServices implements RESTServices {
 		}
 	}
 
-	static private class ObjectRequestBody extends RequestBody implements RetryableRequestBody {
+	static class ObjectRequestBody extends RequestBody implements RetryableRequestBody {
 
 		private Object obj;
 		private MediaType contentType;
@@ -5235,6 +5235,15 @@ public class OkHttpServices implements RESTServices {
 			// Added in 8.0.0 to work with the retry interceptor so it knows whether the body can be retried or not.
 			// InputStreams cannot be retried as they are consumed on first read.
 			return !(obj instanceof InputStream);
+		}
+
+		@Override
+		public boolean isOneShot() {
+			// Declares an InputStream-backed body as one-shot via OkHttp's own contract so that when this body is
+			// nested inside another RequestBody (e.g. a MultipartBody part), OkHttp and RetryIOExceptionInterceptor
+			// both recognize the outer body as non-retryable too; isRetryable() above is only checked when this is the
+			// top-level request body and would otherwise be bypassed for a nested InputStream part.
+			return obj instanceof InputStream;
 		}
 	}
 
