@@ -228,6 +228,38 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 	}
 
 	@Test
+	void fromViewWithCustomSourceUri() {
+		filter = IncrementalWriteFilter.newBuilder()
+			.fromView("javaClient", "incrementalWriteHash")
+			.timestampKeyName("incrementalWriteTimestamp")
+			.sourceUriKeyName("incrementalWriteSourceUri")
+			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
+			.build();
+
+		verifyIncrementalWriteWorks();
+		verifyDocumentsHaveSourceUriInMetadataKey();
+	}
+
+	@Test
+	void fromViewWithInvalidCustomSourceUri() {
+		filter = IncrementalWriteFilter.newBuilder()
+			.fromView("javaClient", "incrementalWriteHash")
+			.timestampKeyName("incrementalWriteTimestamp")
+			.sourceUriKeyName("noFieldRangeIndexOnThis")
+			.onDocumentsSkipped(docs -> skippedCount.addAndGet(docs.length))
+			.build();
+
+		writeTenDocuments();
+		assertNotNull(batchFailure.get());
+
+		String message = batchFailure.get().getMessage();
+		assertTrue(message.contains("Field not defined: noFieldRangeIndexOnThis"),
+			"This test configures a sourceUriKeyName using a metadata key that does not have a field range index " +
+				"on it. This should cause an error as the Optic query against the view is expected to constrain on " +
+				"documents via a field range query. Actual message: " + message);
+	}
+
+	@Test
 	void loadWithViewFilterThenVerifyLexiconFilterSkipsAll() {
 		filter = IncrementalWriteFilter.newBuilder()
 			.fromView("javaClient", "incrementalWriteHash")
@@ -361,6 +393,19 @@ class IncrementalWriteTest extends AbstractIncrementalWriteTest {
 
 			String timestamp = metadata.getMetadataValues().get("incrementalWriteTimestamp");
 			assertNotNull(timestamp, "Document " + doc.getUri() + " should have an incrementalWriteTimestamp value.");
+		}
+	}
+
+	private void verifyDocumentsHaveSourceUriInMetadataKey() {
+		GenericDocumentManager mgr = Common.client.newDocumentManager();
+		mgr.setMetadataCategories(DocumentManager.Metadata.METADATAVALUES);
+		DocumentPage page = mgr.search(Common.client.newQueryManager().newStructuredQueryBuilder().collection("incremental-test"), 1);
+		while (page.hasNext()) {
+			DocumentRecord doc = page.next();
+			DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
+
+			String sourceUri = metadata.getMetadataValues().get("incrementalWriteSourceUri");
+			assertEquals(doc.getUri(), sourceUri, "Document " + doc.getUri() + " should have an incrementalWriteSourceUri value equal to its own URI.");
 		}
 	}
 

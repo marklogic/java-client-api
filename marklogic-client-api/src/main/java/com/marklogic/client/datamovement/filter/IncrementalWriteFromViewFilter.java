@@ -5,6 +5,7 @@ package com.marklogic.client.datamovement.filter;
 
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowTemplate;
 
 import java.util.HashMap;
@@ -28,10 +29,16 @@ class IncrementalWriteFromViewFilter extends IncrementalWriteFilter {
 		final String[] uris = getUrisInBatch(context.getDocumentWriteSet());
 
 		try {
-			Map<String, Long> existingHashes = new RowTemplate(context.getDatabaseClient()).query(op ->
-					op.fromView(getConfig().getSchemaName(), getConfig().getViewName(), "")
-						.where(op.cts.documentQuery(op.xs.stringSeq(uris)))
-				,
+			Map<String, Long> existingHashes = new RowTemplate(context.getDatabaseClient()).query(op -> {
+					PlanBuilder.ModifyPlan plan = op.fromView(getConfig().getSchemaName(), getConfig().getViewName(), "");
+					final String sourceUriName = getConfig().getSourceUriKeyName();
+					if (sourceUriName != null && !sourceUriName.trim().isEmpty()) {
+						plan = plan.where(op.cts.fieldRangeQuery(op.xs.string(sourceUriName), op.xs.string("="), op.xs.stringSeq(uris)));
+					} else {
+						plan = plan.where(op.cts.documentQuery(op.xs.stringSeq(uris)));
+					}
+					return plan;
+				},
 				rows -> {
 					Map<String, Long> map = new HashMap<>();
 					rows.forEach(row -> {
