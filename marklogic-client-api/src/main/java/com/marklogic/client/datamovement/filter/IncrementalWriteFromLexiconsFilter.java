@@ -13,7 +13,10 @@ import java.util.Map;
 
 /**
  * Uses an Optic fromLexicons query that depends on a field range index to retrieve URIs and
- * hash values.
+ * hash values. When {@code sourceUriKeyName} is configured (see
+ * {@link IncrementalWriteFilter.Builder#sourceUriKeyName(String)}), the "URI" side of the
+ * lookup is instead backed by a field over that metadata key, since the matched document may
+ * have since been relocated to a different physical URI.
  *
  * @since 8.1.0
  */
@@ -26,14 +29,19 @@ class IncrementalWriteFromLexiconsFilter extends IncrementalWriteFilter {
 	@Override
 	public DocumentWriteSet apply(Context context) {
 		final String[] uris = getUrisInBatch(context.getDocumentWriteSet());
+		final String sourceUriKeyName = getConfig().getSourceUriKeyName();
 
 		try {
 			Map<String, Long> existingHashes = new RowTemplate(context.getDatabaseClient()).query(op ->
 					op.fromLexicons(Map.of(
-						"uri", op.cts.uriReference(),
+						"uri", sourceUriKeyName != null
+							? op.cts.fieldReference(sourceUriKeyName)
+							: op.cts.uriReference(),
 						"hash", op.cts.fieldReference(getConfig().getHashKeyName())
 					)).where(
-						op.cts.documentQuery(op.xs.stringSeq(uris))
+						sourceUriKeyName != null
+							? op.cts.fieldRangeQuery(op.xs.string(sourceUriKeyName), op.xs.string("="), op.xs.stringSeq(uris))
+							: op.cts.documentQuery(op.xs.stringSeq(uris))
 					),
 
 				rows -> {

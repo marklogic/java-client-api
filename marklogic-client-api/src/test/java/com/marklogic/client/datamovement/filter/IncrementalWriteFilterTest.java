@@ -49,4 +49,38 @@ class IncrementalWriteFilterTest {
 		assertEquals("12345", metadata2.getMetadataValues().get("theField"), "hash field should be added");
 		assertEquals(timestamp, metadata2.getMetadataValues().get("theTimestamp"), "timestamp should be added");
 	}
+
+	@Test
+	void addHashToMetadataStampsSourceUriWhenConfigured() {
+		DocumentWriteOperation doc = new DocumentWriteOperationImpl("/source/1.json", null, new StringHandle("{}"));
+
+		doc = IncrementalWriteFilter.addHashToMetadata(doc, "theField", "sourceUri", 12345, null, null);
+
+		DocumentMetadataHandle metadata = (DocumentMetadataHandle) doc.getMetadata();
+		assertEquals("/source/1.json", metadata.getMetadataValues().get("sourceUri"),
+			"the document's own URI should be stamped as the source URI when none was already set");
+	}
+
+	@Test
+	void addHashToMetadataPreservesExplicitSourceUri() {
+		DocumentMetadataHandle metadata = new DocumentMetadataHandle()
+			.withMetadataValue("sourceUri", "/original/source.json");
+		DocumentWriteOperation doc = new DocumentWriteOperationImpl("/relocated/1.json", metadata, new StringHandle("{}"));
+
+		doc = IncrementalWriteFilter.addHashToMetadata(doc, "theField", "sourceUri", 12345, null, null);
+
+		DocumentMetadataHandle newMetadata = (DocumentMetadataHandle) doc.getMetadata();
+		assertEquals("/original/source.json", newMetadata.getMetadataValues().get("sourceUri"),
+			"an explicit source URI already present in metadata should not be overwritten");
+	}
+
+	@Test
+	void addHashToMetadataWithoutSourceUriKeyNameDoesNotStampAnything() {
+		DocumentWriteOperation doc = new DocumentWriteOperationImpl("/1.json", null, new StringHandle("{}"));
+
+		doc = IncrementalWriteFilter.addHashToMetadata(doc, "theField", null, 12345, null, null);
+
+		DocumentMetadataHandle metadata = (DocumentMetadataHandle) doc.getMetadata();
+		assertEquals(1, metadata.getMetadataValues().size(), "only the hash field should be present");
+	}
 }
