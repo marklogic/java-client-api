@@ -1229,7 +1229,7 @@ public class OkHttpServices implements RESTServices {
 			MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
 			if (value instanceof OutputStreamSender) {
 				StreamingOutputImpl sentStream =
-					new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType);
+					new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType, isResendable);
 				requestBldr =
 					("put".equals(method)) ?
 						requestBldr.put(sentStream) :
@@ -2457,7 +2457,7 @@ public class OkHttpServices implements RESTServices {
 			RequestBody sentValue;
 			if (nextValue instanceof OutputStreamSender) {
 				sentValue = new StreamingOutputImpl(
-					(OutputStreamSender) nextValue, reqlog, mediaType);
+					(OutputStreamSender) nextValue, reqlog, mediaType, handle != null && handle.isResendable());
 			} else {
 				if (reqlog != null && retryContext.getRetry() == 0) {
 					sentValue = new ObjectRequestBody(reqlog.copyContent(nextValue), mediaType);
@@ -2831,7 +2831,7 @@ public class OkHttpServices implements RESTServices {
 
 		Function<Request.Builder, Response> doPutFunction = new Function<Request.Builder, Response>() {
 			public Response apply(Request.Builder funcBuilder) {
-				return doPut(reqlog, funcBuilder, inputBase.sendContent());
+				return doPut(reqlog, funcBuilder, inputBase.sendContent(), isResendable);
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPutFunction, resendableConsumer);
@@ -2980,7 +2980,7 @@ public class OkHttpServices implements RESTServices {
 		final Object value = inputBase == null ? null : inputBase.sendContent();
 		Function<Request.Builder, Response> doPostFunction = new Function<Request.Builder, Response>() {
 			public Response apply(Request.Builder funcBuilder) {
-				return doPost(reqlog, funcBuilder, value);
+				return doPost(reqlog, funcBuilder, value, isResendable);
 			}
 		};
 
@@ -3573,7 +3573,8 @@ public class OkHttpServices implements RESTServices {
 		Function<Request.Builder, Response> doPostFunction = requestBuilder -> doPost(
 			reqlog,
 			requestBuilder.header(HEADER_ACCEPT, multipartMixedWithBoundary()),
-			inputBase.sendContent()
+			inputBase.sendContent(),
+			isResendable
 		);
 
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPostFunction, resendableConsumer);
@@ -3746,13 +3747,18 @@ public class OkHttpServices implements RESTServices {
 	}
 
 	private Response doPut(RequestLogger reqlog, Request.Builder requestBldr, Object value) {
+		// Default to non-resendable for callers that have not determined whether the content can be sent again.
+		return doPut(reqlog, requestBldr, value, false);
+	}
+
+	private Response doPut(RequestLogger reqlog, Request.Builder requestBldr, Object value, boolean isResendable) {
 		if (value == null) throw new IllegalArgumentException("Resource write with null value");
 
 		if (isFirstRequest() && isStreaming(value)) pingServerBeforeStreaming(0);
 
 		MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
 		if (value instanceof OutputStreamSender) {
-			requestBldr = requestBldr.put(new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType));
+			requestBldr = requestBldr.put(new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType, isResendable));
 		} else {
 			if (reqlog != null) {
 				requestBldr = requestBldr.put(new ObjectRequestBody(reqlog.copyContent(value), mediaType));
@@ -3788,6 +3794,11 @@ public class OkHttpServices implements RESTServices {
 	}
 
 	private Response doPost(RequestLogger reqlog, Request.Builder requestBldr, Object value) {
+		// Default to non-resendable for callers that have not determined whether the content can be sent again.
+		return doPost(reqlog, requestBldr, value, false);
+	}
+
+	private Response doPost(RequestLogger reqlog, Request.Builder requestBldr, Object value, boolean isResendable) {
 		if (isFirstRequest() && isStreaming(value)) {
 			pingServerBeforeStreaming(0);
 		}
@@ -3799,7 +3810,7 @@ public class OkHttpServices implements RESTServices {
 			requestBldr = requestBldr.post((MultipartBody) value);
 		} else if (value instanceof OutputStreamSender) {
 			requestBldr = requestBldr
-				.post(new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType));
+				.post(new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType, isResendable));
 		} else {
 			if (reqlog != null) {
 				requestBldr = requestBldr.post(new ObjectRequestBody(reqlog.copyContent(value), mediaType));
@@ -4003,7 +4014,7 @@ public class OkHttpServices implements RESTServices {
 			Part bodyPart = null;
 			if (value instanceof OutputStreamSender) {
 				bodyPart = Part.create(partHeaders.build(), new StreamingOutputImpl(
-					(OutputStreamSender) value, reqlog, mediaType));
+					(OutputStreamSender) value, reqlog, mediaType, handleBase.isResendable()));
 			} else {
 				if (reqlog != null) {
 					bodyPart = Part.create(partHeaders.build(), new ObjectRequestBody(reqlog.copyContent(value), mediaType));
@@ -5194,7 +5205,7 @@ public class OkHttpServices implements RESTServices {
 		}
 	}
 
-	static private class ObjectRequestBody extends RequestBody implements RetryableRequestBody {
+	static class ObjectRequestBody extends RequestBody implements RetryableRequestBody {
 
 		private Object obj;
 		private MediaType contentType;
@@ -5235,6 +5246,15 @@ public class OkHttpServices implements RESTServices {
 			// Added in 8.0.0 to work with the retry interceptor so it knows whether the body can be retried or not.
 			// InputStreams cannot be retried as they are consumed on first read.
 			return !(obj instanceof InputStream);
+		}
+
+		@Override
+		public boolean isOneShot() {
+			// Declares an InputStream-backed body as one-shot via OkHttp's own contract so that when this body is
+			// nested inside another RequestBody (e.g. a MultipartBody part), OkHttp and RetryIOExceptionInterceptor
+			// both recognize the outer body as non-retryable too; isRetryable() above is only checked when this is the
+			// top-level request body and would otherwise be bypassed for a nested InputStream part.
+			return obj instanceof InputStream;
 		}
 	}
 
@@ -5282,7 +5302,7 @@ public class OkHttpServices implements RESTServices {
 			(mimetype != null) ? mimetype : "application/x-unknown-content-type"
 		);
 		return (content instanceof OutputStreamSender) ?
-			new StreamingOutputImpl((OutputStreamSender) content, null, mediaType) :
+			new StreamingOutputImpl((OutputStreamSender) content, null, mediaType, handleBase.isResendable()) :
 			new ObjectRequestBody(HandleAccessor.sendContent(content), mediaType);
 	}
 
@@ -5504,7 +5524,7 @@ public class OkHttpServices implements RESTServices {
 				(mimetype != null) ? mimetype : "application/x-unknown-content-type"
 			);
 			return (document instanceof OutputStreamSender) ?
-				new StreamingOutputImpl((OutputStreamSender) document, null, mediaType) :
+				new StreamingOutputImpl((OutputStreamSender) document, null, mediaType, handleBase.isResendable()) :
 				new ObjectRequestBody(HandleAccessor.sendContent(document), mediaType);
 		}
 
