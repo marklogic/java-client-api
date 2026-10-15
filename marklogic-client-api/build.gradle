@@ -101,6 +101,13 @@ tasks.register("testRows", Test) {
 	include "com/marklogic/client/test/rows/**"
 }
 
+tasks.register("e2eTest", Test) {
+	description = "Run all comprehensive MarkLogic Docker End-to-End tests"
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
+	include "com/marklogic/client/test/e2e/**"
+}
+
 tasks.register("debugCloudAuth", JavaExec) {
 	description = "Test program for manual testing of cloud-based authentication against a Progress Data Cloud instance"
 	mainClass = 'com.marklogic.client.test.ProgressDataCloudAuthenticationDebugger'

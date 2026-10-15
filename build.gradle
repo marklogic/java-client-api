@@ -61,3 +61,8 @@ subprojects {
 		options.addStringOption('Xdoclint:none', '-quiet')
 	}
 }
+
+tasks.register("e2eTest") {
+	description = "Run all End-to-End tests against MarkLogic Docker container"
+	dependsOn ":marklogic-client-api:e2eTest"
+}
