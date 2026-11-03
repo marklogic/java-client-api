@@ -2665,7 +2665,6 @@ public class TestOpticOnViews extends AbstractFunctionalTest {
 
   // Similar to testgroupBy
   @Test
-  @Disabled("Going to fix this in a separate PR, it has been failing intermittently for a while.")
   public void testgroupByUnion() {
     System.out.println("In testgroupByUnion method");
     RowManager rowMgr = client.newRowManager();
@@ -2698,18 +2697,27 @@ public class TestOpticOnViews extends AbstractFunctionalTest {
     System.out.println("Results are : " + jsonBindingsNodes);
     // Should have 10 array nodes returned.
     assertEquals( 10, jsonBindingsNodes.size());
-    assertEquals( "blue", jsonBindingsNodes.get(0).path("color").path("value").asText());
-    assertEquals( 3, jsonBindingsNodes.get(0).path("ColorCount").path("value").asInt());
-    assertEquals( "20.02", jsonBindingsNodes.get(0).path("AverageAmout").path("value").asText());
+    // Rows with the same ColorCount have no guaranteed relative order, so locate rows by content instead of by index.
+    JsonNode blueRow = findRow(jsonBindingsNodes, "color", "value", "blue");
+    assertNotNull(blueRow, "Expected a row for the blue color group");
+    assertEquals( 3, blueRow.path("ColorCount").path("value").asInt());
+    assertEquals( "20.02", blueRow.path("AverageAmout").path("value").asText());
 
-    assertEquals( "green", jsonBindingsNodes.get(1).path("color").path("value").asText());
-    assertEquals( 3, jsonBindingsNodes.get(1).path("ColorCount").path("value").asInt());
-    assertEquals( "50.05", jsonBindingsNodes.get(1).path("AverageAmout").path("value").asText());
+    JsonNode greenRow = findRow(jsonBindingsNodes, "color", "value", "green");
+    assertNotNull(greenRow, "Expected a row for the green color group");
+    assertEquals( 3, greenRow.path("ColorCount").path("value").asInt());
+    assertEquals( "50.05", greenRow.path("AverageAmout").path("value").asText());
+
     // Assert for null in both grouping columns. We will have one row with nulls
-
-    assertEquals( "null", jsonBindingsNodes.get(9).path("color").path("type").asText());
-    assertEquals( 0, jsonBindingsNodes.get(9).path("ColorCount").path("value").asInt());
-    assertEquals( "null", jsonBindingsNodes.get(9).path("AverageAmout").path("type").asText());
+    boolean nullRowFound = false;
+    for (JsonNode row : jsonBindingsNodes) {
+      if ("null".equals(row.path("color").path("type").asText())
+        && "null".equals(row.path("AverageAmout").path("type").asText())) {
+        assertEquals( 0, row.path("ColorCount").path("value").asInt());
+        nullRowFound = true;
+      }
+    }
+    assertTrue(nullRowFound, "Expected a row with null color and null average amount");
     // Use date in aggregate
     ModifyPlan plan4 = plan1.union(plan2)
             .select(p.as("MasterDate", p.schemaCol("opticFunctionalTest", "master", "date")),
@@ -2761,9 +2769,19 @@ public class TestOpticOnViews extends AbstractFunctionalTest {
     assertEquals( 9, jsonBindingsNodesColOrd.size());
     assertEquals( "2015-12-02", jsonBindingsNodesColOrd.get(0).path("MasterDate").path("value").asText());
     assertEquals( 1, jsonBindingsNodesColOrd.get(0).path("DateCount").path("value").asInt());
-    assertEquals( "null", jsonBindingsNodesColOrd.get(7).path("color").path("type").asText());
-    assertEquals( "blue", jsonBindingsNodesColOrd.get(6).path("color").path("value").asText());
+    // Rows with a null MasterDate have no guaranteed relative order, so locate rows by content instead of by index.
+    assertNotNull(findRow(jsonBindingsNodesColOrd, "color", "value", "blue"), "Expected a row for the blue color group");
+    assertNotNull(findRow(jsonBindingsNodesColOrd, "color", "type", "null"), "Expected a row with a null color");
 
+  }
+
+  private static JsonNode findRow(JsonNode rows, String column, String field, String expectedValue) {
+    for (JsonNode row : rows) {
+      if (expectedValue.equals(row.path(column).path(field).asText())) {
+        return row;
+      }
+    }
+    return null;
   }
 
   // Same as testgroupsByUnion with facade.
