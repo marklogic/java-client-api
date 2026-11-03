@@ -14,14 +14,17 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Stream;
 
 public class BulkIOInputCallerTest {
@@ -84,57 +87,61 @@ public class BulkIOInputCallerTest {
                 map.get("bulkInputTest_2") >= 1);
     }
 
-	@Disabled("Fails intermittently on Jenkins, never locally. Will revisit if we make enhancements to Bulk DS.")
     @Test
     public void bulkInputEndpointTestWithAnyDocument() {
-
-        String endpointState = "{\"next\":"+1+"}";
-        String endpointConstants      = "{\"max\":6,\"collection\":\"bulkInputTest_1\"}";
-
-        String endpointState1 = "{\"next\":"+1+"}";
-        String endpointConstants1      = "{\"max\":6,\"collection\":\"bulkInputTest_2\"}";
+        final String collection1 = "bulkInputAnyDocTest_1";
+        final String collection2 = "bulkInputAnyDocTest_2";
+        final String endpointState = "{\"next\":1}";
+        deleteTestDocuments(collection1, collection2);
 
         InputCaller<StringHandle> loadEndpt = InputCaller.onHandles(IOTestUtil.db, new JacksonHandle(apiObj[1]), new StringHandle());
-        IOEndpoint.CallContext[] callContextArray = {loadEndpt.newCallContext()
+        IOEndpoint.CallContext[] callContextArray = {
+            loadEndpt.newCallContext()
                 .withEndpointStateAs(endpointState)
-                .withEndpointConstantsAs(endpointConstants), loadEndpt.newCallContext()
-                .withEndpointStateAs(endpointState1)
-                .withEndpointConstantsAs(endpointConstants1)};
+                .withEndpointConstantsAs("{\"max\":6,\"collection\":\"" + collection1 + "\"}"),
+            loadEndpt.newCallContext()
+                .withEndpointStateAs(endpointState)
+                .withEndpointConstantsAs("{\"max\":6,\"collection\":\"" + collection2 + "\"}")
+        };
         InputCaller.BulkInputCaller<StringHandle> loader = loadEndpt.bulkCaller(callContextArray);
 
-        Set<String> input         = IOTestUtil.setOf( // Set.of(
-                "{\"docNum\":1, \"docName\":\"doc1\"}",
-                "{\"docNum\":2, \"docName\":\"doc2\"}",
-                "{\"docNum\":3, \"docName\":\"doc3\"}",
-                "{\"docNum\":4, \"docName\":\"doc4\"}",
-                "{\"docNum\":5, \"docName\":\"doc5\"}",
-                "{\"docNum\":6, \"docName\":\"doc6\"}",
-                "{\"docNum\":7, \"docName\":\"doc7\"}",
-                "{\"docNum\":8, \"docName\":\"doc8\"}"
-        );
-
-        input.stream().forEach(value -> {
-            //System.out.println("adding "+value);
-            loader.accept(new StringHandle(value).withFormat(Format.JSON));
-        });
+        Set<Integer> expectedDocNums = new TreeSet<>();
+        for (int i = 1; i <= 8; i++) {
+            expectedDocNums.add(i);
+            loader.accept(new StringHandle("{\"docNum\":" + i + ", \"docName\":\"doc" + i + "\"}").withFormat(Format.JSON));
+        }
         loader.awaitCompletion();
-        checkDocuments("bulkInputTest_1");
-        checkDocuments("bulkInputTest_2");
-        assertTrue( counter == 4);
-        assertTrue(
-                map.get("bulkInputTest_1") >= 1);
-        assertTrue(
-                map.get("bulkInputTest_2") >= 1);
+
+        // How the batches are spread across the two call contexts depends on thread timing, so only assert on the
+        // union of the inputs that were written, not on which collection or URI received them.
+        List<Integer> actualDocNums = new ArrayList<>();
+        for (String collection : new String[]{collection1, collection2}) {
+            for (int next = 2; next <= 6; next++) {
+                String uri = "/marklogic/ds/test/bulkInputCaller/" + collection + "/" + next + ".json";
+                if (docMgr.exists(uri) != null) {
+                    JsonNode doc = docMgr.read(uri, new JacksonHandle()).get();
+                    assertEquals(next, doc.get("state").get("next").asInt());
+                    assertEquals(6, doc.get("work").get("max").asInt());
+                    doc.get("inputs").forEach(input -> actualDocNums.add(input.get("docNum").asInt()));
+                }
+            }
+        }
+        Collections.sort(actualDocNums);
+        assertEquals(new ArrayList<>(expectedDocNums), actualDocNums,
+            "Every input should have been written exactly once, regardless of how batches were distributed");
     }
 
     @AfterAll
     public static void cleanup(){
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
-        for(int i=2; i<5; i++) {
-            String uri = "/marklogic/ds/test/bulkInputCaller/bulkInputTest_1/" +i+".json";
-            docMgr.delete(uri);
-            uri = "/marklogic/ds/test/bulkInputCaller/bulkInputTest_2/" +i+".json";
-            docMgr.delete(uri);
+        deleteTestDocuments("bulkInputTest_1", "bulkInputTest_2", "bulkInputAnyDocTest_1", "bulkInputAnyDocTest_2");
+    }
+
+    private static void deleteTestDocuments(String... collections) {
+        for (String collection : collections) {
+            for (int i = 2; i <= 6; i++) {
+                docMgr.delete("/marklogic/ds/test/bulkInputCaller/" + collection + "/" + i + ".json");
+            }
         }
     }
 
