@@ -37,11 +37,14 @@ public class BulkReadWriteTest {
   static final int RECORDS_EXPECTED = 1363;
 
   @BeforeAll
-  public static void beforeClass() throws JAXBException {
+  public static void beforeClass() throws Exception {
     Common.connect();
     DatabaseClientFactory.getHandleRegistry().register(
       JAXBHandle.newFactory(City.class)
     );
+    // Loaded once up front so that no test depends on another test having run first.
+    cleanUp();
+    loadCities(new BulkCityWriter());
   }
   @AfterAll
   public static void afterClass() {
@@ -116,13 +119,17 @@ public class BulkReadWriteTest {
   }
 
 
-  @Disabled
   @Test
-  public void testA_BulkLoad() throws IOException, Exception {
-    loadCities(new BulkCityWriter());
+  public void testA_BulkLoad() {
+    DocumentPage page = Common.client.newXMLDocumentManager()
+      .search(new StructuredQueryBuilder().directory(false, DIRECTORY), 1);
+    try {
+      assertEquals( RECORDS_EXPECTED, page.getTotalSize());
+    } finally {
+      page.close();
+    }
   }
 
-  @Disabled
   @Test
   public void testB_BulkRead() {
     XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
@@ -179,7 +186,6 @@ public class BulkReadWriteTest {
     assertTrue( exceptionThrown);
   }
 
-  @Disabled
   @Test
   public void testC_BulkSearch() {
     XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
