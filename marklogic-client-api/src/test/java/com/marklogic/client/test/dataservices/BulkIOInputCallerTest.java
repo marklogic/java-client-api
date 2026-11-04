@@ -12,6 +12,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.test.AbstractClientTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
-public class BulkIOInputCallerTest {
+public class BulkIOInputCallerTest extends AbstractClientTest {
 
     static ObjectNode[] apiObj = new ObjectNode[2];
     static String[] apiNames = new String[]{"bulkIOInputCaller.api", "bulkIOAnyDocumentInputCaller.api"};
@@ -92,7 +93,6 @@ public class BulkIOInputCallerTest {
         final String collection1 = "bulkInputAnyDocTest_1";
         final String collection2 = "bulkInputAnyDocTest_2";
         final String endpointState = "{\"next\":1}";
-        deleteTestDocuments(collection1, collection2);
 
         InputCaller<StringHandle> loadEndpt = InputCaller.onHandles(IOTestUtil.db, new JacksonHandle(apiObj[1]), new StringHandle());
         IOEndpoint.CallContext[] callContextArray = {
@@ -134,15 +134,6 @@ public class BulkIOInputCallerTest {
     @AfterAll
     public static void cleanup(){
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
-        deleteTestDocuments("bulkInputTest_1", "bulkInputTest_2", "bulkInputAnyDocTest_1", "bulkInputAnyDocTest_2");
-    }
-
-    private static void deleteTestDocuments(String... collections) {
-        for (String collection : collections) {
-            for (int i = 2; i <= 6; i++) {
-                docMgr.delete("/marklogic/ds/test/bulkInputCaller/" + collection + "/" + i + ".json");
-            }
-        }
     }
 
     private void checkDocuments(String collection) {
