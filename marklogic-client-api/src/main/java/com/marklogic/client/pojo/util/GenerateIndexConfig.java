@@ -176,15 +176,15 @@ public class GenerateIndexConfig {
         errorExactPair(className);
       }
     }
-    JsonGenerator config = mapper.getFactory().createGenerator(out);
-    config.useDefaultPrettyPrinter();
-    config.writeStartObject();
-    generatePathIndexes(paths, config);
-    generateGeoPathIndexes(geoPaths, config);
-    generateGeoPairIndexes(geoPairs, config);
-    config.writeEndObject();
-    config.flush();
-    config.close();
+    try (JsonGenerator config = mapper.getFactory().createGenerator(out)) {
+      config.useDefaultPrettyPrinter();
+      config.writeStartObject();
+      generatePathIndexes(paths, config);
+      generateGeoPathIndexes(geoPaths, config);
+      generateGeoPairIndexes(geoPairs, config);
+      config.writeEndObject();
+      config.flush();
+    }
   }
 
   private static void errorExactPair(String className) {
