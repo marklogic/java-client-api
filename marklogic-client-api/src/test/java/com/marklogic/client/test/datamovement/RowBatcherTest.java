@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test.datamovement;
 
@@ -20,11 +20,13 @@ import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RawQueryDSLPlan;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML12;
 import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanSystemColumn;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -192,8 +194,8 @@ class RowBatcherTest {
     }
 
 	@Test
-	@Disabled("Disabled due to https://progresssoftware.atlassian.net/browse/MLE-24579 , which causes the server to restart, " +
-		"which can cause many other tests to fail.")
+    // Requires ML 12+ due to server crash bug MLE-24579 on older versions
+    @ExtendWith(RequiresML12.class)
 	void noRowsReturned() {
 		RowBatcher<JsonNode> rowBatcher = jsonBatcher(1);
 		RowManager rowMgr = rowBatcher.getRowManager();

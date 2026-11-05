@@ -1593,7 +1593,7 @@ public class RowManagerTest {
   }
 
   @Test
-  @Disabled("Waiting on a fix for MLE-241")
+  @Disabled("Blocked by server bug MLE-241: Optic facet-by doesn't work when bucket-group is not wrapped in an array")
   public void testBug58233() {
     RowManager rowMgr = Common.client.newRowManager();
 
