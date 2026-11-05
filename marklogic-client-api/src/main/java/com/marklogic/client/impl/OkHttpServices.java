@@ -5409,8 +5409,13 @@ public class OkHttpServices implements RESTServices {
 			};
 
 			Function<Request.Builder, Response> sendRequestFunction = requestBldr -> {
-				if (isFirstRequest() && hasStreamingPart) {
-					// Ping the server before streaming; if unavailable, wait and retry the ping
+				if (hasStreamingPart) {
+					// Send a body-less ping first when this request streams a one-shot body (e.g. a Reader).
+					// MarkLogic can close a connection after replying to a request that accepts gzip, which this client
+					// always sends, yet OkHttp may still reuse it from the pool. A one-shot body written to such a
+					// connection is lost and cannot be resent, so the ping finds the dead connection first. This must
+					// happen for every such request, not only the first. If the server is unavailable, wait and retry
+					// the ping.
 					int pingDelay = pingServer(callBaseUri, "", 0);
 					int pingRetries = 0;
 					int maxPingRetries = 10; // Prevent infinite loop
