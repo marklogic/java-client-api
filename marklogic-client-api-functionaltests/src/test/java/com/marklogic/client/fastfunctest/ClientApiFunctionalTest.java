@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.fastfunctest;
 
@@ -18,7 +18,6 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.mgmt.resource.appservers.ServerManager;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -34,8 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ClientApiFunctionalTest extends AbstractFunctionalTest {
-
-	private final static String serverName = "java-functest";
 
 	private static DatabaseClient dbclient = null;
 
@@ -299,63 +296,6 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 			assertTrue(
 				msg.contains("failed to POST at ") &&
 				msg.contains("/ext/TestE2EModuleNotFound/TestE2EModuleNotFound.sjs"));
-		}
-	}
-
-	// This test sets the App Server concurrent users to be 1 instead of 0
-	// (default). Expect to see ForbiddenUser when same user logins multiple times.
-	@Test
-	@Disabled("Disabling on 2023-01-03; this succeeds consistently locally, but fairly consistently fails on Jenkins. " +
-		"Not sure yet if it's due to the sleep time in the DS module or not. This is also not testing the Java Client " +
-		"but rather it's testing the 'concurrent request limit' feature of a MarkLogic app server.")
-	public void TestE2ENumberOfConcurrentUsers() throws InterruptedException {
-		StringBuilder msgEx = new StringBuilder();
-		Thread w1, w2, w3;
-
-		System.out.println("Running TestE2ENumberOfConcurrentUsers");
-		modifyConcurrentUsersOnHttpServer(serverName, 1);
-
-		class MultipleApiUsers implements Runnable {
-
-			final String msg;
-			Float f;
-
-			public void run() {
-				try {
-					f = TestE2EIntegerParaReturnDouble.on(dbclient).TestE2EItemPriceErrorCond(1000, 1000);
-				} catch (FailedRequestException ex) {
-					System.out.println("Exception is from Thread " + msg);
-					ex.printStackTrace();
-					msgEx.append(msg);
-					msgEx.append("******");
-					msgEx.append(ex.getMessage());
-				}
-			}
-
-			MultipleApiUsers(String in) {
-				msg = in;
-			}
-		}
-
-		// Setup 3 API calls
-		try {
-			w1 = new Thread(new MultipleApiUsers("m1"));
-			w2 = new Thread(new MultipleApiUsers("m2"));
-			w3 = new Thread(new MultipleApiUsers("m3"));
-
-			w1.start();
-			w2.start();
-			w3.start();
-			w1.join();
-			w2.join();
-			w3.join();
-		} finally {
-			modifyConcurrentUsersOnHttpServer(serverName, 0);
-			System.out.println("Exception from API responses of call are " + msgEx);
-			assertTrue(
-				msgEx.toString().contains("Local message: failed to POST at") &&
-				msgEx.toString().contains("/ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"),
-				"Unexpected error message: " + msgEx);
 		}
 	}
 
@@ -628,13 +568,6 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 
 		assertTrue( jsNode.path("openapi").asText().contains("3.0.0"));
 		assertTrue( jsNode.path("info").path("title").asText().contains("/ext/TestOpenApi services"));
-	}
-
-	public static void modifyConcurrentUsersOnHttpServer(String restServerName, int numberOfUsers) {
-		String body = "{\"server-name\":\"" + restServerName + "\", " +
-			"\"group-name\": \"Default\", " +
-			"\"concurrent-request-limit\":\"" + numberOfUsers + "\"}";
-		new ServerManager(newManageClient()).save(body);
 	}
 }
 
