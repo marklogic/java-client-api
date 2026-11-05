@@ -43,8 +43,7 @@ public class RetryIOExceptionInterceptor implements Interceptor {
 		Request request = chain.request();
 		RequestBody requestBody = request.body();
 
-		if (requestBody != null && (requestBody.isOneShot() ||
-			requestBody instanceof RetryableRequestBody body && !body.isRetryable())) {
+		if (requestBody != null && cannotBeSentAgain(requestBody)) {
 			return chain.proceed(request);
 		}
 
@@ -67,6 +66,13 @@ public class RetryIOExceptionInterceptor implements Interceptor {
 
 		// This should never be reached due to loop logic, but is required for compilation.
 		throw new IllegalStateException("Unexpected end of retry loop");
+	}
+
+	@SuppressWarnings("deprecation")
+	private static boolean cannotBeSentAgain(RequestBody requestBody) {
+		// RetryableRequestBody is deprecated, but is honored until it is removed for bodies that do not override isOneShot()
+		return requestBody.isOneShot() ||
+			(requestBody instanceof RetryableRequestBody legacyBody && !legacyBody.isRetryable());
 	}
 
 	private boolean isRetryableIOException(Exception e) {

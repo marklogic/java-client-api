@@ -19,12 +19,12 @@ import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
+import com.marklogic.client.impl.okhttp.ChunkedGzipConnectionCloseInterceptor;
 import com.marklogic.client.impl.okhttp.HeaderUtil;
 import com.marklogic.client.impl.okhttp.HttpUrlBuilder;
 import com.marklogic.client.impl.okhttp.OkHttpUtil;
 import com.marklogic.client.impl.okhttp.PartIterator;
 import com.marklogic.client.impl.okhttp.RedactingHttpLogger;
-import com.marklogic.client.impl.okhttp.RetryableRequestBody;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.*;
 import com.marklogic.client.query.*;
@@ -215,6 +215,8 @@ public class OkHttpServices implements RESTServices {
 		this.baseUri = HttpUrlBuilder.newBaseUrl(config.host, config.port, config.basePath, config.securityContext.getSSLContext());
 
 		OkHttpClient.Builder clientBuilder = OkHttpUtil.newOkHttpClientBuilder(config.host, config.securityContext, config.clientConfigurators);
+		// Added after the configurators so it sees the request headers they leave in place.
+		clientBuilder.addNetworkInterceptor(new ChunkedGzipConnectionCloseInterceptor());
 
 		Properties props = System.getProperties();
 		if (props.containsKey(LoggingUtil.OKHTTP_NETWORK_LEVEL)) {
@@ -300,8 +302,30 @@ public class OkHttpServices implements RESTServices {
 		}
 	}
 
-	private int pingServerBeforeStreaming(int retry) {
-		return pingServer(baseUri, "ping", retry);
+	/**
+	 * With digest authentication, the first request on a thread (or the first after a retry) is answered with a 401
+	 * challenge. OkHttp cannot send a one-shot body (e.g. a Reader) again to answer that challenge, so a body-less
+	 * ping takes the challenge first. If the server is unavailable, this waits and pings again. If it stays
+	 * unavailable, this fails without sending the body, so that content that can only be sent once is not consumed.
+	 */
+	private void pingServerBeforeOneShotRequest() {
+		final int maxPingRetries = 10;
+		int pingDelay = pingServer(baseUri, "ping", 0);
+		int pingRetries = 0;
+		while (pingDelay > 0 && pingRetries < maxPingRetries && !Thread.currentThread().isInterrupted()) {
+			try {
+				Thread.sleep(pingDelay);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new MarkLogicIOException("Interrupted while waiting to ping server before sending a one-shot request", e);
+			}
+			pingRetries++;
+			pingDelay = pingServer(baseUri, "ping", 0);
+		}
+		if (pingDelay > 0) {
+			throw new FailedRetryException(
+				"Service unavailable after " + pingRetries + " ping retries; did not send the request, as its content can only be sent once");
+		}
 	}
 
 	private int pingServer(HttpUrl requestUri, String path, int retry) {
@@ -499,6 +523,11 @@ public class OkHttpServices implements RESTServices {
 		if (released) {
 			throw new IllegalStateException(
 				"You cannot use this connected object anymore--connection has already been released");
+		}
+
+		RequestBody body = request.body();
+		if (body != null && body.isOneShot() && isFirstRequest()) {
+			pingServerBeforeOneShotRequest();
 		}
 
 		try {
@@ -1218,30 +1247,9 @@ public class OkHttpServices implements RESTServices {
 					"Document write with null value for " + ((uri != null) ? uri : "new document"));
 			}
 
-			if (isFirstRequest() && !isResendable && isStreaming(value)) {
-				int firstRequestDelay = pingServerBeforeStreaming(retryContext.getRetry());
-				if (firstRequestDelay != 0) {
-					retryContext.calculateNextDelay(0, firstRequestDelay);
-					continue;
-				}
-			}
-
 			MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
-			if (value instanceof OutputStreamSender) {
-				StreamingOutputImpl sentStream =
-					new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType, isResendable);
-				requestBldr =
-					("put".equals(method)) ?
-						requestBldr.put(sentStream) :
-						requestBldr.post(sentStream);
-			} else {
-				Object sentObj = (reqlog != null) ?
-					reqlog.copyContent(value) : value;
-				requestBldr =
-					("put".equals(method)) ?
-						requestBldr.put(new ObjectRequestBody(sentObj, mediaType)) :
-						requestBldr.post(new ObjectRequestBody(sentObj, mediaType));
-			}
+			RequestBody body = toRequestBody(value, isResendable, mediaType, reqlog);
+			requestBldr = ("put".equals(method)) ? requestBldr.put(body) : requestBldr.post(body);
 			response = sendRequestOnce(requestBldr);
 
 			status = response.code();
@@ -1369,14 +1377,6 @@ public class OkHttpServices implements RESTServices {
 			boolean hasStreamingPart = addParts(multiPart, reqlog,
 				new String[]{metadataMimetype, contentMimetype},
 				new AbstractWriteHandle[]{metadataHandle, contentHandle});
-
-			if (isFirstRequest() && hasStreamingPart) {
-				int firstRequestDelay = pingServerBeforeStreaming(retryContext.getRetry());
-				if (firstRequestDelay != 0) {
-					retryContext.calculateNextDelay(0, firstRequestDelay);
-					continue;
-				}
-			}
 
 			requestBldr = ("put".equals(method)) ? requestBldr.put(multiPart.build()) : requestBldr.post(multiPart.build());
 			response = sendRequestOnce(requestBldr);
@@ -1925,19 +1925,17 @@ public class OkHttpServices implements RESTServices {
 				retryContext.sleepIfNeeded();
 
 				if (queryDef instanceof StructuredQueryDefinition && !(queryDef instanceof RawQueryDefinition)) {
-					response = doPost(reqlog, requestBldr, structure);
+					response = doPost(requestBldr, toRequestBody(structure, true, contentTypeOf(requestBldr), reqlog));
 				} else if (queryDef instanceof CombinedQueryDefinition) {
-					response = doPost(reqlog, requestBldr, structure);
+					response = doPost(requestBldr, toRequestBody(structure, true, contentTypeOf(requestBldr), reqlog));
 				} else if (queryDef instanceof DeleteQueryDefinition) {
 					response = doGet(requestBldr);
-				} else if (queryDef instanceof RawQueryDefinition) {
-					response = doPost(reqlog, requestBldr, baseHandle.sendContent());
-				} else if (queryDef instanceof RawCtsQueryDefinition) {
-					response = doPost(reqlog, requestBldr, baseHandle.sendContent());
+				} else if (queryDef instanceof RawQueryDefinition || queryDef instanceof RawCtsQueryDefinition) {
+					response = doPost(requestBldr, toRequestBody(baseHandle, contentTypeOf(requestBldr), reqlog));
 				} else if (queryDef instanceof StringQueryDefinition) {
 					response = doGet(requestBldr);
 				} else if (queryDef instanceof CtsQueryDefinition) {
-					response = doPost(reqlog, requestBldr, structure);
+					response = doPost(requestBldr, toRequestBody(structure, true, contentTypeOf(requestBldr), reqlog));
 				} else {
 					throw new UnsupportedOperationException("Cannot search with "
 						+ queryDef.getClass().getName());
@@ -2190,9 +2188,9 @@ public class OkHttpServices implements RESTServices {
 			new Function<Request.Builder, Response>() {
 				public Response apply(Request.Builder funcBuilder) {
 					String contentType = tempBaseHandle.getMimetype();
-					return doPost(null,
-						(contentType == null) ? funcBuilder : funcBuilder.header(HEADER_CONTENT_TYPE, contentType),
-						tempBaseHandle.sendContent());
+					Request.Builder typedBuilder =
+						(contentType == null) ? funcBuilder : funcBuilder.header(HEADER_CONTENT_TYPE, contentType);
+					return doPost(typedBuilder, toRequestBody(tempBaseHandle, contentTypeOf(typedBuilder), null));
 				}
 			};
 
@@ -2454,29 +2452,10 @@ public class OkHttpServices implements RESTServices {
 
 			Object nextValue = (handle != null) ? handle.sendContent() : value;
 
-			RequestBody sentValue;
-			if (nextValue instanceof OutputStreamSender) {
-				sentValue = new StreamingOutputImpl(
-					(OutputStreamSender) nextValue, reqlog, mediaType, handle != null && handle.isResendable());
-			} else {
-				if (reqlog != null && retryContext.getRetry() == 0) {
-					sentValue = new ObjectRequestBody(reqlog.copyContent(nextValue), mediaType);
-				} else {
-					sentValue = new ObjectRequestBody(nextValue, mediaType);
-				}
-			}
-
-			boolean isStreaming = (isFirstRequest() || handle == null) ? isStreaming(sentValue) : false;
-
-			boolean isResendable = (handle == null) ? !isStreaming : handle.isResendable();
-
-			if (isFirstRequest() && !isResendable && isStreaming) {
-				int firstRequestDelay = pingServerBeforeStreaming(retryContext.getRetry());
-				if (firstRequestDelay != 0) {
-					retryContext.calculateNextDelay(0, firstRequestDelay);
-					continue;
-				}
-			}
+			boolean isResendable = (handle != null) ? handle.isResendable() : !isStreaming(nextValue);
+			// Non-streaming content is copied to the logger, which is only done for the first attempt
+			RequestLogger bodyLogger = (nextValue instanceof OutputStreamSender || retryContext.getRetry() == 0) ? reqlog : null;
+			RequestBody sentValue = toRequestBody(nextValue, isResendable, mediaType, bodyLogger);
 
 			if ("put".equals(method)) {
 				if (requestBldr == null) {
@@ -2831,7 +2810,9 @@ public class OkHttpServices implements RESTServices {
 
 		Function<Request.Builder, Response> doPutFunction = new Function<Request.Builder, Response>() {
 			public Response apply(Request.Builder funcBuilder) {
-				return doPut(reqlog, funcBuilder, inputBase.sendContent(), isResendable);
+				Object value = inputBase.sendContent();
+				if (value == null) throw new IllegalArgumentException("Resource write with null value");
+				return doPut(funcBuilder, toRequestBody(value, isResendable, contentTypeOf(funcBuilder), reqlog));
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPutFunction, resendableConsumer);
@@ -2881,7 +2862,7 @@ public class OkHttpServices implements RESTServices {
 			requestBldr = addTransactionScopedCookies(requestBldr, transaction);
 			requestBldr = addTelemetryAgentId(requestBldr);
 
-			response = doPut(requestBldr, multiPart, hasStreamingPart);
+			response = doPut(requestBldr, multiPart.build());
 			status = response.code();
 
 			if (transaction != null || !RETRYABLE_STATUS_CODES.contains(status)) {
@@ -2980,7 +2961,10 @@ public class OkHttpServices implements RESTServices {
 		final Object value = inputBase == null ? null : inputBase.sendContent();
 		Function<Request.Builder, Response> doPostFunction = new Function<Request.Builder, Response>() {
 			public Response apply(Request.Builder funcBuilder) {
-				return doPost(reqlog, funcBuilder, value, isResendable);
+				RequestBody body = (value == null) ?
+					new ObjectRequestBody(null, null) :
+					toRequestBody(value, isResendable, contentTypeOf(funcBuilder), reqlog);
+				return doPost(funcBuilder, body);
 			}
 		};
 
@@ -3044,7 +3028,7 @@ public class OkHttpServices implements RESTServices {
 			requestBldr = addTransactionScopedCookies(requestBldr, transaction);
 			requestBldr = addTelemetryAgentId(requestBldr);
 
-			response = doPost(requestBldr, multiPart, hasStreamingPart);
+			response = doPost(requestBldr, multiPart.build());
 			status = response.code();
 
 			if (transaction != null || !RETRYABLE_STATUS_CODES.contains(status)) {
@@ -3499,7 +3483,7 @@ public class OkHttpServices implements RESTServices {
 		requestBldr = addTrailerHeadersIfNecessary(requestBldr, path);
 
 		Function<Request.Builder, Response> doPostFunction = funcBuilder ->
-			doPost(reqlog, funcBuilder.header(HEADER_ACCEPT, multipartMixedWithBoundary()), multiBuilder.build());
+			doPost(funcBuilder.header(HEADER_ACCEPT, multipartMixedWithBoundary()), multiBuilder.build());
 
 		// The construction of this was based on whether the primary input was resendable or not. We don't have a primary
 		// input with a multipart request. So keeping this as null for now.
@@ -3570,12 +3554,10 @@ public class OkHttpServices implements RESTServices {
 			}
 		};
 
-		Function<Request.Builder, Response> doPostFunction = requestBuilder -> doPost(
-			reqlog,
-			requestBuilder.header(HEADER_ACCEPT, multipartMixedWithBoundary()),
-			inputBase.sendContent(),
-			isResendable
-		);
+		Function<Request.Builder, Response> doPostFunction = requestBuilder -> {
+			Request.Builder acceptBuilder = requestBuilder.header(HEADER_ACCEPT, multipartMixedWithBoundary());
+			return doPost(acceptBuilder, toRequestBody(inputBase, contentTypeOf(acceptBuilder), reqlog));
+		};
 
 		Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPostFunction, resendableConsumer);
 		Objects.requireNonNull(response);
@@ -3647,7 +3629,7 @@ public class OkHttpServices implements RESTServices {
 			requestBldr = addTransactionScopedCookies(requestBldr, transaction);
 			requestBldr = addTelemetryAgentId(requestBldr);
 
-			response = doPost(requestBldr, multiPart, hasStreamingPart);
+			response = doPost(requestBldr, multiPart.build());
 			status = response.code();
 
 			if (transaction != null || !RETRYABLE_STATUS_CODES.contains(status)) {
@@ -3746,39 +3728,8 @@ public class OkHttpServices implements RESTServices {
 		return setupRequest(path, params);
 	}
 
-	private Response doPut(RequestLogger reqlog, Request.Builder requestBldr, Object value) {
-		// Default to non-resendable for callers that have not determined whether the content can be sent again.
-		return doPut(reqlog, requestBldr, value, false);
-	}
-
-	private Response doPut(RequestLogger reqlog, Request.Builder requestBldr, Object value, boolean isResendable) {
-		if (value == null) throw new IllegalArgumentException("Resource write with null value");
-
-		if (isFirstRequest() && isStreaming(value)) pingServerBeforeStreaming(0);
-
-		MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
-		if (value instanceof OutputStreamSender) {
-			requestBldr = requestBldr.put(new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType, isResendable));
-		} else {
-			if (reqlog != null) {
-				requestBldr = requestBldr.put(new ObjectRequestBody(reqlog.copyContent(value), mediaType));
-			} else {
-				requestBldr = requestBldr.put(new ObjectRequestBody(value, mediaType));
-			}
-		}
-		Response response = sendRequestOnce(requestBldr);
-
-		if (isFirstRequest()) setFirstRequest(false);
-
-		return response;
-	}
-
-	private Response doPut(Request.Builder requestBldr,
-						   MultipartBody.Builder multiPart, boolean hasStreamingPart) {
-		if (isFirstRequest() && hasStreamingPart) pingServerBeforeStreaming(0);
-
-		requestBldr = requestBldr.put(multiPart.build());
-		Response response = sendRequestOnce(requestBldr);
+	private Response doPut(Request.Builder requestBldr, RequestBody body) {
+		Response response = sendRequestOnce(requestBldr.put(body));
 
 		if (isFirstRequest()) setFirstRequest(false);
 
@@ -3793,43 +3744,8 @@ public class OkHttpServices implements RESTServices {
 		return setupRequest(path, params);
 	}
 
-	private Response doPost(RequestLogger reqlog, Request.Builder requestBldr, Object value) {
-		// Default to non-resendable for callers that have not determined whether the content can be sent again.
-		return doPost(reqlog, requestBldr, value, false);
-	}
-
-	private Response doPost(RequestLogger reqlog, Request.Builder requestBldr, Object value, boolean isResendable) {
-		if (isFirstRequest() && isStreaming(value)) {
-			pingServerBeforeStreaming(0);
-		}
-
-		MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
-		if (value == null) {
-			requestBldr = requestBldr.post(new ObjectRequestBody(null, null));
-		} else if (value instanceof MultipartBody) {
-			requestBldr = requestBldr.post((MultipartBody) value);
-		} else if (value instanceof OutputStreamSender) {
-			requestBldr = requestBldr
-				.post(new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType, isResendable));
-		} else {
-			if (reqlog != null) {
-				requestBldr = requestBldr.post(new ObjectRequestBody(reqlog.copyContent(value), mediaType));
-			} else {
-				requestBldr = requestBldr.post(new ObjectRequestBody(value, mediaType));
-			}
-		}
-		Response response = sendRequestOnce(requestBldr);
-
-		if (isFirstRequest()) setFirstRequest(false);
-
-		return response;
-	}
-
-	private Response doPost(Request.Builder requestBldr,
-							MultipartBody.Builder multiPart, boolean hasStreamingPart) {
-		if (isFirstRequest() && hasStreamingPart) pingServerBeforeStreaming(0);
-
-		Response response = sendRequestOnce(requestBldr.post(multiPart.build()));
+	private Response doPost(Request.Builder requestBldr, RequestBody body) {
+		Response response = sendRequestOnce(requestBldr.post(body));
 
 		if (isFirstRequest()) setFirstRequest(false);
 
@@ -4011,19 +3927,8 @@ public class OkHttpServices implements RESTServices {
 				}
 			}
 
-			Part bodyPart = null;
-			if (value instanceof OutputStreamSender) {
-				bodyPart = Part.create(partHeaders.build(), new StreamingOutputImpl(
-					(OutputStreamSender) value, reqlog, mediaType, handleBase.isResendable()));
-			} else {
-				if (reqlog != null) {
-					bodyPart = Part.create(partHeaders.build(), new ObjectRequestBody(reqlog.copyContent(value), mediaType));
-				} else {
-					bodyPart = Part.create(partHeaders.build(), new ObjectRequestBody(value, mediaType));
-				}
-			}
-
-			multiPart = multiPart.addPart(bodyPart);
+			RequestBody partBody = toRequestBody(value, handleBase.isResendable(), mediaType, reqlog);
+			multiPart = multiPart.addPart(Part.create(partHeaders.build(), partBody));
 		}
 
 		return hasStreamingPart;
@@ -4664,7 +4569,7 @@ public class OkHttpServices implements RESTServices {
 
 		Function<Request.Builder, Response> doPostFunction = new Function<Request.Builder, Response>() {
 			public Response apply(Request.Builder funcBuilder) {
-				return doPost(null, funcBuilder, baseHandle.sendContent());
+				return doPost(funcBuilder, toRequestBody(baseHandle, contentTypeOf(funcBuilder), null));
 			}
 		};
 		Response response = sendRequestWithRetry(requestBldr, doPostFunction, null);
@@ -4760,9 +4665,9 @@ public class OkHttpServices implements RESTServices {
 			retryContext.sleepIfNeeded();
 
 			if (queryDef instanceof StructuredQueryDefinition) {
-				response = doPost(null, requestBldr, structure);
+				response = doPost(requestBldr, toRequestBody(structure, true, contentTypeOf(requestBldr), null));
 			} else if (queryDef instanceof RawQueryDefinition) {
-				response = doPost(null, requestBldr, baseHandle.sendContent());
+				response = doPost(requestBldr, toRequestBody(baseHandle, contentTypeOf(requestBldr), null));
 			} else if (queryDef instanceof StringQueryDefinition) {
 				response = sendRequestOnce(requestBldr.get());
 			} else {
@@ -5205,10 +5110,10 @@ public class OkHttpServices implements RESTServices {
 		}
 	}
 
-	static class ObjectRequestBody extends RequestBody implements RetryableRequestBody {
+	static private class ObjectRequestBody extends RequestBody {
 
-		private Object obj;
-		private MediaType contentType;
+		private final Object obj;
+		private final MediaType contentType;
 
 		ObjectRequestBody(Object obj, MediaType contentType) {
 			super();
@@ -5242,18 +5147,9 @@ public class OkHttpServices implements RESTServices {
 		}
 
 		@Override
-		public boolean isRetryable() {
-			// Added in 8.0.0 to work with the retry interceptor so it knows whether the body can be retried or not.
-			// InputStreams cannot be retried as they are consumed on first read.
-			return !(obj instanceof InputStream);
-		}
-
-		@Override
 		public boolean isOneShot() {
-			// Declares an InputStream-backed body as one-shot via OkHttp's own contract so that when this body is
-			// nested inside another RequestBody (e.g. a MultipartBody part), OkHttp and RetryIOExceptionInterceptor
-			// both recognize the outer body as non-retryable too; isRetryable() above is only checked when this is the
-			// top-level request body and would otherwise be bypassed for a nested InputStream part.
+			// An InputStream is consumed by the first write. Using OkHttp's own contract means that a MultipartBody
+			// containing this body is also reported as one-shot.
 			return obj instanceof InputStream;
 		}
 	}
@@ -5295,15 +5191,36 @@ public class OkHttpServices implements RESTServices {
 		if (content == null) {
 			return new EmptyRequestBody();
 		}
-		HandleImplementation handleBase = HandleAccessor.as(content);
+		HandleImplementation<?, ?> handleBase = HandleAccessor.as(content);
 		Format format = handleBase.getFormat();
 		String mimetype = (format == Format.BINARY) ? null : handleBase.getMimetype();
 		MediaType mediaType = MediaType.parse(
 			(mimetype != null) ? mimetype : "application/x-unknown-content-type"
 		);
-		return (content instanceof OutputStreamSender) ?
-			new StreamingOutputImpl((OutputStreamSender) content, null, mediaType, handleBase.isResendable()) :
-			new ObjectRequestBody(HandleAccessor.sendContent(content), mediaType);
+		return toRequestBody(handleBase, mediaType, null);
+	}
+
+	private static MediaType contentTypeOf(Request.Builder requestBldr) {
+		return makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
+	}
+
+	/**
+	 * The one place where a handle's content becomes a request body, so that the handle's resendability is always
+	 * reflected in {@code isOneShot()}.
+	 */
+	private static RequestBody toRequestBody(HandleImplementation<?, ?> handle, MediaType mediaType, RequestLogger reqlog) {
+		return toRequestBody(handle.sendContent(), handle.isResendable(), mediaType, reqlog);
+	}
+
+	/**
+	 * @param content already obtained from a handle's {@code sendContent()}, or any other content that is sent as is
+	 * @param resendable whether {@code content}, if it is an {@code OutputStreamSender}, can be written again
+	 */
+	private static RequestBody toRequestBody(Object content, boolean resendable, MediaType mediaType, RequestLogger reqlog) {
+		if (content instanceof OutputStreamSender sender) {
+			return new StreamingOutputImpl(sender, reqlog, mediaType, resendable);
+		}
+		return new ObjectRequestBody(reqlog != null ? reqlog.copyContent(content) : content, mediaType);
 	}
 
 	class CallRequestImpl implements CallRequest {
@@ -5409,25 +5326,6 @@ public class OkHttpServices implements RESTServices {
 			};
 
 			Function<Request.Builder, Response> sendRequestFunction = requestBldr -> {
-				if (isFirstRequest() && hasStreamingPart) {
-					// Ping the server before streaming; if unavailable, wait and retry the ping
-					int pingDelay = pingServer(callBaseUri, "", 0);
-					int pingRetries = 0;
-					int maxPingRetries = 10; // Prevent infinite loop
-					while (pingDelay > 0 && pingRetries < maxPingRetries && !Thread.currentThread().isInterrupted()) {
-						try {
-							Thread.sleep(pingDelay);
-						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt();
-							throw new RuntimeException("Interrupted while waiting to ping server before streaming", e);
-						}
-						pingRetries++;
-						pingDelay = pingServer(callBaseUri, "", 0);
-					}
-					if (pingRetries >= maxPingRetries) {
-						logger.warn("Server still unavailable after {} ping attempts before streaming", maxPingRetries);
-					}
-				}
 				Response response = sendRequestOnce(requestBldr);
 				if (isFirstRequest()) setFirstRequest(false);
 				return response;
@@ -5513,21 +5411,6 @@ public class OkHttpServices implements RESTServices {
 			return new AtomicRequestBody(value, MediaType.parse("text/plain"));
 		}
 
-		private RequestBody makeRequestBody(AbstractWriteHandle document) {
-			if (document == null) {
-				return new EmptyRequestBody();
-			}
-			HandleImplementation handleBase = HandleAccessor.as(document);
-			Format format = handleBase.getFormat();
-			String mimetype = (format == Format.BINARY) ? null : handleBase.getMimetype();
-			MediaType mediaType = MediaType.parse(
-				(mimetype != null) ? mimetype : "application/x-unknown-content-type"
-			);
-			return (document instanceof OutputStreamSender) ?
-				new StreamingOutputImpl((OutputStreamSender) document, null, mediaType, handleBase.isResendable()) :
-				new ObjectRequestBody(HandleAccessor.sendContent(document), mediaType);
-		}
-
 		private RequestBody makeRequestBody(CallField[] params) {
 			if (params == null || params.length == 0) {
 				return new EmptyRequestBody();
@@ -5584,7 +5467,7 @@ public class OkHttpServices implements RESTServices {
 									hasStreamingPartCondition.set();
 								}
 								hasValue.set();
-								multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
+								multiBldr.addFormDataPart(paramName, null, makeRequestBodyForContent(paramValue));
 							});
 					}
 				} else if (param instanceof BufferedMultipleNodeCallField) {
@@ -5608,7 +5491,7 @@ public class OkHttpServices implements RESTServices {
 									paramValues[i] = paramValue;
 								}
 								hasValue.set();
-								multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
+								multiBldr.addFormDataPart(paramName, null, makeRequestBodyForContent(paramValue));
 							}
 						}
 					}
