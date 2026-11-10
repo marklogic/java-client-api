@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.test.datamovement;
@@ -11,9 +11,14 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -319,6 +324,66 @@ public class JSONSplitterTest {
             }
 
             return NodeOperation.DESCEND;
+        }
+    }
+
+    @Test
+    public void splitClosesInputStreamWhenStreamIsClosed() throws Exception {
+        JSONSplitter<StringHandle> splitter = JSONSplitter.makeArraySplitter();
+        CloseTrackingInputStream input = new CloseTrackingInputStream(new ByteArrayInputStream(largeJsonArray()));
+
+        try (Stream<StringHandle> stream = splitter.split(input)) {
+            assertTrue(stream.findFirst().isPresent());
+            assertFalse(input.closed.get(), "The input stream should remain open until the stream is closed");
+        }
+
+        assertTrue(input.closed.get(), "Closing the stream should close the underlying input stream");
+    }
+
+    @Test
+    public void splitWriteOperationsClosesInputStreamWhenStreamIsClosed() throws Exception {
+        JSONSplitter<StringHandle> splitter = JSONSplitter.makeArraySplitter();
+        CloseTrackingInputStream input = new CloseTrackingInputStream(new ByteArrayInputStream(largeJsonArray()));
+
+        try (Stream<DocumentWriteOperation> stream = splitter.splitWriteOperations(input)) {
+            assertTrue(stream.findFirst().isPresent());
+            assertFalse(input.closed.get(), "The input stream should remain open until the stream is closed");
+        }
+
+        assertTrue(input.closed.get(), "Closing the stream should close the underlying input stream");
+    }
+
+    // Large enough that the parser does not reach the end of the input (and auto-close it) after the first element.
+    private static byte[] largeJsonArray() {
+        StringBuilder json = new StringBuilder("[");
+        for (int i = 0; i < 5000; i++) {
+            json.append(i > 0 ? "," : "").append("{\"record\":").append(i).append("}");
+        }
+        return json.append("]").toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static class CloseTrackingInputStream extends InputStream {
+        final AtomicBoolean closed = new AtomicBoolean(false);
+        private final InputStream delegate;
+
+        CloseTrackingInputStream(InputStream delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return delegate.read();
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            return delegate.read(b, off, len);
+        }
+
+        @Override
+        public void close() throws IOException {
+            closed.set(true);
+            delegate.close();
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.example.handle;
 
@@ -84,21 +84,20 @@ public class JacksonHandleExample {
     // create a manager for JSON documents
     JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
-    // read the example file
-    InputStream docStream = Util.openStream("data"+File.separator+filename);
-    if (docStream == null)
-      throw new IOException("Could not read document example");
-
     // create an identifier for the document
     String docId = "/example/"+filename;
 
     // create a handle for the document
     JacksonHandle writeHandle = new JacksonHandle();
 
-    // parse the example file with Jackson
-    JsonNode writeDocument = writeHandle.getMapper().readValue(
-      new InputStreamReader(docStream, "UTF-8"), JsonNode.class);
-    writeHandle.set(writeDocument);
+    // read the example file and parse it with Jackson
+    try (InputStream docStream = Util.openStream("data"+File.separator+filename)) {
+      if (docStream == null)
+        throw new IOException("Could not read document example");
+      JsonNode writeDocument = writeHandle.getMapper().readValue(
+        new InputStreamReader(docStream, "UTF-8"), JsonNode.class);
+      writeHandle.set(writeDocument);
+    }
 
     // write the document
     docMgr.write(docId, writeHandle);
