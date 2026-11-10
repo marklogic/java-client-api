@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,7 +23,7 @@ public class SetMaxBatchesTest extends AbstractFunctionalTest {
 	 */
 	@Test
 	void iteratorTest() {
-		List<String> results = new ArrayList<>();
+		List<String> results = Collections.synchronizedList(new ArrayList<>());
 
 		List<String> input = new ArrayList<>();
 		for (int i = 1; i <= 100; i++) {
