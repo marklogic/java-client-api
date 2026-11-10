@@ -4,7 +4,6 @@
 package com.marklogic.client.test.io;
 
 import com.marklogic.client.Transaction;
-import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.impl.XmlFactories;
@@ -14,23 +13,19 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.test.Common;
-import com.marklogic.client.test.junit5.RequiresML11;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -175,46 +170,6 @@ public class DocumentMetadataHandleTest {
     assertEquals(Capability.UPDATE, Capability.getValueOf("upDate"));
     assertEquals(Capability.NODE_UPDATE, Capability.getValueOf("node-Update"));
     assertEquals(Capability.NODE_UPDATE, Capability.getValueOf("NODE_UPDATE"));
-  }
-
-  @Test
-  // Requires MarkLogic 11 or higher now that we're using Docker; the INSTALL_CONVERTERS flag does not work for MarkLogic 10.
-  @ExtendWith(RequiresML11.class)
-  @Disabled("This is consistently failing in Jenkins with an error of: " +
-	  "Process run error: fork: Cannot allocate memory. It runs fine locally and is ultimately just a test of a " +
-	  "v1/documents feature and not of the Java Client.")
-  public void testMetadataPropertiesExtraction() {
-	String docId = "/test.bin";
-	// Make a document manager to work with binary files
-    BinaryDocumentManager docMgr = Common.client.newBinaryDocumentManager();
-    DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-    docMgr.setMetadataExtraction(BinaryDocumentManager.MetadataExtraction.PROPERTIES);
-    // read binary from resources
-    ClassLoader classLoader = getClass().getClassLoader();
-    File file = null;
-    FileInputStream docStream = null;
-    try {
-    	file = new File(classLoader.getResource("test.bin").getFile());
-    	docStream = new FileInputStream(file);
-    } catch (Exception e) {
-    	assertTrue(false);
-    }
-
-    // Create a handle to hold string content.
-    InputStreamHandle handle = new InputStreamHandle(docStream);
-    docMgr.write(docId, metadataHandle, handle);
-
-    DocumentMetadataHandle readMetadataHandle = new DocumentMetadataHandle();
-    //read only the metadata into a handle
-    docMgr.readMetadata(docId, readMetadataHandle);
-    QName qn = new QName("", "testId");
-    readMetadataHandle.getProperties().put(qn, "123456");
-    docMgr.writeMetadata(docId, readMetadataHandle);
-
-    readMetadataHandle = new DocumentMetadataHandle();
-
-    docMgr.readMetadata(docId, readMetadataHandle);
-    assertEquals("123456", readMetadataHandle.getProperties().get(qn));
   }
 
 
