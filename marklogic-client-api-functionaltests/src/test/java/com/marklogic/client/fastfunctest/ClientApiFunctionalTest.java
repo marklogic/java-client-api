@@ -306,7 +306,8 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 	// (default). Expect to see ForbiddenUser when same user logins multiple times.
 	@Test
 	public void TestE2ENumberOfConcurrentUsers() throws InterruptedException {
-		StringBuilder msgEx = new StringBuilder();
+		// Appended to concurrently by multiple worker threads, so it must be thread-safe.
+		StringBuffer msgEx = new StringBuffer();
 		Thread w1, w2, w3;
 
 		System.out.println("Running TestE2ENumberOfConcurrentUsers");
@@ -348,12 +349,13 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 			w3.join();
 		} finally {
 			modifyConcurrentUsersOnHttpServer(serverName, 0);
-			System.out.println("Exception from API responses of call are " + msgEx);
-			assertTrue(
-				msgEx.toString().contains("Local message: failed to POST at") &&
-				msgEx.toString().contains("/ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"),
-				"Unexpected error message: " + msgEx);
 		}
+
+		System.out.println("Exception from API responses of call are " + msgEx);
+		assertTrue(
+			msgEx.toString().contains("Local message: failed to POST at") &&
+			msgEx.toString().contains("/ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"),
+			"Unexpected error message: " + msgEx);
 	}
 
 	// Test users with invalid roles
