@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.datamovement;
@@ -271,11 +271,10 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
                 throw new IllegalArgumentException("JsonParser cannot be null");
             }
 
-            try {
-                StringWriter stringWriter = new StringWriter();
-                JsonGenerator jsonGenerator = new JsonFactory().createGenerator(stringWriter);
+            try (StringWriter stringWriter = new StringWriter();
+                 JsonGenerator jsonGenerator = new JsonFactory().createGenerator(stringWriter)) {
                 jsonGenerator.copyCurrentStructure(containerParser);
-                jsonGenerator.close();
+                jsonGenerator.flush();
                 return stringWriter.toString();
             } catch (IOException e) {
                 throw new RuntimeException("Could not serialize the document", e);
