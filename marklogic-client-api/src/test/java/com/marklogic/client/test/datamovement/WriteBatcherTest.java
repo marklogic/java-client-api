@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.test.datamovement;
 
@@ -17,7 +17,6 @@ import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.test.Common;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -1104,22 +1104,47 @@ public class WriteBatcherTest {
     }
   }
 
-  // TODO: uncomment this after fixing https://github.com/marklogic/java-client-api/issues/646
-  @Disabled
+  // Regression for https://github.com/marklogic/java-client-api/issues/646
+  @Test
   public void testIssue646() throws Exception {
-
-    WriteBatcher ihb2 = moveMgr.newWriteBatcher()
-      .withBatchSize(10);
-
-    ihb2.onBatchFailure( (batch, throwable) -> throwable.printStackTrace() );
-
-    for (int j =0 ;j < 21; j++){
-      String uri ="/local/string-"+ j;
-      DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withProperty("docMeta-1", "true");
-      ihb2.addAs(uri , meta6,	"test");
+    TextDocumentManager documentManager = client.newTextDocumentManager();
+    AtomicInteger successCount = new AtomicInteger();
+    AtomicReference<Throwable> failure = new AtomicReference<>();
+    DocumentMetadataHandle metadata = new DocumentMetadataHandle()
+      .withCollections(whbTestCollection)
+      .withProperty("docMeta-1", "true")
+      .withQuality(1);
+    WriteBatcher batcher = moveMgr.newWriteBatcher()
+      .withBatchSize(10)
+      .withThreadCount(3)
+      .onBatchSuccess(batch -> successCount.addAndGet(batch.getItems().length))
+      .onBatchFailure((batch, throwable) -> failure.compareAndSet(null, throwable));
+    String[] uris = new String[21];
+    for (int j = 0; j < uris.length; j++) {
+      uris[j] = "/local/issue646/string-" + j;
     }
-
-    ihb2.flushAndWait();
+    JobTicket ticket = moveMgr.startJob(batcher);
+    try {
+      for (String uri : uris) {
+        batcher.addAs(uri, metadata, "test");
+      }
+      batcher.flushAsync();
+      assertTrue(batcher.awaitCompletion(60, TimeUnit.SECONDS), "Metadata write job timed out");
+      assertNull(failure.get(), () -> "Metadata write failed: " + failure.get());
+      assertEquals(uris.length, successCount.get());
+      for (String uri : uris) {
+        DocumentMetadataHandle actual = new DocumentMetadataHandle();
+        assertEquals("test", documentManager.read(uri, actual, new StringHandle()).get());
+        assertEquals("true", actual.getProperties().get("docMeta-1"));
+        assertEquals(1, actual.getQuality());
+      }
+    } finally {
+      try {
+        moveMgr.stopJob(ticket);
+      } finally {
+        documentManager.delete(uris);
+      }
+    }
   }
 
   @Test

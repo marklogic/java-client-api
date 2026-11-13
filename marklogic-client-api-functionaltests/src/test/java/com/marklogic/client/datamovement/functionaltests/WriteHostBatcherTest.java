@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.datamovement.functionaltests;
@@ -33,6 +33,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -1415,229 +1421,56 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		clearDB(port);
 	}
 
-	// Multiple threads writing to same WHB object with unique uri's and with
-	// thread count =10 and txsize =3 but with small number of docs
-	// Failing intermittently with rewriteWHB branch
-	@Disabled
+	@Test
 	public void testAddMultiThreadedLessDocsSuccess() throws Exception {
-		System.out.println("In testAddMultiThreadedLessDocsSuccess method");
-
-		final String query1 = "fn:count(fn:doc())";
-		final AtomicInteger count = new AtomicInteger(0);
-
-		ihbMT = dmManager.newWriteBatcher();
-		ihbMT.withBatchSize(99);
-		ihbMT.withThreadCount(10);
-		// ihbMT.withTransactionSize(3);
-
-		ihbMT.onBatchSuccess(batch -> {
-
-		}).onBatchFailure((batch, throwable) -> {
-			throwable.printStackTrace();
-
-		});
-		dmManager.startJob(ihbMT);
-
-		class MyRunnable implements Runnable {
-
-			@Override
-			public void run() {
-
-				for (int j = 0; j < 15; j++) {
-					String uri = "/local/json-" + j + "-" + Thread.currentThread().getId();
-					System.out.println("Thread name: " + Thread.currentThread().getName() + "  URI:" + uri);
-					ihbMT.add(uri, fileHandle);
-				}
-				ihbMT.flushAndWait();
-			}
-
-		}
-
-		class CountRunnable implements Runnable {
-
-			@Override
-			public void run() {
-				try {
-					Thread.currentThread().sleep(15000L);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				Set<Thread> threads = Thread.getAllStackTraces().keySet();
-				Iterator<Thread> iter = threads.iterator();
-				while (iter.hasNext()) {
-					Thread t = iter.next();
-					if (t.getName().contains("pool-1-thread-"))
-						System.out.println(t.getName());
-					count.incrementAndGet();
-				}
-
-			}
-
-		}
-		Thread countT;
-		countT = new Thread(new CountRunnable());
-
-		Thread t1, t2, t3;
-		t1 = new Thread(new MyRunnable());
-		t2 = new Thread(new MyRunnable());
-		t3 = new Thread(new MyRunnable());
-
-		countT.start();
-		t1.start();
-		t2.start();
-		t3.start();
-
-		countT.join();
-
-		t1.join();
-		t2.join();
-		t3.join();
-
-		// assertTrue(count.intValue()==10);
-		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 45);
-		clearDB(port);
-	}
-
-	// Multiple threads writing to same WHB object with duplicate uri's and with
-	// thread count =10 and txsize =3
-	// currently causing deadlock and at the completion of the test, clearDB()
-	// causes forests to go to middle closing state when run against reWriteHB
-	// branch
-	// Git Issue # 62
-	@Disabled
-	public void testAddMultiThreadedwithThreadCountFailure() throws Exception {
-		System.out.println("In testAddMultiThreadedwithThreadCountFailure method");
-
-		final AtomicInteger count = new AtomicInteger(0);
-		final AtomicInteger eventCount = new AtomicInteger(0);
-
-		ihbMT = dmManager.newWriteBatcher();
-		ihbMT.withBatchSize(99);
-		ihbMT.withThreadCount(10);
-		// ihbMT.withTransactionSize(3);
-
-		ihbMT.onBatchSuccess(batch -> {
-			synchronized (eventCount) {
-				eventCount.getAndAdd(batch.getItems().length);
-			}
-
-		}).onBatchFailure((batch, throwable) -> {
-			throwable.printStackTrace();
-			synchronized (eventCount) {
-				eventCount.getAndAdd(batch.getItems().length);
-			}
-
-		});
-		dmManager.startJob(ihbMT);
-
-		class MyRunnable implements Runnable {
-
-			@Override
-			public void run() {
-
-				for (int j = 0; j < 5000; j++) {
-					String uri = "/local/json-" + j;
-					ihbMT.add(uri, fileHandle);
-				}
-				ihbMT.flushAndWait();
-			}
-
-		}
-
-		class CountRunnable implements Runnable {
-
-			@Override
-			public void run() {
-				try {
-					Thread.currentThread().sleep(15000L);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				Set<Thread> threads = Thread.getAllStackTraces().keySet();
-				Iterator<Thread> iter = threads.iterator();
-				while (iter.hasNext()) {
-					Thread t = iter.next();
-					if (t.getName().contains("pool-1-thread-"))
-						count.incrementAndGet();
-
-				}
-
-			}
-
-		}
-		Thread countT;
-		countT = new Thread(new CountRunnable());
-
-		Thread t1, t2, t3;
-		t1 = new Thread(new MyRunnable());
-		t2 = new Thread(new MyRunnable());
-		t3 = new Thread(new MyRunnable());
-
-		countT.start();
-		t1.start();
-		t2.start();
-		t3.start();
-
-		countT.join();
-
-		t1.join();
-		t2.join();
-		t3.join();
-
-		assertTrue(count.intValue() == 15000);
-		assertTrue(eventCount.intValue() == 10);
-
-	}
-
-	// ISSUE # 58
-	@Disabled
-	public void testTransactionSize() throws Exception {
-		System.out.println("In testTransactionSize method");
-
+		int documentsPerProducer = 15;
+		int producerCount = 3;
+		AtomicInteger successCount = new AtomicInteger();
+		AtomicInteger failureCount = new AtomicInteger();
+		Queue<Throwable> failures = new ConcurrentLinkedQueue<>();
+		WriteBatcher batcher = dmManager.newWriteBatcher()
+				.withBatchSize(99)
+				.withThreadCount(10)
+				.onBatchSuccess(batch -> successCount.addAndGet(batch.getItems().length))
+				.onBatchFailure((batch, throwable) -> {
+					failureCount.addAndGet(batch.getItems().length);
+					failures.add(throwable);
+				});
+		ExecutorService producers = Executors.newFixedThreadPool(producerCount);
+		CountDownLatch start = new CountDownLatch(1);
+		JobTicket ticket = dmManager.startJob(batcher);
 		try {
-			final String query1 = "fn:count(fn:doc())";
-
-			final AtomicInteger successCount = new AtomicInteger(0);
-
-			final AtomicBoolean failState = new AtomicBoolean(false);
-			final AtomicInteger failCount = new AtomicInteger(0);
-
-			WriteBatcher ihb2 = dmManager.newWriteBatcher();
-			ihb2.withBatchSize(480);
-			// ihb2.withTransactionSize(5);
-			dmManager.startJob(ihb2);
-
-			ihb2.onBatchSuccess(batch -> {
-
-				successCount.getAndAdd(batch.getItems().length);
-				System.out.println("Success Batch size " + batch.getItems().length);
-				for (WriteEvent w : batch.getItems()) {
-					System.out.println("Success " + w.getTargetUri());
-				}
-
-			}).onBatchFailure((batch, throwable) -> {
-				throwable.printStackTrace();
-				System.out.println("Failure Batch size " + batch.getItems().length);
-				for (WriteEvent w : batch.getItems()) {
-					System.out.println("Failure " + w.getTargetUri());
-				}
-				failState.set(true);
-				failCount.getAndAdd(batch.getItems().length);
-			});
-			for (int j = 0; j < 500; j++) {
-				String uri = "/local/ABC-" + j;
-				ihb2.add(uri, stringHandle);
+			List<Future<Void>> results = new ArrayList<>();
+			for (int i = 0; i < producerCount; i++) {
+				int producer = i;
+				results.add(producers.submit(() -> {
+					start.await();
+					for (int j = 0; j < documentsPerProducer; j++) {
+						String uri = "/local/json-" + j + "-" + producer;
+						batcher.add(uri, new FileHandle(fileJson).withFormat(Format.JSON));
+					}
+					batcher.flushAsync();
+					assertTrue(batcher.awaitCompletion(60, TimeUnit.SECONDS), "Concurrent flush timed out");
+					return null;
+				}));
 			}
-
-			ihb2.flushAndWait();
-
-			System.out.println("Fail : " + failCount.intValue());
-			System.out.println("Success : " + successCount.intValue());
-			System.out
-					.println("Count : " + dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-			assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 500);
-		} catch (Exception e) {
-			e.printStackTrace();
+			start.countDown();
+			for (Future<Void> result : results) {
+				result.get(90, TimeUnit.SECONDS);
+			}
+			assertTrue(batcher.awaitCompletion(60, TimeUnit.SECONDS), "Write job timed out");
+			assertTrue(failures.isEmpty(), () -> "Unexpected batch failures: " + failures);
+			assertEquals(0, failureCount.get());
+			assertEquals(producerCount * documentsPerProducer, successCount.get(),
+					"Every submitted write must receive a success callback");
+			assertEquals(producerCount * documentsPerProducer, getDocumentCount(dbName));
+		} finally {
+			try {
+				dmManager.stopJob(ticket);
+			} finally {
+				producers.shutdownNow();
+				assertTrue(producers.awaitTermination(30, TimeUnit.SECONDS), "Producer threads did not terminate");
+			}
 		}
 	}
 

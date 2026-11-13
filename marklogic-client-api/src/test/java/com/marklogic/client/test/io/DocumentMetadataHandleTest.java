@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -219,26 +220,27 @@ public class DocumentMetadataHandleTest {
 
 
   // testing https://github.com/marklogic/java-client-api/issues/783
-//  @Test
-  @Disabled
+  @Test
   public void testStack20170725() throws IOException {
     XMLDocumentManager documentManager = Common.client.newXMLDocumentManager();
-    Transaction transaction = Common.client.openTransaction();
-    DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-    documentManager.writeAs("all_well.xml", new FileHandle(
-          new File("../marklogic-client-api-functionaltests/src/test/java/com" +
-            "/marklogic/client/functionaltest/data/all_well.xml")));
-    InputStreamHandle handle = documentManager.read("all_well.xml", metadataHandle, new InputStreamHandle(), transaction);
+    String uri = "/test/issue783/all_well.xml";
+    File file = new File("../marklogic-client-api-functionaltests/src/test/java/com" +
+      "/marklogic/client/functionaltest/data/all_well.xml");
+    documentManager.write(uri, new DocumentMetadataHandle().withProperty("issue", "783"), new FileHandle(file));
     try {
-      InputStream stream = handle.get();
+      Transaction transaction = Common.client.openTransaction();
       try {
-        while ( stream.read() > -1 ) {}
+        DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+        try (InputStreamHandle handle = documentManager.read(uri, metadataHandle, new InputStreamHandle(), transaction);
+             InputStream stream = handle.get()) {
+          assertEquals("783", metadataHandle.getProperties().get("issue"));
+          assertTrue(stream.transferTo(OutputStream.nullOutputStream()) > 0, "The complete stream must be readable");
+        }
       } finally {
-        stream.close();
+        transaction.rollback();
       }
     } finally {
-      handle.close();
+      documentManager.delete(uri);
     }
-    // if we ran without throwing any exceptions, then this test passes
   }
 }
