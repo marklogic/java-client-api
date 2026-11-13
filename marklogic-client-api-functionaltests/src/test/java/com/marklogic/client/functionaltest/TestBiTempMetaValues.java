@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.functionaltest;
@@ -7,6 +7,7 @@ package com.marklogic.client.functionaltest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
 import com.marklogic.client.document.DocumentManager.Metadata;
@@ -918,11 +919,11 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     }
   }
 
-  @Disabled
+  @Test
   /*
-   * Test bitemporal protections - NOUPDATE With different transactions. Write
-   * doc in T1. Protect in T2. Update doc in T1 within 30 sec duration. TODO
-   * Wait for Git #542
+   * Test bitemporal protections - NOUPDATE With different transactions. Commit
+   * the document in T1 and protection in T2, then use a new transaction to verify
+   * updates are rejected within 30 sec and succeed after protection expires.
    */
   public void testProtectUpdateInDiffTransactions() throws Exception {
 
@@ -932,9 +933,6 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
     Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
     Calendar updateTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:11");
-    Transaction t1 = writerClient.openTransaction();
-    Transaction t2 = writerClient.openTransaction();
-
     String docId = "javaSingleJSONDoc.json";
     JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle("2001-01-01T00:00:00",
         "2011-12-31T23:59:59",
@@ -944,48 +942,61 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
     JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
 
-    docMgr.write("javaSingleJSONDocV1.json", docId, null, handle, null, t1, temporalLsqtCollectionName, insertTime);
-
-    // Protect document for 30 sec from delete and update. Use Duration. Use T2
-    docMgr.protect(docId, temporalLsqtCollectionName, ProtectionLevel.NOUPDATE, DatatypeFactory.newInstance().newDuration("PT30S"), t2);
     JacksonDatabindHandle<ObjectNode> handleUpd = getJSONDocumentHandle(
         "2003-01-01T00:00:00", "2008-12-31T23:59:59",
         "1999 Skyway Park - Updated - JSON", docId);
 
-    StringBuilder str = new StringBuilder();
+    Transaction t1 = writerClient.openTransaction();
+    Transaction t2 = null;
     try {
-      // Use t1 to write
-      docMgr.write(docId, null, handleUpd, null, t1, temporalLsqtCollectionName, updateTime);
-    } catch (Exception ex) {
-      str.append(ex.getMessage());
-      System.out.println("Exception when update within 30 sec is " + str.toString());
+      docMgr.write("javaSingleJSONDocV1.json", docId, null, handle, null, t1, temporalLsqtCollectionName, insertTime);
+      // Release the write locks before protecting the document in another transaction.
+      t1.commit();
+      t1 = null;
+
+      t2 = writerClient.openTransaction();
+      docMgr.protect(docId, temporalLsqtCollectionName, ProtectionLevel.NOUPDATE, DatatypeFactory.newInstance().newDuration("PT30S"), t2);
+      t2.commit();
+      t2 = null;
+
+      Transaction updateTransaction = writerClient.openTransaction();
+      // Preserve the original failure if rolling back also fails.
+      try (AutoCloseable rollback = updateTransaction::rollback) {
+        FailedRequestException ex = assertThrows(FailedRequestException.class,
+            () -> docMgr.write(docId, null, handleUpd, null, updateTransaction, temporalLsqtCollectionName, updateTime));
+        assertTrue(ex.getMessage().contains("The document javaSingleJSONDoc.json is protected noUpdate"));
+
+        // Sleep for 40 secs and try to update the same docId.
+        Thread.sleep(40000);
+        docMgr.write(docId, null, handleUpd, null, updateTransaction, temporalLsqtCollectionName, updateTime);
+        Thread.sleep(5000);
+
+        JSONDocumentManager jsonDocMgr = writerClient.newJSONDocumentManager();
+        try (DocumentPage readResults = jsonDocMgr.read(updateTransaction, docId)) {
+          System.out.println("Number of results = " + readResults.size());
+          assertEquals(1, readResults.size());
+        }
+
+        QueryManager queryMgr = writerClient.newQueryManager();
+        StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+        // Query only this document's versions, excluding the collection's LSQT document.
+        StructuredQueryDefinition termQuery = sqb.collection(docId);
+
+        long start = 1;
+        try (DocumentPage termQueryResults = docMgr.search(termQuery, start, updateTransaction)) {
+          System.out.println("Number of results = " + termQueryResults.size());
+          assertEquals(4, termQueryResults.size());
+        }
+      }
+    } finally {
+      try {
+        if (t2 != null)
+          t2.rollback();
+      } finally {
+        if (t1 != null)
+          t1.rollback();
+      }
     }
-    // TODO Yet to know what exception message will be. #542
-    // assertTrue("Doc should not be updated",
-    // str.toString().contains("The document javaSingleJSONDoc.json is protected noUpdate"));
-
-    // Sleep for 40 secs and try to update the same docId.
-    Thread.sleep(40000);
-    docMgr.write(docId, null, handleUpd, null, t1, temporalLsqtCollectionName, updateTime);
-    Thread.sleep(5000);
-
-    JSONDocumentManager jsonDocMgr = writerClient.newJSONDocumentManager();
-    DocumentPage readResults = jsonDocMgr.read(t1, docId);
-    System.out.println("Number of results = " + readResults.size());
-    assertEquals(1, readResults.size());
-
-    QueryManager queryMgr = writerClient.newQueryManager();
-
-    StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
-    StructuredQueryDefinition termQuery = sqb.collection(temporalLsqtCollectionName);
-
-    long start = 1;
-    DocumentPage termQueryResults = docMgr.search(termQuery, start, t1);
-    System.out
-        .println("Number of results = " + termQueryResults.getTotalSize());
-    assertEquals(4, termQueryResults.getTotalSize());
-    t1.rollback();
-    t2.rollback();
   }
 
   @Test
