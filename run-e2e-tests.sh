@@ -130,9 +130,10 @@ fi
 
 # 3. Check App Server & Database Deployment
 echo -e "\n${BLUE}[3/4] Checking test application deployment on port 8012...${NC}"
-REST_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --digest -u admin:admin "http://localhost:8012/v1/resources" 2>/dev/null || echo "000")
+REST_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --digest -u admin:admin "http://localhost:8012/v1/resources" 2>/dev/null || true)
+REST_STATUS=${REST_STATUS:-000}
 
-if [ "${REST_STATUS}" = "000" ] || [ "${REST_STATUS}" = "404" -a "${REST_STATUS}" = "000" ] || [ "${FORCE_DEPLOY}" = true ]; then
+if [ "${REST_STATUS}" = "000" ] || [ "${REST_STATUS}" = "404" ] || [ "${FORCE_DEPLOY}" = true ]; then
     echo -e "${YELLOW}Deploying test application databases, REST server, security roles, modules, and schemas...${NC}"
     ./gradlew :test-app:mlDeploySecurity
     ./gradlew :test-app:mlDeployDatabases
