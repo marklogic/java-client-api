@@ -55,6 +55,13 @@ class TestBiTemporal extends BasicJavaClientREST {
   private final static String validStartERIName = "javaValidStartERI";
   private final static String validEndERIName = "javaValidEndERI";
 
+  // Valid periods written by insertJSONSingleDocument and updateJSONSingleDocument. Query periods in the
+  // ALN_CONTAINS tests are derived from these via offsets instead of being separate hardcoded dates.
+  private final static String initialValidStart = "2001-01-01T00:00:00";
+  private final static String initialValidEnd = "2011-12-31T23:59:59";
+  private final static String updatedValidStart = "2003-01-01T00:00:00";
+  private final static String updatedValidEnd = "2008-12-31T23:59:59";
+
   private final static String axisSystemName = "javaERISystemAxis";
   private final static String axisValidName = "javaERIValidAxis";
 
@@ -458,7 +465,7 @@ class TestBiTemporal extends BasicJavaClientREST {
     System.out.println("Inside insertJSONSingleDocument");
 
     JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
-        "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
+        initialValidStart, initialValidEnd, "999 Skyway Park - JSON",
         docId);
 
     JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
@@ -547,7 +554,7 @@ class TestBiTemporal extends BasicJavaClientREST {
 
     // Update the temporal document
     JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
-        "2003-01-01T00:00:00", "2008-12-31T23:59:59",
+        updatedValidStart, updatedValidEnd,
         "1999 Skyway Park - Updated - JSON", docId);
 
     JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
@@ -2079,8 +2086,6 @@ class TestBiTemporal extends BasicJavaClientREST {
   @Test
   // Test Period Range Query using ALN_CONTAINS. We use a single axis during
   // query
-  @Disabled("Started failing on October 18th, 2024 on MarkLogic 10, 11, and 12, suggesting that the test is " +
-	  "brittle and likely affected by some date/time constraint.")
   public void testPeriodRangeQuerySingleAxisBasedOnALNContains()
       throws Exception {
     System.out.println("Inside testPeriodRangeQuerySingleAxisBasedOnALNContains");
@@ -2104,8 +2109,9 @@ class TestBiTemporal extends BasicJavaClientREST {
     StructuredQueryDefinition termQuery = sqb.collection(docId);
 
     StructuredQueryBuilder.Axis validAxis = sqb.axis(axisValidName);
-    Calendar start1 = DatatypeConverter.parseDateTime("2001-01-01T00:00:01");
-    Calendar end1 = DatatypeConverter.parseDateTime("2011-12-31T23:59:58");
+    // Query period sits 1 second inside the written valid period, so the written document contains it.
+    Calendar start1 = utcValidTime(initialValidStart, 1);
+    Calendar end1 = utcValidTime(initialValidEnd, -1);
     StructuredQueryBuilder.Period period1 = sqb.period(start1, end1);
     StructuredQueryDefinition periodQuery = sqb
         .and(termQuery, sqb.temporalPeriodRange(validAxis,
@@ -2169,8 +2175,8 @@ class TestBiTemporal extends BasicJavaClientREST {
         System.out.println("validEndDate = " + validEndDate);
 
         assertTrue(
-            (validStartDate.equals("2001-01-01T00:00:00") && validEndDate
-                .equals("2011-12-31T23:59:59")));
+            (validStartDate.equals(initialValidStart) && validEndDate
+                .equals(initialValidEnd)));
       }
     }
 
@@ -2184,8 +2190,6 @@ class TestBiTemporal extends BasicJavaClientREST {
   // the results will be an OR of the result of each of the query done for every
   // axis
   // across every period
-  @Disabled("Started failing on October 18th, 2024 on MarkLogic 10, 11, and 12, suggesting that the test is " +
-	  "brittle and likely affected by some date/time constraint.")
   public void testPeriodRangeQueryMultiplesAxesBasedOnALNContains()
       throws Exception {
     System.out.println("Inside testPeriodRangeQueryMultiplesAxesBasedOnALNContains");
@@ -2207,13 +2211,13 @@ class TestBiTemporal extends BasicJavaClientREST {
     StructuredQueryDefinition termQuery = sqb.collection(docId);
 
     StructuredQueryBuilder.Axis validAxis1 = sqb.axis(axisValidName);
-    Calendar start1 = DatatypeConverter.parseDateTime("2001-01-01T00:00:01");
-    Calendar end1 = DatatypeConverter.parseDateTime("2011-12-31T23:59:58");
+    Calendar start1 = utcValidTime(initialValidStart, 1);
+    Calendar end1 = utcValidTime(initialValidEnd, -1);
     StructuredQueryBuilder.Period period1 = sqb.period(start1, end1);
 
     StructuredQueryBuilder.Axis validAxis2 = sqb.axis(axisValidName);
-    Calendar start2 = DatatypeConverter.parseDateTime("2003-01-01T00:00:01");
-    Calendar end2 = DatatypeConverter.parseDateTime("2008-12-31T23:59:58");
+    Calendar start2 = utcValidTime(updatedValidStart, 1);
+    Calendar end2 = utcValidTime(updatedValidEnd, -1);
     StructuredQueryBuilder.Period period2 = sqb.period(start2, end2);
 
     StructuredQueryBuilder.Axis[] axes = new StructuredQueryBuilder.Axis[] {
@@ -2273,16 +2277,23 @@ class TestBiTemporal extends BasicJavaClientREST {
         System.out.println("validEndDate = " + validEndDate);
 
         assertTrue(
-            (validStartDate.equals("2001-01-01T00:00:00") || validStartDate
-                .equals("2003-01-01T00:00:00")));
+            (validStartDate.equals(initialValidStart) || validStartDate
+                .equals(updatedValidStart)));
         assertTrue(
-            (validEndDate.equals("2011-12-31T23:59:59") || validEndDate
-                .equals("2008-12-31T23:59:59")));
+            (validEndDate.equals(initialValidEnd) || validEndDate
+                .equals(updatedValidEnd)));
       }
     }
 
     System.out.println("Number of results using SQB = " + count);
     assertEquals(2, count);
+  }
+
+  // Parsed as UTC so that the query period does not depend on the JVM's default timezone.
+  private static Calendar utcValidTime(String validTime, int offsetSeconds) {
+    Calendar calendar = DatatypeConverter.parseDateTime(validTime + "Z");
+    calendar.add(Calendar.SECOND, offsetSeconds);
+    return calendar;
   }
 
   @Test
