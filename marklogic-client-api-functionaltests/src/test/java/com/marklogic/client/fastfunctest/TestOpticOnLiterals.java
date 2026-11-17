@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.fastfunctest;
@@ -1085,54 +1085,6 @@ public class TestOpticOnLiterals extends AbstractFunctionalTest {
 
     assertEquals( "4", jsonBindingsNodesDup.path(3).path("rowId").path("value").asText());
     assertEquals( 1, jsonBindingsNodesDup.path(3).path("descAgg").path("value").asInt());
-  }
-
-  /*
-   * Test date time builtin functions
-   */
-  @Disabled
-  public void testBuiltInFns()
-  {
-    System.out.println("In testBuiltInFns method");
-
-    // Create a new Plan.
-    RowManager rowMgr = client.newRowManager();
-    PlanBuilder p = rowMgr.newPlanBuilder();
-
-    // plans from literals
-    ModifyPlan plan1 = p.fromLiterals(literals1, "myItem");
-    ModifyPlan plan2 = p.fromLiterals(literals2, "myColor");
-
-    PlanColumn descCol = p.viewCol("myItem", "desc");
-    PlanColumn itemColorIdCol = p.viewCol("myItem", "colorId");
-    PlanColumn colorIdCol = p.viewCol("myColor", "colorId");
-
-    /*
-     * XsDateExpr curDate = p.fn.currentDate(); XsTimeExpr curTime =
-     * p.fn.currentTime(); SqlGenericDateTimeExpr sqlcurTime =
-     * (SqlGenericDateTimeExpr) curTime; double sqlHr = p.sql.hours(sqlcurTime);
-     *
-     * PlanColumn log10 = p.math.log10(sqlHr); ModifyPlan output =
-     * plan1.joinInner(plan2, p.on(itemColorIdCol, colorIdCol)) .select(
-     * p.as("currentDate", p.fn.currentDate()), p.as("curDate", curDate),
-     * p.as("currentTime", p.fn.currentTime()), p.as("curTime", curTime),
-     * p.as("upperCase", p.fn.upperCase(p.col("desc"))), p.as("semNum",
-     * p.sem.isLiteral(p.col("desc"))), p.as("sqlHours",
-     * p.sql.hours(sqlcurTime)), p.as("sqlHr", sqlHr), p.as("mathLog10",
-     * p.math.log10(p.col("sqlHours"))), p.as("log10", log10) )
-     * .orderBy(p.col("upperCase"));
-     */
-    // TODO Wait until Erik H comes back on this to discuss the recent changes
-    // to SQL types.
-
-    JacksonHandle jacksonHandle = new JacksonHandle();
-    jacksonHandle.setMimetype("application/json");
-
-    // rowMgr.resultDoc(output, jacksonHandle);
-    JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
-
-    // Should have 2 nodes returned.
-    assertEquals( 3, jsonBindingsNodes.size());
   }
 
   /*

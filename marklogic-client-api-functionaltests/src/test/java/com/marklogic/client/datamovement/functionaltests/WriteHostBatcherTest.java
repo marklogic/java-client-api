@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.datamovement.functionaltests;
@@ -2160,71 +2160,6 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			properties.put("group-name", "Default");
 			properties.put("enabled", "true");
 			changeProperty(properties, "/manage/v2/servers/" + server + "/properties");
-		}
-
-	}
-
-	// EA 3 - We need a better way of getting to know that DB is disabled and
-	// how
-	// to assert on counts.
-	@Disabled
-	public void testDisableDBDuringInsert() throws Exception {
-		System.out.println("In testDisableDBDuringInsert method");
-
-		Thread t1 = new Thread(new DisabledDBRunnable());
-		AtomicBoolean failCheck = new AtomicBoolean(false);
-		AtomicInteger successCount = new AtomicInteger(0);
-		AtomicInteger failureCount = new AtomicInteger(0);
-
-		t1.setName("Status Check");
-		Map<String, String> properties = new HashMap<>();
-		WriteBatcher ihb2 = dmManager.newWriteBatcher();
-		ihb2.withBatchSize(5);
-
-		ihb2.onBatchSuccess(batch -> {
-			successCount.getAndAdd(batch.getItems().length);
-		}).onBatchFailure((batch, throwable) -> {
-			failCheck.set(true);
-			failureCount.getAndAdd(batch.getItems().length);
-			throwable.printStackTrace();
-		});
-		dmManager.startJob(ihb2);
-		t1.start();
-
-		for (int j = 0; j < 1000; j++) {
-			String uri = "/local/json-" + j;
-			ihb2.add(uri, fileHandle);
-		}
-
-		ihb2.flushAndWait();
-		t1.join();
-		properties.put("enabled", "true");
-		changeProperty(properties, "/manage/v2/databases/" + dbName + "/properties");
-		assertTrue(failCheck.get());
-		assertTrue(successCount.intValue() >= 100);
-		assertTrue(successCount.intValue() < 1000);
-		assertTrue(failureCount.intValue() <= 900);
-	}
-
-	class DisabledDBRunnable implements Runnable {
-		final String query1 = "fn:count(fn:doc())";
-		Map<String, String> properties = new HashMap<>();
-
-		@Override
-		public void run() {
-
-			properties.put("enabled", "false");
-			boolean state = true;
-			while (state) {
-				int count = dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
-				System.out.println("Count is " + count);
-				if (count >= 100) {
-					changeProperty(properties, "/manage/v2/databases/" + dbName + "/properties");
-
-					state = false;
-				}
-
-			}
 		}
 
 	}

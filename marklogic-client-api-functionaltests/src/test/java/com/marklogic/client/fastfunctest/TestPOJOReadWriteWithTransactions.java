@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.fastfunctest;
@@ -289,81 +289,6 @@ public class TestPOJOReadWriteWithTransactions extends AbstractFunctionalTest {
     p = products.readAll(1);
     assertFalse( p.hasContent());
 
-  }
-
-  // @Test
-  public void test4POJOSearchWithCollectionsandTransaction() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    PojoRepository<Artifact, Long> products = client.newPojoRepository(Artifact.class, Long.class);
-    PojoPage<Artifact> p;
-    products.deleteAll();
-    Transaction t = client.openTransaction();
-    // Load more than 111 objects into different collections
-    try {
-      for (int i = 1; i < 112; i++) {
-        if (i % 2 == 0) {
-          products.write(this.getArtifact(i), t, "even", "numbers");
-        }
-        else {
-          products.write(this.getArtifact(i), "odd", "numbers");
-        }
-      }
-      assertEquals( 56, products.count("numbers"));
-      assertEquals( 0, products.count("even"));
-      assertEquals( 56, products.count("odd"));
-
-      products.setPageLength(10);
-      long pageNo = 1, count = 0;
-      do {
-        count = 0;
-        p = products.search(pageNo, "even");
-        while (p.iterator().hasNext()) {
-          Artifact a = p.iterator().next();
-          validateArtifact(a);
-          assertTrue( a.getId() % 2 == 0);
-          count++;
-        }
-        assertEquals( count, p.size());
-        pageNo = pageNo + p.getPageSize();
-      } while (!p.isLastPage() && pageNo < p.getTotalSize());
-      assertEquals( 0, p.getTotalPages());
-      do {
-        count = 0;
-        p = products.search(pageNo, t, "even");
-        while (p.iterator().hasNext()) {
-          Artifact a = p.iterator().next();
-          validateArtifact(a);
-          assertTrue( a.getId() % 2 == 0);
-          count++;
-        }
-        assertEquals( count, p.size());
-        pageNo = pageNo + p.getPageSize();
-      } while (!p.isLastPage() && pageNo < p.getTotalSize());
-      assertEquals( 6, p.getTotalPages());
-
-      pageNo = 1;
-      do {
-        count = 0;
-        p = products.search(1, t, "odd");
-        while (p.iterator().hasNext()) {
-          Artifact a = p.iterator().next();
-          assertTrue( a.getId() % 2 != 0);
-          validateArtifact(a);
-          products.delete(a.getId());
-          count++;
-        }
-        // assertEquals(count,p.size());
-        pageNo = pageNo + p.getPageSize();
-
-      } while (!p.isLastPage());
-
-      assertEquals( 0, products.count());
-    } catch (Exception e) {
-      throw e;
-    } finally {
-      t.rollback();
-    }
-    // see any document exists
-    assertFalse( products.exists((long) 12));
   }
 
   @Test

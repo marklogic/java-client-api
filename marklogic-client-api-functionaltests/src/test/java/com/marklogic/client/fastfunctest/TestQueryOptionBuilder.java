@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.fastfunctest;
@@ -1763,10 +1763,6 @@ public class TestQueryOptionBuilder extends AbstractFunctionalTest {
     client.release();
   }
   // End of TestQueryOptionBuilderSearchOptions
-
-  // Begin TestQueryOptionBuilderSortOrder
-  // All tests were marked with @Ignore. See Git Issue 347 on 4.0.2 tag
-  // End of TestQueryOptionBuilderSortOrder
 
   // Begin TestQueryOptionBuilderTransformResults
   @Test
