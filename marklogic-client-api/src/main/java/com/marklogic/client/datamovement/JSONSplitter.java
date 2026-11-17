@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 
 package com.marklogic.client.datamovement;
@@ -19,6 +19,7 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.util.ArrayDeque;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -97,7 +98,21 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
         }
 
         JsonParser jsonParser = new JsonFactory().createParser(input);
-        return split(jsonParser);
+        try {
+            return split(jsonParser).onClose(() -> closeParser(jsonParser));
+        } catch (IOException | RuntimeException e) {
+            jsonParser.close();
+            throw e;
+        }
+    }
+
+    // Closes a parser that this class created, so that closing the returned Stream releases it.
+    private static void closeParser(JsonParser jsonParser) {
+        try {
+            jsonParser.close();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**
@@ -127,7 +142,12 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
         }
 
         JsonParser jsonParser = new JsonFactory().createParser(input);
-        return splitWriteOperations(jsonParser, splitFilename);
+        try {
+            return splitWriteOperations(jsonParser, splitFilename).onClose(() -> closeParser(jsonParser));
+        } catch (RuntimeException e) {
+            jsonParser.close();
+            throw e;
+        }
     }
 
     /**
@@ -251,11 +271,10 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
                 throw new IllegalArgumentException("JsonParser cannot be null");
             }
 
-            try {
-                StringWriter stringWriter = new StringWriter();
-                JsonGenerator jsonGenerator = new JsonFactory().createGenerator(stringWriter);
+            try (StringWriter stringWriter = new StringWriter();
+                 JsonGenerator jsonGenerator = new JsonFactory().createGenerator(stringWriter)) {
                 jsonGenerator.copyCurrentStructure(containerParser);
-                jsonGenerator.close();
+                jsonGenerator.flush();
                 return stringWriter.toString();
             } catch (IOException e) {
                 throw new RuntimeException("Could not serialize the document", e);

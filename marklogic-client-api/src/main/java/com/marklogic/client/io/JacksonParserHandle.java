@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.io;
 
@@ -197,9 +197,9 @@ public class JacksonParserHandle
   public void write(OutputStream out) throws IOException {
     try {
       if (parser != null && parser.nextToken() != null) {
-        JsonGenerator generator = getMapper().getFactory().createGenerator(out);
-        generator.copyCurrentStructure(parser);
-        generator.close();
+        try (JsonGenerator generator = getMapper().getFactory().createGenerator(out)) {
+          generator.copyCurrentStructure(parser);
+        }
       } else if (content != null) {
         byte[] b = new byte[BUFFER_SIZE];
         int len = 0;
@@ -248,9 +248,9 @@ public class JacksonParserHandle
     }
     @Override
     public void write(OutputStream out) throws IOException {
-      JsonGenerator generator = mapper.getFactory().createGenerator(out);
-      generator.copyCurrentStructure(parser);
-      generator.close();
+      try (JsonGenerator generator = mapper.getFactory().createGenerator(out)) {
+        generator.copyCurrentStructure(parser);
+      }
     }
   }
 }
