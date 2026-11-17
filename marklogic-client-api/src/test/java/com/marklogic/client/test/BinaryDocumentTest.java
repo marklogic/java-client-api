@@ -17,6 +17,7 @@ import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.w3c.dom.Document;
 
+import javax.xml.namespace.QName;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
@@ -89,6 +90,19 @@ class BinaryDocumentTest {
 			assertXpathEvaluatesTo("image/png", "string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='content-type'])", metadataDocument);
 			assertXpathEvaluatesTo("text HD-HTML", "string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='filter-capabilities'])", metadataDocument);
 			assertXpathEvaluatesTo("815", "string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='size'])", metadataDocument);
+
+			// Custom properties can be added alongside the extracted ones and read back together.
+			docMgr.setMetadataCategories(Metadata.ALL);
+			DocumentMetadataHandle metadata = new DocumentMetadataHandle();
+			docMgr.readMetadata(docId, metadata);
+			QName customProperty = new QName("", "testId");
+			metadata.getProperties().put(customProperty, "123456");
+			docMgr.writeMetadata(docId, metadata);
+
+			metadata = new DocumentMetadataHandle();
+			docMgr.readMetadata(docId, metadata);
+			assertEquals("123456", metadata.getProperties().get(customProperty));
+			assertEquals("image/png", metadata.getProperties().get(new QName("http://marklogic.com/filter", "content-type")));
 
 			docMgr.delete(docId);
 		}
