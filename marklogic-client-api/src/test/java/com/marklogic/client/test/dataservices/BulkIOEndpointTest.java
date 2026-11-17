@@ -15,6 +15,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -29,6 +30,7 @@ public class BulkIOEndpointTest {
     private ObjectMapper mapper = new ObjectMapper();
 
     @Test
+    @Disabled("Requires a MarkLogic server fix")
     public void testBulkExecCallerImpl() throws IOException {
         String apiName = "bulkExecCaller.api";
 
@@ -78,6 +80,7 @@ public class BulkIOEndpointTest {
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
     @Test
+    @Disabled("Requires a MarkLogic server fix")
     public void testInputOutputCallerImpl() throws IOException {
         String apiName = "bulkInputOutputCaller.api";
 
@@ -150,6 +153,7 @@ public class BulkIOEndpointTest {
     }
 
     @Test
+    @Disabled("Requires a MarkLogic server fix")
     public void testInputOutputCallerImplAnyDoc() throws IOException {
         String apiName = "bulkIOAnyDocumentInputOutputCaller.api";
 
