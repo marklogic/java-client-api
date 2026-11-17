@@ -15,7 +15,7 @@ import com.marklogic.client.query.StructuredQueryBuilder.CoordinateSystem;
 import com.marklogic.client.query.StructuredQueryBuilder.GeospatialOperator;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -132,7 +132,7 @@ public class GeospatialRegionQueriesTest {
     Common.propertyWait();
   }
 
-  @Disabled
+  @Test
   public void testGeospatialRegionQuery() {
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -143,12 +143,13 @@ public class GeospatialRegionQueriesTest {
     SearchHandle results = queryMgr.search(qdef, new SearchHandle());
 
     MatchDocumentSummary[] summaries = results.getMatchResults();
+    assertEquals(1, summaries.length);
     for (MatchDocumentSummary summary : summaries) {
       assertEquals("mexico.xml", summary.getUri());
     }
   }
 
-  @Disabled
+  @Test
   public void testFloatPrecision() {
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -163,7 +164,7 @@ public class GeospatialRegionQueriesTest {
     assertEquals(2, summaries.length);
   }
 
-  @Disabled
+  @Test
   public void testDoublePrecision() {
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -178,7 +179,7 @@ public class GeospatialRegionQueriesTest {
     assertEquals(1, summaries.length);
   }
 
-  @Disabled
+  @Test
   public void testGeospatialRegionDoubleQuery() {
     String options = "<options xmlns=\"http://marklogic.com/appservices/search\">"
                    + "    <search-option>filtered</search-option>"
@@ -193,33 +194,36 @@ public class GeospatialRegionQueriesTest {
     StructuredQueryBuilder qb = new StructuredQueryBuilder("geodoubleoptions");
 
     StructuredQueryDefinition qdef;
+    // The polygon's far corner is at 10.00000001. Float precision cannot tell that apart from a point at 10.0000003,
+    // but double precision can; a gap as small as 2e-8 is within the server's double-precision tolerance.
+    final double pointCoordinate = 10.0000003;
     qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.WGS84DOUBLE), GeospatialOperator.COVERS,
-      qb.point(10.00000003, 10.00000003));
+      qb.point(pointCoordinate, pointCoordinate));
     SearchHandle results = queryMgr.search(qdef, new SearchHandle());
     MatchDocumentSummary[] summaries = results.getMatchResults();
     assertEquals(0, summaries.length);
 
     qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.WGS84), GeospatialOperator.COVERS,
-      qb.point(10.00000003, 10.00000003));
+      qb.point(pointCoordinate, pointCoordinate));
     results = queryMgr.search(qdef, new SearchHandle());
     summaries = results.getMatchResults();
     assertEquals(1, summaries.length);
 
     qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.getOther("wgs84", true)), GeospatialOperator.COVERS,
-      qb.point(10.00000003, 10.00000003));
+      qb.point(pointCoordinate, pointCoordinate));
     results = queryMgr.search(qdef, new SearchHandle());
     summaries = results.getMatchResults();
     assertEquals(0, summaries.length);
 
     qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.getOther("wgs84")), GeospatialOperator.COVERS,
-      qb.point(10.00000003, 10.00000003));
+      qb.point(pointCoordinate, pointCoordinate));
     results = queryMgr.search(qdef, new SearchHandle());
     summaries = results.getMatchResults();
     assertEquals(1, summaries.length);
     optionsMgr.deleteOptions("geodoubleoptions");
   }
 
-  @Disabled
+  @Test
   public void testFloatPrecisionCoordinateSystem() {
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -234,7 +238,7 @@ public class GeospatialRegionQueriesTest {
     assertEquals(2, summaries.length);
   }
 
-  @Disabled
+  @Test
   public void testDoublePrecisionCoordinateSystem() {
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -249,7 +253,7 @@ public class GeospatialRegionQueriesTest {
     assertEquals(1, summaries.length);
   }
 
-  @Disabled
+  @Test
   public void testGeospatialRegionQueryConstraint() {
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
@@ -279,7 +283,7 @@ public class GeospatialRegionQueriesTest {
     }
   }
 
-  @Disabled
+  @Test
   public void testGeospatialRegionQueryOptionsConstraint() {
     String options = "<options xmlns=\"http://marklogic.com/appservices/search\">"
                    + "  <constraint name='geoo'>"
