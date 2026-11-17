@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled("See MLE-27191 for description of the server bug")
+@Disabled("Blocked by server bug MLE-27191: GET v1/documents returns incorrect document format")
 class ReadJsonAsBinaryTest extends AbstractClientTest {
 
 	private static final String URI = "/a.json";
