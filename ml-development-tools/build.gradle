@@ -9,7 +9,7 @@ plugins {
 	id 'maven-publish'
 	id "com.gradle.plugin-publish" version "1.2.1"
 	id "java-gradle-plugin"
-	id 'org.jetbrains.kotlin.jvm' version '2.4.10'
+	id 'org.jetbrains.kotlin.jvm' version '2.4.20'
 }
 
 dependencies {
@@ -23,7 +23,7 @@ dependencies {
 	// additional work during development, though we rarely modify the code in this plugin anymore.
 	implementation "com.marklogic:marklogic-client-api:${version}"
 
-	// kotlin-stdlib is intentionally not declared here; the Kotlin JVM plugin (version 2.4.10)
+	// kotlin-stdlib is intentionally not declared here; the Kotlin JVM plugin (version 2.4.20)
 	// automatically adds the matching kotlin-stdlib to the compile and runtime classpath.
 	// Declaring it explicitly with an older version (e.g. to match okhttp's transitive dep)
 	// would re-introduce CVE risk.
