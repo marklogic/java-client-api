@@ -43,8 +43,7 @@ public class RetryIOExceptionInterceptor implements Interceptor {
 		Request request = chain.request();
 		RequestBody requestBody = request.body();
 
-		if (requestBody != null && (requestBody.isOneShot() ||
-			requestBody instanceof RetryableRequestBody body && !body.isRetryable())) {
+		if (requestBody != null && requestBody.isOneShot()) {
 			return chain.proceed(request);
 		}
 

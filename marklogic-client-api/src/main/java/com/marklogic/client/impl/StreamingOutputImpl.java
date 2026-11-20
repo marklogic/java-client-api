@@ -3,7 +3,6 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.impl.okhttp.RetryableRequestBody;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.util.RequestLogger;
 import okhttp3.MediaType;
@@ -13,25 +12,16 @@ import okio.BufferedSink;
 import java.io.IOException;
 import java.io.OutputStream;
 
-class StreamingOutputImpl extends RequestBody implements RetryableRequestBody {
+class StreamingOutputImpl extends RequestBody {
 
-	private OutputStreamSender handle;
-	private RequestLogger logger;
-	private MediaType contentType;
-	private boolean resendable;
-
-	/**
-	 * Assumes the wrapped handle cannot be resent, which is the safe default for callers that have not determined
-	 * whether the underlying content can be sent again (e.g. because it is backed by a one-shot stream).
-	 */
-	StreamingOutputImpl(OutputStreamSender handle, RequestLogger logger, MediaType contentType) {
-		this(handle, logger, contentType, false);
-	}
+	private final OutputStreamSender handle;
+	private final RequestLogger logger;
+	private final MediaType contentType;
+	private final boolean resendable;
 
 	/**
-	 * @param resendable whether the wrapped handle's content can be written again if the request must be retried;
-	 *                   should reflect the originating handle's own {@code isResendable()} value rather than
-	 *                   always assuming the content is one-shot.
+	 * @param resendable the originating handle's {@code isResendable()}; if false, the content is assumed to be
+	 *                   consumed by the first write and this body is reported to OkHttp as one-shot
 	 */
 	StreamingOutputImpl(OutputStreamSender handle, RequestLogger logger, MediaType contentType, boolean resendable) {
 		super();
@@ -64,20 +54,9 @@ class StreamingOutputImpl extends RequestBody implements RetryableRequestBody {
 	}
 
 	@Override
-	public boolean isRetryable() {
-		// Added in 8.0.0. Originally always returned false, on the assumption that the wrapped stream is consumed
-		// on first write. That is not true for handles whose content is fully buffered (e.g. JacksonHandle,
-		// StringHandle) and which report isResendable() == true; for those, the content can safely be written
-		// again, so we defer to the resendable flag supplied by the caller instead of hardcoding false.
-		return resendable;
-	}
-
-	@Override
 	public boolean isOneShot() {
-		// Declares this body as one-shot via OkHttp's own contract so that when this body is nested inside another
-		// RequestBody (e.g. a MultipartBody part for a Data Services call), OkHttp and RetryIOExceptionInterceptor
-		// both recognize the outer body as non-retryable too; isRetryable() above is only checked when this is the
-		// top-level request body and would otherwise be bypassed for a nested streaming part.
+		// Using OkHttp's own contract means that a MultipartBody containing this body is also reported as one-shot, which
+		// OkHttp and RetryIOExceptionInterceptor both honor.
 		return !resendable;
 	}
 }

@@ -3,144 +3,146 @@
  */
 package com.marklogic.client.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.impl.okhttp.RetryIOExceptionInterceptor;
-import okhttp3.MediaType;
+import com.marklogic.client.io.BytesHandle;
+import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.ReaderHandle;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.AbstractWriteHandle;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Verifies that the request body built for a handle reports {@code isOneShot()} according to whether the handle's
+ * content can be written more than once, and that OkHttp-based retry honours that.
+ */
 class StreamingOutputImplTest {
 
-	@Test
-	void multipartBodyWithStreamingPartIsNotRetried() {
-		StreamingOutputImpl streamingBody = new StreamingOutputImpl(
-			outputStream -> outputStream.write("content".getBytes(StandardCharsets.UTF_8)),
-			null,
-			MediaType.get("application/xml")
+	static Stream<Object[]> handlesAndOneShotFlags() {
+		return Stream.of(
+			new Object[]{"StringHandle", new StringHandle("<a/>"), false},
+			new Object[]{"JacksonHandle", new JacksonHandle(new ObjectMapper().createObjectNode()), false},
+			new Object[]{"BytesHandle", new BytesHandle("<a/>".getBytes(StandardCharsets.UTF_8)), false},
+			new Object[]{"FileHandle", new FileHandle(new File("pom.xml")), false},
+			new Object[]{"ReaderHandle", new ReaderHandle(new StringReader("<a/>")), true},
+			new Object[]{"InputStreamHandle",
+				new InputStreamHandle(new ByteArrayInputStream("<a/>".getBytes(StandardCharsets.UTF_8))), true}
 		);
-		MultipartBody multipartBody = new MultipartBody.Builder()
-			.setType(MultipartBody.FORM)
-			.addFormDataPart("body", null, streamingBody)
-			.build();
-		assertTrue(multipartBody.isOneShot());
+	}
 
-		AtomicInteger attempts = new AtomicInteger();
-		OkHttpClient client = new OkHttpClient.Builder()
-			.addInterceptor(new RetryIOExceptionInterceptor(3, 0, 1, 0))
-			.addInterceptor(chain -> {
-				attempts.incrementAndGet();
-				throw new IOException("unexpected end of stream");
-			})
-			.build();
-		Request request = new Request.Builder()
-			.url("http://localhost/")
-			.post(multipartBody)
-			.build();
-
-		assertThrows(IOException.class, () -> client.newCall(request).execute());
-		assertEquals(1, attempts.get());
+	@ParameterizedTest(name = "{0}")
+	@MethodSource("handlesAndOneShotFlags")
+	void oneShotMatchesWhetherTheHandleCanBeResent(String name, AbstractWriteHandle handle, boolean expectedOneShot) {
+		assertEquals(expectedOneShot, OkHttpServices.makeRequestBodyForContent(handle).isOneShot());
 	}
 
 	@Test
-	void multipartBodyWithInputStreamPartIsNotRetried() {
-		InputStream inputStream = new ByteArrayInputStream("content".getBytes(StandardCharsets.UTF_8));
-		OkHttpServices.ObjectRequestBody inputStreamBody =
-			new OkHttpServices.ObjectRequestBody(inputStream, MediaType.get("application/xml"));
-		MultipartBody multipartBody = new MultipartBody.Builder()
-			.setType(MultipartBody.FORM)
-			.addFormDataPart("body", null, inputStreamBody)
-			.build();
-		assertTrue(multipartBody.isOneShot(),
-			"A multipart body containing an InputStream-backed part must be one-shot so the retry interceptor does " +
-				"not replay an already-consumed stream.");
-
-		AtomicInteger attempts = new AtomicInteger();
-		OkHttpClient client = new OkHttpClient.Builder()
-			.addInterceptor(new RetryIOExceptionInterceptor(3, 0, 1, 0))
-			.addInterceptor(chain -> {
-				attempts.incrementAndGet();
-				throw new IOException("unexpected end of stream");
-			})
-			.build();
-		Request request = new Request.Builder()
-			.url("http://localhost/")
-			.post(multipartBody)
-			.build();
-
-		assertThrows(IOException.class, () -> client.newCall(request).execute());
-		assertEquals(1, attempts.get());
+	void multipartWithAnyOneShotPartIsOneShot() {
+		MultipartBody body = multipart(
+			OkHttpServices.makeRequestBodyForContent(new StringHandle("<a/>")),
+			OkHttpServices.makeRequestBodyForContent(new ReaderHandle(new StringReader("<b/>")))
+		);
+		assertTrue(body.isOneShot());
 	}
 
 	@Test
-	void resendableStreamingBodyIsRetried() {
-		StreamingOutputImpl resendableBody = new StreamingOutputImpl(
-			outputStream -> outputStream.write("content".getBytes(StandardCharsets.UTF_8)),
-			null,
-			MediaType.get("application/xml"),
-			true
+	void multipartWithOnlyResendablePartsIsNotOneShot() {
+		MultipartBody body = multipart(
+			OkHttpServices.makeRequestBodyForContent(new StringHandle("<a/>")),
+			OkHttpServices.makeRequestBodyForContent(new JacksonHandle(new ObjectMapper().createObjectNode()))
 		);
-		assertTrue(resendableBody.isRetryable(),
-			"A handle that reports isResendable() == true should allow its StreamingOutputImpl wrapper to be retried.");
-		assertFalse(resendableBody.isOneShot(),
-			"A resendable StreamingOutputImpl should not be marked one-shot, so OkHttp permits rewriting its body.");
+		assertFalse(body.isOneShot());
+	}
 
-		AtomicInteger attempts = new AtomicInteger();
-		OkHttpClient client = new OkHttpClient.Builder()
-			.addInterceptor(new RetryIOExceptionInterceptor(3, 0, 1, 0))
-			.addInterceptor(chain -> {
-				if (attempts.incrementAndGet() < 2) {
-					throw new IOException("unexpected end of stream");
-				}
-				return new okhttp3.Response.Builder()
-					.request(chain.request())
-					.protocol(okhttp3.Protocol.HTTP_1_1)
-					.code(200)
-					.message("OK")
-					.body(okhttp3.ResponseBody.create("", null))
-					.build();
-			})
-			.build();
-		Request request = new Request.Builder()
-			.url("http://localhost/")
-			.post(resendableBody)
-			.build();
+	@Test
+	void oneShotMultipartIsNotRetried() {
+		MultipartBody body = multipart(
+			OkHttpServices.makeRequestBodyForContent(new ReaderHandle(new StringReader("<a/>")))
+		);
+		CountingFailure failure = new CountingFailure(Integer.MAX_VALUE);
 
-		try (okhttp3.Response response = client.newCall(request).execute()) {
+		assertThrows(IOException.class, () -> client(failure).newCall(post(body)).execute());
+		assertEquals(1, failure.attempts);
+	}
+
+	@Test
+	void resendableMultipartIsRetried() throws IOException {
+		MultipartBody body = multipart(
+			OkHttpServices.makeRequestBodyForContent(new StringHandle("<a/>"))
+		);
+		CountingFailure failure = new CountingFailure(1);
+
+		try (Response response = client(failure).newCall(post(body)).execute()) {
 			assertEquals(200, response.code());
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
-		assertEquals(2, attempts.get(),
-			"The request should have been retried once after the first simulated connection failure.");
+		assertEquals(2, failure.attempts);
 	}
 
-	@Test
-	void nonResendableHandleInMultipartIsNotRetried() {
-		// Mirrors how OkHttpServices wraps a non-resendable handle (e.g. ReaderHandle) in a Data Services multipart
-		// request: the per-part resendable flag should propagate up through MultipartBody.isOneShot().
-		StreamingOutputImpl nonResendablePart = new StreamingOutputImpl(
-			outputStream -> outputStream.write("content".getBytes(StandardCharsets.UTF_8)),
-			null,
-			MediaType.get("application/xml"),
-			false
-		);
-		MultipartBody multipartBody = new MultipartBody.Builder()
-			.setType(MultipartBody.FORM)
-			.addFormDataPart("body", null, nonResendablePart)
+	private static MultipartBody multipart(RequestBody... parts) {
+		MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+		for (int i = 0; i < parts.length; i++) {
+			builder.addFormDataPart("part" + i, null, parts[i]);
+		}
+		return builder.build();
+	}
+
+	private static Request post(RequestBody body) {
+		return new Request.Builder().url("http://localhost/").post(body).build();
+	}
+
+	private static OkHttpClient client(CountingFailure failure) {
+		return new OkHttpClient.Builder()
+			.addInterceptor(new RetryIOExceptionInterceptor(3, 0, 1, 0))
+			.addInterceptor(failure)
 			.build();
-		assertTrue(multipartBody.isOneShot(),
-			"A multipart request containing even one non-resendable part must remain one-shot overall.");
+	}
+
+	/**
+	 * Fails the first {@code failuresBeforeSuccess} attempts with an IOException, then returns a 200.
+	 */
+	private static class CountingFailure implements okhttp3.Interceptor {
+		private final int failuresBeforeSuccess;
+		int attempts;
+
+		CountingFailure(int failuresBeforeSuccess) {
+			this.failuresBeforeSuccess = failuresBeforeSuccess;
+		}
+
+		@Override
+		public Response intercept(Chain chain) throws IOException {
+			if (++attempts <= failuresBeforeSuccess) {
+				throw new IOException("unexpected end of stream");
+			}
+			return new Response.Builder()
+				.request(chain.request())
+				.protocol(Protocol.HTTP_1_1)
+				.code(200)
+				.message("OK")
+				.body(ResponseBody.create("", null))
+				.build();
+		}
 	}
 }
