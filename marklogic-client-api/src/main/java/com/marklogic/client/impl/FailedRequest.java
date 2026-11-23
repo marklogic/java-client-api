@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.marklogic.client.io.Format;
@@ -49,13 +48,9 @@ public class FailedRequest {
     @Override
     public FailedRequest parseFailedRequest(int httpStatus, InputStream is) {
       FailedRequest failure = new FailedRequest();
-      DocumentBuilderFactory factory = DocumentBuilderFactory
-        .newInstance();
-      factory.setNamespaceAware(true);
-      factory.setValidating(false);
       DocumentBuilder builder;
       try {
-        builder = factory.newDocumentBuilder();
+        builder = XmlFactories.makeNewDocumentBuilder();
         Document doc = builder.parse(is);
         String statusCode = null;
         NodeList statusCodes = doc.getElementsByTagNameNS(ERROR_NS, "status-code");

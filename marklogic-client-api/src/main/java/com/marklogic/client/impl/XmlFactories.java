@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.FactoryConfigurationError;
@@ -125,6 +126,13 @@ public final class XmlFactories {
 		factory.setValidating(false);
 
 		return factory;
+	}
+
+	/**
+	 * Creates a {@link DocumentBuilder} from a new factory configured with secure defaults.
+	 */
+	static DocumentBuilder makeNewDocumentBuilder() throws ParserConfigurationException {
+		return makeNewDocumentBuilderFactory().newDocumentBuilder();
 	}
 
 	/**
