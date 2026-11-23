@@ -7,16 +7,20 @@ import com.marklogic.client.*;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.impl.FailedRequest;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -111,5 +115,27 @@ public class FailedRequestTest {
     assertNull(e.getServerMessageCode());
     assertNull(e.getServerMessage());
     assertNull(e.getServerStackTrace());
+  }
+
+  @Test
+  public void testFailedRequestParsingIsIndependentOfSharedFactoryConfiguration() {
+    DocumentBuilderFactory sharedFactory = XmlFactories.getDocumentBuilderFactory();
+    boolean namespaceAware = sharedFactory.isNamespaceAware();
+    try {
+      sharedFactory.setNamespaceAware(false);
+      String xml = "<error xmlns=\"http://marklogic.com/xdmp/error\">" +
+        "<status-code>400</status-code><status>Bad Request</status>" +
+        "<message-code>RESTAPI-INVALIDCONTENT</message-code><message>Invalid content</message></error>";
+
+      FailedRequest failure = FailedRequest.getFailedRequest(400, "application/xml",
+        new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+
+      assertEquals(400, failure.getStatusCode());
+      assertEquals("Bad Request", failure.getStatus());
+      assertEquals("RESTAPI-INVALIDCONTENT", failure.getMessageCode());
+      assertEquals("Invalid content", failure.getMessage());
+    } finally {
+      sharedFactory.setNamespaceAware(namespaceAware);
+    }
   }
 }

@@ -50,7 +50,7 @@ public class FailedRequest {
       FailedRequest failure = new FailedRequest();
       DocumentBuilder builder;
       try {
-        builder = XmlFactories.getDocumentBuilderFactory().newDocumentBuilder();
+        builder = XmlFactories.makeNewDocumentBuilder();
         Document doc = builder.parse(is);
         String statusCode = null;
         NodeList statusCodes = doc.getElementsByTagNameNS(ERROR_NS, "status-code");

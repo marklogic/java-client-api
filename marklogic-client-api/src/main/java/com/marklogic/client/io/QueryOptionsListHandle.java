@@ -3,7 +3,6 @@
  */
 package com.marklogic.client.io;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -103,12 +102,6 @@ public class QueryOptionsListHandle
     } catch (JAXBException e) {
       logger.error("Failed to unmarshall query options list",e);
       throw new MarkLogicIOException(e);
-    } finally {
-      try {
-        content.close();
-      } catch (IOException e) {
-        // ignore.
-      }
     }
   }
 
