@@ -13,6 +13,8 @@ import java.util.HashMap;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.impl.ValuesBuilder;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.ValuesReadHandle;
 import com.marklogic.client.query.AggregateResult;
@@ -97,9 +100,13 @@ public class ValuesHandle
   @Override
   protected void receiveContent(InputStream content) {
     try {
-      valuesHolder = (ValuesBuilder.Values) unmarshaller.unmarshal(
+      XMLStreamReader reader = XmlFactories.makeNewInputFactory().createXMLStreamReader(
         new InputStreamReader(content, StandardCharsets.UTF_8)
       );
+      valuesHolder = (ValuesBuilder.Values) unmarshaller.unmarshal(reader);
+    } catch (XMLStreamException e) {
+      logger.error("Failed to parse values", e);
+      throw new MarkLogicIOException(e);
     } catch (JAXBException e) {
       logger.error("Failed to unmarshall values",e);
       throw new MarkLogicIOException(e);

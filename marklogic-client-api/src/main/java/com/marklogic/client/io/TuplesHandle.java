@@ -13,6 +13,8 @@ import java.util.HashMap;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.impl.TuplesBuilder;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.TuplesReadHandle;
 import com.marklogic.client.query.AggregateResult;
@@ -92,9 +95,13 @@ public class TuplesHandle
   @Override
   protected void receiveContent(InputStream content) {
     try {
-      tuplesHolder = (TuplesBuilder.Tuples) unmarshaller.unmarshal(
+      XMLStreamReader reader = XmlFactories.makeNewInputFactory().createXMLStreamReader(
         new InputStreamReader(content, StandardCharsets.UTF_8)
       );
+      tuplesHolder = (TuplesBuilder.Tuples) unmarshaller.unmarshal(reader);
+    } catch (XMLStreamException e) {
+      logger.error("Failed to parse tuples", e);
+      throw new MarkLogicIOException(e);
     } catch (JAXBException e) {
       logger.error("Failed to unmarshall tuples",e);
       throw new MarkLogicIOException(e);
