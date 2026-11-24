@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2010-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+ * Copyright (c) 2010-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
  */
 package com.marklogic.client.impl.okhttp;
 
 import com.marklogic.client.MarkLogicIOException;
 import okhttp3.Interceptor;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.slf4j.Logger;
 
@@ -40,8 +41,9 @@ public class RetryIOExceptionInterceptor implements Interceptor {
 	@Override
 	public Response intercept(Chain chain) throws IOException {
 		Request request = chain.request();
+		RequestBody requestBody = request.body();
 
-		if (request.body() instanceof RetryableRequestBody body && !body.isRetryable()) {
+		if (requestBody != null && cannotBeSentAgain(requestBody)) {
 			return chain.proceed(request);
 		}
 
@@ -64,6 +66,13 @@ public class RetryIOExceptionInterceptor implements Interceptor {
 
 		// This should never be reached due to loop logic, but is required for compilation.
 		throw new IllegalStateException("Unexpected end of retry loop");
+	}
+
+	@SuppressWarnings("deprecation")
+	private static boolean cannotBeSentAgain(RequestBody requestBody) {
+		// RetryableRequestBody is deprecated, but is honored until it is removed for bodies that do not override isOneShot()
+		return requestBody.isOneShot() ||
+			(requestBody instanceof RetryableRequestBody legacyBody && !legacyBody.isRetryable());
 	}
 
 	private boolean isRetryableIOException(Exception e) {
