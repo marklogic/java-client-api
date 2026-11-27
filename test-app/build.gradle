@@ -14,8 +14,8 @@ mlWaitTillReady {
 }
 
 dependencies {
-	implementation "io.undertow:undertow-core:2.3.24.Final"
-	implementation "io.undertow:undertow-servlet:2.3.24.Final"
+	implementation "io.undertow:undertow-core:2.3.27.Final"
+	implementation "io.undertow:undertow-servlet:2.3.27.Final"
 	implementation 'org.slf4j:slf4j-api:2.0.17'
 	implementation "ch.qos.logback:logback-classic:${logbackVersion}"
 	implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"

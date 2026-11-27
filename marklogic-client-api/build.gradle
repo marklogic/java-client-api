@@ -19,7 +19,7 @@ dependencies {
 	// The only time it appears in the public API is when a user uses JAXBHandle.
 	// But in that scenario, the user would already be using JAXB in their application.
 	implementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.5"
-	implementation "org.glassfish.jaxb:jaxb-runtime:4.0.6"
+	implementation "org.glassfish.jaxb:jaxb-runtime:4.0.9"
 
 	implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
 	implementation "com.squareup.okhttp3:logging-interceptor:${okhttpVersion}"
